@@ -24,5 +24,5 @@ Las decisiones no se editan una vez aceptadas. Si cambian, se escribe una nueva 
 | 0008 | Roles como datos y platform_admin fuera de la aplicación | Aceptada |
 | 0009 | Aislamiento entre clubes por código | Aceptada |
 | 0010 | Un solo proyecto Netlify con la API en /api del mismo host | Propuesta |
-| 0011 | Resolución del club por entorno y subdominios reservados | Propuesta |
+| 0011 | Resolución del club por entorno y subdominios reservados | Aceptada |
 | 0012 | i18n con next-intl y diccionarios compartidos | Propuesta |

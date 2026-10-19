@@ -1,6 +1,6 @@
 # Plan Fase 0: fundamentos del SaaS
 
-Estado: aprobado el 19 de octubre de 2026 para el Bloque 0. Decisiones del Bloque 1 respondidas abajo, salvo la pregunta 11, pendiente.
+Estado: aprobado el 19 de octubre de 2026 para el Bloque 0. Decisiones del Bloque 1 respondidas abajo.
 Fecha: 19 de octubre de 2026.
 
 ## 1. Punto de partida verificado
@@ -343,8 +343,8 @@ Qué hago:
 | 7 Dominio | Provisional y sin decidir. El dominio base se lee de configuración. Nada de DNS en la Fase 0 más allá de la documentación |
 | 8 Hono, Drizzle, Resend | Aprobados. Resend con la reserva de residencia aceptada |
 | 9 Cookie en dominio padre | Aprobado |
-| 10 Previews por variable de entorno y staging | Sin respuesta explícita. Queda como propuesta en el ADR 0011 |
-| 11 Subdominios reservados y panel en `admin` | Sin respuesta explícita. Queda como propuesta en el ADR 0011 |
+| 10 Previews por variable de entorno y staging | Aprobado. Sin proyecto de staging en la Fase 0 |
+| 11 Subdominios reservados y panel en `admin` | Aprobado |
 
 ## 7. Qué no he podido verificar y dónde comprobarlo
 

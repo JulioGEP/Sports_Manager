@@ -1,12 +1,12 @@
 # 0011. Resolución del club por entorno y subdominios reservados
 
-Estado: propuesta, pendiente de confirmación del responsable de producto. Fecha: 2026-10-19.
+Estado: aceptada el 2026-10-19 por el responsable de producto. Fecha: 2026-10-19.
 
 ## Contexto
 
 En producción el club se resuelve por subdominio. En deploy previews no hay subdominios: las URLs son `deploy-preview-N--proyecto.netlify.app`. En local hace falta algo equivalente.
 
-## Decisión propuesta
+## Decisión
 
 | Entorno | Resolución |
 |---|---|
