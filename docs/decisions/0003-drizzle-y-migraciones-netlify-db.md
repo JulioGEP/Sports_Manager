@@ -25,3 +25,7 @@ Cambios que rompen (renombrar o borrar columnas) se hacen en tres pasos: expandi
 
 - Prisma: motor binario, sin integración documentada con Netlify DB, más pesado en Lambda.
 - Kysely: solo constructor de consultas; habría que montar migraciones y tipos aparte.
+
+## Nota de implementación (Bloque 1, 2026-10-19)
+
+`drizzle-orm` 0.45.4 estable ya incluye el adaptador `drizzle-orm/netlify-db`, así que no hace falta ninguna versión beta. Aun así, `packages/db` usa el driver `node-postgres` con la cadena de conexión que da `@netlify/database` (`getConnectionString()`), porque el mismo cliente sirve sin cambios en tests con Postgres embebido (`@netlify/database-dev`), en local y en Netlify. Las migraciones se generan con `drizzle-kit` directamente en `netlify/database/migrations` con prefijo de fecha y hora.

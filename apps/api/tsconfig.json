@@ -1,0 +1,7 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["node"]
+  },
+  "include": ["src", "netlify", "vitest.config.ts", "vitest.isolation.config.ts"]
+}

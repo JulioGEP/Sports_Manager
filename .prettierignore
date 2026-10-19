@@ -1,0 +1,8 @@
+node_modules
+.next
+.netlify
+dist
+coverage
+pnpm-lock.yaml
+netlify/database/migrations
+*.md

@@ -1,0 +1,16 @@
+{
+  "home": {
+    "title": "Sports Manager",
+    "subtitle": "Plataforma de gestió de clubs esportius. Fase 0 en construcció.",
+    "apiStatus": "Estat de l'API"
+  },
+  "apiStatus": {
+    "loading": "Comprovant…",
+    "ok": "API operativa",
+    "error": "L'API no respon",
+    "functionRegion": "Regió de la funció",
+    "dbRegion": "Regió de la base de dades",
+    "dbDown": "La base de dades no respon",
+    "unknown": "desconeguda"
+  }
+}
