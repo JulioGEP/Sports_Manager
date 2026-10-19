@@ -41,7 +41,9 @@ Notas:
 | Deploy preview | Rama de base de datos por preview, creada por Netlify a partir de una copia de producción | Netlify, antes de publicar la preview. Si fallan, la preview falla        |
 | Producción     | Base de producción                                                                        | Netlify, justo antes de publicar. Solo los deploys de producción la tocan |
 
-Aprovisionamiento: al estar instalado `@netlify/database`, Netlify crea la base en el primer deploy. La cadena de conexión llega a las funciones en `NETLIFY_DB_URL`.
+Aprovisionamiento: `@netlify/database` está declarado en el `package.json` de la raíz (además de en `packages/db` y `apps/api`) porque Netlify decide si aprovisiona la base mirando las dependencias del proyecto. Si tras un deploy la base no aparece en Data & Storage → Database, se crea desde ahí con el botón de crear base de datos; a partir de entonces el deploy aplica las migraciones. La cadena de conexión llega a las funciones en `NETLIFY_DB_URL`.
+
+Comprobado en la primera deploy preview (19 de octubre de 2026): función `api` desplegada en `/api/*` con región `eu-central-1`, Blobs en `eu-central-1`, sin base de datos aprovisionada todavía.
 
 Reglas de migraciones (ADR 0003):
 

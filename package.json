@@ -19,6 +19,9 @@
     "db:migrate": "netlify database migrations apply",
     "db:status": "netlify database status"
   },
+  "dependencies": {
+    "@netlify/database": "2.0.1"
+  },
   "devDependencies": {
     "@eslint/js": "10.0.1",
     "eslint": "10.13.0",
