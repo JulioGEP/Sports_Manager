@@ -19,14 +19,36 @@ export const PERMISSIONS = [
   "org.members.read",
   "org.members.invite",
   "org.members.manage",
+  /** Vista de soporte: estado y agregados del club, sin datos personales. */
+  "org.support.read",
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
 
+/** Permisos que otorga cada rol de club. */
 export const ROLE_PERMISSIONS: Record<RoleCode, readonly Permission[]> = {
-  org_admin: [...PERMISSIONS],
+  org_admin: [
+    "org.settings.read",
+    "org.settings.write",
+    "org.members.read",
+    "org.members.invite",
+    "org.members.manage",
+  ],
   coach: ["org.settings.read", "org.members.read"],
   guardian: ["org.settings.read"],
 };
+
+/**
+ * Administrador de plataforma dentro de un club sin pertenencia (ADR 0017):
+ * entra sin confirmación, pero solo ve estado y agregados. Nada personal.
+ */
+export const PLATFORM_SUPPORT_PERMISSIONS: readonly Permission[] = ["org.support.read"];
+
+/** Con una autorización de soporte vigente concedida por el club: lectura completa, sin escritura. */
+export const SUPPORT_GRANT_PERMISSIONS: readonly Permission[] = [
+  "org.support.read",
+  "org.settings.read",
+  "org.members.read",
+];
 
 /** Una persona puede tener varios roles en el mismo club (ADR 0014): los permisos son la unión. */
 export function permissionsForRoles(roles: Iterable<RoleCode>): Set<Permission> {

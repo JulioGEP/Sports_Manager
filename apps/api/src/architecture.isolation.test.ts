@@ -9,7 +9,7 @@ import { describe, expect, it } from "vitest";
 const REPO_ROOT = resolve(import.meta.dirname, "../../..");
 const SOURCE_DIRS = ["apps/web", "apps/api"];
 const DATA_LAYER = join("apps", "api", "src", "data");
-const FORBIDDEN = ["@sportsmanager/db", "drizzle-orm", "pg", "@netlify/database"];
+const FORBIDDEN = ["@sportsmanager/db", "drizzle-orm", "pg", "@netlify/database", "better-auth"];
 const SKIP_DIRS = new Set(["node_modules", ".next", ".netlify", "dist", "coverage"]);
 /** Ficheros generados por la build (no commiteados) que no son código fuente. */
 const GENERATED_FILES = new Set([

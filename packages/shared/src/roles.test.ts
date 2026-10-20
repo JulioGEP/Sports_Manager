@@ -3,8 +3,10 @@ import {
   hasPermission,
   PERMISSIONS,
   permissionsForRoles,
+  PLATFORM_SUPPORT_PERMISSIONS,
   ROLE_CODES,
   ROLE_PERMISSIONS,
+  SUPPORT_GRANT_PERMISSIONS,
 } from "./roles.ts";
 
 describe("roles y permisos", () => {
@@ -21,5 +23,13 @@ describe("roles y permisos", () => {
     expect(hasPermission(["guardian"], "org.members.read")).toBe(false);
     expect(hasPermission(["guardian", "coach"], "org.members.read")).toBe(true);
     expect(hasPermission(["org_admin"], "org.members.manage")).toBe(true);
+  });
+
+  it("el soporte de plataforma nunca incluye datos personales ni escritura", () => {
+    expect(PLATFORM_SUPPORT_PERMISSIONS).toEqual(["org.support.read"]);
+    for (const permission of SUPPORT_GRANT_PERMISSIONS) {
+      expect(permission.endsWith(".read"), permission).toBe(true);
+    }
+    expect(SUPPORT_GRANT_PERMISSIONS).not.toContain("org.members.manage");
   });
 });

@@ -1,5 +1,6 @@
 import { NetlifyDB } from "@netlify/database-dev";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { loadConfig } from "../config.ts";
 import { createDataLayer, type DataLayer } from "./index.ts";
 
 describe("capa de datos contra una base real", () => {
@@ -12,7 +13,7 @@ describe("capa de datos contra una base real", () => {
     await local.applyMigrations(
       new URL("../../../../netlify/database/migrations", import.meta.url).pathname,
     );
-    data = createDataLayer({ connectionString });
+    data = createDataLayer({ config: loadConfig({ NODE_ENV: "test" }), connectionString });
   });
 
   afterAll(async () => {
@@ -26,5 +27,11 @@ describe("capa de datos contra una base real", () => {
     expect(status.latencyMs).not.toBeNull();
     expect(await data.getAppMeta("schema_version")).toBe("1");
     expect(await data.getAppMeta("no_existe")).toBeNull();
+  });
+
+  it("resuelve el club de demostración por slug y nunca uno inexistente", async () => {
+    const demo = await data.organizations.findBySlug("demo");
+    expect(demo?.organization.name).toBe("Club de demostración");
+    expect(await data.organizations.findBySlug("no-existe")).toBeNull();
   });
 });

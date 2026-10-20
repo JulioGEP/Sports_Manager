@@ -35,7 +35,14 @@ Notas:
 
 - La región de funciones a nivel de proyecto cubre también las funciones que genera el adaptador de Next.js, que no admiten configuración en código. Tras cambiarla hay que volver a desplegar.
 - La versión de Node la toma Netlify de `.nvmrc`.
-- No hace falta ninguna variable de entorno para el Bloque 1. Las que lleguen después se crean en Project configuration → Environment variables, por contexto y con ámbito "Functions" cuando las lea la API. Nunca en `netlify.toml`.
+- Variables de entorno de la API (Project configuration → Environment variables, ámbito "Functions", nunca en `netlify.toml`):
+
+| Variable | Producción | Deploy preview | Notas |
+|---|---|---|---|
+| `BETTER_AUTH_SECRET` | secreto propio | secreto propio, distinto | Marcada como secreto. Rotarla cierra todas las sesiones |
+| `APP_BASE_DOMAIN` | `hubsports.netlify.app` | igual | Cambiará al dominio propio |
+| `TENANT_FALLBACK_SLUG` | `demo` | `demo` | Club de reserva (ADR 0016) |
+| `SESSION_COOKIE_DOMAIN` | vacía | vacía | Solo con dominio propio (ADR 0006) |
 
 ## Base de datos y entornos
 

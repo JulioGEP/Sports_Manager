@@ -23,7 +23,7 @@ const dataLayerOnly = [
 ];
 const dataLayerOnlyPatterns = [
   {
-    group: ["@sportsmanager/db/*", "drizzle-orm/*", "@netlify/database/*"],
+    group: ["@sportsmanager/db/*", "drizzle-orm/*", "@netlify/database/*", "better-auth/*"],
     message: "Solo la capa de datos (apps/api/src/data) accede a la base.",
   },
 ];

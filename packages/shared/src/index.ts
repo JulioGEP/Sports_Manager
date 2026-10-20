@@ -5,3 +5,5 @@ export * from "./organizations.ts";
 export * from "./invitations.ts";
 export * from "./api/health.ts";
 export * from "./api/errors.ts";
+export * from "./api/me.ts";
+export * from "./api/organization.ts";

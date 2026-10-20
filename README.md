@@ -4,7 +4,7 @@ SaaS B2B para la gestión de clubes deportivos. Cada club tiene su espacio aisla
 
 ## Estado
 
-Fase 0, Bloque 2: modelo de datos mínimo (clubes, deportes, identidad, roles, pertenencias e invitaciones). La autenticación y el aislamiento llegan en los bloques 3 y 4.
+Fase 0, Bloque 3: aislamiento entre clubes. Cada petición resuelve el club por subdominio, el usuario por sesión (Better Auth) y los permisos por pertenencia; la suite de aislamiento con dos clubes es un check obligatorio en CI. Los flujos de login e invitaciones llegan en el Bloque 4.
 
 ## Desarrollo local
 

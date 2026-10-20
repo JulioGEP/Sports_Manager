@@ -15,6 +15,13 @@
       "when": 1792488732485,
       "tag": "20261020093212_create_core_schema",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792490745984,
+      "tag": "20261020100545_create_support_access_grants",
+      "breakpoints": true
     }
   ]
 }

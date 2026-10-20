@@ -5,6 +5,7 @@ export const API_ERROR_CODES = [
   "unauthorized",
   "forbidden",
   "not_found",
+  "conflict",
   "internal",
 ] as const;
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];
