@@ -346,6 +346,11 @@ export function PlayerPage() {
                 >
                   {photoBusy ? t("photo.uploading") : t("photo.change")}
                 </Button>
+                {player.photoUrl ? (
+                  <Button variant="tertiary" size="sm" onClick={() => setRemovingPhoto(true)}>
+                    {t("photo.remove")}
+                  </Button>
+                ) : null}
               </>
             ) : null}
           </div>
@@ -861,16 +866,7 @@ export function PlayerPage() {
         </div>
 
         {canWrite ? (
-          <Card
-            title={t("status")}
-            footer={
-              player.photoUrl ? (
-                <Button variant="tertiary" size="sm" onClick={() => setRemovingPhoto(true)}>
-                  {t("photo.remove")}
-                </Button>
-              ) : null
-            }
-          >
+          <Card title={t("status")}>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <StatusChip kind={player.status === "active" ? "success" : "neutral"}>
                 {ps(player.status)}
