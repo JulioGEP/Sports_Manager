@@ -28,6 +28,10 @@ const EnvSchema = z.object({
   EMAIL_FROM: optionalString,
   EMAIL_DEBUG_LOG: optionalString,
   PLATFORM_ADMIN_EMAILS: optionalString,
+  LOGO_STORE: z.preprocess(
+    (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
+    z.enum(["netlify", "memory"]).optional(),
+  ),
   NETLIFY_DEV: z.string().optional(),
   NODE_ENV: z.string().optional(),
 });
@@ -59,6 +63,11 @@ export interface ApiConfig {
    * (ADR 0023). Es la vía para el primer administrador, sin contraseñas sembradas.
    */
   platformAdminEmails: string[];
+  /**
+   * Dónde viven los logos: Netlify Blobs (ADR 0024) o memoria. `memory` solo tiene sentido en
+   * local sin Netlify (serve-local y tests); fuera de local se rechaza.
+   */
+  logoStore: "netlify" | "memory";
 }
 
 export function loadConfig(env: Record<string, string | undefined> = process.env): ApiConfig {
@@ -70,6 +79,10 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
   const authSecret = parsed.BETTER_AUTH_SECRET ?? (isLocal ? DEV_ONLY_SECRET : null);
   if (!authSecret) {
     throw new Error("BETTER_AUTH_SECRET es obligatoria fuera de desarrollo local.");
+  }
+  const logoStore = parsed.LOGO_STORE ?? "netlify";
+  if (logoStore === "memory" && !isLocal) {
+    throw new Error("LOGO_STORE=memory solo está permitido en desarrollo local.");
   }
   const transport = parsed.EMAIL_TRANSPORT ?? "outbox";
   if (transport === "resend" && (!parsed.RESEND_API_KEY || !parsed.EMAIL_FROM)) {
@@ -83,6 +96,7 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     secureCookies: !isLocal,
     isLocal,
     invitationTtlDays: parsed.INVITATION_TTL_DAYS ?? DEFAULT_INVITATION_TTL_DAYS,
+    logoStore,
     platformAdminEmails: (parsed.PLATFORM_ADMIN_EMAILS ?? "")
       .split(",")
       .map((value) => value.trim().toLowerCase())

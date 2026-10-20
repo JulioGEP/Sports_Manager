@@ -2,13 +2,13 @@
 
 import { MyMembershipsResponseSchema, type MyMembershipsResponse } from "@sportsmanager/shared";
 import { useTranslations } from "next-intl";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Alert } from "@/components/alert";
 import { useBranding } from "@/components/branding-provider";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { apiFetch, errorKey } from "@/lib/api";
 import { signOut, useRequiredSession } from "@/lib/session";
+import { Alert, Badge, Button, ButtonLink, Icon, initials } from "@/ui";
 
 type Membership = MyMembershipsResponse["memberships"][number];
 
@@ -20,7 +20,7 @@ function isCurrentHost(url: string): boolean {
   }
 }
 
-/** Selector de club (Bloque 5). Con un solo club, va directo; con varios, lista con su marca. */
+/** Selector de club (Bloque 5). Con un solo club, va directo; con varios, tarjetas con su marca. */
 export default function ClubsPage() {
   const t = useTranslations("clubs");
   const roles = useTranslations("roles");
@@ -51,56 +51,83 @@ export default function ClubsPage() {
     router.replace("/login");
   }
 
-  if (session.kind !== "authenticated") return <main className="page">{t("loading")}</main>;
-
   return (
-    <main className="page page--wide">
-      <header className="topbar">
-        <strong>{t("title")}</strong>
-        <nav className="row">
-          {branding ? <Link href="/">{t("backToClub", { club: branding.name })}</Link> : null}
-          <button
-            type="button"
-            className="button button--secondary"
-            onClick={() => void onSignOut()}
-          >
-            {t("signOut")}
-          </button>
-        </nav>
-      </header>
-      <section className="card">
-        <p className="muted">{t("subtitle", { email: session.me.user.email })}</p>
+    <div className="auth">
+      <div className="auth__box" style={{ width: "min(900px, 100%)" }}>
+        <div className="row row--between">
+          <div>
+            <h1>{t("title")}</h1>
+            {session.kind === "authenticated" ? (
+              <p className="muted">{t("subtitle", { email: session.me.user.email })}</p>
+            ) : null}
+          </div>
+          <div className="row">
+            {branding ? (
+              <ButtonLink
+                href="/"
+                variant="secondary"
+                size="sm"
+                icon={<Icon.ArrowLeft size={16} />}
+              >
+                {t("backToClub", { club: branding.name })}
+              </ButtonLink>
+            ) : null}
+            <Button
+              variant="ghost"
+              size="sm"
+              icon={<Icon.Logout size={16} />}
+              onClick={() => void onSignOut()}
+            >
+              {t("signOut")}
+            </Button>
+          </div>
+        </div>
         {error ? <Alert kind="error">{error}</Alert> : null}
-        {memberships === null && !error ? <p className="muted">{t("loading")}</p> : null}
         {memberships?.length === 0 ? <Alert kind="info">{t("none")}</Alert> : null}
-        <ul className="list">
+        <div className="club-grid">
           {memberships?.map((m) => (
-            <li key={m.organization.slug} className="list__item">
-              <div className="brand">
+            <article key={m.organization.slug} className="club-card">
+              <div className="club-card__head">
                 <span
-                  className="brand__swatch"
+                  className="club-card__swatch"
                   style={{ background: m.organization.brandPrimaryColor }}
-                  aria-hidden="true"
                 >
                   {m.organization.logoUrl ? (
-                    <img src={m.organization.logoUrl} alt="" className="brand__logo" />
-                  ) : null}
+                    <img src={m.organization.logoUrl} alt="" />
+                  ) : (
+                    <span className="brand-mark" style={{ background: "transparent" }}>
+                      {initials(m.organization.name)}
+                    </span>
+                  )}
                 </span>
                 <div>
                   <strong>{m.organization.name}</strong>
-                  <div className="muted">
-                    {m.roles.map((r) => roles(r)).join(" · ")}
-                    {m.organization.status !== "active" ? ` · ${t("inactive")}` : ""}
+                  <div className="cell-badges">
+                    {m.roles.map((r) => (
+                      <Badge key={r} tone="neutral">
+                        {roles(r)}
+                      </Badge>
+                    ))}
+                    {m.organization.status !== "active" ? (
+                      <Badge tone="warning">{t("inactive")}</Badge>
+                    ) : null}
                   </div>
                 </div>
               </div>
-              <a className="button" href={m.organization.url}>
+              <ButtonLink
+                href={m.organization.url}
+                external
+                variant={isCurrentHost(m.organization.url) ? "secondary" : "primary"}
+              >
                 {isCurrentHost(m.organization.url) ? t("current") : t("open")}
-              </a>
-            </li>
+              </ButtonLink>
+            </article>
           ))}
-        </ul>
-      </section>
-    </main>
+        </div>
+        <div className="auth__footer">
+          <LanguageSwitcher hasSession />
+        </div>
+      </div>
+    </div>
   );
 }

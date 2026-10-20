@@ -17,10 +17,14 @@ export const getBranding = cache(async (): Promise<OrganizationBranding | null> 
   const host = incoming.get("host");
   if (!host) return null;
   const scheme = isLocalHost(host) ? "http" : "https";
+  // En local la API vive en otro puerto (API_PROXY_TARGET): se le habla directamente y se le
+  // reenvía el host, igual que hace el rewrite de next.config para el navegador.
+  const proxy = process.env["API_PROXY_TARGET"];
+  const url = proxy ? `${proxy}/api/org/branding` : `${scheme}://${host}/api/org/branding`;
   try {
-    const res = await fetch(`${scheme}://${host}/api/org/branding`, {
+    const res = await fetch(url, {
       cache: "no-store",
-      headers: { accept: "application/json" },
+      headers: { accept: "application/json", ...(proxy ? { "x-forwarded-host": host } : {}) },
     });
     if (!res.ok) return null;
     return OrganizationBrandingSchema.parse(await res.json());

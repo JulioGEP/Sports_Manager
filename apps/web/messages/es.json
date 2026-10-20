@@ -1,22 +1,323 @@
 {
-  "home": {
+  "common": {
+    "loading": "Cargando…",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "close": "Cerrar",
+    "copy": "Copiar enlace",
+    "copied": "Copiado",
+    "remove": "Quitar"
+  },
+  "nav": {
+    "home": "Inicio",
+    "members": "Miembros",
+    "settings": "Ajustes",
+    "myClubs": "Mis clubes",
+    "platformAdmin": "Administración del negocio",
+    "language": "Idioma",
+    "signOut": "Cerrar sesión",
+    "mainNav": "Navegación principal",
+    "userMenu": "Menú de usuario",
+    "loading": "Cargando…",
+    "apiError": "La API no responde. Inténtalo de nuevo en unos segundos.",
+    "noMembershipTitle": "No perteneces a este club",
+    "noMembershipBody": "Tu cuenta ({email}) no tiene ningún rol aquí. Pide una invitación a quien administra el club.",
+    "supportLimited": "Modo soporte de plataforma: ves el estado y los recuentos del club, sin datos personales.",
+    "supportFull": "Modo soporte de plataforma con autorización del club: lectura completa, sin cambios."
+  },
+  "auth": {
+    "login": {
+      "title": "Iniciar sesión",
+      "subtitle": "Un único acceso para todos tus clubes.",
+      "email": "Email",
+      "password": "Contraseña",
+      "submit": "Entrar",
+      "forgot": "¿Has olvidado la contraseña?"
+    },
+    "forgot": {
+      "title": "Recuperar contraseña",
+      "subtitle": "Te enviamos un enlace para elegir una contraseña nueva.",
+      "email": "Email",
+      "submit": "Enviar enlace",
+      "sent": "Si existe una cuenta con ese email, recibirás un mensaje en unos minutos.",
+      "backToLogin": "Volver a iniciar sesión"
+    },
+    "reset": {
+      "title": "Nueva contraseña",
+      "subtitle": "Elige una contraseña nueva para tu cuenta.",
+      "password": "Contraseña nueva",
+      "passwordHint": "Mínimo {min} caracteres.",
+      "confirm": "Repite la contraseña",
+      "submit": "Guardar contraseña",
+      "done": "Contraseña cambiada. Las demás sesiones se han cerrado.",
+      "goToLogin": "Iniciar sesión",
+      "mismatch": "Las contraseñas no coinciden.",
+      "tooShort": "La contraseña debe tener al menos {min} caracteres.",
+      "missingToken": "Este enlace no es válido. Pide uno nuevo desde «Recuperar contraseña»."
+    },
+    "invitation": {
+      "loading": "Cargando la invitación…",
+      "title": "Invitación a {club}",
+      "subtitle": "Te han invitado a formar parte del club.",
+      "summary": "Invitación para {email} con el rol",
+      "missingTitle": "Invitación no encontrada",
+      "missingBody": "El enlace no es válido, se ha revocado o pertenece a otro club.",
+      "alreadyAccepted": "Esta invitación ya se aceptó.",
+      "goToLogin": "Iniciar sesión",
+      "otherSession": "Esta invitación es para {email}, pero tu sesión es de {current}.",
+      "signOutAndRetry": "Cerrar sesión y volver a intentarlo",
+      "join": "Unirme a {club}",
+      "hasAccount": "Ya existe una cuenta para {email}. Inicia sesión para aceptar.",
+      "name": "Tu nombre",
+      "password": "Contraseña",
+      "passwordHint": "Mínimo {min} caracteres.",
+      "confirm": "Repite la contraseña",
+      "mismatch": "Las contraseñas no coinciden.",
+      "tooShort": "La contraseña debe tener al menos {min} caracteres."
+    }
+  },
+  "landing": {
     "title": "Sports Manager",
+    "subtitle": "La plataforma de gestión de tu club. Entra con tu cuenta y elige tu club.",
+    "signIn": "Iniciar sesión",
+    "myClubs": "Mis clubes",
+    "admin": "Administración del negocio"
+  },
+  "home": {
     "greeting": "Hola, {name}",
-    "club": "Estás en {club}.",
-    "yourRoles": "Tus roles:",
-    "supportLimited": "Entras como soporte de plataforma: solo ves estado y recuentos del club.",
-    "supportFull": "Entras como soporte de plataforma con autorización del club: lectura completa.",
-    "apiStatus": "Estado de la API",
-    "actionsTitle": "Qué puedes hacer aquí",
-    "actionMembers": "Miembros",
-    "actionMembersBody": "Ver quién forma parte del club e invitar a entrenadores, tutores y administradores.",
-    "actionSettings": "Ajustes del club",
-    "actionSettingsBody": "Nombre, idioma, colores de marca y logo.",
-    "actionClubs": "Mis clubes",
-    "actionClubsBody": "Cambiar de club si perteneces a varios.",
-    "actionAdmin": "Admin interno",
-    "actionAdminBody": "Crear clubes, configurar su marca e invitar a su primer administrador.",
-    "phaseNote": "Fase 0: cuentas, clubes, roles, invitaciones y marca. Jugadores, equipos y secciones llegan en la Fase 1."
+    "subtitle": "Panel de {club}.",
+    "stats": {
+      "members": "Miembros",
+      "pending": "Invitaciones pendientes",
+      "yourRole": "Tu rol en el club"
+    },
+    "support": {
+      "badge": "Soporte de plataforma"
+    },
+    "firstSteps": {
+      "title": "Primeros pasos",
+      "description": "Deja el club listo para su gente.",
+      "logo": "Sube el logo del club",
+      "logoAction": "Subir logo",
+      "colors": "Elige los colores de marca",
+      "colorsAction": "Elegir colores",
+      "invite": "Invita al primer entrenador",
+      "inviteAction": "Invitar",
+      "done": "Hecho"
+    },
+    "soon": {
+      "title": "Próximamente",
+      "body": "Lo que llega en la Fase 1, sobre esta misma base.",
+      "players": "Jugadores y familias",
+      "teams": "Equipos y plantillas",
+      "sections": "Secciones y temporadas",
+      "phase": "Fase 1"
+    }
+  },
+  "members": {
+    "title": "Miembros",
+    "description": "Quién forma parte del club y con qué rol.",
+    "invite": "Invitar",
+    "tabs": {
+      "members": "Miembros",
+      "invitations": "Invitaciones"
+    },
+    "search": "Buscar por nombre o email",
+    "empty": "Todavía no hay miembros.",
+    "emptyInvitations": "No hay invitaciones pendientes.",
+    "table": {
+      "name": "Persona",
+      "roles": "Roles",
+      "since": "Desde"
+    },
+    "roles": {
+      "manage": "Roles",
+      "title": "Roles de {name}",
+      "description": "Una persona puede tener varios roles. Los permisos se suman.",
+      "add": "Añadir",
+      "lastAdmin": "No se puede quitar al último administrador del club.",
+      "hint": {
+        "org_admin": "Gestiona miembros, invitaciones y ajustes.",
+        "coach": "Verá a su gente y, en la Fase 1, equipos y jugadores.",
+        "guardian": "Familia: en la Fase 1 verá la información de sus hijos."
+      }
+    },
+    "inviteDrawer": {
+      "title": "Invitar a alguien",
+      "description": "La persona recibe un enlace, crea su cuenta y entra en el club con el rol elegido.",
+      "email": "Email",
+      "role": "Rol",
+      "roleHint": {
+        "org_admin": "Gestiona miembros, invitaciones y ajustes.",
+        "coach": "Entrenador o entrenadora del club.",
+        "guardian": "Madre, padre o tutor de un jugador."
+      },
+      "language": "Idioma del email",
+      "submit": "Enviar invitación",
+      "sent": "Invitación enviada a {email}.",
+      "failed": "Invitación creada para {email}, pero el email no se pudo enviar. Reenvíala más tarde.",
+      "linkHint": "Entorno de pruebas sin envío de emails: comparte este enlace con {email}."
+    },
+    "invitations": {
+      "email": "Email",
+      "role": "Rol",
+      "language": "Idioma",
+      "state": "Estado",
+      "expires": "Caduca",
+      "resend": "Reenviar",
+      "revoke": "Revocar",
+      "resent": "Invitación reenviada a {email}.",
+      "revoked": "Invitación a {email} revocada.",
+      "confirmRevoke": "¿Revocar la invitación a {email}? El enlace dejará de funcionar."
+    }
+  },
+  "settings": {
+    "title": "Ajustes del club",
+    "description": "Nombre, idioma, marca y logo. Lo que cambies aquí lo ve todo el club.",
+    "forbidden": "No puedes editar los ajustes de este club.",
+    "tabs": {
+      "general": "General",
+      "brand": "Marca",
+      "logo": "Logo"
+    },
+    "general": {
+      "title": "Datos del club",
+      "name": "Nombre del club",
+      "defaultLocale": "Idioma por defecto",
+      "defaultLocaleHint": "Idioma de los emails y de la interfaz para quien no haya elegido otro.",
+      "saved": "Cambios guardados."
+    },
+    "brand": {
+      "title": "Colores de marca",
+      "description": "Tiñen botones, enlaces y la cabecera del club.",
+      "primary": "Color principal",
+      "primaryHint": "Botones y elementos destacados.",
+      "secondary": "Color secundario",
+      "secondaryHint": "Acentos y detalles.",
+      "preview": "Vista previa",
+      "previewHint": "Así se verá la cabecera con los colores elegidos.",
+      "previewNav": "Inicio",
+      "previewButton": "Invitar",
+      "saved": "Colores guardados."
+    },
+    "logo": {
+      "title": "Subir logo",
+      "hint": "PNG, JPEG o WebP de hasta {mb} MB. Se muestra en la cabecera, en el login y en el selector de clubes.",
+      "drop": "Arrastra el logo aquí",
+      "choose": "o haz clic para elegir un fichero",
+      "uploading": "Subiendo…",
+      "current": "Logo actual",
+      "alt": "Logo del club",
+      "none": "Todavía no hay logo.",
+      "remove": "Quitar logo",
+      "saved": "Logo guardado.",
+      "removed": "Logo quitado."
+    }
+  },
+  "clubs": {
+    "title": "Mis clubes",
+    "subtitle": "Clubes a los que pertenece {email}.",
+    "none": "Tu cuenta no pertenece a ningún club todavía. Pide una invitación.",
+    "open": "Entrar",
+    "current": "Estás aquí",
+    "inactive": "club no activo",
+    "backToClub": "Volver a {club}",
+    "signOut": "Cerrar sesión"
+  },
+  "platform": {
+    "nav": {
+      "subtitle": "Administración del negocio",
+      "clubs": "Clubes",
+      "audit": "Actividad",
+      "system": "Sistema",
+      "backToApp": "Volver a la aplicación",
+      "signOut": "Cerrar sesión",
+      "mainNav": "Navegación del negocio",
+      "apiError": "La API no responde.",
+      "forbiddenTitle": "Solo administradores de plataforma",
+      "forbiddenBody": "Tu cuenta ({email}) no es administradora de plataforma."
+    },
+    "clubs": {
+      "title": "Clubes",
+      "description": "Todos los clubes de la plataforma, con su estado y su actividad.",
+      "create": "Nuevo club",
+      "manage": "Gestionar",
+      "empty": "Todavía no hay clubes.",
+      "domainNote": "Hasta tener dominio propio con comodín, en producción solo responde el club demo. Los demás se prueban en local.",
+      "table": {
+        "club": "Club",
+        "status": "Estado",
+        "members": "Miembros",
+        "pending": "Pendientes",
+        "created": "Alta"
+      }
+    },
+    "createDrawer": {
+      "title": "Nuevo club",
+      "description": "Da de alta el club. Después invita a su primer administrador desde su ficha.",
+      "name": "Nombre del club",
+      "slug": "Subdominio",
+      "slugHint": "Minúsculas, números y guiones. Será la dirección del club.",
+      "invalidSlug": "El subdominio no es válido o está reservado.",
+      "locale": "Idioma por defecto",
+      "sport": "Deporte",
+      "submit": "Crear club",
+      "created": "{name} creado.",
+      "brandNote": "La marca y el logo los configura el club desde sus ajustes."
+    },
+    "club": {
+      "eyebrow": "Clubes",
+      "summary": "Resumen",
+      "subdomain": "Subdominio",
+      "locale": "Idioma",
+      "sport": "Deporte",
+      "created": "Alta",
+      "members": "Miembros",
+      "pending": "Invitaciones pendientes",
+      "admins": "Administradores",
+      "adminsHint": "Las personas de contacto que gestionan el club.",
+      "adminName": "Persona",
+      "adminSince": "Desde",
+      "adminsEmpty": "Este club todavía no tiene administrador.",
+      "adminsEmptyHint": "Invita al primero para que pueda empezar a configurarlo.",
+      "invite": "Invitar administrador",
+      "linkHint": "Entorno de pruebas sin envío de emails: comparte este enlace con {email}.",
+      "myInvitations": "Tus invitaciones a este club",
+      "myInvitationsHint": "Las que has enviado desde aquí.",
+      "suspend": "Suspender",
+      "reactivate": "Reactivar",
+      "archive": "Archivar",
+      "confirmSuspend": "¿Suspender el club? Dejará de responder hasta que lo reactives.",
+      "confirmArchive": "¿Archivar el club? Dejará de responder. Podrás reactivarlo.",
+      "statusChanged": "Estado cambiado a {status}.",
+      "notFound": "Ese club no existe.",
+      "inviteDrawer": {
+        "title": "Invitar administrador",
+        "description": "Recibe un enlace, crea su cuenta y entra como administrador del club.",
+        "email": "Email",
+        "language": "Idioma del email",
+        "submit": "Enviar invitación",
+        "sent": "Invitación enviada a {email}."
+      }
+    },
+    "audit": {
+      "title": "Actividad",
+      "description": "Quién hizo qué, sobre qué club y a quién.",
+      "empty": "Todavía no hay actividad registrada.",
+      "system": "Sistema",
+      "table": {
+        "when": "Cuándo",
+        "action": "Acción",
+        "who": "Quién",
+        "club": "Club",
+        "target": "Sobre"
+      }
+    },
+    "system": {
+      "title": "Sistema",
+      "description": "Estado técnico de la plataforma.",
+      "apiTitle": "API y base de datos"
+    }
   },
   "apiStatus": {
     "loading": "Comprobando…",
@@ -25,93 +326,11 @@
     "functionRegion": "Región de la función",
     "dbRegion": "Región de la base de datos",
     "dbDown": "La base de datos no responde",
-    "unknown": "desconocida"
-  },
-  "shell": {
-    "appName": "Sports Manager",
-    "loading": "Cargando…",
-    "apiError": "La API no responde. Inténtalo de nuevo en unos segundos.",
-    "home": "Inicio",
-    "members": "Miembros",
-    "signOut": "Cerrar sesión",
-    "noMembershipTitle": "No perteneces a este club",
-    "noMembershipBody": "Tu cuenta ({email}) no tiene ningún rol aquí. Pide una invitación al club.",
-    "settings": "Ajustes",
-    "clubs": "Mis clubes",
-    "admin": "Admin"
-  },
-  "login": {
-    "title": "Iniciar sesión",
-    "subtitle": "Un único acceso para todos tus clubes.",
-    "email": "Email",
-    "password": "Contraseña",
-    "submit": "Entrar",
-    "submitting": "Entrando…",
-    "forgot": "¿Has olvidado la contraseña?"
-  },
-  "forgot": {
-    "title": "Recuperar contraseña",
-    "subtitle": "Te enviamos un enlace para elegir una contraseña nueva.",
-    "email": "Email",
-    "submit": "Enviar enlace",
-    "submitting": "Enviando…",
-    "sent": "Si existe una cuenta con ese email, recibirás un mensaje en unos minutos.",
-    "backToLogin": "Volver a iniciar sesión"
-  },
-  "reset": {
-    "title": "Nueva contraseña",
-    "password": "Contraseña nueva (mínimo {min} caracteres)",
-    "confirm": "Repite la contraseña",
-    "submit": "Guardar contraseña",
-    "submitting": "Guardando…",
-    "done": "Contraseña cambiada. Las demás sesiones se han cerrado.",
-    "goToLogin": "Iniciar sesión",
-    "mismatch": "Las contraseñas no coinciden.",
-    "tooShort": "La contraseña debe tener al menos {min} caracteres.",
-    "missingToken": "Este enlace no es válido. Pide uno nuevo desde «Recuperar contraseña»."
-  },
-  "invitation": {
-    "loading": "Cargando la invitación…",
-    "title": "Invitación a {club}",
-    "summary": "Rol: {role}. Email: {email}.",
-    "missingTitle": "Invitación no encontrada",
-    "missingBody": "El enlace no es válido, se ha revocado o pertenece a otro club.",
-    "alreadyAccepted": "Esta invitación ya se aceptó.",
-    "goToLogin": "Iniciar sesión",
-    "otherSession": "Esta invitación es para {email}, pero tu sesión es de {current}.",
-    "signOutAndRetry": "Cerrar sesión y volver a intentarlo",
-    "joinAs": "Entras como {email}.",
-    "join": "Unirme a {club}",
-    "hasAccount": "Ya existe una cuenta para {email}. Inicia sesión para aceptar.",
-    "createAccount": "Crea tu cuenta para {email}.",
-    "name": "Tu nombre",
-    "password": "Contraseña (mínimo {min} caracteres)",
-    "confirm": "Repite la contraseña",
-    "submitting": "Un momento…",
-    "mismatch": "Las contraseñas no coinciden.",
-    "tooShort": "La contraseña debe tener al menos {min} caracteres."
-  },
-  "members": {
-    "membersTitle": "Miembros",
-    "noMembers": "Todavía no hay miembros.",
-    "inviteTitle": "Invitar a alguien",
-    "email": "Email",
-    "role": "Rol",
-    "emailLanguage": "Idioma del email",
-    "invite": "Enviar invitación",
-    "submitting": "Enviando…",
-    "invited": "Invitación enviada a {email}.",
-    "emailFailed": "Invitación creada para {email}, pero el email no se pudo enviar. Reenvíala más tarde.",
-    "testLinkHint": "Entorno de pruebas sin envío de emails: comparte este enlace con la persona invitada.",
-    "copyLink": "Copiar enlace",
-    "copied": "Copiado",
-    "pendingTitle": "Invitaciones pendientes",
-    "noPending": "No hay invitaciones pendientes.",
-    "expired": "caducada",
-    "expiresOn": "caduca el {date}",
-    "resend": "Reenviar",
-    "revoke": "Revocar",
-    "forbidden": "No puedes ver los miembros de este club."
+    "unknown": "desconocida",
+    "api": "API",
+    "checkedAt": "Comprobado",
+    "dbLatency": "Latencia de la base de datos",
+    "ms": "{value} ms"
   },
   "roles": {
     "org_admin": "Administrador del club",
@@ -119,10 +338,21 @@
     "guardian": "Tutor"
   },
   "locales": {
+    "label": "Idioma",
     "es": "Castellano",
     "ca": "Catalán",
-    "en": "Inglés",
-    "label": "Idioma"
+    "en": "Inglés"
+  },
+  "status": {
+    "active": "activo",
+    "suspended": "suspendido",
+    "archived": "archivado"
+  },
+  "invitationState": {
+    "pending": "pendiente",
+    "accepted": "aceptada",
+    "revoked": "revocada",
+    "expired": "caducada"
   },
   "errors": {
     "bad_request": "Revisa los datos del formulario.",
@@ -132,106 +362,31 @@
     "conflict": "Ya existe: esa persona ya es miembro con ese rol o ya tiene una invitación pendiente.",
     "invitation_expired": "La invitación ha caducado. Pide una nueva al club.",
     "invitation_email_mismatch": "Esta invitación es para otra dirección de email.",
+    "payload_too_large": "El fichero supera el tamaño máximo.",
+    "unsupported_media_type": "Formato de fichero no admitido.",
     "internal": "Ha ocurrido un error inesperado.",
     "INVALID_EMAIL_OR_PASSWORD": "Email o contraseña incorrectos.",
     "INVALID_TOKEN": "El enlace no es válido o ha caducado. Pide uno nuevo.",
     "rate_limited": "Demasiados intentos. Espera un momento y vuelve a probar.",
     "network": "Sin conexión con el servidor.",
-    "unknown": "Ha ocurrido un error inesperado.",
-    "payload_too_large": "El fichero supera el tamaño máximo.",
-    "unsupported_media_type": "Formato de fichero no admitido."
-  },
-  "landing": {
-    "title": "Sports Manager",
-    "subtitle": "La plataforma de gestión de tu club. Entra con tu cuenta y elige tu club.",
-    "signIn": "Iniciar sesión",
-    "myClubs": "Mis clubes",
-    "admin": "Admin interno"
-  },
-  "clubs": {
-    "title": "Mis clubes",
-    "subtitle": "Clubes a los que pertenece {email}.",
-    "loading": "Cargando…",
-    "none": "Tu cuenta no pertenece a ningún club todavía. Pide una invitación.",
-    "open": "Entrar",
-    "current": "Estás aquí",
-    "inactive": "club no activo",
-    "backToClub": "Volver a {club}",
-    "signOut": "Cerrar sesión"
-  },
-  "settings": {
-    "title": "Ajustes del club",
-    "name": "Nombre del club",
-    "defaultLocale": "Idioma por defecto",
-    "primaryColor": "Color principal",
-    "secondaryColor": "Color secundario",
-    "save": "Guardar cambios",
-    "saving": "Guardando…",
-    "saved": "Cambios guardados.",
-    "logoTitle": "Logo",
-    "logoHint": "PNG, JPEG o WebP de hasta {mb} MB. Se muestra en la cabecera y en el selector de clubes.",
-    "logoAlt": "Logo del club",
-    "noLogo": "Sin logo.",
-    "upload": "Subir logo",
-    "uploading": "Subiendo…",
-    "logoSaved": "Logo guardado.",
-    "removeLogo": "Quitar logo",
-    "forbidden": "No puedes editar los ajustes de este club.",
-    "status": "Estado",
-    "logoRemoved": "Logo quitado."
-  },
-  "status": {
-    "active": "activo",
-    "suspended": "suspendido",
-    "archived": "archivado"
-  },
-  "admin": {
-    "title": "Admin interno",
-    "loading": "Cargando…",
-    "apiError": "La API no responde.",
-    "forbiddenTitle": "Solo administradores de plataforma",
-    "forbiddenBody": "Tu cuenta ({email}) no es administradora de plataforma.",
-    "backToApp": "Volver a la aplicación",
-    "organizations": "Clubes",
-    "signOut": "Cerrar sesión",
-    "createTitle": "Crear club",
-    "name": "Nombre",
-    "slug": "Subdominio",
-    "defaultLocale": "Idioma por defecto",
-    "sport": "Deporte",
-    "primaryColor": "Color principal",
-    "secondaryColor": "Color secundario",
-    "create": "Crear club",
-    "creating": "Creando…",
-    "created": "Club {name} creado.",
-    "manage": "Gestionar",
-    "listTitle": "Clubes",
-    "domainNote": "Hasta tener dominio propio con comodín, solo el club demo es accesible en producción; el resto se prueba en local.",
-    "counts": "{members} miembros · {pending} invitaciones pendientes",
-    "auditTitle": "Últimas acciones",
-    "auditEmpty": "Todavía no hay acciones registradas.",
-    "system": "Sistema",
-    "notFound": "Ese club no existe.",
-    "inviteTitle": "Invitar al primer administrador",
-    "inviteHint": "La persona recibe el enlace, crea su cuenta y entra como administradora del club. Puedes elegir otro rol.",
-    "clubLanguage": "El del club ({locale})",
-    "invitationState": {
-      "pending": "pendiente",
-      "accepted": "aceptada",
-      "revoked": "revocada",
-      "expired": "caducada"
-    }
+    "unknown": "Ha ocurrido un error inesperado."
   },
   "audit": {
-    "organization.created": "Club creado",
-    "organization.updated": "Club editado",
-    "organization.logo_updated": "Logo cambiado",
-    "organization.logo_removed": "Logo quitado",
-    "invitation.created": "Invitación enviada",
-    "invitation.resent": "Invitación reenviada",
-    "invitation.revoked": "Invitación revocada",
-    "invitation.accepted": "Invitación aceptada",
-    "membership.role_assigned": "Rol asignado",
-    "membership.role_removed": "Rol retirado"
+    "organization": {
+      "created": "Club creado",
+      "updated": "Club editado",
+      "logo_updated": "Logo cambiado",
+      "logo_removed": "Logo quitado"
+    },
+    "invitation": {
+      "created": "Invitación enviada",
+      "resent": "Invitación reenviada",
+      "revoked": "Invitación revocada",
+      "accepted": "Invitación aceptada"
+    },
+    "membership": {
+      "role_assigned": "Rol asignado",
+      "role_removed": "Rol retirado"
+    }
   }
 }

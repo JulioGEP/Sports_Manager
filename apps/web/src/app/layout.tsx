@@ -1,13 +1,13 @@
 import "@sportsmanager/shared/design/tokens.css";
-import "./globals.css";
+import "../styles/app.css";
 import { brandCssVariables } from "@sportsmanager/shared";
 import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale } from "next-intl/server";
 import type { CSSProperties, ReactNode } from "react";
 import { BrandingProvider } from "@/components/branding-provider";
-import { LanguageCorner } from "@/components/language-corner";
 import { getBranding } from "@/lib/branding";
+import { ToastProvider } from "@/ui/toast";
 
 export async function generateMetadata(): Promise<Metadata> {
   const branding = await getBranding();
@@ -29,8 +29,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       <body>
         <NextIntlClientProvider>
           <BrandingProvider value={branding}>
-            {children}
-            <LanguageCorner />
+            <ToastProvider>{children}</ToastProvider>
           </BrandingProvider>
         </NextIntlClientProvider>
       </body>

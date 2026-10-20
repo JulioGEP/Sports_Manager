@@ -7,12 +7,12 @@ import {
   type PublicInvitation,
 } from "@sportsmanager/shared";
 import { useLocale, useTranslations } from "next-intl";
-import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
-import { Alert } from "@/components/alert";
+import { AuthShell } from "@/layouts/auth-shell";
 import { ApiClientError, apiFetch, errorKey } from "@/lib/api";
 import { signOut, useSession } from "@/lib/session";
+import { Alert, Badge, Button, ButtonLink, Field, Input } from "@/ui";
 
 type InvitationState =
   | { kind: "loading" }
@@ -21,7 +21,7 @@ type InvitationState =
   | { kind: "error" };
 
 export default function InvitationPage() {
-  const t = useTranslations("invitation");
+  const t = useTranslations("auth.invitation");
   const errors = useTranslations("errors");
   const roles = useTranslations("roles");
   const locale = useLocale();
@@ -87,23 +87,29 @@ export default function InvitationPage() {
   }
 
   if (state.kind === "loading" || session.kind === "loading") {
-    return <main className="page">{t("loading")}</main>;
+    return (
+      <AuthShell title={t("loading")}>
+        <div className="skeleton">
+          <div className="skeleton__line" />
+          <div className="skeleton__line" style={{ width: "60%" }} />
+        </div>
+      </AuthShell>
+    );
   }
   if (state.kind === "missing") {
     return (
-      <main className="page">
-        <section className="card">
-          <h1>{t("missingTitle")}</h1>
-          <p className="muted">{t("missingBody")}</p>
-        </section>
-      </main>
+      <AuthShell title={t("missingTitle")} description={t("missingBody")}>
+        <ButtonLink href="/login" variant="secondary" block>
+          {t("goToLogin")}
+        </ButtonLink>
+      </AuthShell>
     );
   }
   if (state.kind === "error" || session.kind === "error") {
     return (
-      <main className="page">
+      <AuthShell title={t("missingTitle")}>
         <Alert kind="error">{errors("unknown")}</Alert>
-      </main>
+      </AuthShell>
     );
   }
 
@@ -112,98 +118,109 @@ export default function InvitationPage() {
     invitation.roleName[locale as keyof typeof invitation.roleName] ?? roles(invitation.roleCode);
   const me = session.kind === "authenticated" ? session.me.user : null;
   const loginHref = `/login?next=${encodeURIComponent(`/invitations/${token}`)}`;
+  const summary = (
+    <p>
+      {t("summary", { email: invitation.email })} <Badge tone="brand">{roleName}</Badge>
+    </p>
+  );
 
   let body;
   if (invitation.state === "expired") {
     body = <Alert kind="error">{errors("invitation_expired")}</Alert>;
   } else if (invitation.state === "accepted") {
     body = (
-      <>
+      <div className="stack stack--tight">
         <Alert kind="info">{t("alreadyAccepted")}</Alert>
-        <Link className="button" href="/login">
+        <ButtonLink href="/login" block>
           {t("goToLogin")}
-        </Link>
-      </>
+        </ButtonLink>
+      </div>
     );
   } else if (me && me.email !== invitation.email) {
     body = (
-      <>
-        <Alert kind="error">
+      <div className="stack stack--tight">
+        <Alert kind="warning">
           {t("otherSession", { email: invitation.email, current: me.email })}
         </Alert>
-        <button type="button" className="button button--secondary" onClick={() => void onSignOut()}>
+        <Button variant="secondary" block onClick={() => void onSignOut()}>
           {t("signOutAndRetry")}
-        </button>
-      </>
+        </Button>
+      </div>
     );
   } else if (invitation.hasAccount) {
     body = me ? (
-      <>
-        <p>{t("joinAs", { email: me.email })}</p>
+      <div className="stack stack--tight">
+        {summary}
         {error ? <Alert kind="error">{error}</Alert> : null}
-        <button type="button" className="button" disabled={busy} onClick={() => void accept({})}>
-          {busy ? t("submitting") : t("join", { club: invitation.organization.name })}
-        </button>
-      </>
+        <Button block loading={busy} onClick={() => void accept({})}>
+          {t("join", { club: invitation.organization.name })}
+        </Button>
+      </div>
     ) : (
-      <>
-        <p>{t("hasAccount", { email: invitation.email })}</p>
-        <Link className="button" href={loginHref}>
+      <div className="stack stack--tight">
+        {summary}
+        <Alert kind="info">{t("hasAccount", { email: invitation.email })}</Alert>
+        <ButtonLink href={loginHref} block>
           {t("goToLogin")}
-        </Link>
-      </>
+        </ButtonLink>
+      </div>
     );
   } else {
     body = (
       <form className="form" onSubmit={onCreateAccount}>
-        <p>{t("createAccount", { email: invitation.email })}</p>
-        <label className="field">
-          <span>{t("name")}</span>
-          <input
-            type="text"
-            autoComplete="name"
-            required
-            maxLength={120}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-        </label>
-        <label className="field">
-          <span>{t("password", { min: PASSWORD_MIN_LENGTH })}</span>
-          <input
-            type="password"
-            autoComplete="new-password"
-            required
-            minLength={PASSWORD_MIN_LENGTH}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </label>
-        <label className="field">
-          <span>{t("confirm")}</span>
-          <input
-            type="password"
-            autoComplete="new-password"
-            required
-            value={confirm}
-            onChange={(e) => setConfirm(e.target.value)}
-          />
-        </label>
+        {summary}
+        <Field label={t("name")}>
+          {(id) => (
+            <Input
+              id={id}
+              type="text"
+              autoComplete="name"
+              required
+              maxLength={120}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          )}
+        </Field>
+        <Field label={t("password")} hint={t("passwordHint", { min: PASSWORD_MIN_LENGTH })}>
+          {(id) => (
+            <Input
+              id={id}
+              type="password"
+              autoComplete="new-password"
+              required
+              minLength={PASSWORD_MIN_LENGTH}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          )}
+        </Field>
+        <Field label={t("confirm")}>
+          {(id) => (
+            <Input
+              id={id}
+              type="password"
+              autoComplete="new-password"
+              required
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+            />
+          )}
+        </Field>
         {error ? <Alert kind="error">{error}</Alert> : null}
-        <button type="submit" className="button" disabled={busy}>
-          {busy ? t("submitting") : t("join", { club: invitation.organization.name })}
-        </button>
+        <Button type="submit" block loading={busy}>
+          {t("join", { club: invitation.organization.name })}
+        </Button>
       </form>
     );
   }
 
   return (
-    <main className="page">
-      <section className="card">
-        <h1>{t("title", { club: invitation.organization.name })}</h1>
-        <p className="muted">{t("summary", { role: roleName, email: invitation.email })}</p>
-        {body}
-      </section>
-    </main>
+    <AuthShell
+      title={t("title", { club: invitation.organization.name })}
+      description={t("subtitle")}
+    >
+      {body}
+    </AuthShell>
   );
 }

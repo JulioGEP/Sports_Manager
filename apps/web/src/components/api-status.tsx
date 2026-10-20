@@ -1,8 +1,9 @@
 "use client";
 
 import { HealthResponseSchema, type HealthResponse } from "@sportsmanager/shared";
-import { useTranslations } from "next-intl";
+import { useFormatter, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
+import { Badge } from "@/ui";
 
 type State = { kind: "loading" } | { kind: "ok"; health: HealthResponse } | { kind: "error" };
 
@@ -12,6 +13,7 @@ type State = { kind: "loading" } | { kind: "ok"; health: HealthResponse } | { ki
  */
 export function ApiStatus() {
   const t = useTranslations("apiStatus");
+  const format = useFormatter();
   const [state, setState] = useState<State>({ kind: "loading" });
 
   useEffect(() => {
@@ -28,26 +30,36 @@ export function ApiStatus() {
     return () => controller.abort();
   }, []);
 
-  if (state.kind === "loading") return <span className="badge">{t("loading")}</span>;
-  if (state.kind === "error") return <span className="badge badge--error">{t("error")}</span>;
+  if (state.kind === "loading") return <Badge>{t("loading")}</Badge>;
+  if (state.kind === "error") return <Badge tone="danger">{t("error")}</Badge>;
 
   const { health } = state;
   return (
-    <dl className="status">
-      <div>
-        <dt>{t("ok")}</dt>
-        <dd>
-          <span className="badge badge--ok">{health.time}</span>
-        </dd>
-      </div>
-      <div>
-        <dt>{t("functionRegion")}</dt>
-        <dd>{health.region ?? t("unknown")}</dd>
-      </div>
-      <div>
-        <dt>{t("dbRegion")}</dt>
-        <dd>{health.db.ok ? (health.db.region ?? t("unknown")) : t("dbDown")}</dd>
-      </div>
+    <dl className="dl">
+      <dt>{t("api")}</dt>
+      <dd>
+        <Badge tone="success">{t("ok")}</Badge>
+      </dd>
+      <dt>{t("checkedAt")}</dt>
+      <dd>
+        {format.dateTime(new Date(health.time), { dateStyle: "medium", timeStyle: "medium" })}
+      </dd>
+      <dt>{t("functionRegion")}</dt>
+      <dd>{health.region ?? t("unknown")}</dd>
+      <dt>{t("dbRegion")}</dt>
+      <dd>
+        {health.db.ok ? (
+          (health.db.region ?? t("unknown"))
+        ) : (
+          <Badge tone="danger">{t("dbDown")}</Badge>
+        )}
+      </dd>
+      {health.db.ok && health.db.latencyMs !== null ? (
+        <>
+          <dt>{t("dbLatency")}</dt>
+          <dd>{t("ms", { value: health.db.latencyMs })}</dd>
+        </>
+      ) : null}
     </dl>
   );
 }

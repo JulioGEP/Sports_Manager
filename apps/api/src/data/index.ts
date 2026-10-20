@@ -11,7 +11,12 @@ import { emailOutboxRepo } from "./email/outbox.ts";
 import type { ResendLike } from "./email/resend.ts";
 import { createEmailSender, type EmailSender } from "./email/sender.ts";
 import { invitationsRepo } from "./invitations.ts";
-import { createNetlifyLogoStore, logosRepo, type LogoStore } from "./logos.ts";
+import {
+  createMemoryLogoStore,
+  createNetlifyLogoStore,
+  logosRepo,
+  type LogoStore,
+} from "./logos.ts";
 import { membershipsRepo } from "./memberships.ts";
 import { organizationsRepo } from "./organizations.ts";
 import { platformRepo } from "./platform.ts";
@@ -97,7 +102,13 @@ export function createDataLayer(options: DataLayerOptions) {
     invitations: invitationsRepo(db),
     users: usersRepo(db, getAuth),
     roles: rolesRepo(db),
-    logos: logosRepo(db, options.logoStore ?? createNetlifyLogoStore()),
+    logos: logosRepo(
+      db,
+      options.logoStore ??
+        (options.config.logoStore === "memory"
+          ? createMemoryLogoStore()
+          : createNetlifyLogoStore()),
+    ),
     email,
 
     async checkDatabase(): Promise<DatabaseStatus> {

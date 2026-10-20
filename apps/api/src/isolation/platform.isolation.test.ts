@@ -353,6 +353,21 @@ describe("admin interno", () => {
     expect(detail.myInvitations).toEqual([
       expect.objectContaining({ email: "primera@admin.test", state: "accepted" }),
     ]);
+    const admins = (await (
+      await request("GET", "/api/platform/organizations/nuevo/admins", BASE, { cookie: rootCookie })
+    ).json()) as {
+      admins: { email: string; name: string }[];
+    };
+    expect(admins.admins).toEqual([
+      expect.objectContaining({ email: "primera@admin.test", name: "Primera Admin" }),
+    ]);
+    expect(
+      (
+        await request("GET", "/api/platform/organizations/nuevo/admins", BASE, {
+          cookie: cookies.get(adminA.id),
+        })
+      ).status,
+    ).toBe(403);
     // otro administrador no ve las invitaciones hechas por root
     const other = (await (
       await request("GET", "/api/platform/organizations/nuevo", BASE, {
