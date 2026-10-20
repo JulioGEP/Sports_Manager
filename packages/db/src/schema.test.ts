@@ -1,0 +1,216 @@
+import { NetlifyDB } from "@netlify/database-dev";
+import { LOCALES, ROLE_CODES } from "@sportsmanager/shared";
+import { Client } from "pg";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+
+const MIGRATIONS = new URL("../../../netlify/database/migrations", import.meta.url).pathname;
+
+/** Ejecuta una consulta y devuelve el código de error de Postgres, o null si no falla. */
+async function errorCode(
+  client: Client,
+  text: string,
+  values: unknown[] = [],
+): Promise<string | null> {
+  try {
+    await client.query(text, values);
+    return null;
+  } catch (error) {
+    return (error as { code?: string }).code ?? "unknown";
+  }
+}
+
+const UNIQUE_VIOLATION = "23505";
+const CHECK_VIOLATION = "23514";
+const FK_VIOLATION = "23503";
+
+describe("esquema del Bloque 2 (Postgres embebido con todas las migraciones)", () => {
+  let local: NetlifyDB;
+  let client: Client;
+  let sportId: string;
+  let orgId: string;
+  let userId: string;
+
+  beforeAll(async () => {
+    local = new NetlifyDB();
+    const connectionString = await local.start();
+    await local.applyMigrations(MIGRATIONS);
+    client = new Client({ connectionString });
+    await client.connect();
+  });
+
+  afterAll(async () => {
+    await client?.end();
+    await local?.stop();
+  });
+
+  it("siembra el deporte fútbol sala con nombre en los tres idiomas", async () => {
+    const { rows } = await client.query<{ id: string; name: Record<string, string> }>(
+      "select id, name from sports where code = 'futsal'",
+    );
+    expect(rows).toHaveLength(1);
+    sportId = rows[0]!.id;
+    for (const locale of LOCALES) expect(rows[0]!.name[locale], locale).toBeTruthy();
+  });
+
+  it("siembra exactamente los roles que conoce packages/shared", async () => {
+    const { rows } = await client.query<{ code: string }>(
+      "select code from roles order by sort_order",
+    );
+    expect(rows.map((r) => r.code).sort()).toEqual([...ROLE_CODES].sort());
+  });
+
+  it("crea una organización válida y rechaza slug, idioma y colores inválidos", async () => {
+    const insert =
+      "insert into organizations (slug, name, default_locale, default_sport_id, brand_primary_color, brand_secondary_color) values ($1, $2, $3, $4, $5, $6) returning id";
+    const { rows } = await client.query<{ id: string }>(insert, [
+      "club-uno",
+      "Club Uno",
+      "ca",
+      sportId,
+      "#d71920",
+      "#e8b52a",
+    ]);
+    orgId = rows[0]!.id;
+    expect(orgId).toMatch(/^[0-9a-f-]{36}$/);
+
+    expect(
+      await errorCode(client, insert, ["club-uno", "Otro", "es", sportId, "#000000", "#ffffff"]),
+    ).toBe(UNIQUE_VIOLATION);
+    expect(
+      await errorCode(client, insert, ["Club-Dos", "Otro", "es", sportId, "#000000", "#ffffff"]),
+    ).toBe(CHECK_VIOLATION);
+    expect(
+      await errorCode(client, insert, ["-club", "Otro", "es", sportId, "#000000", "#ffffff"]),
+    ).toBe(CHECK_VIOLATION);
+    expect(
+      await errorCode(client, insert, ["club-dos", "Otro", "de", sportId, "#000000", "#ffffff"]),
+    ).toBe(CHECK_VIOLATION);
+    expect(
+      await errorCode(client, insert, ["club-dos", "Otro", "es", sportId, "rojo", "#ffffff"]),
+    ).toBe(CHECK_VIOLATION);
+    expect(
+      await errorCode(client, insert, ["club-dos", "Otro", "es", sportId, "#D71920", "#ffffff"]),
+    ).toBe(CHECK_VIOLATION);
+    expect(
+      await errorCode(client, "update organizations set status = 'deleted' where id = $1", [orgId]),
+    ).toBe(CHECK_VIOLATION);
+  });
+
+  it("no permite borrar un deporte en uso", async () => {
+    expect(await errorCode(client, "delete from sports where id = $1", [sportId])).toBe(
+      FK_VIOLATION,
+    );
+  });
+
+  it("crea usuarios con UUID de base y exige email en minúsculas e idioma conocido", async () => {
+    const { rows } = await client.query<{ id: string }>(
+      "insert into users (name, email) values ('Ana', 'ana@club.test') returning id",
+    );
+    userId = rows[0]!.id;
+    expect(userId).toMatch(/^[0-9a-f-]{36}$/);
+    expect(
+      await errorCode(client, "insert into users (name, email) values ('Ana', 'Ana@club.test')"),
+    ).toBe(CHECK_VIOLATION);
+    expect(
+      await errorCode(client, "insert into users (name, email) values ('Ana', 'ana@club.test')"),
+    ).toBe(UNIQUE_VIOLATION);
+    expect(
+      await errorCode(
+        client,
+        "insert into users (name, email, locale) values ('Bea', 'bea@club.test', 'de')",
+      ),
+    ).toBe(CHECK_VIOLATION);
+  });
+
+  it("permite varios roles por usuario y club, pero no el mismo rol dos veces (ADR 0014)", async () => {
+    const insert =
+      "insert into memberships (user_id, organization_id, role_code) values ($1, $2, $3)";
+    expect(await errorCode(client, insert, [userId, orgId, "coach"])).toBeNull();
+    expect(await errorCode(client, insert, [userId, orgId, "guardian"])).toBeNull();
+    expect(await errorCode(client, insert, [userId, orgId, "coach"])).toBe(UNIQUE_VIOLATION);
+    expect(await errorCode(client, insert, [userId, orgId, "superadmin"])).toBe(FK_VIOLATION);
+    expect(
+      await errorCode(client, "update memberships set status = 'banned' where user_id = $1", [
+        userId,
+      ]),
+    ).toBe(CHECK_VIOLATION);
+  });
+
+  it("admite una sola invitación pendiente por club y email", async () => {
+    const insert =
+      "insert into invitations (organization_id, email, role_code, token_hash, expires_at, invited_by) values ($1, $2, $3, $4, now() + interval '7 days', $5) returning id";
+    const first = await client.query<{ id: string }>(insert, [
+      orgId,
+      "nueva@club.test",
+      "guardian",
+      "hash-1",
+      userId,
+    ]);
+    expect(
+      await errorCode(client, insert, [orgId, "nueva@club.test", "coach", "hash-2", userId]),
+    ).toBe(UNIQUE_VIOLATION);
+    expect(
+      await errorCode(client, insert, [orgId, "Nueva@club.test", "coach", "hash-3", userId]),
+    ).toBe(CHECK_VIOLATION);
+    await client.query(
+      "update invitations set status = 'accepted', accepted_by = $2, accepted_at = now() where id = $1",
+      [first.rows[0]!.id, userId],
+    );
+    expect(
+      await errorCode(client, insert, [orgId, "nueva@club.test", "coach", "hash-4", userId]),
+    ).toBeNull();
+    expect(
+      await errorCode(client, insert, [orgId, "otra@club.test", "coach", "hash-4", userId]),
+    ).toBe(UNIQUE_VIOLATION);
+  });
+
+  it("platform_admins solo admite usuarios existentes", async () => {
+    expect(
+      await errorCode(client, "insert into platform_admins (user_id) values ($1)", [userId]),
+    ).toBeNull();
+    expect(
+      await errorCode(
+        client,
+        "insert into platform_admins (user_id) values ('00000000-0000-0000-0000-000000000000')",
+      ),
+    ).toBe(FK_VIOLATION);
+  });
+
+  it("borrar un club arrastra pertenencias e invitaciones; borrar un usuario deja en nulo quién invitó", async () => {
+    const { rows } = await client.query<{ id: string }>(
+      "insert into organizations (slug, name, default_locale, default_sport_id, brand_primary_color, brand_secondary_color) values ('club-tmp', 'Tmp', 'es', $1, '#111111', '#222222') returning id",
+      [sportId],
+    );
+    const tmpOrg = rows[0]!.id;
+    await client.query(
+      "insert into memberships (user_id, organization_id, role_code) values ($1, $2, 'org_admin')",
+      [userId, tmpOrg],
+    );
+    await client.query(
+      "insert into invitations (organization_id, email, role_code, token_hash, expires_at, invited_by) values ($1, 'x@club.test', 'coach', 'hash-tmp', now(), $2)",
+      [tmpOrg, userId],
+    );
+    await client.query("delete from organizations where id = $1", [tmpOrg]);
+    expect(
+      (await client.query("select 1 from memberships where organization_id = $1", [tmpOrg]))
+        .rowCount,
+    ).toBe(0);
+    expect(
+      (await client.query("select 1 from invitations where organization_id = $1", [tmpOrg]))
+        .rowCount,
+    ).toBe(0);
+
+    const { rows: u } = await client.query<{ id: string }>(
+      "insert into users (name, email) values ('Tmp', 'tmp@club.test') returning id",
+    );
+    await client.query(
+      "insert into invitations (organization_id, email, role_code, token_hash, expires_at, invited_by) values ($1, 'y@club.test', 'coach', 'hash-y', now(), $2)",
+      [orgId, u[0]!.id],
+    );
+    await client.query("delete from users where id = $1", [u[0]!.id]);
+    const { rows: inv } = await client.query<{ invited_by: string | null }>(
+      "select invited_by from invitations where email = 'y@club.test'",
+    );
+    expect(inv[0]!.invited_by).toBeNull();
+  });
+});

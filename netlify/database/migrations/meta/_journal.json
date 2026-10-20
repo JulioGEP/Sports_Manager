@@ -8,6 +8,13 @@
       "when": 1792444860577,
       "tag": "20261019212100_create_app_meta",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792488732485,
+      "tag": "20261020093212_create_core_schema",
+      "breakpoints": true
     }
   ]
 }

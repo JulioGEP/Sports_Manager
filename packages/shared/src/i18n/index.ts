@@ -1,9 +1,10 @@
 import type { Locale } from "../locales.ts";
 import ca from "./ca.ts";
+import en from "./en.ts";
 import es from "./es.ts";
 
 /** Diccionarios de la API y de los emails. La interfaz web tiene los suyos en apps/web/messages. */
-export const messages = { es, ca } as const satisfies Record<Locale, unknown>;
+export const messages = { es, ca, en } as const satisfies Record<Locale, unknown>;
 
 type Messages = typeof es;
 

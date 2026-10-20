@@ -5,6 +5,8 @@ export async function loadMessages(locale: Locale): Promise<Record<string, unkno
   switch (locale) {
     case "ca":
       return (await import("../../messages/ca.json")).default;
+    case "en":
+      return (await import("../../messages/en.json")).default;
     case "es":
       return (await import("../../messages/es.json")).default;
   }

@@ -27,3 +27,4 @@ Las decisiones no se editan una vez aceptadas. Si cambian, se escribe una nueva 
 | 0011 | Resolución del club por entorno y subdominios reservados | Aceptada |
 | 0012 | i18n con next-intl y diccionarios compartidos | Propuesta |
 | 0013 | La API se empaqueta con esbuild en un único fichero | Aceptada |
+| 0014 | Varios roles por usuario y club | Aceptada |

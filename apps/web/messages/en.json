@@ -1,0 +1,16 @@
+{
+  "home": {
+    "title": "Sports Manager",
+    "subtitle": "Sports club management platform. Phase 0 under construction.",
+    "apiStatus": "API status"
+  },
+  "apiStatus": {
+    "loading": "Checking…",
+    "ok": "API up",
+    "error": "The API is not responding",
+    "functionRegion": "Function region",
+    "dbRegion": "Database region",
+    "dbDown": "The database is not responding",
+    "unknown": "unknown"
+  }
+}
