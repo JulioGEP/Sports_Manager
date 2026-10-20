@@ -62,3 +62,20 @@ export function publicOrigin(
   }
   return `${scheme}://${config.baseDomain}`;
 }
+
+/**
+ * Dirección pública del espacio de un club: `https://<slug>.<dominio base>`. El club de reserva
+ * (ADR 0016) vive en el dominio base a secas. En local conserva el puerto de la petición.
+ * Hasta tener dominio propio con comodín, los subdominios solo resuelven en local (ADR 0021).
+ */
+export function organizationUrl(
+  slug: string,
+  config: ApiConfig,
+  requestHost: string | undefined,
+): string {
+  const scheme = config.isLocal ? "http" : "https";
+  const port = requestHost?.split(":")[1];
+  const suffix = port ? `:${port}` : "";
+  if (slug === config.tenantFallbackSlug) return `${scheme}://${config.baseDomain}${suffix}`;
+  return `${scheme}://${slug}.${config.baseDomain}${suffix}`;
+}

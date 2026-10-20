@@ -4,7 +4,7 @@ SaaS B2B para la gestión de clubes deportivos. Cada club tiene su espacio aisla
 
 ## Estado
 
-Fase 0, Bloque 4: autenticación e invitaciones. Login con email y contraseña, recuperación de contraseña, alta solo por invitación con un único login válido en todos los clubes, emails en castellano, catalán e inglés con Resend preparado y sin conectar hasta tener dominio (transporte `outbox`). La suite de aislamiento (dos clubes, invitaciones cruzadas, caducadas y reutilizadas, restablecimiento de contraseña) es un check obligatorio en CI.
+Fase 0, Bloque 5: multi-tenant y marca. La web pinta cada club con su nombre, colores y logo según el host, con la API como única autoridad; selector de club para quien pertenece a varios; logos en Netlify Blobs (eu-central-1) servidos por la API; subdominios locales como parche hasta el dominio final (`docs/dominio-y-dns.md`). Bloque 4: autenticación e invitaciones. Login con email y contraseña, recuperación de contraseña, alta solo por invitación con un único login válido en todos los clubes, emails en castellano, catalán e inglés con Resend preparado y sin conectar hasta tener dominio (transporte `outbox`). La suite de aislamiento (dos clubes, invitaciones cruzadas, caducadas y reutilizadas, restablecimiento de contraseña) es un check obligatorio en CI.
 
 ## Desarrollo local
 
@@ -24,6 +24,7 @@ Comprobaciones: `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:isolation
 | `docs/plan-fase-0.md`           | Plan de la Fase 0: bloques, decisiones, riesgos y preguntas con sus respuestas |
 | `docs/dominio.md`               | Conocimiento de negocio extraído del prototipo                                 |
 | `docs/informe-sportsmanager.md` | Auditoría del prototipo y propuesta de arquitectura                            |
+| `docs/dominio-y-dns.md`         | Subdominios por club, parche local y pasos para el dominio definitivo          |
 | `docs/decisions/`               | Decisiones de arquitectura (ADR)                                               |
 | `packages/shared/design/`       | Design tokens de la plataforma                                                 |
 

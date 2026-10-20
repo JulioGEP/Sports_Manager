@@ -36,3 +36,20 @@ export const OrganizationBrandingSchema = z.object({
   logoUrl: z.string().nullable(),
 });
 export type OrganizationBranding = z.infer<typeof OrganizationBrandingSchema>;
+
+/** Cambios de marca y ajustes que puede hacer quien tiene `org.settings.write` (Bloque 5). */
+export const OrganizationUpdateSchema = z.object({
+  name: OrganizationNameSchema.optional(),
+  defaultLocale: LocaleSchema.optional(),
+  brandPrimaryColor: BrandColorSchema.optional(),
+  brandSecondaryColor: BrandColorSchema.optional(),
+});
+export type OrganizationUpdate = z.infer<typeof OrganizationUpdateSchema>;
+
+/**
+ * Logos de club (ADR 0024): PNG, JPEG o WebP hasta 1 MB. Sin SVG, que puede llevar código.
+ * El límite es una decisión de producto del Bloque 5; cambiarlo es cambiar esta constante.
+ */
+export const LOGO_CONTENT_TYPES = ["image/png", "image/jpeg", "image/webp"] as const;
+export type LogoContentType = (typeof LOGO_CONTENT_TYPES)[number];
+export const LOGO_MAX_BYTES = 1_000_000;

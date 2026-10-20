@@ -7,6 +7,8 @@ export default {
     not_found: "No s'ha trobat el que busques.",
     invitation_expired: "La invitació ha caducat. Demana'n una de nova al club.",
     invitation_email_mismatch: "Aquesta invitació és per a una altra adreça de correu.",
+    payload_too_large: "El fitxer és massa gran.",
+    unsupported_media_type: "Format de fitxer no admès.",
     internal: "S'ha produït un error inesperat.",
   },
   email: {

@@ -3,10 +3,14 @@
 import { useTranslations } from "next-intl";
 import { ApiStatus } from "@/components/api-status";
 import { AppShell } from "@/components/app-shell";
+import { useBranding } from "@/components/branding-provider";
+import { Landing } from "@/components/landing";
 
 export default function HomePage() {
   const t = useTranslations("home");
   const roles = useTranslations("roles");
+  const branding = useBranding();
+  if (!branding) return <Landing />;
   return (
     <AppShell>
       {({ org, userName }) => (

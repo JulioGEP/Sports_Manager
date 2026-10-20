@@ -34,3 +34,5 @@ Las decisiones no se editan una vez aceptadas. Si cambian, se escribe una nueva 
 | 0018 | Transporte de email y registro de salida | Aceptada |
 | 0019 | Alta de cuentas solo por invitación | Aceptada |
 | 0020 | Política de contraseñas y límite de intentos | Aceptada |
+| 0021 | Subdominios por club, parche local y comodín en Netlify | Aceptada |
+| 0024 | Logos de club en Netlify Blobs a través de la API | Aceptada |

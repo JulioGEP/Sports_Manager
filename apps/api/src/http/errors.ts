@@ -1,6 +1,6 @@
 import type { ApiError as ApiErrorBody, ApiErrorCode } from "@sportsmanager/shared";
 
-export type ApiErrorStatus = 400 | 401 | 403 | 404 | 409 | 410 | 500;
+export type ApiErrorStatus = 400 | 401 | 403 | 404 | 409 | 410 | 413 | 415 | 500;
 
 /** Error con respuesta JSON estable. Lo convierte `app.onError`. */
 export class ApiError extends Error {
@@ -39,3 +39,7 @@ export const invitationEmailMismatch = () =>
     "invitation_email_mismatch",
     "Esta invitación es para otra dirección de email.",
   );
+export const payloadTooLarge = (message = "El fichero es demasiado grande.") =>
+  new ApiError(413, "payload_too_large", message);
+export const unsupportedMediaType = (message = "Formato de fichero no admitido.") =>
+  new ApiError(415, "unsupported_media_type", message);

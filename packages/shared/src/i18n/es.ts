@@ -7,6 +7,8 @@ export default {
     not_found: "No se ha encontrado lo que buscas.",
     invitation_expired: "La invitación ha caducado. Pide una nueva al club.",
     invitation_email_mismatch: "Esta invitación es para otra dirección de email.",
+    payload_too_large: "El fichero es demasiado grande.",
+    unsupported_media_type: "Formato de fichero no admitido.",
     internal: "Ha ocurrido un error inesperado.",
   },
   email: {

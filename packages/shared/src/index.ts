@@ -2,6 +2,7 @@ export * from "./locales.ts";
 export * from "./tenancy.ts";
 export * from "./roles.ts";
 export * from "./organizations.ts";
+export * from "./branding.ts";
 export * from "./users.ts";
 export * from "./email.ts";
 export * from "./invitations.ts";

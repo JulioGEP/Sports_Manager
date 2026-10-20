@@ -1,6 +1,11 @@
 import { schema, type Database } from "@sportsmanager/db";
 import type { ORGANIZATION_STATUSES } from "@sportsmanager/shared";
-import { ROLE_CODES, type LocalizedText, type RoleCode } from "@sportsmanager/shared";
+import {
+  ROLE_CODES,
+  type LocalizedText,
+  type OrganizationUpdate,
+  type RoleCode,
+} from "@sportsmanager/shared";
 import { and, count, eq, sql } from "drizzle-orm";
 import { mintOrgScope, type OrgScope } from "./scope.ts";
 
@@ -34,6 +39,30 @@ export function organizationsRepo(db: () => Database) {
       const organization = rows[0];
       if (!organization) return null;
       return { organization, scope: mintOrgScope(organization.id) };
+    },
+
+    /** Ajustes y marca del club del ámbito (Bloque 5). Devuelve la fila actualizada. */
+    async update(scope: OrgScope, patch: OrganizationUpdate): Promise<OrganizationRow> {
+      const values: Partial<typeof schema.organizations.$inferInsert> = {};
+      if (patch.name !== undefined) values.name = patch.name;
+      if (patch.defaultLocale !== undefined) values.defaultLocale = patch.defaultLocale;
+      if (patch.brandPrimaryColor !== undefined) values.brandPrimaryColor = patch.brandPrimaryColor;
+      if (patch.brandSecondaryColor !== undefined)
+        values.brandSecondaryColor = patch.brandSecondaryColor;
+      if (Object.keys(values).length === 0) {
+        const rows = await db()
+          .select()
+          .from(schema.organizations)
+          .where(eq(schema.organizations.id, scope.organizationId))
+          .limit(1);
+        return rows[0]!;
+      }
+      const rows = await db()
+        .update(schema.organizations)
+        .set(values)
+        .where(eq(schema.organizations.id, scope.organizationId))
+        .returning();
+      return rows[0]!;
     },
 
     async getSport(scope: OrgScope): Promise<OrganizationSport> {

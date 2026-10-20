@@ -108,7 +108,9 @@ Las previews pueden seguir con `outbox` el tiempo que haga falta.
 
 ## Ficheros (Bloque 5)
 
-Netlify Blobs con `region: "eu-central-1"` en todas las llamadas, centralizado en un único módulo de la API. Los stores de proyecto no siguen la región de las funciones y usarían `us-east-2` por defecto.
+Netlify Blobs con `region: "eu-central-1"` fijada en un único módulo de la API (`apps/api/src/data/logos.ts`, ADR 0024). Los stores de proyecto no siguen la región de las funciones y usarían Estados Unidos por defecto. Hoy solo hay un store, `logos`, compartido por producción y previews; las claves llevan el id del club. En `netlify dev`, Netlify CLI sirve un store local; en tests se usa uno en memoria.
+
+Subdominios por club, parche local y pasos para el dominio definitivo: `docs/dominio-y-dns.md`.
 
 ## Desarrollo local
 
@@ -146,4 +148,4 @@ pnpm exec netlify functions:serve --filter @sportsmanager/api   # función de la
 
 En ese modo la web no encuentra `/api` en su mismo origen y el widget de estado marcará error; es normal.
 
-Subdominios locales por club (`<club>.sportsmanager.localhost:8888`) llegan en el Bloque 5.
+Subdominios locales por club: `http://<club>.sportsmanager.localhost:8888` (ver `docs/dominio-y-dns.md`).

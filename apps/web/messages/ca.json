@@ -25,7 +25,9 @@
     "members": "Membres",
     "signOut": "Tancar sessió",
     "noMembershipTitle": "No pertanys a aquest club",
-    "noMembershipBody": "El teu compte ({email}) no té cap rol aquí. Demana una invitació al club."
+    "noMembershipBody": "El teu compte ({email}) no té cap rol aquí. Demana una invitació al club.",
+    "settings": "Configuració",
+    "clubs": "Els meus clubs"
   },
   "login": {
     "title": "Iniciar sessió",
@@ -123,6 +125,44 @@
     "INVALID_TOKEN": "L'enllaç no és vàlid o ha caducat. Demana'n un de nou.",
     "rate_limited": "Massa intents. Espera un moment i torna-ho a provar.",
     "network": "Sense connexió amb el servidor.",
-    "unknown": "S'ha produït un error inesperat."
+    "unknown": "S'ha produït un error inesperat.",
+    "payload_too_large": "El fitxer supera la mida màxima.",
+    "unsupported_media_type": "Format de fitxer no admès."
+  },
+  "landing": {
+    "title": "Sports Manager",
+    "subtitle": "La plataforma de gestió del teu club. Entra amb el teu compte i tria el club.",
+    "signIn": "Iniciar sessió",
+    "myClubs": "Els meus clubs"
+  },
+  "clubs": {
+    "title": "Els meus clubs",
+    "subtitle": "Clubs als quals pertany {email}.",
+    "loading": "Carregant…",
+    "none": "El teu compte encara no pertany a cap club. Demana una invitació.",
+    "open": "Entrar",
+    "current": "Ets aquí",
+    "inactive": "club no actiu",
+    "backToClub": "Tornar a {club}",
+    "signOut": "Tancar sessió"
+  },
+  "settings": {
+    "title": "Configuració del club",
+    "name": "Nom del club",
+    "defaultLocale": "Idioma per defecte",
+    "primaryColor": "Color principal",
+    "secondaryColor": "Color secundari",
+    "save": "Desar els canvis",
+    "saving": "Desant…",
+    "saved": "Canvis desats.",
+    "logoTitle": "Logo",
+    "logoHint": "PNG, JPEG o WebP de fins a {mb} MB. Es mostra a la capçalera i al selector de clubs.",
+    "logoAlt": "Logo del club",
+    "noLogo": "Sense logo.",
+    "upload": "Pujar el logo",
+    "uploading": "Pujant…",
+    "logoSaved": "Logo desat.",
+    "removeLogo": "Treure el logo",
+    "forbidden": "No pots editar la configuració d'aquest club."
   }
 }

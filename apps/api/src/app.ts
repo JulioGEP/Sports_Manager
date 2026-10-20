@@ -4,6 +4,7 @@ import { loadConfig, type ApiConfig } from "./config.ts";
 import { createDataLayer, type DataLayer } from "./data/index.ts";
 import type { AppEnv } from "./http/context.ts";
 import { ApiError, badRequest, notFound } from "./http/errors.ts";
+import { createBrandingRoutes } from "./routes/branding.ts";
 import { createHealthRoutes } from "./routes/health.ts";
 import { createInvitationRoutes } from "./routes/invitations.ts";
 import { createMeRoutes } from "./routes/me.ts";
@@ -18,7 +19,7 @@ export interface AppOptions {
   data?: DataLayer;
 }
 
-export const API_VERSION = "0.3.0";
+export const API_VERSION = "0.4.0";
 
 export function createApp(options: AppOptions = {}) {
   const config = options.config ?? loadConfig();
@@ -54,7 +55,9 @@ export function createApp(options: AppOptions = {}) {
   });
 
   app.route("/", createHealthRoutes(data));
-  app.route("/", createMeRoutes(data));
+  app.route("/", createMeRoutes(config, data));
+  // Rutas públicas del club (marca y logo) antes que las protegidas: terminan la cadena sin sesión.
+  app.route("/", createBrandingRoutes(config, data));
   app.route("/", createOrgRoutes(config, data));
   app.route("/", createInvitationRoutes(config, data));
   app.route("/", createPlatformRoutes(config, data));

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { loadConfig } from "./config.ts";
-import { publicOrigin } from "./tenancy.ts";
+import { organizationUrl, publicOrigin } from "./tenancy.ts";
 
 const production = loadConfig({
   NODE_ENV: "production",
@@ -35,5 +35,23 @@ describe("origen público para los enlaces de los emails", () => {
     expect(publicOrigin(undefined, production)).toBe("https://hubsports.netlify.app");
     expect(publicOrigin("x.sportsmanager.test", local)).toBe("http://x.sportsmanager.test");
     expect(publicOrigin("otro.test", local)).toBe("http://sportsmanager.test");
+  });
+});
+
+describe("dirección pública de un club", () => {
+  it("subdominio del dominio base; el club de reserva vive en el dominio base", () => {
+    expect(organizationUrl("club-a", production, "hubsports.netlify.app")).toBe(
+      "https://club-a.hubsports.netlify.app",
+    );
+    expect(organizationUrl("demo", production, "hubsports.netlify.app")).toBe(
+      "https://hubsports.netlify.app",
+    );
+  });
+
+  it("en local conserva el puerto de la petición", () => {
+    expect(organizationUrl("club-a", local, "localhost:8888")).toBe(
+      "http://club-a.sportsmanager.test:8888",
+    );
+    expect(organizationUrl("club-a", local, undefined)).toBe("http://club-a.sportsmanager.test");
   });
 });

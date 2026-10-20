@@ -71,3 +71,7 @@ export const AssignRoleResponseSchema = z.object({
   roleCode: RoleCodeSchema,
   roles: z.array(RoleCodeSchema),
 });
+
+/** Respuesta de `PATCH /api/org`: la vista completa del club ya actualizada. */
+export const OrganizationUpdateResponseSchema = z.object({ organization: OrganizationFullSchema });
+export type OrganizationUpdateResponse = z.infer<typeof OrganizationUpdateResponseSchema>;

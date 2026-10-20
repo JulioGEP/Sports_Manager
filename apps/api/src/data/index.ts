@@ -9,6 +9,7 @@ import { emailOutboxRepo } from "./email/outbox.ts";
 import type { ResendLike } from "./email/resend.ts";
 import { createEmailSender, type EmailSender } from "./email/sender.ts";
 import { invitationsRepo } from "./invitations.ts";
+import { createNetlifyLogoStore, logosRepo, type LogoStore } from "./logos.ts";
 import { membershipsRepo } from "./memberships.ts";
 import { organizationsRepo } from "./organizations.ts";
 import { platformRepo } from "./platform.ts";
@@ -22,6 +23,14 @@ export type { InvitationByToken, InvitationRecord, IssuedInvitation } from "./in
 export type { UserRecord } from "./users.ts";
 export type { EmailSender, OutgoingEmail, SentEmail } from "./email/sender.ts";
 export type { ResendLike } from "./email/resend.ts";
+export {
+  createMemoryLogoStore,
+  isLogoContentType,
+  logoUrlFor,
+  logoVersion,
+  sniffImageType,
+  type LogoStore,
+} from "./logos.ts";
 export { renderEmail, type EmailContent, type RenderedEmail } from "./email/templates.ts";
 export { invitationState } from "./invitation-tokens.ts";
 export { userLocale } from "./memberships.ts";
@@ -38,6 +47,8 @@ export interface DataLayerOptions {
   resend?: ResendLike | null;
   /** Destino del log de depuración de emails. */
   emailLog?: (line: string) => void;
+  /** Almacén de logos. Por defecto Netlify Blobs en eu-central-1; en tests, uno en memoria. */
+  logoStore?: LogoStore;
 }
 
 export function createDataLayer(options: DataLayerOptions) {
@@ -74,6 +85,7 @@ export function createDataLayer(options: DataLayerOptions) {
     invitations: invitationsRepo(db),
     users: usersRepo(db, getAuth),
     roles: rolesRepo(db),
+    logos: logosRepo(db, options.logoStore ?? createNetlifyLogoStore()),
     email,
 
     async checkDatabase(): Promise<DatabaseStatus> {

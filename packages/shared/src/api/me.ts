@@ -25,6 +25,9 @@ export const MembershipOrganizationSchema = z.object({
   defaultLocale: LocaleSchema,
   brandPrimaryColor: z.string(),
   brandSecondaryColor: z.string(),
+  logoUrl: z.string().nullable(),
+  /** Dirección del espacio del club, calculada por la API: `https://<slug>.<dominio base>`. */
+  url: z.string(),
 });
 
 export const MyMembershipsResponseSchema = z.object({
