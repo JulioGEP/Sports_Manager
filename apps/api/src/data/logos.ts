@@ -6,21 +6,21 @@ import { randomUUID } from "node:crypto";
 import type { OrgScope } from "./scope.ts";
 
 /** Lo que la plataforma usa del almacén de ficheros. Sustituible en tests por uno en memoria. */
-export interface LogoStore {
+export interface BlobStore {
   get(key: string): Promise<{ body: ArrayBuffer; contentType: string } | null>;
   set(key: string, body: ArrayBuffer, contentType: string): Promise<void>;
   delete(key: string): Promise<void>;
 }
+export type LogoStore = BlobStore;
 
 /**
  * Netlify Blobs (ADR 0007 y 0024). La región se fija aquí y en ningún otro sitio: los stores
  * de proyecto no siguen la región de las funciones y usarían Estados Unidos por defecto.
- * Un único store `logos` compartido por todos los deploys; la clave lleva el id del club.
+ * Un store por tipo de fichero, compartido por todos los deploys; la clave lleva el id del club.
  */
-export function createNetlifyLogoStore(): LogoStore {
+export function createNetlifyBlobStore(name: string): BlobStore {
   let store: ReturnType<typeof getStore> | null = null;
-  const blobs = () =>
-    (store ??= getStore({ name: "logos", region: "eu-central-1", consistency: "strong" }));
+  const blobs = () => (store ??= getStore({ name, region: "eu-central-1", consistency: "strong" }));
   return {
     async get(key) {
       const result = await blobs().getWithMetadata(key, { type: "arrayBuffer" });
@@ -40,7 +40,11 @@ export function createNetlifyLogoStore(): LogoStore {
   };
 }
 
-export function createMemoryLogoStore(): LogoStore {
+/** Logos de club (`logos`) y fotos de jugador (`player-photos`, Bloque 12): mismo almacén, stores distintos. */
+export const createNetlifyLogoStore = (): BlobStore => createNetlifyBlobStore("logos");
+export const createNetlifyPhotoStore = (): BlobStore => createNetlifyBlobStore("player-photos");
+
+export function createMemoryBlobStore(): BlobStore {
   const items = new Map<string, { body: ArrayBuffer; contentType: string }>();
   return {
     get: (key) => Promise.resolve(items.get(key) ?? null),
@@ -54,6 +58,7 @@ export function createMemoryLogoStore(): LogoStore {
     },
   };
 }
+export const createMemoryLogoStore = createMemoryBlobStore;
 
 /** Tipo real del fichero por sus primeros bytes. Evita subir cualquier cosa con un content-type falso. */
 export function sniffImageType(bytes: Uint8Array): LogoContentType | null {
@@ -99,7 +104,7 @@ export function logoUrlFor(key: string | null, slug: string): string | null {
   return key ? `/api/org/logo?club=${encodeURIComponent(slug)}&v=${logoVersion(key)}` : null;
 }
 
-export function logosRepo(db: () => Database, store: LogoStore) {
+export function logosRepo(db: () => Database, store: BlobStore) {
   const keyOf = async (scope: OrgScope): Promise<string | null> => {
     const rows = await db()
       .select({ key: schema.organizations.logoBlobKey })

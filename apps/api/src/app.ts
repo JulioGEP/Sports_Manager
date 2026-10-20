@@ -22,7 +22,7 @@ export interface AppOptions {
   data?: DataLayer;
 }
 
-export const API_VERSION = "0.7.0";
+export const API_VERSION = "0.8.0";
 
 export function createApp(options: AppOptions = {}) {
   const config = options.config ?? loadConfig();

@@ -208,7 +208,7 @@ export function TeamPage() {
                   header: t("table.player"),
                   cell: (p) => (
                     <span className="flex items-center gap-3">
-                      <Avatar name={name(p)} size="sm" />
+                      <Avatar name={name(p)} size="sm" src={p.photoUrl} />
                       <span className="flex min-w-0 flex-col">
                         <Link to={paths.player(p.playerId)} className="font-medium text-ink">
                           {name(p)}

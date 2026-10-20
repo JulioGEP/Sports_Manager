@@ -22,7 +22,7 @@ import {
   type TeamSummary,
 } from "@sportsmanager/shared";
 import type { ApiConfig } from "../config.ts";
-import type { DataLayer, TeamRecord } from "../data/index.ts";
+import { playerPhotoUrlFor, type DataLayer, type TeamRecord } from "../data/index.ts";
 import { requireActor, requirePermission } from "../http/actor.ts";
 import type { AppEnv } from "../http/context.ts";
 import { badRequest, conflict, notFound } from "../http/errors.ts";
@@ -88,6 +88,16 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
     });
 
   // --- Resumen (también para la vista de soporte: solo cifras) ---
+  /** Plantilla para la respuesta: la clave de la foto se convierte en URL y no sale de la API. */
+  const rosterOf = async (
+    tenant: { organization: { slug: string }; scope: Parameters<DataLayer["teams"]["roster"]>[0] },
+    teamId: string,
+  ) =>
+    (await data.teams.roster(tenant.scope, teamId)).map(({ photoBlobKey, ...entry }) => ({
+      ...entry,
+      photoUrl: playerPhotoUrlFor(photoBlobKey, tenant.organization.slug, entry.playerId),
+    }));
+
   app.openapi(
     createRoute({
       method: "get",
@@ -337,7 +347,7 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
       if (!team) throw notFound("Ese equipo no existe.");
       // La plantilla lleva datos de jugadores: solo con permiso de jugadores. Sin él, la ficha va vacía.
       const canSeePlayers = c.get("actor").permissions.has("org.players.read");
-      const roster = canSeePlayers ? await data.teams.roster(tenant.scope, id) : [];
+      const roster = canSeePlayers ? await rosterOf(tenant, id) : [];
       const staff = await data.teams.staff(tenant.scope, id);
       return c.json({ team: teamDto(team), roster, staff }, 200);
     },
@@ -405,11 +415,17 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
       if (outcome === "unknown_player") throw badRequest("Ese jugador no es de este club.");
       if (outcome === "already_in_team") throw conflict("Ese jugador ya está en la plantilla.");
       const team = (await data.teams.byId(tenant.scope, id))!;
+      await data.playerProfile.recordEvent(tenant.scope, {
+        playerId: body.playerId,
+        kind: "roster_added",
+        details: { team: team.name, season: team.season.name },
+        actorUserId: c.get("sessionUser").id,
+      });
       await audit(c, tenant, "team.roster_added", team.name, { playerId: body.playerId });
       return c.json(
         {
           team: teamDto(team),
-          roster: await data.teams.roster(tenant.scope, id),
+          roster: await rosterOf(tenant, id),
           staff: await data.teams.staff(tenant.scope, id),
         },
         200,
@@ -445,7 +461,7 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
       return c.json(
         {
           team: teamDto((await data.teams.byId(tenant.scope, id))!),
-          roster: await data.teams.roster(tenant.scope, id),
+          roster: await rosterOf(tenant, id),
           staff: await data.teams.staff(tenant.scope, id),
         },
         200,
@@ -471,11 +487,17 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
       if (!team) throw notFound("Ese equipo no existe.");
       const ok = await data.teams.removePlayer(tenant.scope, id, playerId);
       if (!ok) throw notFound("Ese jugador no está en la plantilla.");
+      await data.playerProfile.recordEvent(tenant.scope, {
+        playerId,
+        kind: "roster_removed",
+        details: { team: team.name, season: team.season.name },
+        actorUserId: c.get("sessionUser").id,
+      });
       await audit(c, tenant, "team.roster_removed", team.name, { playerId });
       return c.json(
         {
           team: teamDto((await data.teams.byId(tenant.scope, id))!),
-          roster: await data.teams.roster(tenant.scope, id),
+          roster: await rosterOf(tenant, id),
           staff: await data.teams.staff(tenant.scope, id),
         },
         200,
@@ -534,7 +556,7 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
       return c.json(
         {
           team: teamDto(team),
-          roster: canSeePlayers ? await data.teams.roster(tenant.scope, id) : [],
+          roster: canSeePlayers ? await rosterOf(tenant, id) : [],
           staff: await data.teams.staff(tenant.scope, id),
         },
         200,
@@ -565,7 +587,7 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
       return c.json(
         {
           team: teamDto((await data.teams.byId(tenant.scope, id))!),
-          roster: canSeePlayers ? await data.teams.roster(tenant.scope, id) : [],
+          roster: canSeePlayers ? await rosterOf(tenant, id) : [],
           staff: await data.teams.staff(tenant.scope, id),
         },
         200,

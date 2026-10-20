@@ -2,7 +2,7 @@ import { NetlifyDB } from "@netlify/database-dev";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createApp, type App } from "../app.ts";
 import { loadConfig } from "../config.ts";
-import { createDataLayer, type DataLayer } from "../data/index.ts";
+import { createDataLayer, createMemoryBlobStore, type DataLayer } from "../data/index.ts";
 import { createSeeder } from "../data/testing/seed.ts";
 
 /**
@@ -14,6 +14,9 @@ import { createSeeder } from "../data/testing/seed.ts";
 const BASE = "sportsmanager.test";
 const hostOf = (slug: string) => `${slug}.${BASE}`;
 const PASSWORD = "contraseña-de-prueba-123";
+const PNG = new Uint8Array([
+  0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3, 4, 5, 6, 7, 8,
+]);
 
 type Seeded = { id: string; email: string };
 
@@ -39,10 +42,10 @@ describe("estructura del club y familias", () => {
       .join("; ");
 
   const request = (
-    method: "GET" | "POST" | "PATCH" | "DELETE",
+    method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE",
     path: string,
     host: string,
-    options: { cookie?: string; body?: unknown } = {},
+    options: { cookie?: string; body?: unknown; raw?: Uint8Array; contentType?: string } = {},
   ) =>
     app.request(path, {
       method,
@@ -51,8 +54,10 @@ describe("estructura del club y familias", () => {
         origin: `https://${host}`,
         ...(options.cookie ? { cookie: options.cookie } : {}),
         ...(options.body !== undefined ? { "content-type": "application/json" } : {}),
+        ...(options.contentType ? { "content-type": options.contentType } : {}),
       },
       ...(options.body !== undefined ? { body: JSON.stringify(options.body) } : {}),
+      ...(options.raw ? { body: options.raw } : {}),
     });
 
   async function signIn(email: string, host: string) {
@@ -88,7 +93,7 @@ describe("estructura del club y familias", () => {
       TENANT_ROUTING: "subdomain",
       EMAIL_TRANSPORT: "outbox",
     });
-    data = createDataLayer({ config, connectionString });
+    data = createDataLayer({ config, connectionString, photoStore: createMemoryBlobStore() });
     app = createApp({ config, data });
     seeder = createSeeder(connectionString);
 
@@ -428,6 +433,233 @@ describe("estructura del club y familias", () => {
     ).toBe(403);
   });
 
+  it("ficha ampliada (ADR 0029): datos deportivos, objetivo, indicadores, PDI, registros y foto, solo para el personal", async () => {
+    type Detail = {
+      player: { photoUrl: string | null; dominantFoot: string | null; heightCm: number | null };
+      objective: {
+        title: string;
+        progress: number;
+        owner: { name: string } | null;
+        reviewOn: string | null;
+      } | null;
+      indicators: { dimension: string; score: number; note: string | null }[];
+      developmentPlan: {
+        technical: string | null;
+        tactical: string | null;
+        habits: string | null;
+        status: string;
+        coordinator: { name: string } | null;
+      } | null;
+      timeline: {
+        kind: string;
+        happenedOn: string;
+        details: Record<string, string | number>;
+        actorName: string | null;
+      }[];
+    };
+    const base = `/api/org/players/${playerId}`;
+
+    // Datos deportivos en la ficha, con límites.
+    const edited = await json<{ player: Detail["player"] }>(
+      await request("PATCH", base, A, {
+        cookie: as(adminA),
+        body: { dominantFoot: "right", heightCm: 142 },
+      }),
+      200,
+    );
+    expect(edited.player).toMatchObject({ dominantFoot: "right", heightCm: 142 });
+    expect(
+      (await request("PATCH", base, A, { cookie: as(adminA), body: { heightCm: 300 } })).status,
+    ).toBe(400);
+
+    // Objetivo: el responsable tiene que ser miembro del club; la entrenadora no escribe.
+    expect(
+      (
+        await request("PUT", `${base}/objective`, A, {
+          cookie: as(adminA),
+          body: { title: "Conducción", progress: 45, ownerUserId: adminB.id },
+        })
+      ).status,
+    ).toBe(400);
+    expect(
+      (
+        await request("PUT", `${base}/objective`, A, {
+          cookie: as(coachA),
+          body: { title: "Conducción", progress: 45 },
+        })
+      ).status,
+    ).toBe(403);
+    const withObjective = await json<Detail>(
+      await request("PUT", `${base}/objective`, A, {
+        cookie: as(adminA),
+        body: {
+          title: "Mejorar la conducción",
+          progress: 45,
+          ownerUserId: coachA.id,
+          reviewOn: "2026-11-15",
+        },
+      }),
+      200,
+    );
+    expect(withObjective.objective).toMatchObject({
+      title: "Mejorar la conducción",
+      progress: 45,
+      owner: { name: "Caro Coach" },
+      reviewOn: "2026-11-15",
+    });
+
+    // Indicadores: solo cambian las dimensiones que vienen; fuera de rango, no.
+    const rated = await json<Detail>(
+      await request("PUT", `${base}/indicators`, A, {
+        cookie: as(adminA),
+        body: { sport: { score: 72, note: "Bien" }, commitment: { score: 90 } },
+      }),
+      200,
+    );
+    expect(rated.indicators.map((i) => [i.dimension, i.score, i.note])).toEqual([
+      ["sport", 72, "Bien"],
+      ["commitment", 90, null],
+    ]);
+    expect(
+      (
+        await request("PUT", `${base}/indicators`, A, {
+          cookie: as(adminA),
+          body: { sport: { score: 101 } },
+        })
+      ).status,
+    ).toBe(400);
+    expect(
+      (await request("PUT", `${base}/indicators`, A, { cookie: as(adminA), body: {} })).status,
+    ).toBe(400);
+
+    // PDI: crear con dos áreas y después cambiar solo el estado conserva las áreas.
+    const planned = await json<Detail>(
+      await request("PUT", `${base}/development-plan`, A, {
+        cookie: as(adminA),
+        body: {
+          technical: "Conducción con la izquierda",
+          habits: "Dormir 9 horas",
+          coordinatorUserId: coachA.id,
+          nextReviewOn: "2026-12-01",
+          status: "draft",
+        },
+      }),
+      200,
+    );
+    expect(planned.developmentPlan).toMatchObject({
+      technical: "Conducción con la izquierda",
+      tactical: null,
+      habits: "Dormir 9 horas",
+      status: "draft",
+      coordinator: { name: "Caro Coach" },
+    });
+    const shared = await json<Detail>(
+      await request("PUT", `${base}/development-plan`, A, {
+        cookie: as(adminA),
+        body: { status: "shared" },
+      }),
+      200,
+    );
+    expect(shared.developmentPlan).toMatchObject({
+      technical: "Conducción con la izquierda",
+      status: "shared",
+    });
+
+    // Registro manual y timeline: lo más reciente primero y el alta en el club siempre al final.
+    const noted = await json<Detail>(
+      await request("POST", `${base}/events`, A, {
+        cookie: as(adminA),
+        body: { text: "Gran partido", happenedOn: "2026-10-01" },
+      }),
+      201,
+    );
+    const kinds = noted.timeline.map((e) => e.kind);
+    expect(kinds.at(-1)).toBe("joined");
+    expect(kinds).toEqual(
+      expect.arrayContaining([
+        "roster_added",
+        "objective_updated",
+        "indicators_updated",
+        "plan_updated",
+        "note",
+      ]),
+    );
+    expect(noted.timeline.find((e) => e.kind === "roster_added")?.details).toEqual({
+      team: "Alevín A",
+      season: "2026-27",
+    });
+    expect(noted.timeline.find((e) => e.kind === "note")).toMatchObject({
+      happenedOn: "2026-10-01",
+      details: { text: "Gran partido" },
+      actorName: "Ana Admin",
+    });
+
+    // Foto: la sube el personal; la ven el personal y la propia familia; otro club, no.
+    expect(
+      (
+        await request("PUT", `${base}/photo`, A, {
+          cookie: as(coachA),
+          raw: PNG,
+          contentType: "image/png",
+        })
+      ).status,
+    ).toBe(403);
+    expect(
+      (
+        await request("PUT", `${base}/photo`, A, {
+          cookie: as(adminA),
+          raw: PNG,
+          contentType: "image/svg+xml",
+        })
+      ).status,
+    ).toBe(415);
+    const withPhoto = await json<Detail>(
+      await request("PUT", `${base}/photo`, A, {
+        cookie: as(adminA),
+        raw: PNG,
+        contentType: "image/png",
+      }),
+      200,
+    );
+    const photoUrl = withPhoto.player.photoUrl!;
+    expect(photoUrl).toMatch(new RegExp(`^${base}/photo\\?club=club-a&v=[0-9a-f-]{36}$`));
+    expect(photoUrl).not.toContain(clubA.id);
+    expect(withPhoto.timeline[0]?.kind).toBe("photo_updated");
+    const served = await request("GET", photoUrl, A, { cookie: as(coachA) });
+    expect(served.status).toBe(200);
+    expect(served.headers.get("content-type")).toBe("image/png");
+    expect(new Uint8Array(await served.arrayBuffer())).toEqual(PNG);
+    expect((await request("GET", photoUrl, A, { cookie: familyCookie })).status).toBe(200);
+    expect((await request("GET", photoUrl, A)).status).toBe(401);
+    expect((await request("GET", photoUrl, B, { cookie: as(adminB) })).status).toBe(404);
+    const list = await json<{ players: { photoUrl: string | null }[] }>(
+      await request("GET", "/api/org/players", A, { cookie: as(adminA) }),
+      200,
+    );
+    expect(list.players[0]?.photoUrl).toBe(photoUrl);
+    const family = await json<{ players: { photoUrl: string | null }[] }>(
+      await request("GET", "/api/org/family", A, { cookie: familyCookie }),
+      200,
+    );
+    expect(family.players[0]?.photoUrl).toBe(photoUrl);
+    const removed = await json<Detail>(
+      await request("DELETE", `${base}/photo`, A, { cookie: as(adminA) }),
+      200,
+    );
+    expect(removed.player.photoUrl).toBeNull();
+    expect((await request("GET", photoUrl, A, { cookie: as(adminA) })).status).toBe(404);
+
+    // La familia no escribe nada de la ficha ampliada.
+    expect(
+      (
+        await request("PUT", `${base}/objective`, A, {
+          cookie: familyCookie,
+          body: { title: "No", progress: 0 },
+        })
+      ).status,
+    ).toBe(403);
+  });
+
   it("dar de baja a un jugador lo deja inactivo, sin borrarlo ni sacarlo de su historial", async () => {
     const updated = await json<{ player: { status: string } }>(
       await request("PATCH", `/api/org/players/${playerId}`, A, {
@@ -442,10 +674,14 @@ describe("estructura del club y familias", () => {
       200,
     );
     expect(summary.players).toBe(0);
-    const detail = await json<{ teams: { teamName: string }[] }>(
-      await request("GET", `/api/org/players/${playerId}`, A, { cookie: as(adminA) }),
-      200,
-    );
+    const detail = await json<{
+      teams: { teamName: string }[];
+      timeline: { kind: string; details: Record<string, string | number> }[];
+    }>(await request("GET", `/api/org/players/${playerId}`, A, { cookie: as(adminA) }), 200);
     expect(detail.teams.map((t) => t.teamName)).toEqual(["Alevín A"]);
+    expect(detail.timeline[0]).toMatchObject({
+      kind: "status_changed",
+      details: { status: "inactive" },
+    });
   });
 });

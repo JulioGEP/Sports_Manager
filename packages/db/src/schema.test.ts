@@ -293,6 +293,89 @@ describe("esquema del Bloque 2 (Postgres embebido con todas las migraciones)", (
     ).toBe(CHECK_VIOLATION);
   });
 
+  it("ficha ampliada del jugador (ADR 0029): pie y altura válidos, un objetivo y un PDI por jugador, indicadores por dimensión y registros con tipo conocido", async () => {
+    const { rows: p } = await client.query<{ id: string }>(
+      "insert into players (organization_id, first_name, last_name, dominant_foot, height_cm) values ($1, 'Marc', 'Martí', 'right', 142) returning id",
+      [orgId],
+    );
+    const playerId = p[0]!.id;
+    expect(
+      await errorCode(client, "update players set dominant_foot = 'head' where id = $1", [
+        playerId,
+      ]),
+    ).toBe(CHECK_VIOLATION);
+    expect(
+      await errorCode(client, "update players set height_cm = 300 where id = $1", [playerId]),
+    ).toBe(CHECK_VIOLATION);
+
+    const { rows: owner } = await client.query<{ id: string }>(
+      "insert into users (name, email) values ('Resp', 'resp@club.test') returning id",
+    );
+    const objective =
+      "insert into player_objectives (organization_id, player_id, title, progress, owner_user_id) values ($1, $2, $3, $4, $5)";
+    expect(
+      await errorCode(client, objective, [orgId, playerId, "Conducción", 45, owner[0]!.id]),
+    ).toBeNull();
+    expect(await errorCode(client, objective, [orgId, playerId, "Otro", 10, null])).toBe(
+      UNIQUE_VIOLATION,
+    );
+    expect(
+      await errorCode(client, "update player_objectives set progress = 101 where player_id = $1", [
+        playerId,
+      ]),
+    ).toBe(CHECK_VIOLATION);
+
+    const indicator =
+      "insert into player_indicators (organization_id, player_id, dimension, score) values ($1, $2, $3, $4)";
+    expect(await errorCode(client, indicator, [orgId, playerId, "sport", 72])).toBeNull();
+    expect(await errorCode(client, indicator, [orgId, playerId, "sport", 80])).toBe(
+      UNIQUE_VIOLATION,
+    );
+    expect(await errorCode(client, indicator, [orgId, playerId, "speed", 80])).toBe(
+      CHECK_VIOLATION,
+    );
+    expect(await errorCode(client, indicator, [orgId, playerId, "body", 120])).toBe(
+      CHECK_VIOLATION,
+    );
+
+    const plan =
+      "insert into player_development_plans (organization_id, player_id, technical, status) values ($1, $2, 'Conducción', $3)";
+    expect(await errorCode(client, plan, [orgId, playerId, "draft"])).toBeNull();
+    expect(await errorCode(client, plan, [orgId, playerId, "active"])).toBe(UNIQUE_VIOLATION);
+    expect(
+      await errorCode(
+        client,
+        "update player_development_plans set status = 'done' where player_id = $1",
+        [playerId],
+      ),
+    ).toBe(CHECK_VIOLATION);
+
+    const event =
+      "insert into player_events (organization_id, player_id, kind, happened_on, details) values ($1, $2, $3, current_date, '{}')";
+    expect(await errorCode(client, event, [orgId, playerId, "note"])).toBeNull();
+    expect(await errorCode(client, event, [orgId, playerId, "party"])).toBe(CHECK_VIOLATION);
+
+    // Borrar al responsable deja el objetivo sin responsable; borrar al jugador arrastra todo.
+    await client.query("delete from users where id = $1", [owner[0]!.id]);
+    const { rows: orphan } = await client.query<{ owner_user_id: string | null }>(
+      "select owner_user_id from player_objectives where player_id = $1",
+      [playerId],
+    );
+    expect(orphan[0]!.owner_user_id).toBeNull();
+    await client.query("delete from players where id = $1", [playerId]);
+    for (const table of [
+      "player_objectives",
+      "player_indicators",
+      "player_development_plans",
+      "player_events",
+    ]) {
+      expect(
+        (await client.query(`select 1 from ${table} where player_id = $1`, [playerId])).rowCount,
+        table,
+      ).toBe(0);
+    }
+  });
+
   it("el club demo llega con temporada, sección, equipos, plantilla y dos cuentas de prueba", async () => {
     const { rows } = await client.query<{
       teams: string;
@@ -314,6 +397,31 @@ describe("esquema del Bloque 2 (Postgres embebido con todas las migraciones)", (
       "select s.is_current from seasons s join organizations o on o.id = s.organization_id where o.slug = 'demo'",
     );
     expect(seasons).toEqual([{ is_current: true }]);
+  });
+
+  it("el club demo trae la ficha ampliada de Clara Martí (ADR 0029)", async () => {
+    const { rows } = await client.query<{
+      height_cm: number | null;
+      dominant_foot: string | null;
+      objectives: string;
+      indicators: string;
+      plans: string;
+      events: string;
+    }>(
+      `select p.height_cm, p.dominant_foot,
+         (select count(*) from player_objectives x where x.player_id = p.id) as objectives,
+         (select count(*) from player_indicators x where x.player_id = p.id) as indicators,
+         (select count(*) from player_development_plans x where x.player_id = p.id) as plans,
+         (select count(*) from player_events x where x.player_id = p.id) as events
+       from players p join organizations o on o.id = p.organization_id
+       where o.slug = 'demo' and p.first_name = 'Clara' and p.last_name = 'Martí'`,
+    );
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({ height_cm: 142, dominant_foot: "right" });
+    expect(Number(rows[0]!.objectives)).toBe(1);
+    expect(Number(rows[0]!.indicators)).toBe(4);
+    expect(Number(rows[0]!.plans)).toBe(1);
+    expect(Number(rows[0]!.events)).toBe(3);
   });
 
   it("borrar un club arrastra pertenencias e invitaciones; borrar un usuario deja en nulo quién invitó", async () => {

@@ -37,10 +37,31 @@ const avatarSizes = {
   sm: "size-8 text-label",
   md: "size-10 text-secondary",
   lg: "size-14 text-body",
+  xl: "size-20 text-title2",
 };
 
-/** Avatar con iniciales sobre superficie elevada. */
-export function Avatar({ name, size = "md" }: { name: string; size?: "sm" | "md" | "lg" }) {
+/** Avatar: la foto si la hay (Bloque 12); si no, iniciales sobre superficie elevada. */
+export function Avatar({
+  name,
+  size = "md",
+  src,
+  alt,
+}: {
+  name: string;
+  size?: "sm" | "md" | "lg" | "xl";
+  src?: string | null | undefined;
+  /** Texto alternativo de la foto. Sin él, la foto es decorativa (el nombre va al lado). */
+  alt?: string | undefined;
+}) {
+  if (src) {
+    return (
+      <span
+        className={`inline-grid shrink-0 place-items-center overflow-hidden rounded-full bg-raised ${avatarSizes[size]}`}
+      >
+        <img src={src} alt={alt ?? ""} className="size-full object-cover" />
+      </span>
+    );
+  }
   return (
     <span
       aria-hidden="true"

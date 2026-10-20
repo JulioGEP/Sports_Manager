@@ -1,5 +1,6 @@
 import { schema, type Database } from "@sportsmanager/db";
 import type {
+  DominantFoot,
   GuardianRelationship,
   PlayerCreate,
   PlayerStatus,
@@ -21,6 +22,10 @@ export interface PlayerRow {
   birthDate: string | null;
   status: PlayerStatus;
   createdAt: Date;
+  /** Ficha ampliada (Bloque 12): clave de la foto en Blobs, pie dominante y altura. */
+  photoBlobKey: string | null;
+  dominantFoot: DominantFoot | null;
+  heightCm: number | null;
 }
 
 export interface PlayerSummaryRecord extends PlayerRow {
@@ -31,6 +36,7 @@ export interface PlayerSummaryRecord extends PlayerRow {
 export interface PlayerTeamRecord {
   teamId: string;
   teamName: string;
+  category: string | null;
   sectionName: string;
   seasonId: string;
   seasonName: string;
@@ -65,6 +71,9 @@ const playerSelection = {
   birthDate: schema.players.birthDate,
   status: schema.players.status,
   createdAt: schema.players.createdAt,
+  photoBlobKey: schema.players.photoBlobKey,
+  dominantFoot: schema.players.dominantFoot,
+  heightCm: schema.players.heightCm,
 };
 
 const toRow = (row: {
@@ -74,7 +83,14 @@ const toRow = (row: {
   birthDate: string | null;
   status: string;
   createdAt: Date;
-}): PlayerRow => ({ ...row, status: row.status as PlayerStatus });
+  photoBlobKey: string | null;
+  dominantFoot: string | null;
+  heightCm: number | null;
+}): PlayerRow => ({
+  ...row,
+  status: row.status as PlayerStatus,
+  dominantFoot: row.dominantFoot as DominantFoot | null,
+});
 
 export function playersRepo(db: () => Database) {
   async function byId(scope: OrgScope, id: string): Promise<PlayerRow | null> {
@@ -196,6 +212,7 @@ export function playersRepo(db: () => Database) {
         .select({
           teamId: schema.teams.id,
           teamName: schema.teams.name,
+          category: schema.teams.category,
           sectionName: schema.sections.name,
           seasonId: schema.seasons.id,
           seasonName: schema.seasons.name,
@@ -255,6 +272,8 @@ export function playersRepo(db: () => Database) {
       if (patch.lastName !== undefined) values.lastName = patch.lastName;
       if (patch.birthDate !== undefined) values.birthDate = patch.birthDate;
       if (patch.status !== undefined) values.status = patch.status;
+      if (patch.dominantFoot !== undefined) values.dominantFoot = patch.dominantFoot;
+      if (patch.heightCm !== undefined) values.heightCm = patch.heightCm;
       if (Object.keys(values).length === 0) return byId(scope, id);
       const rows = await db()
         .update(schema.players)

@@ -480,7 +480,14 @@
       "created": "Player registered",
       "updated": "Player edited",
       "guardian_linked": "Family linked",
-      "guardian_unlinked": "Family unlinked"
+      "guardian_unlinked": "Family unlinked",
+      "photo_updated": "Player photo changed",
+      "photo_removed": "Player photo removed",
+      "objective_updated": "Individual objective saved",
+      "objective_removed": "Individual objective removed",
+      "indicators_updated": "Player indicators rated",
+      "plan_updated": "Development plan saved",
+      "note_added": "Entry added to player"
     }
   },
   "teams": {
@@ -667,7 +674,7 @@
     "back": "Players",
     "data": "Details",
     "dataDescription": "Name, last name and birth date.",
-    "edit": "Edit",
+    "edit": "Edit profile",
     "born": "Born",
     "age": "Age",
     "since": "In the club since",
@@ -691,8 +698,12 @@
     "deactivated": "{name} has been deactivated.",
     "reactivated": "{name}'s record reactivated.",
     "editSheet": {
-      "title": "Edit details",
-      "saved": "Details saved."
+      "title": "Edit profile",
+      "saved": "Profile saved.",
+      "foot": "Dominant foot",
+      "footNone": "Not set",
+      "height": "Height (cm)",
+      "heightHint": "Optional. Between 50 and 250."
     },
     "inviteSheet": {
       "title": "Invite {name}'s family",
@@ -714,6 +725,192 @@
       "submit": "Link",
       "linked": "{member} linked as {name}'s family.",
       "empty": "No members available."
+    },
+    "editProfile": "Edit profile",
+    "manageAccess": "Manage access",
+    "noCurrentTeam": "No team this season",
+    "number": "#{number}",
+    "chips": {
+      "age": "{age, plural, one {# year} other {# years}}",
+      "yearsAtClub": "{count, plural, =0 {First year in the club} one {# year in the club} other {# years in the club}}",
+      "familyAccess": "{count, plural, =0 {No family access} one {# family access} other {# family accesses}}"
+    },
+    "dominantFoot": {
+      "right": "Right-footed",
+      "left": "Left-footed",
+      "both": "Two-footed",
+      "unknown": "Foot not set"
+    },
+    "photo": {
+      "change": "Change photo",
+      "remove": "Remove photo",
+      "alt": "Photo of {name}",
+      "uploading": "Uploading…",
+      "saved": "Photo saved.",
+      "removed": "Photo removed.",
+      "confirmRemoveTitle": "Remove {name}'s photo?",
+      "confirmRemoveBody": "The record will show the initials again. You can upload another one whenever you want."
+    },
+    "indicators": {
+      "title": "Indicators",
+      "description": "Sport, body, wellbeing and commitment, from 0 to 100, with a short reading.",
+      "rate": "Rate",
+      "unrated": "Not rated",
+      "progressLabel": "{dimension}: {score} out of 100",
+      "sheet": {
+        "title": "Rate {name}",
+        "description": "Score from 0 to 100 and sum up in one line what sits behind the number.",
+        "score": "Score",
+        "note": "Short reading",
+        "noteHint": "For example: Good · Technique and tactics",
+        "saved": "Indicators saved."
+      }
+    },
+    "indicatorNames": {
+      "sport": "Sport",
+      "body": "Body",
+      "wellbeing": "Wellbeing",
+      "commitment": "Commitment"
+    },
+    "indicatorCodes": {
+      "sport": "SP",
+      "body": "BO",
+      "wellbeing": "WB",
+      "commitment": "CM"
+    },
+    "objective": {
+      "eyebrow": "Current priority",
+      "title": "Individual objective",
+      "edit": "Edit",
+      "define": "Set objective",
+      "remove": "Remove",
+      "empty": "No individual objective yet.",
+      "emptyHint": "One priority, with progress, owner and review date.",
+      "progress": "Recorded progress",
+      "progressLabel": "Objective progress: {progress} out of 100",
+      "owner": "Owner: {name}",
+      "noOwner": "No owner",
+      "review": "Review: {date}",
+      "noReview": "No review date",
+      "confirmRemoveTitle": "Remove {name}'s objective?",
+      "confirmRemoveBody": "The objective disappears from the record. Its progress stays in the timeline.",
+      "removed": "Objective removed.",
+      "sheet": {
+        "title": "{name}'s objective",
+        "description": "One priority, in one sentence, with the progress so far.",
+        "name": "Objective",
+        "progress": "Progress (%)",
+        "owner": "Owner",
+        "noOwner": "No owner",
+        "reviewOn": "Review date",
+        "saved": "Objective saved."
+      }
+    },
+    "actions": {
+      "eyebrow": "What is needed today",
+      "title": "Priority actions",
+      "allDone": "All up to date.",
+      "allDoneHint": "Nothing pending on this record.",
+      "photo": "Add a photo",
+      "photoHint": "Complete the player's visual identification.",
+      "birthDate": "Add the birth date",
+      "birthDateHint": "Without it there is no age or category.",
+      "sportsData": "Complete the sports data",
+      "sportsDataHint": "Height or dominant foot are missing.",
+      "family": "Link the family",
+      "familyHint": "Nobody in the family has access yet.",
+      "team": "Assign to a team",
+      "teamHint": "Not in any roster of the current season.",
+      "objective": "Set the individual objective",
+      "objectiveHint": "One clear priority for this season.",
+      "objectiveReview": "Review the objective",
+      "objectiveReviewHint": "The review date has passed.",
+      "indicators": "Rate the indicators",
+      "indicatorsHint": "Some dimensions are not scored yet.",
+      "plan": "Create the development plan",
+      "planHint": "Six areas, one line per area.",
+      "planReview": "Review the development plan",
+      "planReviewHint": "The next review date has passed.",
+      "go": "Go"
+    },
+    "timeline": {
+      "eyebrow": "Latest activity",
+      "title": "Timeline",
+      "count": "{count, plural, one {# entry} other {# entries}}",
+      "add": "Add entry",
+      "by": "by {name}",
+      "events": {
+        "joined": "Joined the club",
+        "roster_added": "Joins the {team} roster ({season})",
+        "roster_removed": "Leaves the {team} roster ({season})",
+        "status_changed": "{status, select, inactive {Record deactivated} other {Record reactivated}}",
+        "objective_updated": "Objective: {title} · {progress}% achieved",
+        "indicators_updated": "Indicators updated",
+        "plan_updated": "Development plan {status, select, draft {in initial structure} active {in progress} shared {shared with the family} other {updated}}",
+        "photo_updated": "Photo updated",
+        "note": "{text}"
+      },
+      "sheet": {
+        "title": "Add an entry for {name}",
+        "description": "A dated note: a review, a milestone, something worth remembering.",
+        "text": "Note",
+        "date": "Date",
+        "submit": "Add entry",
+        "saved": "Entry added."
+      }
+    },
+    "sportsData": {
+      "title": "Sports data",
+      "description": "Team, category and measurements this season.",
+      "team": "Team",
+      "category": "Category",
+      "position": "Position",
+      "number": "Number",
+      "height": "Height",
+      "heightValue": "{cm} cm",
+      "foot": "Dominant foot",
+      "birthYear": "Born"
+    },
+    "quickActions": {
+      "title": "Quick actions",
+      "openTeam": "Open {team}",
+      "familyAccess": "Family access"
+    },
+    "plan": {
+      "eyebrow": "Individual development plan",
+      "title": "Shared IDP",
+      "description": "One line per area. Shared with the family when the club decides.",
+      "edit": "Edit",
+      "create": "Create IDP",
+      "empty": "No development plan yet.",
+      "emptyHint": "Six areas: technical, tactical, physical, emotional, habits and person.",
+      "coordinator": "Coordination: {name}",
+      "noCoordinator": "No coordination",
+      "nextReview": "Next review: {date}",
+      "noReview": "No review date",
+      "undefined": "Not set",
+      "sheet": {
+        "title": "{name}'s IDP",
+        "description": "One sentence per area. Whatever is left blank stays pending.",
+        "coordinator": "Coordination",
+        "noCoordinator": "No coordination",
+        "nextReviewOn": "Next review",
+        "status": "Status",
+        "saved": "Development plan saved."
+      }
+    },
+    "planStatus": {
+      "draft": "Initial structure",
+      "active": "In progress",
+      "shared": "Shared with the family"
+    },
+    "developmentAreas": {
+      "technical": "Technical",
+      "tactical": "Tactical",
+      "physical": "Physical",
+      "emotional": "Emotional",
+      "habits": "Habits",
+      "person": "Person"
     }
   },
   "family": {

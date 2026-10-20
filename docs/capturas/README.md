@@ -108,7 +108,7 @@ Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negoci
 
 ![Jugadores](escritorio-40-jugadores.png)
 
-### Ficha de jugador: datos, equipos, familia y estado
+### Ficha de jugador: foto, indicadores, objetivo, acciones prioritarias, timeline, datos deportivos, PDI, equipos, familia y estado
 
 ![Ficha de jugador](escritorio-41-jugador-ficha.png)
 

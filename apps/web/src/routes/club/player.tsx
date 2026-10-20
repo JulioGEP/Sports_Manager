@@ -1,22 +1,41 @@
 import {
+  DEVELOPMENT_AREAS,
+  DEVELOPMENT_GOAL_MAX,
+  DEVELOPMENT_PLAN_STATUSES,
+  DOMINANT_FEET,
   EligibleMembersResponseSchema,
   GUARDIAN_RELATIONSHIPS,
   InvitationSentResponseSchema,
   LOCALES,
+  PLAYER_HEIGHT_MAX_CM,
+  PLAYER_HEIGHT_MIN_CM,
+  PLAYER_INDICATOR_DIMENSIONS,
+  PLAYER_INDICATOR_NOTE_MAX,
+  PLAYER_NOTE_MAX,
+  PLAYER_OBJECTIVE_TITLE_MAX,
+  PLAYER_PHOTO_CONTENT_TYPES,
+  PLAYER_PHOTO_MAX_BYTES,
+  PLAYER_PHOTO_MAX_SIDE_PX,
   PlayerDetailResponseSchema,
   PlayerResponseSchema,
   playerDisplayName,
+  yearsSince,
+  type DevelopmentPlanStatus,
+  type DominantFoot,
   type Guardian,
   type GuardianRelationship,
   type Locale,
   type PlayerDetailResponse,
+  type PlayerEvent,
+  type PlayerIndicatorDimension,
 } from "@sportsmanager/shared";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent, type ReactNode } from "react";
 import { Link, useParams } from "react-router";
-import { ApiClientError, apiFetch, errorKey } from "@/lib/api";
+import { ApiClientError, apiFetch, errorKey, uploadFile } from "@/lib/api";
 import { clubPaths, useReadyClub } from "@/lib/club";
 import { useDates } from "@/lib/dates";
+import { shrinkImage } from "@/lib/images";
 import { useT } from "@/lib/intl";
 import { useVoice } from "@/lib/voice";
 import {
@@ -32,7 +51,6 @@ import {
   Field,
   Icon,
   Input,
-  PageHeader,
   Select,
   Sheet,
   StatusChip,
@@ -42,6 +60,10 @@ import {
 
 type Player = PlayerDetailResponse["player"];
 type Pending = PlayerDetailResponse["pendingInvitations"][number];
+type Objective = NonNullable<PlayerDetailResponse["objective"]>;
+type Plan = NonNullable<PlayerDetailResponse["developmentPlan"]>;
+type Indicator = PlayerDetailResponse["indicators"][number];
+type SheetName = "edit" | "invite" | "link" | "objective" | "indicators" | "plan" | "note";
 
 const inviteKind: Record<Pending["state"], StatusKind> = {
   pending: "info",
@@ -50,7 +72,66 @@ const inviteKind: Record<Pending["state"], StatusKind> = {
   expired: "warning",
 };
 
-/** Ficha de un jugador: datos, equipos, familia y estado. Datos de menores: solo personal del club. */
+const planKind: Record<DevelopmentPlanStatus, StatusKind> = {
+  draft: "warning",
+  active: "info",
+  shared: "success",
+};
+
+/** Ancla de la tarjeta Familia: "Gestionar accesos" y "Accesos familiares" bajan hasta ella. */
+const FAMILY_ANCHOR = "familia";
+
+/** Fecha de hoy en `AAAA-MM-DD`, para saber si una revisión ya ha pasado. */
+const todayIso = () => new Date().toISOString().slice(0, 10);
+
+/** Barra de progreso de 0 a 100 en color del club. Siempre con la cifra al lado (DESIGN.md 0.5). */
+function ProgressBar({ value, label }: { value: number; label: string }) {
+  const pct = Math.max(0, Math.min(100, value));
+  return (
+    <div
+      role="progressbar"
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={pct}
+      aria-label={label}
+      className="h-1.5 w-full overflow-hidden rounded-full bg-raised"
+    >
+      <div className="h-full rounded-full bg-club" style={{ width: `${pct}%` }} />
+    </div>
+  );
+}
+
+/** Píldora informativa de la cabecera: edad, años en el club, pie, accesos. */
+function InfoChip({ children }: { children: ReactNode }) {
+  return (
+    <span className="inline-flex items-center rounded-chip bg-raised px-2.5 py-0.5 text-secondary font-medium text-ink">
+      {children}
+    </span>
+  );
+}
+
+/** Etiqueta de sección en mayúsculas pequeñas, como pide el contexto Precisa (DESIGN.md 4). */
+function Eyebrow({ children }: { children: ReactNode }) {
+  return <span className="text-label uppercase tracking-wide text-muted">{children}</span>;
+}
+
+/** Miembros con rol de entrenador o administración: responsables del objetivo o del PDI. */
+function useEligibleStaff(playerId: string) {
+  const { slug } = useReadyClub();
+  return useQuery({
+    queryKey: ["org", slug, "player", playerId, "eligible-staff"],
+    queryFn: () =>
+      apiFetch(`/api/org/players/${playerId}/eligible-staff`, {
+        schema: EligibleMembersResponseSchema,
+      }),
+  });
+}
+
+/**
+ * Ficha de un jugador (Bloque 11 y 12): quién es, cómo está y qué necesita hoy. Datos de
+ * menores: solo personal del club. Cabecera con foto, indicadores, objetivo individual, acciones
+ * prioritarias, timeline, datos deportivos, PDI, equipos, familia y estado.
+ */
 export function PlayerPage() {
   const t = useT("player");
   const ps = useT("playerStatus");
@@ -76,12 +157,14 @@ export function PlayerPage() {
   });
   const reload = () => client.invalidateQueries({ queryKey: ["org", slug] });
 
-  const [editing, setEditing] = useState(false);
-  const [inviting, setInviting] = useState(false);
-  const [linking, setLinking] = useState(false);
+  const [sheet, setSheet] = useState<SheetName | null>(null);
   const [unlinking, setUnlinking] = useState<Guardian | null>(null);
   const [deactivating, setDeactivating] = useState(false);
+  const [removingPhoto, setRemovingPhoto] = useState(false);
+  const [removingObjective, setRemovingObjective] = useState(false);
+  const [photoBusy, setPhotoBusy] = useState(false);
   const [lastLink, setLastLink] = useState<{ email: string; url: string } | null>(null);
+  const photoInput = useRef<HTMLInputElement>(null);
 
   if (detail.isError) {
     const notFound = detail.error instanceof ApiClientError && detail.error.status === 404;
@@ -97,9 +180,22 @@ export function PlayerPage() {
       </div>
     );
   }
-  const { player, teams, guardians, pendingInvitations } = detail.data;
+  const { player, teams, guardians, pendingInvitations, objective, indicators, developmentPlan } =
+    detail.data;
+  const timeline = detail.data.timeline;
   const name = playerDisplayName(player);
   const age = dates.age(player.birthDate);
+  const current = teams.find((x) => x.seasonIsCurrent) ?? null;
+  const today = todayIso();
+  const headline = current
+    ? [
+        current.teamName,
+        current.shirtNumber === null ? null : t("number", { number: current.shirtNumber }),
+        current.position,
+      ]
+        .filter(Boolean)
+        .join(" · ")
+    : t("noCurrentTeam");
 
   async function setStatus(status: Player["status"]) {
     setDeactivating(false);
@@ -128,6 +224,85 @@ export function PlayerPage() {
       toast("error", errors(errorKey(err)));
     }
   }
+  async function uploadPhoto(file: File | undefined) {
+    if (!file) return;
+    setPhotoBusy(true);
+    try {
+      const photo = await shrinkImage(file, PLAYER_PHOTO_MAX_SIDE_PX, PLAYER_PHOTO_MAX_BYTES);
+      if (!(PLAYER_PHOTO_CONTENT_TYPES as readonly string[]).includes(photo.type)) {
+        toast("error", errors("unsupported_media_type"));
+        return;
+      }
+      if (photo.size > PLAYER_PHOTO_MAX_BYTES) {
+        toast("error", errors("payload_too_large"));
+        return;
+      }
+      await uploadFile(`/api/org/players/${id}/photo`, photo, PlayerDetailResponseSchema);
+      toast("success", t("photo.saved"));
+      void reload();
+    } catch (err) {
+      toast("error", errors(errorKey(err)));
+    } finally {
+      setPhotoBusy(false);
+      if (photoInput.current) photoInput.current.value = "";
+    }
+  }
+  async function removePhoto() {
+    setRemovingPhoto(false);
+    try {
+      await apiFetch(`/api/org/players/${id}/photo`, {
+        method: "DELETE",
+        schema: PlayerDetailResponseSchema,
+      });
+      toast("success", t("photo.removed"));
+      void reload();
+    } catch (err) {
+      toast("error", errors(errorKey(err)));
+    }
+  }
+  async function removeObjective() {
+    setRemovingObjective(false);
+    try {
+      await apiFetch(`/api/org/players/${id}/objective`, {
+        method: "DELETE",
+        schema: PlayerDetailResponseSchema,
+      });
+      toast("success", t("objective.removed"));
+      void reload();
+    } catch (err) {
+      toast("error", errors(errorKey(err)));
+    }
+  }
+
+  /** Lo que la ficha necesita hoy, deducido de lo que falta. Sin datos de más, sin red. */
+  const pending: { key: string; onClick?: () => void; to?: string; external?: boolean }[] = [];
+  if (!player.photoUrl) pending.push({ key: "photo", onClick: () => photoInput.current?.click() });
+  if (!player.birthDate) pending.push({ key: "birthDate", onClick: () => setSheet("edit") });
+  if (player.heightCm === null || player.dominantFoot === null)
+    pending.push({ key: "sportsData", onClick: () => setSheet("edit") });
+  if (guardians.length === 0 && !pendingInvitations.some((i) => i.state === "pending"))
+    pending.push({ key: "family", to: `#${FAMILY_ANCHOR}`, external: true });
+  if (!current) pending.push({ key: "team", to: paths.teams });
+  if (!objective) pending.push({ key: "objective", onClick: () => setSheet("objective") });
+  else if (objective.reviewOn && objective.reviewOn < today)
+    pending.push({ key: "objectiveReview", onClick: () => setSheet("objective") });
+  if (indicators.length < PLAYER_INDICATOR_DIMENSIONS.length)
+    pending.push({ key: "indicators", onClick: () => setSheet("indicators") });
+  if (!developmentPlan) pending.push({ key: "plan", onClick: () => setSheet("plan") });
+  else if (developmentPlan.nextReviewOn && developmentPlan.nextReviewOn < today)
+    pending.push({ key: "planReview", onClick: () => setSheet("plan") });
+
+  const indicatorBy = new Map(indicators.map((i) => [i.dimension, i] as const));
+  const eventText = (e: PlayerEvent) =>
+    t(`timeline.events.${e.kind}`, {
+      team: "",
+      season: "",
+      title: "",
+      progress: 0,
+      status: "",
+      text: "",
+      ...e.details,
+    });
 
   return (
     <div className="flex flex-col gap-5">
@@ -141,34 +316,434 @@ export function PlayerPage() {
           {t("back")}
         </ButtonLink>
       </div>
-      <PageHeader
-        title={
-          <>
-            <Avatar name={name} size="lg" />
-            {name}
-            <StatusChip kind={player.status === "active" ? "success" : "neutral"}>
-              {ps(player.status)}
-            </StatusChip>
-          </>
-        }
-        description={
-          teams
-            .filter((x) => x.seasonIsCurrent)
-            .map((x) => x.teamName)
-            .join(", ") || undefined
-        }
-        actions={
-          canWrite ? (
+
+      {/* Cabecera: foto, equipo y temporada, nombre, estado, dorsal y posición, y lecturas rápidas. */}
+      <header className="flex flex-wrap items-start justify-between gap-4">
+        <div className="flex min-w-0 flex-wrap gap-4">
+          <div className="flex flex-col items-center gap-2">
+            <Avatar
+              name={name}
+              size="xl"
+              src={player.photoUrl}
+              alt={player.photoUrl ? t("photo.alt", { name }) : undefined}
+            />
+            {canWrite ? (
+              <>
+                <input
+                  ref={photoInput}
+                  type="file"
+                  accept={PLAYER_PHOTO_CONTENT_TYPES.join(",")}
+                  className="sr-only"
+                  aria-label={t("photo.change")}
+                  disabled={photoBusy}
+                  onChange={(e) => void uploadPhoto(e.target.files?.[0])}
+                />
+                <Button
+                  variant="tertiary"
+                  size="sm"
+                  loading={photoBusy}
+                  onClick={() => photoInput.current?.click()}
+                >
+                  {photoBusy ? t("photo.uploading") : t("photo.change")}
+                </Button>
+              </>
+            ) : null}
+          </div>
+          <div className="flex min-w-0 flex-col gap-1">
+            {current ? (
+              <Eyebrow>
+                {current.category ?? current.sectionName} · {current.seasonName}
+              </Eyebrow>
+            ) : null}
+            <h1 className="flex flex-wrap items-center gap-3 text-title1 lg:text-title1-lg text-ink">
+              {name}
+              <StatusChip kind={player.status === "active" ? "success" : "neutral"}>
+                {ps(player.status)}
+              </StatusChip>
+            </h1>
+            <p className="text-body text-muted">{headline}</p>
+            <div className="flex flex-wrap gap-2 pt-1">
+              {age !== null ? <InfoChip>{t("chips.age", { age })}</InfoChip> : null}
+              <InfoChip>{t("chips.yearsAtClub", { count: yearsSince(player.createdAt) })}</InfoChip>
+              {player.dominantFoot ? (
+                <InfoChip>{t(`dominantFoot.${player.dominantFoot}`)}</InfoChip>
+              ) : null}
+              <InfoChip>{t("chips.familyAccess", { count: guardians.length })}</InfoChip>
+            </div>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {canWrite ? (
             <Button
               variant="secondary"
               icon={<Icon.PencilSimple size={18} aria-hidden="true" />}
-              onClick={() => setEditing(true)}
+              onClick={() => setSheet("edit")}
             >
-              {t("edit")}
+              {t("editProfile")}
+            </Button>
+          ) : null}
+          <ButtonLink
+            to={`#${FAMILY_ANCHOR}`}
+            external
+            variant="secondary"
+            icon={<Icon.HandHeart size={18} aria-hidden="true" />}
+          >
+            {t("manageAccess")}
+          </ButtonLink>
+        </div>
+      </header>
+
+      {/* Indicadores: cuatro lecturas de 0 a 100 con su nota. */}
+      <Card
+        title={t("indicators.title")}
+        description={t("indicators.description")}
+        actions={
+          canWrite ? (
+            <Button variant="secondary" size="sm" onClick={() => setSheet("indicators")}>
+              {t("indicators.rate")}
             </Button>
           ) : null
         }
-      />
+      >
+        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {PLAYER_INDICATOR_DIMENSIONS.map((dimension) => {
+            const item = indicatorBy.get(dimension) ?? null;
+            const label = t(`indicatorNames.${dimension}`);
+            return (
+              <li
+                key={dimension}
+                className="flex flex-col gap-2 rounded-card border border-border bg-page p-4"
+              >
+                <div className="flex items-center gap-3">
+                  <span
+                    aria-hidden="true"
+                    className="grid size-9 shrink-0 place-items-center rounded-full bg-club-soft font-mono text-label text-club-soft-text"
+                  >
+                    {t(`indicatorCodes.${dimension}`)}
+                  </span>
+                  <Eyebrow>{label}</Eyebrow>
+                </div>
+                {item ? (
+                  <>
+                    <span className="font-mono text-title1 lg:text-title1-lg text-ink">
+                      {item.score}
+                    </span>
+                    <span className="min-h-5 text-secondary text-muted">{item.note ?? ""}</span>
+                    <ProgressBar
+                      value={item.score}
+                      label={t("indicators.progressLabel", { dimension: label, score: item.score })}
+                    />
+                  </>
+                ) : (
+                  <span className="text-body text-muted">{t("indicators.unrated")}</span>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      </Card>
+
+      {/* Prioridad actual y qué hace falta hoy. */}
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+        <Card
+          title={
+            <span className="flex flex-col gap-0.5">
+              <Eyebrow>{t("objective.eyebrow")}</Eyebrow>
+              {t("objective.title")}
+            </span>
+          }
+          actions={
+            canWrite ? (
+              <>
+                {objective ? (
+                  <Button variant="tertiary" size="sm" onClick={() => setRemovingObjective(true)}>
+                    {t("objective.remove")}
+                  </Button>
+                ) : null}
+                <Button variant="secondary" size="sm" onClick={() => setSheet("objective")}>
+                  {objective ? t("objective.edit") : t("objective.define")}
+                </Button>
+              </>
+            ) : null
+          }
+        >
+          {objective ? (
+            <div className="flex flex-col gap-4">
+              <p className="text-title2 lg:text-title2-lg text-ink">{objective.title}</p>
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between gap-3 text-secondary text-muted">
+                  <span>{t("objective.progress")}</span>
+                  <span className="font-mono text-ink">{objective.progress}%</span>
+                </div>
+                <ProgressBar
+                  value={objective.progress}
+                  label={t("objective.progressLabel", { progress: objective.progress })}
+                />
+              </div>
+              <div className="flex flex-wrap justify-between gap-x-4 gap-y-1 text-secondary text-muted">
+                <span>
+                  {objective.owner
+                    ? t("objective.owner", { name: objective.owner.name })
+                    : t("objective.noOwner")}
+                </span>
+                <span>
+                  {objective.reviewOn
+                    ? t("objective.review", { date: dates.day(objective.reviewOn) })
+                    : t("objective.noReview")}
+                </span>
+              </div>
+            </div>
+          ) : (
+            <EmptyState
+              icon={<Icon.SportIcons.Trofeo />}
+              title={t("objective.empty")}
+              description={t("objective.emptyHint")}
+              action={
+                canWrite ? (
+                  <Button variant="secondary" size="sm" onClick={() => setSheet("objective")}>
+                    {t("objective.define")}
+                  </Button>
+                ) : null
+              }
+            />
+          )}
+        </Card>
+
+        <Card
+          title={
+            <span className="flex flex-col gap-0.5">
+              <Eyebrow>{t("actions.eyebrow")}</Eyebrow>
+              {t("actions.title")}
+            </span>
+          }
+          padded={false}
+        >
+          {pending.length === 0 ? (
+            <EmptyState
+              icon={<Icon.CheckCircle weight="duotone" />}
+              title={t("actions.allDone")}
+              description={t("actions.allDoneHint")}
+            />
+          ) : (
+            <ul className="flex flex-col divide-y divide-line">
+              {pending.map((item) => (
+                <li key={item.key} className="flex min-h-16 items-center gap-3 px-5 py-3">
+                  <span
+                    aria-hidden="true"
+                    className="size-2.5 shrink-0 rounded-full bg-warning-soft ring-2 ring-warning"
+                  />
+                  <span className="flex min-w-0 flex-1 flex-col">
+                    <span className="font-medium text-ink">{t(`actions.${item.key}`)}</span>
+                    <span className="text-secondary text-muted">
+                      {t(`actions.${item.key}Hint`)}
+                    </span>
+                  </span>
+                  {item.to ? (
+                    <ButtonLink
+                      to={item.to}
+                      external={item.external ?? false}
+                      variant="tertiary"
+                      size="sm"
+                      icon={<Icon.ArrowRight size={16} aria-hidden="true" />}
+                    >
+                      {t("actions.go")}
+                    </ButtonLink>
+                  ) : canWrite && item.onClick ? (
+                    <Button
+                      variant="tertiary"
+                      size="sm"
+                      icon={<Icon.ArrowRight size={16} aria-hidden="true" />}
+                      onClick={item.onClick}
+                    >
+                      {t("actions.go")}
+                    </Button>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+      </div>
+
+      {/* Timeline, datos deportivos y acciones rápidas. */}
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+        <Card
+          title={
+            <span className="flex flex-col gap-0.5">
+              <Eyebrow>{t("timeline.eyebrow")}</Eyebrow>
+              {t("timeline.title")}
+            </span>
+          }
+          actions={
+            <>
+              <StatusChip kind="neutral">
+                {t("timeline.count", { count: timeline.length })}
+              </StatusChip>
+              {canWrite ? (
+                <Button variant="secondary" size="sm" onClick={() => setSheet("note")}>
+                  {t("timeline.add")}
+                </Button>
+              ) : null}
+            </>
+          }
+        >
+          <ol className="flex flex-col">
+            {timeline.map((e) => (
+              <li
+                key={e.id}
+                className="relative border-l border-line pb-5 pl-6 last:border-l-transparent last:pb-0"
+              >
+                <span
+                  aria-hidden="true"
+                  className="absolute top-1.5 -left-[6px] size-3 rounded-full border-2 border-club bg-surface"
+                />
+                <div className="flex flex-col">
+                  <span className="text-secondary text-muted">
+                    {dates.day(e.happenedOn)}
+                    {e.actorName ? ` · ${t("timeline.by", { name: e.actorName })}` : ""}
+                  </span>
+                  <span className="text-body font-medium text-ink">{eventText(e)}</span>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </Card>
+
+        <div className="flex flex-col gap-6">
+          <Card title={t("sportsData.title")} description={t("sportsData.description")}>
+            <Definitions
+              items={[
+                {
+                  term: t("sportsData.team"),
+                  detail: current ? (
+                    <Link to={paths.team(current.teamId)}>{current.teamName}</Link>
+                  ) : (
+                    "–"
+                  ),
+                },
+                { term: t("sportsData.category"), detail: current?.category ?? "–" },
+                { term: t("sportsData.position"), detail: current?.position ?? "–" },
+                {
+                  term: t("sportsData.number"),
+                  detail: (
+                    <span className="font-mono">
+                      {current?.shirtNumber === null || current?.shirtNumber === undefined
+                        ? "–"
+                        : current.shirtNumber}
+                    </span>
+                  ),
+                },
+                {
+                  term: t("sportsData.height"),
+                  detail: (
+                    <span className="font-mono">
+                      {player.heightCm === null
+                        ? "–"
+                        : t("sportsData.heightValue", { cm: player.heightCm })}
+                    </span>
+                  ),
+                },
+                {
+                  term: t("sportsData.foot"),
+                  detail: t(`dominantFoot.${player.dominantFoot ?? "unknown"}`),
+                },
+                {
+                  term: t("sportsData.birthYear"),
+                  detail: (
+                    <span className="font-mono">
+                      {player.birthDate ? player.birthDate.slice(0, 4) : "–"}
+                    </span>
+                  ),
+                },
+              ]}
+            />
+          </Card>
+          <Card title={t("quickActions.title")}>
+            <div className="flex flex-col gap-2">
+              {current ? (
+                <ButtonLink to={paths.team(current.teamId)} variant="secondary">
+                  {t("quickActions.openTeam", { team: current.teamName })}
+                </ButtonLink>
+              ) : null}
+              <ButtonLink to={`#${FAMILY_ANCHOR}`} external variant="secondary">
+                {t("quickActions.familyAccess")}
+              </ButtonLink>
+            </div>
+          </Card>
+        </div>
+      </div>
+
+      {/* Plan de desarrollo individual: seis áreas, una línea por área. */}
+      <Card
+        title={
+          <span className="flex flex-col gap-0.5">
+            <Eyebrow>{t("plan.eyebrow")}</Eyebrow>
+            {t("plan.title")}
+          </span>
+        }
+        description={t("plan.description")}
+        actions={
+          <>
+            {developmentPlan ? (
+              <StatusChip kind={planKind[developmentPlan.status]}>
+                {t(`planStatus.${developmentPlan.status}`)}
+              </StatusChip>
+            ) : null}
+            {canWrite ? (
+              <Button variant="secondary" size="sm" onClick={() => setSheet("plan")}>
+                {developmentPlan ? t("plan.edit") : t("plan.create")}
+              </Button>
+            ) : null}
+          </>
+        }
+        footer={
+          developmentPlan ? (
+            <div className="flex w-full flex-wrap justify-between gap-x-4 gap-y-1 text-secondary text-muted">
+              <span>
+                {developmentPlan.coordinator
+                  ? t("plan.coordinator", { name: developmentPlan.coordinator.name })
+                  : t("plan.noCoordinator")}
+              </span>
+              <span>
+                {developmentPlan.nextReviewOn
+                  ? t("plan.nextReview", { date: dates.day(developmentPlan.nextReviewOn) })
+                  : t("plan.noReview")}
+              </span>
+            </div>
+          ) : null
+        }
+      >
+        {developmentPlan ? (
+          <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {DEVELOPMENT_AREAS.map((area) => (
+              <li
+                key={area}
+                className="flex flex-col gap-1 rounded-card border border-border bg-page p-4"
+              >
+                <Eyebrow>{t(`developmentAreas.${area}`)}</Eyebrow>
+                {developmentPlan[area] ? (
+                  <span className="text-body font-medium text-ink">{developmentPlan[area]}</span>
+                ) : (
+                  <span className="text-body text-muted">{t("plan.undefined")}</span>
+                )}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <EmptyState
+            icon={<Icon.SportIcons.PruebaFisica />}
+            title={t("plan.empty")}
+            description={t("plan.emptyHint")}
+            action={
+              canWrite ? (
+                <Button variant="secondary" size="sm" onClick={() => setSheet("plan")}>
+                  {t("plan.create")}
+                </Button>
+              ) : null
+            }
+          />
+        )}
+      </Card>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card title={t("data")} description={t("dataDescription")}>
@@ -209,79 +784,93 @@ export function PlayerPage() {
           )}
         </Card>
 
-        <Card
-          title={t("family")}
-          description={t("familyDescription")}
-          padded={false}
-          actions={
-            canWrite ? (
-              <>
-                <Button variant="secondary" size="sm" onClick={() => setLinking(true)}>
-                  {t("linkMember")}
-                </Button>
-                {canInvite ? (
-                  <Button
-                    size="sm"
-                    icon={<Icon.Envelope size={16} aria-hidden="true" />}
-                    onClick={() => setInviting(true)}
-                  >
-                    {t("inviteFamily")}
+        <div id={FAMILY_ANCHOR} className="scroll-mt-6">
+          <Card
+            title={t("family")}
+            description={t("familyDescription")}
+            padded={false}
+            actions={
+              canWrite ? (
+                <>
+                  <Button variant="secondary" size="sm" onClick={() => setSheet("link")}>
+                    {t("linkMember")}
                   </Button>
-                ) : null}
-              </>
-            ) : null
-          }
-        >
-          {lastLink ? (
-            <div className="px-5 pb-4">
-              <CopyLink
-                url={lastLink.url}
-                hint={t("inviteSheet.linkHint", { email: lastLink.email })}
-                copyLabel={c("copy")}
-                copiedLabel={c("copied")}
-              />
-            </div>
-          ) : null}
-          {guardians.length === 0 && pendingInvitations.length === 0 ? (
-            <EmptyState icon={<Icon.HandHeart weight="duotone" />} title={t("emptyFamily")} />
-          ) : (
-            <ul className="flex flex-col divide-y divide-line">
-              {guardians.map((g) => (
-                <li key={g.userId} className="flex min-h-16 flex-wrap items-center gap-3 px-5 py-3">
-                  <Avatar name={g.name} />
-                  <span className="flex min-w-0 flex-1 flex-col">
-                    <span className="truncate font-medium text-ink">{g.name}</span>
-                    <span className="truncate text-secondary text-muted">{g.email}</span>
-                  </span>
-                  <StatusChip kind="club">{rel(g.relationship)}</StatusChip>
-                  {canWrite ? (
-                    <Button variant="tertiary" size="sm" onClick={() => setUnlinking(g)}>
-                      {t("unlink")}
+                  {canInvite ? (
+                    <Button
+                      size="sm"
+                      icon={<Icon.Envelope size={16} aria-hidden="true" />}
+                      onClick={() => setSheet("invite")}
+                    >
+                      {t("inviteFamily")}
                     </Button>
                   ) : null}
-                </li>
-              ))}
-              {pendingInvitations.map((i) => (
-                <li key={i.id} className="flex min-h-16 flex-wrap items-center gap-3 px-5 py-3">
-                  <span className="grid size-10 shrink-0 place-items-center rounded-full bg-raised text-muted">
-                    <Icon.Envelope size={20} aria-hidden="true" />
-                  </span>
-                  <span className="flex min-w-0 flex-1 flex-col">
-                    <span className="truncate font-medium text-ink">{i.email}</span>
-                    <span className="truncate text-secondary text-muted">
-                      {i.relationship ? rel(i.relationship) : t("pendingInvitations")} ·{" "}
-                      {dates.day(i.expiresAt.slice(0, 10))}
+                </>
+              ) : null
+            }
+          >
+            {lastLink ? (
+              <div className="px-5 pb-4">
+                <CopyLink
+                  url={lastLink.url}
+                  hint={t("inviteSheet.linkHint", { email: lastLink.email })}
+                  copyLabel={c("copy")}
+                  copiedLabel={c("copied")}
+                />
+              </div>
+            ) : null}
+            {guardians.length === 0 && pendingInvitations.length === 0 ? (
+              <EmptyState icon={<Icon.HandHeart weight="duotone" />} title={t("emptyFamily")} />
+            ) : (
+              <ul className="flex flex-col divide-y divide-line">
+                {guardians.map((g) => (
+                  <li
+                    key={g.userId}
+                    className="flex min-h-16 flex-wrap items-center gap-3 px-5 py-3"
+                  >
+                    <Avatar name={g.name} />
+                    <span className="flex min-w-0 flex-1 flex-col">
+                      <span className="truncate font-medium text-ink">{g.name}</span>
+                      <span className="truncate text-secondary text-muted">{g.email}</span>
                     </span>
-                  </span>
-                  <StatusChip kind={inviteKind[i.state]}>{states(i.state)}</StatusChip>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
+                    <StatusChip kind="club">{rel(g.relationship)}</StatusChip>
+                    {canWrite ? (
+                      <Button variant="tertiary" size="sm" onClick={() => setUnlinking(g)}>
+                        {t("unlink")}
+                      </Button>
+                    ) : null}
+                  </li>
+                ))}
+                {pendingInvitations.map((i) => (
+                  <li key={i.id} className="flex min-h-16 flex-wrap items-center gap-3 px-5 py-3">
+                    <span className="grid size-10 shrink-0 place-items-center rounded-full bg-raised text-muted">
+                      <Icon.Envelope size={20} aria-hidden="true" />
+                    </span>
+                    <span className="flex min-w-0 flex-1 flex-col">
+                      <span className="truncate font-medium text-ink">{i.email}</span>
+                      <span className="truncate text-secondary text-muted">
+                        {i.relationship ? rel(i.relationship) : t("pendingInvitations")} ·{" "}
+                        {dates.day(i.expiresAt.slice(0, 10))}
+                      </span>
+                    </span>
+                    <StatusChip kind={inviteKind[i.state]}>{states(i.state)}</StatusChip>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
+        </div>
 
         {canWrite ? (
-          <Card title={t("status")}>
+          <Card
+            title={t("status")}
+            footer={
+              player.photoUrl ? (
+                <Button variant="tertiary" size="sm" onClick={() => setRemovingPhoto(true)}>
+                  {t("photo.remove")}
+                </Button>
+              ) : null
+            }
+          >
             <div className="flex flex-wrap items-center justify-between gap-3">
               <StatusChip kind={player.status === "active" ? "success" : "neutral"}>
                 {ps(player.status)}
@@ -300,31 +889,66 @@ export function PlayerPage() {
         ) : null}
       </div>
 
-      {editing ? (
+      {sheet === "edit" ? (
         <EditPlayerSheet
           player={player}
-          onClose={() => setEditing(false)}
+          onClose={() => setSheet(null)}
           onSaved={() => void reload()}
         />
       ) : null}
-      {inviting ? (
+      {sheet === "objective" ? (
+        <ObjectiveSheet
+          playerId={id}
+          playerName={name}
+          objective={objective}
+          onClose={() => setSheet(null)}
+          onSaved={() => void reload()}
+        />
+      ) : null}
+      {sheet === "indicators" ? (
+        <IndicatorsSheet
+          playerId={id}
+          playerName={name}
+          indicators={indicators}
+          onClose={() => setSheet(null)}
+          onSaved={() => void reload()}
+        />
+      ) : null}
+      {sheet === "plan" ? (
+        <PlanSheet
+          playerId={id}
+          playerName={name}
+          plan={developmentPlan}
+          onClose={() => setSheet(null)}
+          onSaved={() => void reload()}
+        />
+      ) : null}
+      {sheet === "note" ? (
+        <NoteSheet
+          playerId={id}
+          playerName={name}
+          onClose={() => setSheet(null)}
+          onSaved={() => void reload()}
+        />
+      ) : null}
+      {sheet === "invite" ? (
         <InviteFamilySheet
           playerId={id}
           playerName={name}
           defaultLocale={org.organization.view === "full" ? org.organization.defaultLocale : "es"}
-          onClose={() => setInviting(false)}
+          onClose={() => setSheet(null)}
           onSent={(email, url) => {
             if (url) setLastLink({ email, url });
             void reload();
           }}
         />
       ) : null}
-      {linking ? (
+      {sheet === "link" ? (
         <LinkMemberSheet
           playerId={id}
           playerName={name}
           excluded={guardians.map((g) => g.userId)}
-          onClose={() => setLinking(false)}
+          onClose={() => setSheet(null)}
           onLinked={() => void reload()}
         />
       ) : null}
@@ -336,6 +960,24 @@ export function PlayerPage() {
         cancelLabel={c("cancel")}
         onConfirm={() => unlinking && void unlink(unlinking)}
         onCancel={() => setUnlinking(null)}
+      />
+      <ConfirmDialog
+        open={removingPhoto}
+        title={t("photo.confirmRemoveTitle", { name })}
+        body={t("photo.confirmRemoveBody")}
+        confirmLabel={t("photo.remove")}
+        cancelLabel={c("cancel")}
+        onConfirm={() => void removePhoto()}
+        onCancel={() => setRemovingPhoto(false)}
+      />
+      <ConfirmDialog
+        open={removingObjective}
+        title={t("objective.confirmRemoveTitle", { name })}
+        body={t("objective.confirmRemoveBody")}
+        confirmLabel={t("objective.remove")}
+        cancelLabel={c("cancel")}
+        onConfirm={() => void removeObjective()}
+        onCancel={() => setRemovingObjective(false)}
       />
       {/* Dar de baja es un momento sensible: texto del design system, siempre en voz profesional. */}
       <ConfirmDialog
@@ -362,12 +1004,15 @@ function EditPlayerSheet({
 }) {
   const t = useT("player.editSheet");
   const tp = useT("players.sheet");
+  const feet = useT("player.dominantFoot");
   const c = useT("common");
   const errors = useT("errors");
   const toast = useToast();
   const [firstName, setFirstName] = useState(player.firstName);
   const [lastName, setLastName] = useState(player.lastName);
   const [birthDate, setBirthDate] = useState(player.birthDate ?? "");
+  const [dominantFoot, setDominantFoot] = useState<DominantFoot | "">(player.dominantFoot ?? "");
+  const [heightCm, setHeightCm] = useState(player.heightCm === null ? "" : String(player.heightCm));
   const [busy, setBusy] = useState(false);
 
   async function submit(e: FormEvent) {
@@ -376,7 +1021,13 @@ function EditPlayerSheet({
     try {
       await apiFetch(`/api/org/players/${player.id}`, {
         method: "PATCH",
-        body: { firstName, lastName, birthDate: birthDate || null },
+        body: {
+          firstName,
+          lastName,
+          birthDate: birthDate || null,
+          dominantFoot: dominantFoot || null,
+          heightCm: heightCm.trim() === "" ? null : Number(heightCm),
+        },
         schema: PlayerResponseSchema,
       });
       toast("success", t("saved"));
@@ -438,6 +1089,509 @@ function EditPlayerSheet({
               type="date"
               value={birthDate}
               onChange={(e) => setBirthDate(e.target.value)}
+            />
+          )}
+        </Field>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label={t("foot")}>
+            {(id) => (
+              <Select
+                id={id}
+                value={dominantFoot}
+                onChange={(e) => setDominantFoot(e.target.value as DominantFoot | "")}
+              >
+                <option value="">{t("footNone")}</option>
+                {DOMINANT_FEET.map((foot) => (
+                  <option key={foot} value={foot}>
+                    {feet(foot)}
+                  </option>
+                ))}
+              </Select>
+            )}
+          </Field>
+          <Field label={t("height")} hint={t("heightHint")}>
+            {(id) => (
+              <Input
+                id={id}
+                type="number"
+                inputMode="numeric"
+                min={PLAYER_HEIGHT_MIN_CM}
+                max={PLAYER_HEIGHT_MAX_CM}
+                className="font-mono"
+                value={heightCm}
+                onChange={(e) => setHeightCm(e.target.value)}
+              />
+            )}
+          </Field>
+        </div>
+      </form>
+    </Sheet>
+  );
+}
+
+/** Selector de responsable entre el personal del club, con la opción de dejarlo vacío. */
+function StaffSelect({
+  id,
+  value,
+  onChange,
+  playerId,
+  noneLabel,
+}: {
+  id: string;
+  value: string;
+  onChange: (userId: string) => void;
+  playerId: string;
+  noneLabel: string;
+}) {
+  const staff = useEligibleStaff(playerId);
+  return (
+    <Select id={id} value={value} onChange={(e) => onChange(e.target.value)}>
+      <option value="">{noneLabel}</option>
+      {(staff.data?.members ?? []).map((m) => (
+        <option key={m.userId} value={m.userId}>
+          {m.name}
+        </option>
+      ))}
+    </Select>
+  );
+}
+
+function ObjectiveSheet({
+  playerId,
+  playerName,
+  objective,
+  onClose,
+  onSaved,
+}: {
+  playerId: string;
+  playerName: string;
+  objective: Objective | null;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const t = useT("player.objective.sheet");
+  const c = useT("common");
+  const errors = useT("errors");
+  const toast = useToast();
+  const [title, setTitle] = useState(objective?.title ?? "");
+  const [progress, setProgress] = useState(String(objective?.progress ?? 0));
+  const [ownerUserId, setOwnerUserId] = useState(objective?.owner?.userId ?? "");
+  const [reviewOn, setReviewOn] = useState(objective?.reviewOn ?? "");
+  const [busy, setBusy] = useState(false);
+
+  async function submit(e: FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      await apiFetch(`/api/org/players/${playerId}/objective`, {
+        method: "PUT",
+        body: {
+          title,
+          progress: Number(progress),
+          ownerUserId: ownerUserId || null,
+          reviewOn: reviewOn || null,
+        },
+        schema: PlayerDetailResponseSchema,
+      });
+      toast("success", t("saved"));
+      onClose();
+      onSaved();
+    } catch (err) {
+      toast("error", errors(errorKey(err)));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Sheet
+      open
+      onClose={onClose}
+      closeLabel={c("close")}
+      title={t("title", { name: playerName })}
+      description={t("description")}
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose}>
+            {c("cancel")}
+          </Button>
+          <Button type="submit" form="objective-form" loading={busy}>
+            {c("save")}
+          </Button>
+        </>
+      }
+    >
+      <form id="objective-form" className="flex flex-col gap-4" onSubmit={(e) => void submit(e)}>
+        <Field label={t("name")}>
+          {(id) => (
+            <Input
+              id={id}
+              required
+              maxLength={PLAYER_OBJECTIVE_TITLE_MAX}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+          )}
+        </Field>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label={t("progress")}>
+            {(id) => (
+              <Input
+                id={id}
+                type="number"
+                inputMode="numeric"
+                required
+                min={0}
+                max={100}
+                className="font-mono"
+                value={progress}
+                onChange={(e) => setProgress(e.target.value)}
+              />
+            )}
+          </Field>
+          <Field label={t("reviewOn")}>
+            {(id) => (
+              <Input
+                id={id}
+                type="date"
+                value={reviewOn}
+                onChange={(e) => setReviewOn(e.target.value)}
+              />
+            )}
+          </Field>
+        </div>
+        <Field label={t("owner")}>
+          {(id) => (
+            <StaffSelect
+              id={id}
+              value={ownerUserId}
+              onChange={setOwnerUserId}
+              playerId={playerId}
+              noneLabel={t("noOwner")}
+            />
+          )}
+        </Field>
+      </form>
+    </Sheet>
+  );
+}
+
+function IndicatorsSheet({
+  playerId,
+  playerName,
+  indicators,
+  onClose,
+  onSaved,
+}: {
+  playerId: string;
+  playerName: string;
+  indicators: Indicator[];
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const t = useT("player.indicators.sheet");
+  const names = useT("player.indicatorNames");
+  const c = useT("common");
+  const errors = useT("errors");
+  const toast = useToast();
+  const initial = Object.fromEntries(
+    PLAYER_INDICATOR_DIMENSIONS.map((d) => {
+      const item = indicators.find((i) => i.dimension === d);
+      return [d, { score: item ? String(item.score) : "", note: item?.note ?? "" }];
+    }),
+  ) as Record<PlayerIndicatorDimension, { score: string; note: string }>;
+  const [values, setValues] = useState(initial);
+  const [busy, setBusy] = useState(false);
+  const set = (d: PlayerIndicatorDimension, patch: Partial<{ score: string; note: string }>) =>
+    setValues((v) => ({ ...v, [d]: { ...v[d], ...patch } }));
+
+  async function submit(e: FormEvent) {
+    e.preventDefault();
+    const body = Object.fromEntries(
+      PLAYER_INDICATOR_DIMENSIONS.filter((d) => values[d].score.trim() !== "").map((d) => [
+        d,
+        { score: Number(values[d].score), note: values[d].note.trim() || null },
+      ]),
+    );
+    if (Object.keys(body).length === 0) {
+      toast("error", errors("bad_request"));
+      return;
+    }
+    setBusy(true);
+    try {
+      await apiFetch(`/api/org/players/${playerId}/indicators`, {
+        method: "PUT",
+        body,
+        schema: PlayerDetailResponseSchema,
+      });
+      toast("success", t("saved"));
+      onClose();
+      onSaved();
+    } catch (err) {
+      toast("error", errors(errorKey(err)));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Sheet
+      open
+      onClose={onClose}
+      closeLabel={c("close")}
+      title={t("title", { name: playerName })}
+      description={t("description")}
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose}>
+            {c("cancel")}
+          </Button>
+          <Button type="submit" form="indicators-form" loading={busy}>
+            {c("save")}
+          </Button>
+        </>
+      }
+    >
+      <form id="indicators-form" className="flex flex-col gap-5" onSubmit={(e) => void submit(e)}>
+        {PLAYER_INDICATOR_DIMENSIONS.map((d) => (
+          <fieldset key={d} className="flex flex-col gap-3">
+            <legend className="text-body font-semibold text-ink">{names(d)}</legend>
+            <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
+              <Field label={t("score")}>
+                {(id) => (
+                  <Input
+                    id={id}
+                    type="number"
+                    inputMode="numeric"
+                    min={0}
+                    max={100}
+                    className="font-mono"
+                    value={values[d].score}
+                    onChange={(e) => set(d, { score: e.target.value })}
+                  />
+                )}
+              </Field>
+              <Field label={t("note")} hint={t("noteHint")}>
+                {(id) => (
+                  <Input
+                    id={id}
+                    maxLength={PLAYER_INDICATOR_NOTE_MAX}
+                    value={values[d].note}
+                    onChange={(e) => set(d, { note: e.target.value })}
+                  />
+                )}
+              </Field>
+            </div>
+          </fieldset>
+        ))}
+      </form>
+    </Sheet>
+  );
+}
+
+function PlanSheet({
+  playerId,
+  playerName,
+  plan,
+  onClose,
+  onSaved,
+}: {
+  playerId: string;
+  playerName: string;
+  plan: Plan | null;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const t = useT("player.plan.sheet");
+  const areas = useT("player.developmentAreas");
+  const statuses = useT("player.planStatus");
+  const c = useT("common");
+  const errors = useT("errors");
+  const toast = useToast();
+  const [goals, setGoals] = useState(
+    Object.fromEntries(DEVELOPMENT_AREAS.map((a) => [a, plan?.[a] ?? ""])) as Record<
+      (typeof DEVELOPMENT_AREAS)[number],
+      string
+    >,
+  );
+  const [coordinatorUserId, setCoordinatorUserId] = useState(plan?.coordinator?.userId ?? "");
+  const [nextReviewOn, setNextReviewOn] = useState(plan?.nextReviewOn ?? "");
+  const [status, setStatus] = useState<DevelopmentPlanStatus>(plan?.status ?? "draft");
+  const [busy, setBusy] = useState(false);
+
+  async function submit(e: FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      await apiFetch(`/api/org/players/${playerId}/development-plan`, {
+        method: "PUT",
+        body: {
+          ...Object.fromEntries(DEVELOPMENT_AREAS.map((a) => [a, goals[a].trim() || null])),
+          coordinatorUserId: coordinatorUserId || null,
+          nextReviewOn: nextReviewOn || null,
+          status,
+        },
+        schema: PlayerDetailResponseSchema,
+      });
+      toast("success", t("saved"));
+      onClose();
+      onSaved();
+    } catch (err) {
+      toast("error", errors(errorKey(err)));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Sheet
+      open
+      onClose={onClose}
+      closeLabel={c("close")}
+      title={t("title", { name: playerName })}
+      description={t("description")}
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose}>
+            {c("cancel")}
+          </Button>
+          <Button type="submit" form="plan-form" loading={busy}>
+            {c("save")}
+          </Button>
+        </>
+      }
+    >
+      <form id="plan-form" className="flex flex-col gap-4" onSubmit={(e) => void submit(e)}>
+        {DEVELOPMENT_AREAS.map((a) => (
+          <Field key={a} label={areas(a)}>
+            {(id) => (
+              <Input
+                id={id}
+                maxLength={DEVELOPMENT_GOAL_MAX}
+                value={goals[a]}
+                onChange={(e) => setGoals((g) => ({ ...g, [a]: e.target.value }))}
+              />
+            )}
+          </Field>
+        ))}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label={t("status")}>
+            {(id) => (
+              <Select
+                id={id}
+                value={status}
+                onChange={(e) => setStatus(e.target.value as DevelopmentPlanStatus)}
+              >
+                {DEVELOPMENT_PLAN_STATUSES.map((s) => (
+                  <option key={s} value={s}>
+                    {statuses(s)}
+                  </option>
+                ))}
+              </Select>
+            )}
+          </Field>
+          <Field label={t("nextReviewOn")}>
+            {(id) => (
+              <Input
+                id={id}
+                type="date"
+                value={nextReviewOn}
+                onChange={(e) => setNextReviewOn(e.target.value)}
+              />
+            )}
+          </Field>
+        </div>
+        <Field label={t("coordinator")}>
+          {(id) => (
+            <StaffSelect
+              id={id}
+              value={coordinatorUserId}
+              onChange={setCoordinatorUserId}
+              playerId={playerId}
+              noneLabel={t("noCoordinator")}
+            />
+          )}
+        </Field>
+      </form>
+    </Sheet>
+  );
+}
+
+function NoteSheet({
+  playerId,
+  playerName,
+  onClose,
+  onSaved,
+}: {
+  playerId: string;
+  playerName: string;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const t = useT("player.timeline.sheet");
+  const c = useT("common");
+  const errors = useT("errors");
+  const toast = useToast();
+  const [text, setText] = useState("");
+  const [happenedOn, setHappenedOn] = useState(todayIso());
+  const [busy, setBusy] = useState(false);
+
+  async function submit(e: FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      await apiFetch(`/api/org/players/${playerId}/events`, {
+        method: "POST",
+        body: { text, ...(happenedOn ? { happenedOn } : {}) },
+        schema: PlayerDetailResponseSchema,
+      });
+      toast("success", t("saved"));
+      onClose();
+      onSaved();
+    } catch (err) {
+      toast("error", errors(errorKey(err)));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Sheet
+      open
+      onClose={onClose}
+      closeLabel={c("close")}
+      title={t("title", { name: playerName })}
+      description={t("description")}
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose}>
+            {c("cancel")}
+          </Button>
+          <Button type="submit" form="note-form" loading={busy}>
+            {t("submit")}
+          </Button>
+        </>
+      }
+    >
+      <form id="note-form" className="flex flex-col gap-4" onSubmit={(e) => void submit(e)}>
+        <Field label={t("text")}>
+          {(id) => (
+            <Input
+              id={id}
+              required
+              maxLength={PLAYER_NOTE_MAX}
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+            />
+          )}
+        </Field>
+        <Field label={t("date")}>
+          {(id) => (
+            <Input
+              id={id}
+              type="date"
+              value={happenedOn}
+              onChange={(e) => setHappenedOn(e.target.value)}
             />
           )}
         </Field>

@@ -480,7 +480,14 @@
       "created": "Jugador dado de alta",
       "updated": "Jugador editado",
       "guardian_linked": "Familia vinculada",
-      "guardian_unlinked": "Familia desvinculada"
+      "guardian_unlinked": "Familia desvinculada",
+      "photo_updated": "Foto de jugador cambiada",
+      "photo_removed": "Foto de jugador quitada",
+      "objective_updated": "Objetivo individual guardado",
+      "objective_removed": "Objetivo individual quitado",
+      "indicators_updated": "Indicadores de jugador valorados",
+      "plan_updated": "Plan de desarrollo guardado",
+      "note_added": "Registro añadido al jugador"
     }
   },
   "teams": {
@@ -667,7 +674,7 @@
     "back": "Jugadores",
     "data": "Datos",
     "dataDescription": "Nombre, apellidos y fecha de nacimiento.",
-    "edit": "Editar",
+    "edit": "Editar perfil",
     "born": "Nacimiento",
     "age": "Edad",
     "since": "En el club desde",
@@ -691,8 +698,12 @@
     "deactivated": "{name} ha causado baja.",
     "reactivated": "Ficha de {name} reactivada.",
     "editSheet": {
-      "title": "Editar datos",
-      "saved": "Datos guardados."
+      "title": "Editar perfil",
+      "saved": "Perfil guardado.",
+      "foot": "Pie dominante",
+      "footNone": "Sin indicar",
+      "height": "Altura (cm)",
+      "heightHint": "Opcional. Entre 50 y 250."
     },
     "inviteSheet": {
       "title": "Invitar a la familia de {name}",
@@ -714,6 +725,192 @@
       "submit": "Vincular",
       "linked": "{member} vinculado como familia de {name}.",
       "empty": "No hay miembros disponibles."
+    },
+    "editProfile": "Editar perfil",
+    "manageAccess": "Gestionar accesos",
+    "noCurrentTeam": "Sin equipo esta temporada",
+    "number": "#{number}",
+    "chips": {
+      "age": "{age, plural, one {# año} other {# años}}",
+      "yearsAtClub": "{count, plural, =0 {Primer año en el club} one {# año en el club} other {# años en el club}}",
+      "familyAccess": "{count, plural, =0 {Sin acceso familiar} one {# acceso familiar} other {# accesos familiares}}"
+    },
+    "dominantFoot": {
+      "right": "Pie derecho",
+      "left": "Pie izquierdo",
+      "both": "Ambidiestro",
+      "unknown": "Pie sin indicar"
+    },
+    "photo": {
+      "change": "Cambiar foto",
+      "remove": "Quitar foto",
+      "alt": "Foto de {name}",
+      "uploading": "Subiendo…",
+      "saved": "Foto guardada.",
+      "removed": "Foto quitada.",
+      "confirmRemoveTitle": "¿Quitar la foto de {name}?",
+      "confirmRemoveBody": "La ficha volverá a mostrar las iniciales. Puedes subir otra cuando quieras."
+    },
+    "indicators": {
+      "title": "Indicadores",
+      "description": "Deporte, cuerpo, bienestar y compromiso, de 0 a 100, con una lectura corta.",
+      "rate": "Valorar",
+      "unrated": "Sin valorar",
+      "progressLabel": "{dimension}: {score} de 100",
+      "sheet": {
+        "title": "Valorar a {name}",
+        "description": "Puntúa de 0 a 100 y resume en una línea qué hay detrás de la cifra.",
+        "score": "Puntuación",
+        "note": "Lectura corta",
+        "noteHint": "Por ejemplo: Bien · Técnica y táctica",
+        "saved": "Indicadores guardados."
+      }
+    },
+    "indicatorNames": {
+      "sport": "Deporte",
+      "body": "Cuerpo",
+      "wellbeing": "Bienestar",
+      "commitment": "Compromiso"
+    },
+    "indicatorCodes": {
+      "sport": "DE",
+      "body": "CU",
+      "wellbeing": "BI",
+      "commitment": "CO"
+    },
+    "objective": {
+      "eyebrow": "Prioridad actual",
+      "title": "Objetivo individual",
+      "edit": "Editar",
+      "define": "Definir objetivo",
+      "remove": "Quitar",
+      "empty": "Todavía no hay objetivo individual.",
+      "emptyHint": "Una sola prioridad, con progreso, responsable y fecha de revisión.",
+      "progress": "Progreso registrado",
+      "progressLabel": "Progreso del objetivo: {progress} de 100",
+      "owner": "Responsable: {name}",
+      "noOwner": "Sin responsable",
+      "review": "Revisión: {date}",
+      "noReview": "Sin fecha de revisión",
+      "confirmRemoveTitle": "¿Quitar el objetivo de {name}?",
+      "confirmRemoveBody": "El objetivo desaparece de la ficha. El registro de su progreso se queda en el timeline.",
+      "removed": "Objetivo quitado.",
+      "sheet": {
+        "title": "Objetivo de {name}",
+        "description": "Una sola prioridad, en una frase, con el progreso que lleva.",
+        "name": "Objetivo",
+        "progress": "Progreso (%)",
+        "owner": "Responsable",
+        "noOwner": "Sin responsable",
+        "reviewOn": "Fecha de revisión",
+        "saved": "Objetivo guardado."
+      }
+    },
+    "actions": {
+      "eyebrow": "Qué hace falta hoy",
+      "title": "Acciones prioritarias",
+      "allDone": "Todo al día.",
+      "allDoneHint": "No hay nada pendiente en esta ficha.",
+      "photo": "Añadir fotografía",
+      "photoHint": "Completa la identificación visual del jugador.",
+      "birthDate": "Añadir la fecha de nacimiento",
+      "birthDateHint": "Sin ella no se calcula la edad ni la categoría.",
+      "sportsData": "Completar los datos deportivos",
+      "sportsDataHint": "Faltan la altura o el pie dominante.",
+      "family": "Vincular a la familia",
+      "familyHint": "Nadie de su familia tiene acceso todavía.",
+      "team": "Asignar a un equipo",
+      "teamHint": "No está en ninguna plantilla de la temporada actual.",
+      "objective": "Definir el objetivo individual",
+      "objectiveHint": "Una prioridad clara para esta temporada.",
+      "objectiveReview": "Revisar el objetivo",
+      "objectiveReviewHint": "La fecha de revisión ya ha pasado.",
+      "indicators": "Valorar los indicadores",
+      "indicatorsHint": "Faltan dimensiones por puntuar.",
+      "plan": "Crear el plan de desarrollo",
+      "planHint": "Seis áreas, una línea por área.",
+      "planReview": "Revisar el plan de desarrollo",
+      "planReviewHint": "La próxima revisión ya ha pasado.",
+      "go": "Ir"
+    },
+    "timeline": {
+      "eyebrow": "Últimos movimientos",
+      "title": "Timeline",
+      "count": "{count, plural, one {# registro} other {# registros}}",
+      "add": "Añadir registro",
+      "by": "por {name}",
+      "events": {
+        "joined": "Alta en el club",
+        "roster_added": "Entra en la plantilla de {team} ({season})",
+        "roster_removed": "Sale de la plantilla de {team} ({season})",
+        "status_changed": "{status, select, inactive {Baja de la ficha} other {Ficha reactivada}}",
+        "objective_updated": "Objetivo: {title} · {progress}% logrado",
+        "indicators_updated": "Indicadores actualizados",
+        "plan_updated": "Plan de desarrollo {status, select, draft {en estructura inicial} active {en marcha} shared {compartido con la familia} other {actualizado}}",
+        "photo_updated": "Foto actualizada",
+        "note": "{text}"
+      },
+      "sheet": {
+        "title": "Añadir registro a {name}",
+        "description": "Una anotación con fecha: una revisión, un hito, algo que conviene recordar.",
+        "text": "Anotación",
+        "date": "Fecha",
+        "submit": "Añadir registro",
+        "saved": "Registro añadido."
+      }
+    },
+    "sportsData": {
+      "title": "Datos deportivos",
+      "description": "Equipo, categoría y medidas de esta temporada.",
+      "team": "Equipo",
+      "category": "Categoría",
+      "position": "Posición",
+      "number": "Dorsal",
+      "height": "Altura",
+      "heightValue": "{cm} cm",
+      "foot": "Pie dominante",
+      "birthYear": "Nacimiento"
+    },
+    "quickActions": {
+      "title": "Acciones rápidas",
+      "openTeam": "Abrir {team}",
+      "familyAccess": "Accesos familiares"
+    },
+    "plan": {
+      "eyebrow": "Plan de desarrollo individual",
+      "title": "PDI compartido",
+      "description": "Una línea por área. Se comparte con la familia cuando el club lo decide.",
+      "edit": "Editar",
+      "create": "Crear PDI",
+      "empty": "Todavía no hay plan de desarrollo.",
+      "emptyHint": "Seis áreas: técnico, táctico, físico, emocional, hábitos y persona.",
+      "coordinator": "Coordinación: {name}",
+      "noCoordinator": "Sin coordinación",
+      "nextReview": "Próxima revisión: {date}",
+      "noReview": "Sin fecha de revisión",
+      "undefined": "Sin definir",
+      "sheet": {
+        "title": "PDI de {name}",
+        "description": "Una frase por área. Lo que no se rellena queda pendiente.",
+        "coordinator": "Coordinación",
+        "noCoordinator": "Sin coordinación",
+        "nextReviewOn": "Próxima revisión",
+        "status": "Estado",
+        "saved": "Plan de desarrollo guardado."
+      }
+    },
+    "planStatus": {
+      "draft": "Estructura inicial",
+      "active": "En marcha",
+      "shared": "Compartido con la familia"
+    },
+    "developmentAreas": {
+      "technical": "Técnico",
+      "tactical": "Táctico",
+      "physical": "Físico",
+      "emotional": "Emocional",
+      "habits": "Hábitos",
+      "person": "Persona"
     }
   },
   "family": {

@@ -58,6 +58,7 @@ export interface RosterRecord {
   shirtNumber: number | null;
   position: string | null;
   guardiansCount: number;
+  photoBlobKey: string | null;
 }
 
 export interface StaffRecord {
@@ -409,6 +410,7 @@ export function teamsRepo(db: () => Database) {
           shirtNumber: schema.teamPlayers.shirtNumber,
           position: schema.teamPlayers.position,
           guardiansCount: count(schema.playerGuardians.id),
+          photoBlobKey: schema.players.photoBlobKey,
         })
         .from(schema.teamPlayers)
         .innerJoin(schema.players, eq(schema.players.id, schema.teamPlayers.playerId))

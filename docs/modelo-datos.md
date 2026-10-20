@@ -1,6 +1,6 @@
 # Modelo de datos
 
-Estado: Fase 1, Bloque 11. Organizaciones, identidad, pertenencias e invitaciones (Fase 0) más la estructura del club: temporadas, secciones, equipos con plantilla y cuerpo técnico, jugadores y familias (ADR 0028).
+Estado: Fase 1, Bloque 12. Organizaciones, identidad, pertenencias e invitaciones (Fase 0), la estructura del club: temporadas, secciones, equipos con plantilla y cuerpo técnico, jugadores y familias (ADR 0028), y la ficha ampliada del jugador: foto, datos deportivos, objetivo, indicadores, plan de desarrollo y registros (ADR 0029).
 
 Fuente de verdad: `packages/db/src/schema/`. Las migraciones están en `netlify/database/migrations/` y las aplica Netlify en cada deploy (ADR 0003).
 
@@ -32,15 +32,20 @@ Fuente de verdad: `packages/db/src/schema/`. Las migraciones están en `netlify/
 | `seasons` | Temporada de un club ("2026-27") | Nombre único por club. Fechas de inicio y fin (`ends_on > starts_on`). Una sola actual por club (índice único parcial sobre `is_current`). Semilla del demo: 2026-27 |
 | `sections` | Sección del club, la capa entre el club y sus equipos | Nombre único por club, orden y estado `active` o `archived`. Con equipos no se borra. Semilla del demo: "Fútbol sala" |
 | `teams` | Equipo de una sección en una temporada | Único por (temporada, sección, nombre). Categoría como texto libre. Estado `active` o `archived`. Semilla del demo: cuatro equipos |
-| `players` | Jugador del club. No es un usuario | Nombre, apellidos, fecha de nacimiento opcional, estado `active` o `inactive`. Índice por club y apellidos. Semilla del demo: 36 jugadores ficticios |
+| `players` | Jugador del club. No es un usuario | Nombre, apellidos, fecha de nacimiento opcional, estado `active` o `inactive`. Índice por club y apellidos. Ficha ampliada (Bloque 12): clave de la foto en Netlify Blobs (store `player-photos`), pie dominante `right`, `left` o `both`, altura en cm entre 50 y 250. Semilla del demo: 36 jugadores ficticios; Clara Martí con la ficha completa |
 | `team_players` | Plantilla: jugador en un equipo | Único por (equipo, jugador). Dorsal opcional (no negativo) y posición como texto. Borrar el equipo o el jugador la arrastra |
 | `team_staff` | Cuerpo técnico de un equipo | Único por (equipo, usuario). Solo miembros activos del club, comprobado en la API |
 | `player_guardians` | Familia: cuenta vinculada a un jugador | Único por (jugador, usuario). Relación `mother`, `father`, `guardian`, `grandparent` u `other`. Nace al aceptar una invitación de familia o al vincular a un miembro desde la ficha |
+| `player_objectives` | Objetivo individual vigente del jugador (Bloque 12) | Uno por jugador (único por `player_id`); guardarlo sustituye al anterior. Título, progreso de 0 a 100, responsable (usuario del club, en nulo si se borra su cuenta) y fecha de revisión |
+| `player_indicators` | Indicadores del jugador: deporte, cuerpo, bienestar y compromiso | Único por (jugador, dimensión). Puntuación de 0 a 100 y lectura corta opcional. Quién valoró, en nulo si se borra su cuenta |
+| `player_development_plans` | Plan de desarrollo individual (PDI) | Uno por jugador. Una línea por área: técnico, táctico, físico, emocional, hábitos y persona. Coordinación (usuario del club), próxima revisión y estado `draft`, `active` o `shared` |
+| `player_events` | Registros del timeline del jugador | Solo se escriben. Tipo en `PLAYER_EVENT_KINDS` de `packages/shared` (plantilla, estado, objetivo, indicadores, PDI, foto, anotación); `details` lleva nombres y cifras para el texto, que la web pone en cada idioma. El alta en el club no se guarda: sale de `players.created_at` |
 
 ## Borrados en cascada
 
 - Borrar un club borra sus pertenencias e invitaciones; sus emails registrados quedan sin club. También borra temporadas, secciones, equipos, jugadores, plantillas, cuerpo técnico y familias.
-- Borrar un jugador borra su plantilla y sus familias, y deja sin jugador las invitaciones de familia que lo apuntaban. Una temporada o una sección con equipos no se puede borrar.
+- Borrar un jugador borra su plantilla, sus familias, su objetivo, sus indicadores, su plan de desarrollo y sus registros, y deja sin jugador las invitaciones de familia que lo apuntaban. Su foto queda en Blobs hasta el siguiente cambio (misma política que los logos). Una temporada o una sección con equipos no se puede borrar.
+- Borrar un usuario deja sin responsable el objetivo, sin coordinación el plan y sin autor los indicadores y registros que firmó.
 - Borrar un usuario borra sus sesiones, cuentas y pertenencias, y deja en nulo quién invitó o aceptó.
 - Un deporte o un rol en uso no se pueden borrar.
 
