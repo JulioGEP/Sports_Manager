@@ -23,7 +23,11 @@ export type OrgState =
 export function AppShell({
   children,
 }: {
-  children: (ctx: { org: OrganizationResponse; userName: string }) => ReactNode;
+  children: (ctx: {
+    org: OrganizationResponse;
+    userName: string;
+    platformAdmin: boolean;
+  }) => ReactNode;
 }) {
   const t = useTranslations("shell");
   const router = useRouter();
@@ -112,7 +116,11 @@ export function AppShell({
       ) : null}
       {orgState.kind === "error" ? <p className="alert alert--error">{t("apiError")}</p> : null}
       {orgState.kind === "ready"
-        ? children({ org: orgState.org, userName: session.me.user.name })
+        ? children({
+            org: orgState.org,
+            userName: session.me.user.name,
+            platformAdmin: session.me.platformAdmin,
+          })
         : null}
     </div>
   );

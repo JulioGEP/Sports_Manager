@@ -6,7 +6,17 @@
     "yourRoles": "Els teus rols:",
     "supportLimited": "Entres com a suport de plataforma: només veus l'estat i els recomptes del club.",
     "supportFull": "Entres com a suport de plataforma amb autorització del club: lectura completa.",
-    "apiStatus": "Estat de l'API"
+    "apiStatus": "Estat de l'API",
+    "actionsTitle": "Què pots fer aquí",
+    "actionMembers": "Membres",
+    "actionMembersBody": "Veure qui forma part del club i convidar entrenadors, tutors i administradors.",
+    "actionSettings": "Configuració del club",
+    "actionSettingsBody": "Nom, idioma, colors de marca i logo.",
+    "actionClubs": "Els meus clubs",
+    "actionClubsBody": "Canviar de club si pertanys a diversos.",
+    "actionAdmin": "Admin intern",
+    "actionAdminBody": "Crear clubs, configurar-ne la marca i convidar el primer administrador.",
+    "phaseNote": "Fase 0: comptes, clubs, rols, invitacions i marca. Jugadors, equips i seccions arriben a la Fase 1."
   },
   "apiStatus": {
     "loading": "Comprovant…",
