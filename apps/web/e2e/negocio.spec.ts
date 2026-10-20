@@ -1,6 +1,57 @@
 import { expect, test } from "@playwright/test";
 import { DEMO, expectLegibleButtons, login, readInvitationLink, shot, suffix } from "./helpers";
 
+test.describe("entrada del negocio", () => {
+  test("sin sesión, /admin lleva a su propia entrada; el primer administrador se da de alta solo", async ({
+    page,
+  }, info) => {
+    const email = `plataforma-${suffix(info.project.name)}@demo.test`;
+
+    await page.goto("/admin");
+    await page.waitForURL(/\/admin\/login/);
+    await expect(page.getByRole("heading", { name: "Administración del negocio" })).toBeVisible();
+    await shot(page, "48-negocio-login", info.project.name);
+    await expectLegibleButtons(page);
+
+    await page.getByRole("link", { name: /Crea tu cuenta de administrador/ }).click();
+    await expect(
+      page.getByRole("heading", { name: "Crear cuenta de administrador" }),
+    ).toBeVisible();
+    await page.getByLabel("Tu nombre").fill("Julio Prueba");
+    await page.getByLabel("Email").fill(email);
+    await page.getByLabel("Contraseña", { exact: true }).fill("123456");
+    await page.getByLabel("Repite la contraseña").fill("123456");
+    await shot(page, "49-negocio-alta-administrador", info.project.name);
+    await expectLegibleButtons(page);
+    await page.getByRole("button", { name: "Crear cuenta y entrar" }).click();
+
+    await page.waitForURL(/\/admin$/);
+    await expect(page.getByRole("heading", { name: "Clubes" })).toBeVisible();
+    await expect(page.locator(".sidebar__user")).toContainText("Julio Prueba");
+
+    // Un email no autorizado no puede darse de alta.
+    await page.getByRole("button", { name: "Cerrar sesión" }).click();
+    await page.waitForURL(/\/admin\/login/);
+    await page.goto("/admin/setup");
+    await page.getByLabel("Tu nombre").fill("Intruso");
+    await page.getByLabel("Email").fill(`intruso-${suffix(info.project.name)}@demo.test`);
+    await page.getByLabel("Contraseña", { exact: true }).fill("123456");
+    await page.getByLabel("Repite la contraseña").fill("123456");
+    await page.getByRole("button", { name: "Crear cuenta y entrar" }).click();
+    await expect(page.locator(".alert--error")).toContainText("no está autorizado");
+
+    // Y la cuenta recién creada entra por /admin/login.
+    await page.goto("/admin/login");
+    await page.getByLabel("Email").fill(email);
+    await page.getByLabel("Contraseña").fill("123456");
+    await page.getByRole("button", { name: "Entrar" }).click();
+    await page.waitForURL(/\/admin$/);
+    await expect(page.getByRole("heading", { name: "Clubes" })).toBeVisible();
+    await page.getByRole("button", { name: "Cerrar sesión" }).click();
+    await page.waitForURL(/\/admin\/login/);
+  });
+});
+
 test.describe("panel del negocio", () => {
   test.beforeEach(async ({ page }) => {
     await login(page);

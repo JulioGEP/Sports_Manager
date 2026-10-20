@@ -39,5 +39,14 @@ test.describe("invitación de punta a punta", () => {
     await page.goto("/clubs");
     await page.waitForURL((url) => url.pathname === "/");
     await expect(page.getByRole("heading", { name: /Hola, Marta/ })).toBeVisible();
+
+    // Una cuenta de club no entra en el negocio: aviso y opción de cambiar de cuenta.
+    await page.goto("/admin");
+    await expect(page.getByText("no es administradora de plataforma")).toBeVisible();
+    await shot(page, "42-negocio-cuenta-de-club", info.project.name);
+    await expectLegibleButtons(page);
+    await page.getByRole("button", { name: "Entrar con otra cuenta" }).click();
+    await page.waitForURL(/\/admin\/login/);
+    await expect(page.getByRole("heading", { name: "Administración del negocio" })).toBeVisible();
   });
 });

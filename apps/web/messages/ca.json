@@ -235,7 +235,8 @@
       "mainNav": "Navegació del negoci",
       "apiError": "L'API no respon.",
       "forbiddenTitle": "Només administradors de plataforma",
-      "forbiddenBody": "El teu compte ({email}) no és administrador de plataforma."
+      "forbiddenBody": "El teu compte ({email}) no és administrador de plataforma.",
+      "switchAccount": "Entrar amb un altre compte"
     },
     "clubs": {
       "title": "Clubs",
@@ -317,6 +318,31 @@
       "title": "Sistema",
       "description": "Estat tècnic de la plataforma.",
       "apiTitle": "API i base de dades"
+    },
+    "login": {
+      "title": "Administració del negoci",
+      "subtitle": "Entrada reservada a qui administra la plataforma.",
+      "email": "Email",
+      "password": "Contrasenya",
+      "submit": "Entrar",
+      "forgot": "Has oblidat la contrasenya?",
+      "setup": "Primera vegada? Crea el teu compte d’administrador",
+      "notAdmin": "Aquest compte no és administrador de plataforma."
+    },
+    "setup": {
+      "title": "Crear compte d’administrador",
+      "subtitle": "Només per als emails autoritzats com a administradors de plataforma. Després entraràs per l’accés del negoci.",
+      "name": "El teu nom",
+      "email": "Email",
+      "password": "Contrasenya",
+      "passwordHint": "Mínim {min} caràcters.",
+      "confirm": "Repeteix la contrasenya",
+      "submit": "Crear compte i entrar",
+      "mismatch": "Les contrasenyes no coincideixen.",
+      "tooShort": "La contrasenya ha de tenir almenys {min} caràcters.",
+      "forbidden": "Aquest email no està autoritzat com a administrador de plataforma.",
+      "exists": "Aquest compte ja existeix. Entra amb la contrasenya o recupera-la.",
+      "backToLogin": "Ja tinc compte"
     }
   },
   "apiStatus": {
@@ -387,6 +413,9 @@
     "membership": {
       "role_assigned": "Rol assignat",
       "role_removed": "Rol retirat"
+    },
+    "platform": {
+      "admin_created": "Administrador de plataforma creat"
     }
   }
 }

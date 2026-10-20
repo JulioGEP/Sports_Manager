@@ -84,6 +84,18 @@ Cuenta de demostración: `admin@demo.test` / `123456`, administradora del club d
 
 ## Panel del negocio
 
+### Entrada del negocio: su propio login, sin marca de ningún club
+
+![Entrada del negocio](escritorio-48-negocio-login.png)
+
+### Alta del primer administrador de plataforma (solo emails autorizados)
+
+![Alta del primer administrador](escritorio-49-negocio-alta-administrador.png)
+
+### Una cuenta de club no entra en el negocio
+
+![Cuenta de club rechazada](escritorio-42-negocio-cuenta-de-club.png)
+
 ### Panel del negocio: clubes
 
 ![Panel del negocio: clubes](escritorio-50-negocio-clubes.png)

@@ -330,6 +330,12 @@ textarea {
   padding: var(--space-6) var(--space-4);
 }
 
+/* Entrada del negocio: tinta de la plataforma, nunca la marca del club del host. */
+.auth--platform {
+  --color-brand-primary: var(--color-ink-800);
+  --color-on-brand-primary: var(--color-surface);
+}
+
 .auth__box {
   width: min(460px, 100%);
   display: grid;
@@ -723,12 +729,14 @@ textarea {
 .alert__body {
   display: grid;
   gap: var(--space-1);
+  min-width: 0;
 }
 
 .alert__actions {
   display: flex;
   gap: var(--space-2);
   margin-top: var(--space-1);
+  flex-wrap: wrap;
 }
 
 .alert--error {

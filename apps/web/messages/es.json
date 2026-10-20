@@ -235,7 +235,8 @@
       "mainNav": "Navegación del negocio",
       "apiError": "La API no responde.",
       "forbiddenTitle": "Solo administradores de plataforma",
-      "forbiddenBody": "Tu cuenta ({email}) no es administradora de plataforma."
+      "forbiddenBody": "Tu cuenta ({email}) no es administradora de plataforma.",
+      "switchAccount": "Entrar con otra cuenta"
     },
     "clubs": {
       "title": "Clubes",
@@ -317,6 +318,31 @@
       "title": "Sistema",
       "description": "Estado técnico de la plataforma.",
       "apiTitle": "API y base de datos"
+    },
+    "login": {
+      "title": "Administración del negocio",
+      "subtitle": "Entrada reservada a quien administra la plataforma.",
+      "email": "Email",
+      "password": "Contraseña",
+      "submit": "Entrar",
+      "forgot": "¿Has olvidado la contraseña?",
+      "setup": "¿Primera vez? Crea tu cuenta de administrador",
+      "notAdmin": "Esa cuenta no es administradora de plataforma."
+    },
+    "setup": {
+      "title": "Crear cuenta de administrador",
+      "subtitle": "Solo para los emails autorizados como administradores de plataforma. Después entrarás por el acceso del negocio.",
+      "name": "Tu nombre",
+      "email": "Email",
+      "password": "Contraseña",
+      "passwordHint": "Mínimo {min} caracteres.",
+      "confirm": "Repite la contraseña",
+      "submit": "Crear cuenta y entrar",
+      "mismatch": "Las contraseñas no coinciden.",
+      "tooShort": "La contraseña debe tener al menos {min} caracteres.",
+      "forbidden": "Ese email no está autorizado como administrador de plataforma.",
+      "exists": "Esa cuenta ya existe. Entra con tu contraseña o recupérala.",
+      "backToLogin": "Ya tengo cuenta"
     }
   },
   "apiStatus": {
@@ -387,6 +413,9 @@
     "membership": {
       "role_assigned": "Rol asignado",
       "role_removed": "Rol retirado"
+    },
+    "platform": {
+      "admin_created": "Administrador de plataforma creado"
     }
   }
 }

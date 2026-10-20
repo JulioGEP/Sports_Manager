@@ -50,6 +50,14 @@ Notas:
 | `PLATFORM_ADMIN_EMAILS` | emails separados por comas | igual | Administradores de plataforma además de la tabla (ADR 0023). Hoy: el email del responsable de producto |
 | `LOGO_STORE` | no definida | no definida | Solo local: `memory` sustituye Netlify Blobs (servidor local y pruebas de interfaz, ADR 0025). Fuera de local la API se niega a arrancar con ese valor |
 
+### Primer administrador de plataforma (ADR 0026)
+
+1. Comprueba que tu email está en `PLATFORM_ADMIN_EMAILS` (contexto Production).
+2. Abre `https://hubsports.netlify.app/admin/setup`, pon nombre, ese email y una contraseña, y pulsa **Crear cuenta y entrar**. Entras directamente en `/admin`.
+3. A partir de ahí, la entrada del negocio es `https://hubsports.netlify.app/admin/login`. Las cuentas de club (por ejemplo `admin@demo.test`) no entran ahí.
+
+Hazlo nada más desplegar: mientras la cuenta no exista, cualquiera que conozca un email autorizado podría crearla.
+
 ## Base de datos y entornos
 
 | Entorno        | Base de datos                                                                             | Quién aplica las migraciones                                              |

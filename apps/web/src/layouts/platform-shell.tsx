@@ -13,7 +13,15 @@ export function PlatformShell({ children }: { children: ReactNode }) {
   const t = useTranslations("platform.nav");
   const pathname = usePathname();
   const router = useRouter();
-  const session = useRequiredSession();
+  const session = useRequiredSession("/admin/login");
+
+  async function onSignOut() {
+    try {
+      await signOut();
+    } finally {
+      router.replace("/admin/login");
+    }
+  }
 
   if (session.kind === "loading" || session.kind === "anonymous") {
     return (
@@ -34,20 +42,30 @@ export function PlatformShell({ children }: { children: ReactNode }) {
   }
   if (!session.me.platformAdmin) {
     return (
-      <div className="auth">
+      <div className="auth auth--platform">
         <div className="auth__box">
           <Alert
             kind="warning"
             title={t("forbiddenTitle")}
             actions={
-              <ButtonLink
-                href="/"
-                variant="secondary"
-                size="sm"
-                icon={<Icon.ArrowLeft size={16} />}
-              >
-                {t("backToApp")}
-              </ButtonLink>
+              <>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  icon={<Icon.Logout size={16} />}
+                  onClick={() => void onSignOut()}
+                >
+                  {t("switchAccount")}
+                </Button>
+                <ButtonLink
+                  href="/"
+                  variant="secondary"
+                  size="sm"
+                  icon={<Icon.ArrowLeft size={16} />}
+                >
+                  {t("backToApp")}
+                </ButtonLink>
+              </>
             }
           >
             {t("forbiddenBody", { email: session.me.user.email })}
@@ -66,14 +84,6 @@ export function PlatformShell({ children }: { children: ReactNode }) {
     exact
       ? pathname === href || /^\/admin\/(?!audit|system)[^/]+$/.test(pathname)
       : pathname.startsWith(href);
-
-  async function onSignOut() {
-    try {
-      await signOut();
-    } finally {
-      router.replace("/login");
-    }
-  }
 
   return (
     <div className="pshell">

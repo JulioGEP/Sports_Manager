@@ -53,6 +53,7 @@ describe("API", () => {
       "/api/platform/organizations/{slug}/admins",
       "/api/platform/audit",
       "/api/platform/sports",
+      "/api/platform-setup",
     ]) {
       expect(Object.keys(spec.paths), path).toContain(path);
     }
