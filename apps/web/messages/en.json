@@ -6,7 +6,17 @@
     "yourRoles": "Your roles:",
     "supportLimited": "You are in as platform support: only the club's status and counts are visible.",
     "supportFull": "You are in as platform support with the club's authorisation: full read access.",
-    "apiStatus": "API status"
+    "apiStatus": "API status",
+    "actionsTitle": "What you can do here",
+    "actionMembers": "Members",
+    "actionMembersBody": "See who belongs to the club and invite coaches, guardians and administrators.",
+    "actionSettings": "Club settings",
+    "actionSettingsBody": "Name, language, brand colours and logo.",
+    "actionClubs": "My clubs",
+    "actionClubsBody": "Switch club if you belong to several.",
+    "actionAdmin": "Internal admin",
+    "actionAdminBody": "Create clubs, set up their brand and invite their first administrator.",
+    "phaseNote": "Phase 0: accounts, clubs, roles, invitations and brand. Players, teams and sections arrive in Phase 1."
   },
   "apiStatus": {
     "loading": "Checking…",
