@@ -59,6 +59,27 @@ function ClubFrame({ children }: { children: ReactNode }) {
   const links = [
     { to: paths.home, label: t("home"), icon: Icon.House, show: state.kind === "ready", end: true },
     {
+      to: paths.teams,
+      label: t("teams"),
+      icon: Icon.UsersThree,
+      show: permissions.includes("org.structure.read"),
+      end: false,
+    },
+    {
+      to: paths.players,
+      label: t("players"),
+      icon: Icon.PersonSimpleRun,
+      show: permissions.includes("org.players.read"),
+      end: false,
+    },
+    {
+      to: paths.family,
+      label: t("family"),
+      icon: Icon.HandHeart,
+      show: permissions.includes("org.family.read"),
+      end: false,
+    },
+    {
       to: paths.members,
       label: t("members"),
       icon: Icon.Users,

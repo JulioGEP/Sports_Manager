@@ -21,6 +21,14 @@ export const PERMISSIONS = [
   "org.members.manage",
   /** Vista de soporte: estado y agregados del club, sin datos personales. */
   "org.support.read",
+  /** Estructura del club (Fase 1): temporadas, secciones y equipos con su cuerpo técnico. */
+  "org.structure.read",
+  "org.structure.write",
+  /** Jugadores con sus datos personales y sus familias. */
+  "org.players.read",
+  "org.players.write",
+  /** Lo propio de una familia: sus jugadores y los equipos de estos. */
+  "org.family.read",
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
 
@@ -32,9 +40,13 @@ export const ROLE_PERMISSIONS: Record<RoleCode, readonly Permission[]> = {
     "org.members.read",
     "org.members.invite",
     "org.members.manage",
+    "org.structure.read",
+    "org.structure.write",
+    "org.players.read",
+    "org.players.write",
   ],
-  coach: ["org.settings.read", "org.members.read"],
-  guardian: ["org.settings.read"],
+  coach: ["org.settings.read", "org.members.read", "org.structure.read", "org.players.read"],
+  guardian: ["org.settings.read", "org.family.read"],
 };
 
 /**
@@ -48,6 +60,8 @@ export const SUPPORT_GRANT_PERMISSIONS: readonly Permission[] = [
   "org.support.read",
   "org.settings.read",
   "org.members.read",
+  "org.structure.read",
+  "org.players.read",
 ];
 
 /** Una persona puede tener varios roles en el mismo club (ADR 0014): los permisos son la unión. */

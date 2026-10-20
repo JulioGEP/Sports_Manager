@@ -11,6 +11,8 @@ import { createMeRoutes } from "./routes/me.ts";
 import { createOrgRoutes } from "./routes/org.ts";
 import { createPlatformRoutes } from "./routes/platform.ts";
 import { createPlatformSetupRoutes } from "./routes/platform-setup.ts";
+import { createPlayerRoutes } from "./routes/players.ts";
+import { createStructureRoutes } from "./routes/structure.ts";
 import { DEPLOY_CONTEXT_HEADER } from "./tenancy.ts";
 
 export type { NetlifyContext, NetlifyEnv } from "./http/context.ts";
@@ -20,7 +22,7 @@ export interface AppOptions {
   data?: DataLayer;
 }
 
-export const API_VERSION = "0.6.0";
+export const API_VERSION = "0.7.0";
 
 export function createApp(options: AppOptions = {}) {
   const config = options.config ?? loadConfig();
@@ -61,6 +63,8 @@ export function createApp(options: AppOptions = {}) {
   app.route("/", createBrandingRoutes(config, data));
   app.route("/", createOrgRoutes(config, data));
   app.route("/", createInvitationRoutes(config, data));
+  app.route("/", createStructureRoutes(config, data));
+  app.route("/", createPlayerRoutes(config, data));
   app.route("/", createPlatformRoutes(config, data));
   app.route("/", createPlatformSetupRoutes(config, data));
 

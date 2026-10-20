@@ -290,7 +290,20 @@ export function MembersPage() {
                   header: t("invitations.email"),
                   cell: (i) => <strong className="font-medium">{i.email}</strong>,
                 },
-                { key: "role", header: t("invitations.role"), cell: (i) => roles(i.roleCode) },
+                {
+                  key: "role",
+                  header: t("invitations.role"),
+                  cell: (i) => (
+                    <span className="flex flex-col">
+                      <span>{roles(i.roleCode)}</span>
+                      {i.player ? (
+                        <span className="text-secondary text-muted">
+                          {t("invitations.player", { name: i.player.name })}
+                        </span>
+                      ) : null}
+                    </span>
+                  ),
+                },
                 { key: "lang", header: t("invitations.language"), cell: (i) => locales(i.locale) },
                 {
                   key: "state",
@@ -305,7 +318,7 @@ export function MembersPage() {
               ]}
               mobileRow={(i) => ({
                 title: i.email,
-                subtitle: `${roles(i.roleCode)} · ${date(i.expiresAt)}`,
+                subtitle: `${i.player ? t("invitations.player", { name: i.player.name }) : roles(i.roleCode)} · ${date(i.expiresAt)}`,
                 trailing: <StatusChip kind={stateKind[i.state]}>{states(i.state)}</StatusChip>,
               })}
               mobileActionsBelow

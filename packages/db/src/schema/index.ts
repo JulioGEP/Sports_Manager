@@ -10,3 +10,4 @@ export * from "./platform-admins.ts";
 export * from "./support-access-grants.ts";
 export * from "./email-outbox.ts";
 export * from "./audit-log.ts";
+export * from "./structure.ts";

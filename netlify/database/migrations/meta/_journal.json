@@ -36,6 +36,13 @@
       "when": 1792501679670,
       "tag": "20261020130759_create_audit_log",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792520530862,
+      "tag": "20261020182210_create_club_structure",
+      "breakpoints": true
     }
   ]
 }

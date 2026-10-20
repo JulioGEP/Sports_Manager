@@ -3,6 +3,7 @@ import { EMAIL_STATUSES } from "../email.ts";
 import { INVITATION_STATES } from "../invitations.ts";
 import { LocaleSchema, LocalizedTextSchema } from "../locales.ts";
 import { RoleCodeSchema } from "../roles.ts";
+import { GuardianRelationshipSchema } from "../structure.ts";
 import { PasswordSchema, UserNameSchema } from "../users.ts";
 
 /** Invitación vista por quien administra el club. Nunca incluye el token. */
@@ -16,6 +17,9 @@ export const InvitationSchema = z.object({
   createdAt: z.string(),
   invitedByName: z.string().nullable(),
   acceptedAt: z.string().nullable(),
+  /** Invitación de familia hecha desde la ficha de un jugador (Bloque 11): a quién vincula. */
+  player: z.object({ id: z.string(), name: z.string() }).nullable(),
+  relationship: GuardianRelationshipSchema.nullable(),
 });
 export type Invitation = z.infer<typeof InvitationSchema>;
 
@@ -49,6 +53,8 @@ export const PublicInvitationSchema = z.object({
   expiresAt: z.string(),
   /** Si ya existe cuenta para ese email, se acepta con sesión; si no, creando la cuenta. */
   hasAccount: z.boolean(),
+  /** Nombre del jugador al que vincula, si es una invitación de familia. */
+  playerName: z.string().nullable(),
 });
 export type PublicInvitation = z.infer<typeof PublicInvitationSchema>;
 

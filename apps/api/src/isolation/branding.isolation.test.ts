@@ -118,6 +118,7 @@ describe("marca y logos por club", () => {
       brandPrimaryColor: "#d71920",
       brandSecondaryColor: "#e8b52a",
       logoUrl: null,
+      voice: "cercana",
     });
     expect(
       await (await request("GET", "/api/org/branding", hostOf("club-b"))).json(),

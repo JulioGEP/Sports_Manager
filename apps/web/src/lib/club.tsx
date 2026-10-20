@@ -170,5 +170,10 @@ export const clubPaths = (slug: string) => ({
   home: `/${slug}`,
   members: `/${slug}/members`,
   settings: `/${slug}/settings`,
+  teams: `/${slug}/teams`,
+  team: (id: string) => `/${slug}/teams/${id}`,
+  players: `/${slug}/players`,
+  player: (id: string) => `/${slug}/players/${id}`,
+  family: `/${slug}/family`,
   invitation: (token: string) => `/${slug}/invitations/${token}`,
 });

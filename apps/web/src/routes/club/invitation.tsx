@@ -134,9 +134,14 @@ export function InvitationPage() {
   const me = session.kind === "authenticated" ? session.me.user : null;
   const loginHref = `/login?next=${encodeURIComponent(`/${slug}/invitations/${token}`)}`;
   const summary = (
-    <p className="flex flex-wrap items-center gap-2 text-body text-ink">
-      {t("summary", { email: inv.email })} <StatusChip kind="club">{roleName}</StatusChip>
-    </p>
+    <div className="flex flex-col gap-1">
+      <p className="flex flex-wrap items-center gap-2 text-body text-ink">
+        {t("summary", { email: inv.email })} <StatusChip kind="club">{roleName}</StatusChip>
+      </p>
+      {inv.playerName ? (
+        <p className="text-secondary text-muted">{t("familyOf", { player: inv.playerName })}</p>
+      ) : null}
+    </div>
   );
 
   let body;

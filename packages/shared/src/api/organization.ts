@@ -2,6 +2,7 @@ import { z } from "zod";
 import { LocaleSchema, LocalizedTextSchema } from "../locales.ts";
 import { ORGANIZATION_STATUSES } from "../organizations.ts";
 import { PERMISSIONS, ROLE_CODES, RoleCodeSchema } from "../roles.ts";
+import { ClubVoiceSchema } from "../structure.ts";
 
 /** Quién hace la petición dentro de un club, tal como lo resolvió la API. */
 export const ActorSchema = z.discriminatedUnion("kind", [
@@ -30,6 +31,7 @@ export const OrganizationFullSchema = z.object({
   brandPrimaryColor: z.string(),
   brandSecondaryColor: z.string(),
   logoUrl: z.string().nullable(),
+  voice: ClubVoiceSchema,
   createdAt: z.string(),
 });
 
@@ -43,6 +45,8 @@ export const OrganizationSupportViewSchema = z.object({
   counts: z.object({
     membersByRole: z.record(z.enum(ROLE_CODES), z.number().int().nonnegative()),
     pendingInvitations: z.number().int().nonnegative(),
+    teams: z.number().int().nonnegative(),
+    players: z.number().int().nonnegative(),
   }),
 });
 

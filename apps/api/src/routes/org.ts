@@ -12,6 +12,7 @@ import {
   OrganizationUpdateSchema,
   RoleCodeSchema,
   type Actor as ActorDto,
+  type ClubVoice,
   type Locale,
   type OrganizationResponse,
 } from "@sportsmanager/shared";
@@ -56,6 +57,7 @@ export function brandingDto(org: OrganizationRow) {
     brandPrimaryColor: org.brandPrimaryColor,
     brandSecondaryColor: org.brandSecondaryColor,
     logoUrl: logoUrlFor(org.logoBlobKey, org.slug),
+    voice: org.voice as ClubVoice,
   };
 }
 
@@ -82,6 +84,7 @@ export function createOrgRoutes(config: ApiConfig, data: DataLayer) {
       brandPrimaryColor: org.brandPrimaryColor,
       brandSecondaryColor: org.brandSecondaryColor,
       logoUrl: logoUrlFor(org.logoBlobKey, org.slug),
+      voice: org.voice as ClubVoice,
       createdAt: org.createdAt.toISOString(),
     };
   }

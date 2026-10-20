@@ -2,6 +2,7 @@ import { schema, type Database } from "@sportsmanager/db";
 import {
   isLocale,
   ROLE_CODES,
+  type GuardianRelationship,
   type InvitationStatus,
   type Locale,
   type LocalizedText,
@@ -28,6 +29,9 @@ export interface InvitationRecord {
   acceptedAt: Date | null;
   invitedByName: string | null;
   invitedByUserId: string | null;
+  /** Invitación de familia (Bloque 11): jugador al que vincula al aceptarse. */
+  player: { id: string; firstName: string; lastName: string } | null;
+  relationship: GuardianRelationship | null;
 }
 
 export interface IssuedInvitation {
@@ -58,6 +62,10 @@ const selection = {
   acceptedAt: schema.invitations.acceptedAt,
   invitedByName: schema.users.name,
   invitedByUserId: schema.invitations.invitedBy,
+  playerId: schema.players.id,
+  playerFirstName: schema.players.firstName,
+  playerLastName: schema.players.lastName,
+  relationship: schema.invitations.relationship,
 };
 
 type Row = {
@@ -80,6 +88,11 @@ function toRecord(row: Row): InvitationRecord {
     acceptedAt: row.acceptedAt ?? null,
     invitedByName: row.invitedByName ?? null,
     invitedByUserId: row.invitedByUserId ?? null,
+    player:
+      row.playerId && row.playerFirstName !== null && row.playerLastName !== null
+        ? { id: row.playerId, firstName: row.playerFirstName, lastName: row.playerLastName }
+        : null,
+    relationship: (row.relationship as GuardianRelationship | null) ?? null,
   };
 }
 
@@ -97,7 +110,8 @@ export function invitationsRepo(db: () => Database) {
     db()
       .select(selection)
       .from(schema.invitations)
-      .leftJoin(schema.users, eq(schema.users.id, schema.invitations.invitedBy));
+      .leftJoin(schema.users, eq(schema.users.id, schema.invitations.invitedBy))
+      .leftJoin(schema.players, eq(schema.players.id, schema.invitations.playerId));
 
   async function byId(scope: OrgScope, id: string): Promise<InvitationRecord | null> {
     const rows = await baseQuery()
@@ -123,7 +137,24 @@ export function invitationsRepo(db: () => Database) {
       return rows.map(toRecord);
     },
 
-    /** Crea una invitación pendiente. Si ya hay una pendiente para ese email, no crea otra. */
+    /** Invitaciones de familia hechas desde la ficha de un jugador (Bloque 11). */
+    async listForPlayer(scope: OrgScope, playerId: string): Promise<InvitationRecord[]> {
+      const rows = await baseQuery()
+        .where(
+          and(
+            eq(schema.invitations.organizationId, scope.organizationId),
+            eq(schema.invitations.playerId, playerId),
+          ),
+        )
+        .orderBy(desc(schema.invitations.createdAt))
+        .limit(50);
+      return rows.map(toRecord);
+    },
+
+    /**
+     * Crea una invitación pendiente. Si ya hay una pendiente para ese email, no crea otra.
+     * Con `playerId` es una invitación de familia: al aceptarse vincula la cuenta al jugador.
+     */
     async create(
       scope: OrgScope,
       input: {
@@ -132,6 +163,8 @@ export function invitationsRepo(db: () => Database) {
         locale: Locale;
         invitedBy: string;
         ttlDays: number;
+        playerId?: string | undefined;
+        relationship?: GuardianRelationship | undefined;
       },
     ): Promise<CreateInvitationResult> {
       const pending = await baseQuery()
@@ -156,6 +189,8 @@ export function invitationsRepo(db: () => Database) {
           tokenHash: hashInvitationToken(token),
           expiresAt: expiry(input.ttlDays),
           invitedBy: input.invitedBy,
+          playerId: input.playerId ?? null,
+          relationship: input.relationship ?? null,
         })
         .returning({ id: schema.invitations.id });
       const invitation = await byId(scope, inserted[0]!.id);
@@ -218,6 +253,7 @@ export function invitationsRepo(db: () => Database) {
         )
         .innerJoin(schema.roles, eq(schema.roles.code, schema.invitations.roleCode))
         .leftJoin(schema.users, eq(schema.users.id, schema.invitations.invitedBy))
+        .leftJoin(schema.players, eq(schema.players.id, schema.invitations.playerId))
         .where(eq(schema.invitations.tokenHash, hashInvitationToken(token)))
         .limit(1);
       const row = rows[0];
