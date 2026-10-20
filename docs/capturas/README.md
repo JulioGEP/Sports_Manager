@@ -1,8 +1,8 @@
-# Capturas de la interfaz (Bloque 10)
+# Capturas de la interfaz (Bloque 11)
 
-Capturas que generan las pruebas de interfaz (`pnpm test:ui`) contra la API real con base embebida, con el front nuevo (Vite + React + Tailwind) sobre el design system del producto (`packages/design`, ADR 0027). Escritorio a 1280x800; móvil, Pixel 7. La fuente viva es el artefacto `capturas-interfaz` de CI; esta carpeta es la foto de la revisión del Bloque 10.
+Capturas que generan las pruebas de interfaz (`pnpm test:ui`) contra la API real con base embebida, con el front nuevo (Vite + React + Tailwind) sobre el design system del producto (`packages/design`, ADR 0027). Escritorio a 1280x800; móvil, Pixel 7. La fuente viva es el artefacto `capturas-interfaz` de CI; esta carpeta es la foto de la revisión del Bloque 11.
 
-Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negocio en `/admin`. Cuenta de demostración: `admin@demo.test` / `123456`, administradora del club demo. En este entorno también es administradora de plataforma para poder recorrer el panel del negocio.
+Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negocio en `/admin`. Cuentas de demostración, todas con contraseña `123456`: `admin@demo.test` (administra el club demo; en este entorno también la plataforma), `entrenador@demo.test` (entrenadora del Alevín A) y `familia@demo.test` (madre de dos jugadores). El club demo llega con la temporada 2026-27, la sección "Fútbol sala" y cuatro equipos con plantilla (ADR 0028).
 
 ## Acceso
 
@@ -71,6 +71,76 @@ Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negoci
 ### Ajustes del club: logo subido y visible en la cabecera
 
 ![Ajustes del club: logo subido](escritorio-24-ajustes-logo-subido.png)
+
+## Estructura del club: equipos, secciones y temporadas (`/demo/teams`)
+
+### Equipos de la temporada actual, por sección
+
+![Equipos](escritorio-30-equipos.png)
+
+### Secciones
+
+![Secciones](escritorio-31-secciones.png)
+
+### Temporadas, con la actual marcada
+
+![Temporadas](escritorio-32-temporadas.png)
+
+### Nueva temporada (hoja)
+
+![Nueva temporada](escritorio-33-temporada-nueva.png)
+
+### Nuevo equipo (hoja)
+
+![Nuevo equipo](escritorio-34-equipo-nuevo.png)
+
+### Ficha de equipo: plantilla con dorsal y posición, y cuerpo técnico
+
+![Ficha de equipo](escritorio-35-equipo-ficha.png)
+
+### Añadir a la plantilla a un jugador del club
+
+![Añadir jugador a la plantilla](escritorio-36-equipo-anadir-jugador.png)
+
+## Jugadores y familias (`/demo/players`)
+
+### Jugadores con equipo, familia y estado
+
+![Jugadores](escritorio-40-jugadores.png)
+
+### Ficha de jugador: datos, equipos, familia y estado
+
+![Ficha de jugador](escritorio-41-jugador-ficha.png)
+
+### Invitar a la familia desde la ficha
+
+![Invitar familia](escritorio-42-jugador-invitar-familia.png)
+
+### Invitación de familia pendiente, con el enlace de pruebas
+
+![Familia pendiente](escritorio-43-jugador-familia-pendiente.png)
+
+### Alta de un jugador
+
+![Nuevo jugador](escritorio-44-jugador-nuevo.png)
+
+### Dar de baja: confirmación con el texto del design system
+
+![Dar de baja](escritorio-45-jugador-baja.png)
+
+## Familia y entrenadora
+
+### Portada de una familia: sus jugadores
+
+![Portada de una familia](escritorio-46-familia-inicio.png)
+
+### Mi familia: equipo de la temporada y quién lo entrena
+
+![Mi familia](escritorio-47-familia.png)
+
+### La entrenadora ve la plantilla de su equipo sin poder cambiarla
+
+![Entrenadora](escritorio-48-entrenadora-equipo.png)
 
 ## Invitación de punta a punta
 
@@ -177,6 +247,34 @@ Las mismas pantallas en un móvil, con la forma envolvente del design system: ca
 ### Ajustes del club: colores de marca con vista previa
 
 ![Ajustes del club: colores de marca (móvil)](movil-21-ajustes-marca.png)
+
+### Equipos
+
+![Equipos (móvil)](movil-30-equipos.png)
+
+### Ficha de equipo
+
+![Ficha de equipo (móvil)](movil-35-equipo-ficha.png)
+
+### Jugadores
+
+![Jugadores (móvil)](movil-40-jugadores.png)
+
+### Ficha de jugador
+
+![Ficha de jugador (móvil)](movil-41-jugador-ficha.png)
+
+### Alta de un jugador
+
+![Nuevo jugador (móvil)](movil-44-jugador-nuevo.png)
+
+### Portada de una familia
+
+![Portada de una familia (móvil)](movil-46-familia-inicio.png)
+
+### Mi familia
+
+![Mi familia (móvil)](movil-47-familia.png)
 
 ### Invitación: la persona crea su cuenta
 

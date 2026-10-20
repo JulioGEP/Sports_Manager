@@ -7,6 +7,7 @@ import {
   InvitationSchema,
   InvitationSentResponseSchema,
   InvitationsResponseSchema,
+  playerDisplayName,
   PublicInvitationSchema,
   type Locale,
 } from "@sportsmanager/shared";
@@ -284,6 +285,7 @@ export function createInvitationRoutes(config: ApiConfig, data: DataLayer) {
           state,
           expiresAt: found.invitation.expiresAt.toISOString(),
           hasAccount,
+          playerName: found.invitation.player ? playerDisplayName(found.invitation.player) : null,
         },
         200,
       );
@@ -327,6 +329,24 @@ export function createInvitationRoutes(config: ApiConfig, data: DataLayer) {
       const existing = await data.users.findByEmail(invitation.email);
       const organization = { slug: tenant.organization.slug, name: tenant.organization.name };
 
+      /** Invitación de familia (Bloque 11): la cuenta queda vinculada al jugador al aceptar. */
+      const linkFamily = async (userId: string) => {
+        if (!invitation.player || !invitation.relationship) return;
+        await data.players.linkGuardian(
+          tenant.scope,
+          invitation.player.id,
+          userId,
+          invitation.relationship,
+        );
+        await data.audit.record({
+          actorUserId: userId,
+          organizationId: tenant.organization.id,
+          action: "player.guardian_linked",
+          target: playerDisplayName(invitation.player),
+          details: { relationship: invitation.relationship, via: "invitation" },
+        });
+      };
+
       if (existing) {
         if (!session)
           throw unauthorized(
@@ -335,6 +355,7 @@ export function createInvitationRoutes(config: ApiConfig, data: DataLayer) {
         if (session.id !== existing.id) throw invitationEmailMismatch();
         const roles = await data.memberships.join(tenant.scope, existing.id, invitation.roleCode);
         await data.invitations.markAccepted(tenant.scope, invitation.id, existing.id);
+        await linkFamily(existing.id);
         await data.audit.record({
           actorUserId: existing.id,
           organizationId: tenant.organization.id,
@@ -358,6 +379,7 @@ export function createInvitationRoutes(config: ApiConfig, data: DataLayer) {
       });
       const roles = await data.memberships.join(tenant.scope, user.id, invitation.roleCode);
       await data.invitations.markAccepted(tenant.scope, invitation.id, user.id);
+      await linkFamily(user.id);
       await data.audit.record({
         actorUserId: user.id,
         organizationId: tenant.organization.id,

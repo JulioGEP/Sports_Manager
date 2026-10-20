@@ -14,7 +14,15 @@ export function Menu({
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
+  /** Hacia arriba cuando el disparador está abajo (pie de la navegación lateral). */
+  const [upwards, setUpwards] = useState(false);
   const root = useRef<HTMLDivElement>(null);
+
+  function toggle() {
+    const rect = root.current?.getBoundingClientRect();
+    if (rect) setUpwards(window.innerHeight - rect.bottom < 360);
+    setOpen((v) => !v);
+  }
 
   useEffect(() => {
     if (!open) return;
@@ -40,7 +48,7 @@ export function Menu({
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label={label}
-        onClick={() => setOpen((v) => !v)}
+        onClick={toggle}
       >
         {trigger}
       </button>
@@ -48,9 +56,9 @@ export function Menu({
         <div
           role="menu"
           onClick={() => setOpen(false)}
-          className={`absolute top-full z-40 mt-2 min-w-56 overflow-hidden rounded-card border border-border bg-surface p-2 shadow-float ${
-            align === "end" ? "right-0" : "left-0"
-          }`}
+          className={`absolute z-40 min-w-56 overflow-hidden rounded-card border border-border bg-surface p-2 shadow-float ${
+            upwards ? "bottom-full mb-2" : "top-full mt-2"
+          } ${align === "end" ? "right-0" : "left-0"}`}
         >
           {children}
         </div>

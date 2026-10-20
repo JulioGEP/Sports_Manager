@@ -1,11 +1,28 @@
-import { InvitationsResponseSchema, MembersResponseSchema } from "@sportsmanager/shared";
+import {
+  FamilyResponseSchema,
+  InvitationsResponseSchema,
+  MembersResponseSchema,
+  StructureSummarySchema,
+  playerDisplayName,
+} from "@sportsmanager/shared";
 import { brandTokens } from "@sportsmanager/shared/design";
 import { useQuery } from "@tanstack/react-query";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { apiFetch } from "@/lib/api";
 import { clubPaths, useReadyClub } from "@/lib/club";
 import { useLocale, useT } from "@/lib/intl";
-import { ButtonLink, Card, ClubHero, ClubHeroButton, Crest, Icon, Stat, StatusChip } from "@/ui";
+import {
+  Avatar,
+  ButtonLink,
+  Card,
+  ClubHero,
+  ClubHeroButton,
+  Crest,
+  EmptyState,
+  Icon,
+  Stat,
+  StatusChip,
+} from "@/ui";
 
 /** Inicio del club: portada con la marca del club (DESIGN.md 7), cifras, primeros pasos y lo que viene. */
 export function ClubHome() {
@@ -19,6 +36,9 @@ export function ClubHome() {
   const canReadMembers = permissions.includes("org.members.read");
   const canInvite = permissions.includes("org.members.invite");
   const canSettings = permissions.includes("org.settings.write");
+  const canStructure = permissions.includes("org.structure.read");
+  const canStructureWrite = permissions.includes("org.structure.write");
+  const canFamily = permissions.includes("org.family.read");
   const support = org.organization.view === "support";
 
   const members = useQuery({
@@ -30,6 +50,17 @@ export function ClubHome() {
     queryKey: ["org", slug, "invitations"],
     queryFn: () => apiFetch("/api/org/invitations", { schema: InvitationsResponseSchema }),
     enabled: canInvite && !support,
+  });
+
+  const summary = useQuery({
+    queryKey: ["org", slug, "summary"],
+    queryFn: () => apiFetch("/api/org/summary", { schema: StructureSummarySchema }),
+    enabled: canStructure || support,
+  });
+  const family = useQuery({
+    queryKey: ["org", slug, "family"],
+    queryFn: () => apiFetch("/api/org/family", { schema: FamilyResponseSchema }),
+    enabled: canFamily,
   });
 
   const counts = org.organization.view === "support" ? org.organization.counts : null;
@@ -54,6 +85,11 @@ export function ClubHome() {
       done: (coaches ?? 0) > 0 || (pending ?? 0) > 0,
       to: `${paths.members}?invite=1`,
     },
+    {
+      key: "team",
+      done: (summary.data?.teams ?? 0) > 0,
+      to: summary.data?.currentSeason ? `${paths.teams}?new=1` : `${paths.teams}?tab=seasons&new=1`,
+    },
   ] as const;
   const firstName = me.user.name.split(" ")[0] ?? me.user.name;
   const sportName = org.organization.view === "full" ? org.organization.sport.name[locale] : null;
@@ -73,7 +109,11 @@ export function ClubHome() {
                 {t("firstSteps.inviteAction")}
               </ClubHeroButton>
             ) : null}
-            {canReadMembers ? (
+            {canStructure ? (
+              <ClubHeroButton ghost onClick={() => void navigate(paths.teams)}>
+                {t("hero.teams")}
+              </ClubHeroButton>
+            ) : canReadMembers ? (
               <ClubHeroButton ghost onClick={() => void navigate(paths.members)}>
                 {t("hero.members")}
               </ClubHeroButton>
@@ -83,6 +123,20 @@ export function ClubHome() {
       />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {summary.data ? (
+          <>
+            <Stat
+              icon={<Icon.UsersThree weight="duotone" aria-hidden="true" />}
+              value={summary.data.teams}
+              label={t("stats.teams")}
+            />
+            <Stat
+              icon={<Icon.PersonSimpleRun weight="duotone" aria-hidden="true" />}
+              value={summary.data.players}
+              label={t("stats.players")}
+            />
+          </>
+        ) : null}
         {membersCount !== undefined ? (
           <Stat
             icon={<Icon.Users weight="duotone" aria-hidden="true" />}
@@ -151,25 +205,108 @@ export function ClubHome() {
             </ul>
           </Card>
         ) : null}
-        <Card title={t("soon.title")} description={t("soon.body")} padded={false}>
-          <ul className="flex flex-col divide-y divide-line">
-            {(["players", "teams", "sections"] as const).map((key) => (
-              <li key={key} className="flex min-h-14 items-center gap-3 px-5 py-3">
-                <span className="text-club-text">
-                  {key === "players" ? (
-                    <Icon.SportIcons.Camiseta />
-                  ) : key === "teams" ? (
-                    <Icon.SportIcons.Balon />
-                  ) : (
+        {canStructure && summary.data ? (
+          <Card
+            title={t("structure.title")}
+            description={t("structure.description")}
+            padded={false}
+          >
+            {summary.data.currentSeason ? (
+              <ul className="flex flex-col divide-y divide-line">
+                <li className="flex min-h-14 items-center gap-3 px-5 py-3">
+                  <span className="text-club-text">
+                    <Icon.CalendarBlank size={22} weight="duotone" aria-hidden="true" />
+                  </span>
+                  <span className="flex-1 text-body text-ink">{t("stats.season")}</span>
+                  <StatusChip kind="club">{summary.data.currentSeason.name}</StatusChip>
+                </li>
+                <li className="flex min-h-14 items-center gap-3 px-5 py-3">
+                  <span className="text-club-text">
                     <Icon.SportIcons.Trofeo />
-                  )}
-                </span>
-                <span className="flex-1 text-body text-ink">{t(`soon.${key}`)}</span>
-                <StatusChip kind="neutral">{t("soon.phase")}</StatusChip>
-              </li>
-            ))}
-          </ul>
-        </Card>
+                  </span>
+                  <span className="flex-1 text-body text-ink">
+                    {t("structure.sections", { count: summary.data.sections })}
+                  </span>
+                </li>
+                <li className="flex min-h-14 items-center gap-3 px-5 py-3">
+                  <span className="text-club-text">
+                    <Icon.SportIcons.Balon />
+                  </span>
+                  <span className="flex-1 text-body text-ink">
+                    {t("structure.teams", { count: summary.data.teams })}
+                  </span>
+                  <ButtonLink to={paths.teams} variant="secondary" size="sm">
+                    {t("structure.openTeams")}
+                  </ButtonLink>
+                </li>
+                <li className="flex min-h-14 items-center gap-3 px-5 py-3">
+                  <span className="text-club-text">
+                    <Icon.SportIcons.Camiseta />
+                  </span>
+                  <span className="flex-1 text-body text-ink">
+                    {t("structure.players", { count: summary.data.players })} ·{" "}
+                    {t("structure.guardians", { count: summary.data.guardians })}
+                  </span>
+                  {canReadMembers ? (
+                    <ButtonLink to={paths.players} variant="secondary" size="sm">
+                      {t("structure.openPlayers")}
+                    </ButtonLink>
+                  ) : null}
+                </li>
+              </ul>
+            ) : (
+              <EmptyState
+                icon={<Icon.CalendarBlank weight="duotone" />}
+                title={t("structure.noSeasonTitle")}
+                description={t("structure.noSeasonBody")}
+                action={
+                  canStructureWrite ? (
+                    <ButtonLink
+                      to={`${paths.teams}?tab=seasons&new=1`}
+                      variant="secondary"
+                      size="sm"
+                    >
+                      {t("structure.createSeason")}
+                    </ButtonLink>
+                  ) : null
+                }
+              />
+            )}
+          </Card>
+        ) : null}
+        {canFamily ? (
+          <Card
+            title={t("family.title")}
+            description={t("family.description")}
+            padded={false}
+            actions={
+              <ButtonLink to={paths.family} variant="secondary" size="sm">
+                {t("family.open")}
+              </ButtonLink>
+            }
+          >
+            {family.data && family.data.players.length === 0 ? (
+              <EmptyState icon={<Icon.HandHeart weight="duotone" />} title={t("family.empty")} />
+            ) : (
+              <ul className="flex flex-col divide-y divide-line">
+                {family.data?.players.map((p) => (
+                  <li key={p.id} className="flex min-h-16 items-center gap-3 px-5 py-3">
+                    <Avatar name={playerDisplayName(p)} />
+                    <span className="flex min-w-0 flex-1 flex-col">
+                      <Link to={paths.family} className="truncate font-medium text-ink">
+                        {playerDisplayName(p)}
+                      </Link>
+                      <span className="truncate text-secondary text-muted">
+                        {p.teams.map((x) => x.teamName).join(", ") ||
+                          t("structure.teams", { count: 0 })}
+                      </span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
+        ) : null}
       </div>
     </div>
   );

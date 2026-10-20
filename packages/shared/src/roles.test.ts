@@ -19,7 +19,15 @@ describe("roles y permisos", () => {
 
   it("los permisos de varios roles son la unión", () => {
     const union = permissionsForRoles(["coach", "guardian"]);
-    expect([...union].sort()).toEqual(["org.members.read", "org.settings.read"]);
+    expect([...union].sort()).toEqual([
+      "org.family.read",
+      "org.members.read",
+      "org.players.read",
+      "org.settings.read",
+      "org.structure.read",
+    ]);
+    expect(hasPermission(["guardian"], "org.players.read")).toBe(false);
+    expect(hasPermission(["coach"], "org.players.write")).toBe(false);
     expect(hasPermission(["guardian"], "org.members.read")).toBe(false);
     expect(hasPermission(["guardian", "coach"], "org.members.read")).toBe(true);
     expect(hasPermission(["org_admin"], "org.members.manage")).toBe(true);

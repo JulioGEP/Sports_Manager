@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { LocaleSchema } from "./locales.ts";
+import { ClubVoiceSchema } from "./structure.ts";
 import { OrganizationSlugSchema } from "./tenancy.ts";
 
 export const ORGANIZATION_STATUSES = ["active", "suspended", "archived"] as const;
@@ -34,6 +35,8 @@ export const OrganizationBrandingSchema = z.object({
   brandPrimaryColor: z.string(),
   brandSecondaryColor: z.string(),
   logoUrl: z.string().nullable(),
+  /** Voz del club (DESIGN.md 11): tiñe los textos de relación de la web. */
+  voice: ClubVoiceSchema,
 });
 export type OrganizationBranding = z.infer<typeof OrganizationBrandingSchema>;
 
@@ -43,6 +46,7 @@ export const OrganizationUpdateSchema = z.object({
   defaultLocale: LocaleSchema.optional(),
   brandPrimaryColor: BrandColorSchema.optional(),
   brandSecondaryColor: BrandColorSchema.optional(),
+  voice: ClubVoiceSchema.optional(),
 });
 export type OrganizationUpdate = z.infer<typeof OrganizationUpdateSchema>;
 

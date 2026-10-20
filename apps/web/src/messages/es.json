@@ -6,7 +6,8 @@
     "close": "Cerrar",
     "copy": "Copiar enlace",
     "copied": "Copiado",
-    "remove": "Quitar"
+    "remove": "Quitar",
+    "open": "Abrir"
   },
   "nav": {
     "home": "Inicio",
@@ -24,7 +25,10 @@
     "noMembershipBody": "Tu cuenta ({email}) no tiene ningún rol aquí. Pide una invitación a quien administra el club.",
     "supportLimited": "Modo soporte de plataforma: ves el estado y los recuentos del club, sin datos personales.",
     "supportFull": "Modo soporte de plataforma con autorización del club: lectura completa, sin cambios.",
-    "clubNotFound": "Este club no existe o no está activo."
+    "clubNotFound": "Este club no existe o no está activo.",
+    "teams": "Equipos",
+    "players": "Jugadores",
+    "family": "Mi familia"
   },
   "auth": {
     "login": {
@@ -74,7 +78,8 @@
       "passwordHint": "Mínimo {min} caracteres.",
       "confirm": "Repite la contraseña",
       "mismatch": "Las contraseñas no coinciden.",
-      "tooShort": "La contraseña debe tener al menos {min} caracteres."
+      "tooShort": "La contraseña debe tener al menos {min} caracteres.",
+      "familyOf": "Como familia de {player}."
     },
     "product": {
       "tagline": "Gestión de clubes deportivos"
@@ -93,7 +98,12 @@
     "stats": {
       "members": "Miembros",
       "pending": "Invitaciones pendientes",
-      "yourRole": "Tu rol en el club"
+      "yourRole": "Tu rol en el club",
+      "teams": "Equipos",
+      "players": "Jugadores",
+      "guardians": "Familias",
+      "season": "Temporada actual",
+      "noSeason": "Sin temporada"
     },
     "support": {
       "badge": "Soporte de plataforma"
@@ -107,20 +117,34 @@
       "colorsAction": "Elegir colores",
       "invite": "Invita al primer entrenador",
       "inviteAction": "Invitar",
-      "done": "Hecho"
-    },
-    "soon": {
-      "title": "Próximamente",
-      "body": "Lo que llega en la Fase 1, sobre esta misma base.",
-      "players": "Jugadores y familias",
-      "teams": "Equipos y plantillas",
-      "sections": "Secciones y temporadas",
-      "phase": "Fase 1"
+      "done": "Hecho",
+      "team": "Crea el primer equipo",
+      "teamAction": "Crear equipo"
     },
     "hero": {
       "sport": "Deporte principal: {sport}",
       "label": "Portada de {club}",
-      "members": "Ver miembros"
+      "members": "Ver miembros",
+      "teams": "Ver equipos"
+    },
+    "structure": {
+      "title": "Estructura del club",
+      "description": "Secciones, equipos y jugadores de la temporada actual.",
+      "sections": "{count, plural, one {# sección} other {# secciones}}",
+      "teams": "{count, plural, one {# equipo} other {# equipos}}",
+      "players": "{count, plural, one {# jugador} other {# jugadores}}",
+      "guardians": "{count, plural, one {# familia} other {# familias}}",
+      "openTeams": "Ver equipos",
+      "openPlayers": "Ver jugadores",
+      "noSeasonTitle": "Todavía no hay temporada",
+      "noSeasonBody": "Crea la primera temporada para empezar a montar equipos.",
+      "createSeason": "Crear temporada"
+    },
+    "family": {
+      "title": "Tu familia",
+      "description": "Los jugadores vinculados a tu cuenta.",
+      "open": "Ver mi familia",
+      "empty": "Todavía no hay ningún jugador vinculado a tu cuenta. Pide al club que te vincule."
     }
   },
   "members": {
@@ -179,7 +203,8 @@
       "revoked": "Invitación a {email} revocada.",
       "confirmRevoke": "¿Revocar la invitación a {email}? El enlace dejará de funcionar.",
       "confirmRevokeTitle": "¿Revocar la invitación a {email}?",
-      "confirmRevokeBody": "El enlace dejará de funcionar. Podrás invitar de nuevo cuando quieras."
+      "confirmRevokeBody": "El enlace dejará de funcionar. Podrás invitar de nuevo cuando quieras.",
+      "player": "Familia de {name}"
     }
   },
   "settings": {
@@ -196,7 +221,9 @@
       "name": "Nombre del club",
       "defaultLocale": "Idioma por defecto",
       "defaultLocaleHint": "Idioma de los emails y de la interfaz para quien no haya elegido otro.",
-      "saved": "Cambios guardados."
+      "saved": "Cambios guardados.",
+      "voice": "Voz del club",
+      "voiceHint": "Cómo habla el club a su gente en los avisos y mensajes del día a día. Dinero, bajas y datos personales usan siempre un tono profesional."
     },
     "brand": {
       "title": "Colores de marca",
@@ -431,6 +458,292 @@
     },
     "platform": {
       "admin_created": "Administrador de plataforma creado"
+    },
+    "season": {
+      "created": "Temporada creada",
+      "updated": "Temporada editada"
+    },
+    "section": {
+      "created": "Sección creada",
+      "updated": "Sección editada"
+    },
+    "team": {
+      "created": "Equipo creado",
+      "updated": "Equipo editado",
+      "roster_added": "Jugador añadido a la plantilla",
+      "roster_updated": "Plantilla editada",
+      "roster_removed": "Jugador quitado de la plantilla",
+      "staff_added": "Cuerpo técnico añadido",
+      "staff_removed": "Cuerpo técnico retirado"
+    },
+    "player": {
+      "created": "Jugador dado de alta",
+      "updated": "Jugador editado",
+      "guardian_linked": "Familia vinculada",
+      "guardian_unlinked": "Familia desvinculada"
+    }
+  },
+  "teams": {
+    "title": "Equipos",
+    "description": "Secciones, temporadas y equipos con su plantilla.",
+    "tabs": {
+      "teams": "Equipos",
+      "sections": "Secciones",
+      "seasons": "Temporadas"
+    },
+    "season": "Temporada",
+    "current": "Actual",
+    "newTeam": "Nuevo equipo",
+    "newSection": "Nueva sección",
+    "newSeason": "Nueva temporada",
+    "empty": "Todavía no hay equipos en esta temporada.",
+    "emptySeason": "Sin temporada no hay equipos. Crea la primera en la pestaña Temporadas.",
+    "emptySections": "Todavía no hay secciones.",
+    "emptySeasons": "Todavía no hay temporadas.",
+    "table": {
+      "team": "Equipo",
+      "category": "Categoría",
+      "players": "Jugadores",
+      "staff": "Cuerpo técnico",
+      "section": "Sección",
+      "status": "Estado",
+      "teams": "Equipos",
+      "dates": "Fechas",
+      "name": "Nombre"
+    },
+    "noStaff": "Sin cuerpo técnico",
+    "noCategory": "Sin categoría",
+    "open": "Abrir",
+    "edit": "Editar",
+    "makeCurrent": "Hacer actual",
+    "madeCurrent": "{name} ya es la temporada actual.",
+    "archive": "Archivar",
+    "reactivate": "Reactivar",
+    "sectionStatus": {
+      "active": "Activa",
+      "archived": "Archivada"
+    },
+    "teamSheet": {
+      "title": "Nuevo equipo",
+      "editTitle": "Editar {name}",
+      "description": "Un equipo vive en una sección y una temporada.",
+      "name": "Nombre del equipo",
+      "nameHint": "Por ejemplo, Alevín A.",
+      "category": "Categoría",
+      "categoryHint": "Texto libre: cada club y federación la llama a su manera.",
+      "section": "Sección",
+      "season": "Temporada",
+      "submit": "Crear equipo",
+      "save": "Guardar",
+      "created": "Equipo {name} creado.",
+      "saved": "Equipo guardado.",
+      "nameTaken": "Ya hay un equipo con ese nombre en esa sección y temporada."
+    },
+    "sectionSheet": {
+      "title": "Nueva sección",
+      "editTitle": "Editar sección",
+      "description": "La capa entre el club y sus equipos: por deporte, por género o como lo organice el club.",
+      "name": "Nombre de la sección",
+      "submit": "Crear sección",
+      "save": "Guardar",
+      "created": "Sección {name} creada.",
+      "saved": "Sección guardada.",
+      "nameTaken": "Ya hay una sección con ese nombre."
+    },
+    "seasonSheet": {
+      "title": "Nueva temporada",
+      "editTitle": "Editar temporada",
+      "description": "Los equipos y las plantillas van por temporada, para conservar el historial.",
+      "name": "Nombre",
+      "nameHint": "Por ejemplo, 2026-27.",
+      "startsOn": "Empieza",
+      "endsOn": "Acaba",
+      "isCurrent": "Marcar como temporada actual",
+      "submit": "Crear temporada",
+      "save": "Guardar",
+      "created": "Temporada {name} creada.",
+      "saved": "Temporada guardada.",
+      "nameTaken": "Ya hay una temporada con ese nombre.",
+      "dates": "La temporada tiene que acabar después de empezar."
+    }
+  },
+  "team": {
+    "back": "Equipos",
+    "roster": "Plantilla",
+    "rosterDescription": "{count, plural, =0 {Sin jugadores todavía} one {# jugador} other {# jugadores}}",
+    "rosterHidden": "La plantilla lleva datos de los jugadores: solo la ve el personal del club.",
+    "addPlayer": "Añadir jugador",
+    "newPlayer": "Nuevo jugador",
+    "emptyRoster": "Todavía no hay nadie en la plantilla.",
+    "table": {
+      "number": "Dorsal",
+      "player": "Jugador",
+      "position": "Posición",
+      "age": "Edad",
+      "family": "Familia"
+    },
+    "noNumber": "Sin dorsal",
+    "noPosition": "Sin posición",
+    "age": "{age, plural, one {# año} other {# años}}",
+    "noBirthDate": "Sin fecha de nacimiento",
+    "familyCount": "{count, plural, =0 {Sin familia} one {# familiar} other {# familiares}}",
+    "editEntry": "Editar",
+    "remove": "Quitar",
+    "confirmRemoveTitle": "¿Quitar a {name} de {team}?",
+    "confirmRemoveBody": "Deja de estar en esta plantilla. Su ficha y su historial siguen en el club.",
+    "removed": "{name} ya no está en {team}.",
+    "staff": "Cuerpo técnico",
+    "staffDescription": "Quién entrena y acompaña al equipo.",
+    "addStaff": "Añadir",
+    "emptyStaff": "Todavía no hay cuerpo técnico.",
+    "removeStaff": "Quitar",
+    "confirmRemoveStaffTitle": "¿Quitar a {name} del cuerpo técnico?",
+    "confirmRemoveStaffBody": "Deja de ver este equipo como suyo. Sigue siendo miembro del club.",
+    "staffRemoved": "{name} ya no está en el cuerpo técnico.",
+    "staffAdded": "{name} se ha unido al cuerpo técnico.",
+    "addStaffSheet": {
+      "title": "Añadir al cuerpo técnico",
+      "description": "Miembros del club con rol de entrenador o administrador.",
+      "member": "Persona",
+      "empty": "No hay nadie disponible. Invita a un entrenador desde Miembros.",
+      "submit": "Añadir"
+    },
+    "addPlayerSheet": {
+      "title": "Añadir jugador a {team}",
+      "description": "Elige a alguien que ya esté dado de alta en el club.",
+      "player": "Jugador",
+      "search": "Buscar por nombre",
+      "number": "Dorsal",
+      "position": "Posición",
+      "positionHint": "Texto libre: portero, cierre, ala, pívot…",
+      "submit": "Añadir a la plantilla",
+      "added": "{name} ya está en {team}.",
+      "empty": "No hay jugadores disponibles. Da de alta uno nuevo.",
+      "alreadyIn": "Ese jugador ya está en la plantilla."
+    },
+    "entrySheet": {
+      "title": "{name} en {team}",
+      "description": "Dorsal y posición en este equipo.",
+      "saved": "Cambios guardados."
+    },
+    "edit": "Editar equipo",
+    "archived": "Equipo archivado"
+  },
+  "players": {
+    "title": "Jugadores",
+    "description": "Todas las personas que juegan en el club, con su equipo y su familia.",
+    "new": "Nuevo jugador",
+    "search": "Buscar por nombre",
+    "teamFilter": "Equipo",
+    "allTeams": "Todos los equipos",
+    "empty": "Todavía no hay jugadores.",
+    "noResults": "Nadie coincide con la búsqueda.",
+    "table": {
+      "player": "Jugador",
+      "age": "Edad",
+      "teams": "Equipos",
+      "family": "Familia",
+      "status": "Estado"
+    },
+    "noTeam": "Sin equipo",
+    "sheet": {
+      "title": "Nuevo jugador",
+      "description": "Los datos mínimos. El resto, desde su ficha.",
+      "firstName": "Nombre",
+      "lastName": "Apellidos",
+      "birthDate": "Fecha de nacimiento",
+      "birthDateHint": "Opcional. Sirve para calcular la edad.",
+      "team": "Equipo",
+      "noTeam": "Sin equipo por ahora",
+      "submit": "Dar de alta",
+      "created": "{name} dado de alta."
+    }
+  },
+  "playerStatus": {
+    "active": "Activo",
+    "inactive": "De baja"
+  },
+  "player": {
+    "back": "Jugadores",
+    "data": "Datos",
+    "dataDescription": "Nombre, apellidos y fecha de nacimiento.",
+    "edit": "Editar",
+    "born": "Nacimiento",
+    "age": "Edad",
+    "since": "En el club desde",
+    "teams": "Equipos",
+    "teamsDescription": "Plantillas de todas las temporadas.",
+    "emptyTeams": "No está en ningún equipo.",
+    "currentSeason": "Temporada actual",
+    "family": "Familia",
+    "familyDescription": "Las personas vinculadas a este jugador.",
+    "emptyFamily": "Todavía no hay familia vinculada.",
+    "inviteFamily": "Invitar familia",
+    "linkMember": "Vincular miembro",
+    "unlink": "Desvincular",
+    "confirmUnlinkTitle": "¿Desvincular a {name}?",
+    "confirmUnlinkBody": "Deja de ver a este jugador como suyo. Su cuenta y su rol en el club se conservan.",
+    "unlinked": "{name} ya no está vinculado.",
+    "pendingInvitations": "Invitaciones pendientes",
+    "status": "Estado",
+    "deactivate": "Dar de baja",
+    "reactivate": "Reactivar ficha",
+    "deactivated": "{name} ha causado baja.",
+    "reactivated": "Ficha de {name} reactivada.",
+    "editSheet": {
+      "title": "Editar datos",
+      "saved": "Datos guardados."
+    },
+    "inviteSheet": {
+      "title": "Invitar a la familia de {name}",
+      "description": "Recibe un enlace, crea su cuenta y queda vinculada al jugador con el rol de tutor.",
+      "email": "Email",
+      "relationship": "Relación",
+      "language": "Idioma del email",
+      "submit": "Enviar invitación",
+      "sent": "Invitación enviada a {email}.",
+      "failed": "La invitación de {email} se ha registrado, pero el email no ha salido.",
+      "linkHint": "Entorno de pruebas sin envío de emails: comparte este enlace con {email}.",
+      "alreadyMember": "Esa persona ya es miembro del club: vincúlala con \"Vincular miembro\"."
+    },
+    "linkSheet": {
+      "title": "Vincular a un miembro con {name}",
+      "description": "Para quien ya tiene cuenta en el club. Si no tiene el rol de tutor, se le añade.",
+      "member": "Persona",
+      "relationship": "Relación",
+      "submit": "Vincular",
+      "linked": "{member} vinculado como familia de {name}.",
+      "empty": "No hay miembros disponibles."
+    }
+  },
+  "family": {
+    "title": "Mi familia",
+    "description": "Los jugadores vinculados a tu cuenta y sus equipos.",
+    "empty": "Todavía no hay ningún jugador vinculado a tu cuenta.",
+    "emptyHint": "Pide a quien administra el club que te vincule desde la ficha del jugador.",
+    "relationship": "Eres {relationship}",
+    "team": "Equipo",
+    "noTeam": "Sin equipo esta temporada",
+    "coaches": "Cuerpo técnico",
+    "noCoaches": "Sin cuerpo técnico asignado",
+    "number": "Dorsal {number}",
+    "inactive": "Ficha de baja"
+  },
+  "relationships": {
+    "mother": "Madre",
+    "father": "Padre",
+    "guardian": "Tutor o tutora",
+    "grandparent": "Abuelo o abuela",
+    "other": "Otra relación"
+  },
+  "voices": {
+    "cercana": "Cercana",
+    "profesional": "Profesional",
+    "vestuario": "Vestuario",
+    "hint": {
+      "cercana": "Una buena coordinadora de club: cálida, clara, explica el porqué.",
+      "profesional": "El dato primero, cero adornos.",
+      "vestuario": "Energía y jerga de juego. Nunca en los momentos sensibles."
     }
   }
 }

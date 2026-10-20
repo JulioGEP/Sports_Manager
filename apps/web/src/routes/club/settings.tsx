@@ -1,10 +1,12 @@
 import {
+  CLUB_VOICES,
   LOCALES,
   LOGO_CONTENT_TYPES,
   LOGO_MAX_BYTES,
   OrganizationBrandingSchema,
   OrganizationUpdateResponseSchema,
   OrganizationUpdateSchema,
+  type ClubVoice,
   type Locale,
 } from "@sportsmanager/shared";
 import { buildClubTheme } from "@sportsmanager/design";
@@ -57,7 +59,7 @@ export function SettingsPage() {
         ]}
       />
       {tab === "general" ? (
-        <GeneralTab key={o.id} name={o.name} defaultLocale={o.defaultLocale} />
+        <GeneralTab key={o.id} name={o.name} defaultLocale={o.defaultLocale} voice={o.voice} />
       ) : null}
       {tab === "brand" ? (
         <BrandTab
@@ -75,23 +77,27 @@ export function SettingsPage() {
 function GeneralTab({
   name: initialName,
   defaultLocale: initialLocale,
+  voice: initialVoice,
 }: {
   name: string;
   defaultLocale: Locale;
+  voice: ClubVoice;
 }) {
   const t = useT("settings.general");
   const c = useT("common");
   const locales = useT("locales");
+  const voices = useT("voices");
   const errors = useT("errors");
   const toast = useToast();
   const { refresh } = useReadyClub();
   const [name, setName] = useState(initialName);
   const [defaultLocale, setDefaultLocale] = useState<Locale>(initialLocale);
+  const [voice, setVoice] = useState<ClubVoice>(initialVoice);
   const [busy, setBusy] = useState(false);
 
   async function save(e: FormEvent) {
     e.preventDefault();
-    const parsed = OrganizationUpdateSchema.safeParse({ name, defaultLocale });
+    const parsed = OrganizationUpdateSchema.safeParse({ name, defaultLocale, voice });
     if (!parsed.success) {
       toast("error", errors("bad_request"));
       return;
@@ -144,6 +150,17 @@ function GeneralTab({
                 {LOCALES.map((code) => (
                   <option key={code} value={code}>
                     {locales(code)}
+                  </option>
+                ))}
+              </Select>
+            )}
+          </Field>
+          <Field label={t("voice")} hint={`${voices(`hint.${voice}`)} ${t("voiceHint")}`}>
+            {(id) => (
+              <Select id={id} value={voice} onChange={(e) => setVoice(e.target.value as ClubVoice)}>
+                {CLUB_VOICES.map((code) => (
+                  <option key={code} value={code}>
+                    {voices(code)}
                   </option>
                 ))}
               </Select>
