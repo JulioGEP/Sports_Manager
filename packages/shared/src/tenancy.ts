@@ -1,10 +1,25 @@
 import { z } from "zod";
 
 /**
- * Subdominios que nunca pueden ser un club (ADR 0011).
- * `admin` aloja el panel interno de la plataforma.
+ * Nombres que nunca pueden ser un club (ADR 0011 y 0027): sirven como subdominio reservado y,
+ * mientras los clubes viven en una ruta del dominio base (`/demo`), como primer segmento de
+ * la ruta. `admin` aloja el panel del negocio; el resto son rutas de la web o de la API.
  */
-export const RESERVED_SUBDOMAINS = ["www", "admin", "api", "app", "staging", "mail"] as const;
+export const RESERVED_SUBDOMAINS = [
+  "www",
+  "admin",
+  "api",
+  "app",
+  "staging",
+  "mail",
+  "login",
+  "clubs",
+  "invitations",
+  "forgot-password",
+  "reset-password",
+  "assets",
+  "static",
+] as const;
 export type ReservedSubdomain = (typeof RESERVED_SUBDOMAINS)[number];
 
 export function isReservedSubdomain(value: string): value is ReservedSubdomain {

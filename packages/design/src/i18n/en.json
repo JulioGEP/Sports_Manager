@@ -1,0 +1,83 @@
+{
+  "_meta": {
+    "locale": "en",
+    "status": "Borrador. Revisar por una persona nativa antes de publicar.",
+    "fallback": "es"
+  },
+  "ui": {
+    "action.cancel": "Cancel",
+    "attendance.present": "Present",
+    "attendance.absent": "Absent",
+    "attendance.group": "{player}'s attendance"
+  },
+  "relational": {
+    "callup.title": {
+      "cercana": "{player} has been called up for {day}",
+      "profesional": "Call-up · {team} · {date}",
+      "vestuario": "{player}'s in the squad!"
+    },
+    "callup.body": {
+      "cercana": "Match at {time} at {place}. Can we count on {player}?",
+      "profesional": "Match {time}, {place}. Confirm {player}'s attendance.",
+      "vestuario": "{day} at {time}, {place}. Time to give it everything. Playing?"
+    },
+    "attendance.question": {
+      "cercana": "Is {player} coming?",
+      "profesional": "{player}'s attendance",
+      "vestuario": "Is {player} in?"
+    },
+    "attendance.saved": {
+      "cercana": "Done. Attendance saved for {present} of {total}.",
+      "profesional": "Attendance saved · {present}/{total}",
+      "vestuario": "Roll call done! {present} of {total} on court."
+    },
+    "empty.week.title": {
+      "cercana": "A quiet week",
+      "profesional": "No events this week",
+      "vestuario": "Rest week"
+    },
+    "empty.week.body": {
+      "cercana": "No training or matches this week. We'll let you know as soon as something comes up.",
+      "profesional": "When the club schedules a session or a match, it will appear here.",
+      "vestuario": "Nothing on the calendar. Recharge, we'll be back soon."
+    }
+  },
+  "sensitive": {
+    "payment.failed.title": {
+      "cercana": "We couldn't collect the fee",
+      "profesional": "Payment declined"
+    },
+    "payment.failed.body": {
+      "cercana": "Your bank declined the payment. Try another card or contact the club.",
+      "profesional": "Your bank didn't authorise the {amount} charge. Check your card or use another method."
+    },
+    "payment.failed.action": {
+      "cercana": "Try another card",
+      "profesional": "Change payment method"
+    },
+    "fee.reminder.body": {
+      "cercana": "A reminder about the {month} fee. It's due on {dueDate}.",
+      "profesional": "{month} fee outstanding. Due: {dueDate}."
+    },
+    "fee.reminder.action": {
+      "cercana": "Pay {amount}",
+      "profesional": "Pay {amount}"
+    },
+    "chat.visibility": {
+      "cercana": "Club coordinators can also see this conversation. It's how we look after everyone.",
+      "profesional": "Conversation visible to club coordinators, in line with the club's safeguarding protocol."
+    },
+    "member.remove.title": {
+      "cercana": "Remove {player} from the club?",
+      "profesional": "Remove {player} from the club?"
+    },
+    "member.remove.body": {
+      "cercana": "They'll no longer appear in call-ups and won't be charged further fees. Their history is kept and you can reactivate the profile at any time.",
+      "profesional": "Excluded from call-ups and charges. History is kept and the profile can be reactivated."
+    },
+    "member.remove.confirm": {
+      "cercana": "Remove",
+      "profesional": "Remove"
+    }
+  }
+}

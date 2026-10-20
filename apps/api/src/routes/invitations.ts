@@ -25,7 +25,7 @@ import {
 import { optionalSession, requireSession } from "../http/session.ts";
 import { requireOrganizationHost, resolveTenant } from "../http/tenant.ts";
 import { invitationDto, sendInvitationEmail } from "../services/invitations.ts";
-import { publicOrigin } from "../tenancy.ts";
+import { organizationUrl } from "../tenancy.ts";
 
 const error = (description: string) => ({
   description,
@@ -131,7 +131,12 @@ export function createInvitationRoutes(config: ApiConfig, data: DataLayer) {
         organization: tenant.organization,
         issued: result,
         inviterName: user.name,
-        origin: publicOrigin(c.req.header("host"), config, c.env?.context?.deploy?.context),
+        origin: organizationUrl(
+          tenant.organization.slug,
+          config,
+          c.req.header("host"),
+          c.env?.context?.deploy?.context,
+        ),
       });
       await data.audit.record({
         actorUserId: user.id,
@@ -171,7 +176,12 @@ export function createInvitationRoutes(config: ApiConfig, data: DataLayer) {
         organization: tenant.organization,
         issued,
         inviterName: user.name,
-        origin: publicOrigin(c.req.header("host"), config, c.env?.context?.deploy?.context),
+        origin: organizationUrl(
+          tenant.organization.slug,
+          config,
+          c.req.header("host"),
+          c.env?.context?.deploy?.context,
+        ),
       });
       await data.audit.record({
         actorUserId: user.id,

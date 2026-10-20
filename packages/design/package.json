@@ -1,0 +1,28 @@
+{
+  "name": "@sportsmanager/design",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Design system del SaaS de clubes: tokens, tema de Tailwind v4, motor de color del club, componentes de referencia, voz e iconos. Fuente de verdad: DESIGN.md.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./theme": "./src/theme/clubTheme.ts",
+    "./voice": "./src/i18n/voice.ts",
+    "./icons": "./src/icons/sport.tsx",
+    "./tailwind/theme.css": "./tailwind/theme.css",
+    "./tokens.css": "./src/theme/tokens.css",
+    "./tokens.json": "./tokens/tokens.json",
+    "./i18n/*": "./src/i18n/*"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "19.3.0",
+    "react": "19.3.1",
+    "typescript": "5.9.3"
+  }
+}

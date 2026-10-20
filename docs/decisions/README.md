@@ -40,3 +40,4 @@ Las decisiones no se editan una vez aceptadas. Si cambian, se escribe una nueva 
 | 0024 | Logos de club en Netlify Blobs a través de la API | Aceptada |
 | 0025 | Interfaz: dos espacios, sistema de componentes y pruebas de interfaz con capturas | Aceptada |
 | 0026 | Entrada propia del negocio y alta del primer administrador de plataforma | Aceptada |
+| 0027 | Front como SPA con Vite, React y Tailwind sobre el design system, y clubes por ruta | Aceptada |

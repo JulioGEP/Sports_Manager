@@ -84,6 +84,7 @@ describe("invitaciones y recuperación de contraseña", () => {
       NODE_ENV: "test",
       APP_BASE_DOMAIN: BASE,
       TENANT_FALLBACK_SLUG: "demo",
+      TENANT_ROUTING: "subdomain",
       EMAIL_TRANSPORT: "outbox",
     });
     data = createDataLayer({ config, connectionString });

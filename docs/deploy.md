@@ -5,23 +5,25 @@
 Un solo proyecto Netlify, `hubsports`, sirve la web y la API en el mismo host (ADR 0010):
 
 ```
-<club>.<dominio-base>
+<dominio-base>
 ├── /api/*   → función Netlify `api` (apps/api, Hono), región fra
-└── /*       → Next.js (apps/web) a través del adaptador OpenNext de Netlify, región fra
+└── /*       → SPA estática (apps/web, Vite + React) desde la CDN; el enrutador del navegador decide
+             /admin/...          panel del negocio
+             /<club>/...         espacio de cada club (ADR 0027)
+             /login, /clubs...   acceso y selector de clubes
 ```
 
-- La función de la API declara `path: "/api/*"` y `region: "fra"` en `apps/api/netlify/functions/api/api.mts`, y reexporta el bundle que genera esbuild (ADR 0013). Verificado: con el adaptador activo, `/api/*` lo atiende la función de la API y no Next.js.
-- Next.js no define ninguna ruta bajo `/api`.
-- Mismo host para web y API: cookies de host único y sin CORS.
+- La función de la API declara `path: "/api/*"` y `region: "fra"` en `apps/api/netlify/functions/api/api.mts`, y reexporta el bundle que genera esbuild (ADR 0013).
+- `netlify.toml` publica `apps/web/dist` con dos redirecciones: `/api/*` a la función y el resto a `index.html`.
+- Mismo host para web y API: cookies de host único y sin CORS. La web declara el club en la cabecera `x-sm-club`.
 
 ## Configuración del proyecto en Netlify
 
-Toda la configuración de build vive en `netlify.toml`, en la raíz del repo: comando de build, directorio de publicación, adaptador de Next.js, directorio de funciones y modo de desarrollo local. No hace falta ningún ajuste de build en la interfaz.
+Toda la configuración de build vive en `netlify.toml`, en la raíz del repo: comando de build, directorio de publicación, redirecciones, directorio de funciones y modo de desarrollo local. No hace falta ningún ajuste de build en la interfaz.
 
 Cómo encaja el monorepo:
 
-- Netlify no detecta Next.js en la raíz de un monorepo, así que el adaptador `@netlify/plugin-nextjs` se declara explícitamente en `[[plugins]]`. Netlify lo instala en cada build y lo mantiene actualizado; no se fija versión.
-- El adaptador localiza la app por el manifiesto que genera `next build` (`relativeAppDir`), no por ajustes de interfaz. Para eso `apps/web/next.config.ts` fija `outputFileTracingRoot` en la raíz del repo.
+- La web no necesita ningún adaptador: `vite build` deja ficheros estáticos en `apps/web/dist` y Netlify los sirve desde la CDN.
 - "Package directory" en la interfaz queda vacío. Si algún día se rellena con `apps/web`, el adaptador también funciona.
 
 Ajustes que sí son de interfaz, una sola vez:
@@ -33,7 +35,7 @@ Ajustes que sí son de interfaz, una sola vez:
 
 Notas:
 
-- La región de funciones a nivel de proyecto cubre también las funciones que genera el adaptador de Next.js, que no admiten configuración en código. Tras cambiarla hay que volver a desplegar.
+- La región de funciones a nivel de proyecto es la de la API. Tras cambiarla hay que volver a desplegar.
 - La versión de Node la toma Netlify de `.nvmrc`.
 - Variables de entorno de la API (Project configuration → Environment variables, ámbito "Functions", nunca en `netlify.toml`):
 
@@ -41,7 +43,8 @@ Notas:
 |---|---|---|---|
 | `BETTER_AUTH_SECRET` | secreto propio | secreto propio, distinto | Marcada como secreto. Rotarla cierra todas las sesiones |
 | `APP_BASE_DOMAIN` | `hubsports.netlify.app` | igual | Cambiará al dominio propio |
-| `TENANT_FALLBACK_SLUG` | `demo` | `demo` | Club de reserva (ADR 0016) |
+| `TENANT_ROUTING` | no definida (`path`) | no definida | `path`: clubes en `/<slug>` (ADR 0027). `subdomain` cuando haya dominio con comodín |
+| `TENANT_FALLBACK_SLUG` | `demo` | `demo` | Club de reserva (ADR 0016). Con clubes por ruta ya no hace falta; se puede vaciar |
 | `SESSION_COOKIE_DOMAIN` | vacía | vacía | Solo con dominio propio (ADR 0006) |
 | `EMAIL_TRANSPORT` | `outbox` | `outbox` | Pasa a `resend` cuando haya dominio verificado (ADR 0018) |
 | `RESEND_API_KEY` | pendiente | no | Marcada como secreto. Solo con transporte `resend` |
@@ -128,12 +131,12 @@ Requisitos: Node 22 (ver `.nvmrc`), pnpm 10 (`corepack enable` lo activa) y cone
 
 ```bash
 pnpm install        # instala todo el workspace
-pnpm dev            # netlify dev: Next en :3000, la función de la API y la base local, todo en http://localhost:8888
+pnpm dev            # netlify dev: Vite en :3000, la función de la API y la base local, todo en http://localhost:8888
 pnpm db:migrate     # aplica las migraciones pendientes a la base local
 pnpm db:status      # qué migraciones están aplicadas
 ```
 
-`pnpm dev` ejecuta `netlify dev --filter @sportsmanager/api` (el filtro es obligatorio en un monorepo). Dentro, `netlify.toml` lanza `pnpm run dev:servers`: esbuild en modo watch para la API y Next.js para la web. La API se empaqueta en un único fichero (ADR 0013), así que la función no depende de `node_modules` ni en local ni en producción.
+`pnpm dev` ejecuta `netlify dev --filter @sportsmanager/api` (el filtro es obligatorio en un monorepo). Dentro, `netlify.toml` lanza `pnpm run dev:servers`: esbuild en modo watch para la API y Vite para la web. La API se empaqueta en un único fichero (ADR 0013), así que la función no depende de `node_modules` ni en local ni en producción.
 
 Convención de código heredada de esa decisión: los imports relativos de `packages/shared`, `packages/db` y `apps/api` llevan extensión explícita (`./locales.ts`) y los diccionarios compartidos son módulos TypeScript, no JSON. Así los paquetes se pueden ejecutar también sin empaquetar.
 
@@ -153,22 +156,22 @@ Si `netlify dev` no arranca, la API se puede servir sin Netlify CLI con Postgres
 ```bash
 pnpm --filter @sportsmanager/api build                                   # genera el bundle de la API
 pnpm --filter @sportsmanager/api serve:local                             # API en http://127.0.0.1:9999/api/health (base embebida, emails en outbox, logos en memoria)
-API_PROXY_TARGET=http://127.0.0.1:9999 pnpm --filter @sportsmanager/web dev   # Next en http://localhost:3000 reenviando /api a la API local
+pnpm --filter @sportsmanager/web dev                                    # Vite en http://localhost:3000 reenviando /api a la API local
 ```
 
-`API_PROXY_TARGET` se lee al construir o arrancar Next; en producción no existe y `/api` lo sirve la función en el mismo origen. El servidor local reconstruye el `Host` real a partir de `x-forwarded-host`, que es lo que envía el reenvío de Next, así que los subdominios de club (`http://<club>.sportsmanager.localhost:3000`) resuelven igual que en Netlify. Cuenta demo: `admin@demo.test` / `123456`; `PLATFORM_ADMIN_EMAILS=admin@demo.test` la convierte además en administradora de plataforma.
+Vite reenvía `/api` a `API_PROXY_TARGET` (por defecto `http://127.0.0.1:9999`) en desarrollo y en `vite preview`; en producción no hay reenvío y `/api` lo sirve la función en el mismo origen. El club demo vive en `http://localhost:3000/demo`. Cuenta demo: `admin@demo.test` / `123456`; `PLATFORM_ADMIN_EMAILS=admin@demo.test` la convierte además en administradora de plataforma.
 
 ### Pruebas de interfaz (Bloque 8)
 
-Playwright levanta esas dos piezas solo, en escritorio (1280x800) y móvil (Pixel 7), y guarda una captura de cada pantalla en `apps/web/e2e/screenshots`:
+Playwright levanta esas dos piezas solo (la web construida, servida con `vite preview`), en escritorio (1280x800) y móvil (Pixel 7), y guarda una captura de cada pantalla en `apps/web/e2e/screenshots`:
 
 ```bash
 pnpm --filter @sportsmanager/api build
-API_PROXY_TARGET=http://127.0.0.1:9999 pnpm --filter @sportsmanager/web build
+pnpm --filter @sportsmanager/web build
 pnpm exec playwright install chromium --with-deps   # una vez, desde apps/web
 pnpm test:ui                                        # o `pnpm test:ui --project=escritorio`
 ```
 
 En CI es el job `interfaz`; las capturas y el informe quedan en el artefacto `capturas-interfaz` de cada ejecución. Si Chromium ya está instalado en otra ruta, `PW_CHROMIUM_PATH` apunta al binario. Las pruebas no tocan ninguna base externa: cada ejecución arranca con una base vacía más las migraciones y el club demo.
 
-Subdominios locales por club: `http://<club>.sportsmanager.localhost:8888` con `netlify dev`, o `:3000` con el servidor local (ver `docs/dominio-y-dns.md`).
+Clubes por ruta (ADR 0027): `http://localhost:3000/<club>`. Los subdominios (`http://<club>.sportsmanager.localhost:3000`) siguen resolviendo en la API para cuando haya dominio propio (ver `docs/dominio-y-dns.md`).

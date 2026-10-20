@@ -1,0 +1,16 @@
+# Instrucciones para agentes de código
+
+Este repositorio sigue un design system. Antes de crear o cambiar interfaz, lee `DESIGN.md`.
+
+Reglas que no se negocian:
+
+1. Solo clases del tema (`tailwind/theme.css`). Nada de hex sueltos ni colores por defecto de Tailwind.
+2. Los colores del club salen del motor (`src/theme/clubTheme.ts`). Nunca se eligen a mano.
+3. Zona táctil mínima: 48 px en móvil (`data-shape="envolvente"`), 44 px en gestión (`data-shape="precisa"`).
+4. Todo estado lleva texto. El color nunca va solo.
+5. Botones con verbo. Nunca "Aceptar" ni "Enviar" a secas.
+6. Acciones delicadas (bajas, borrar, cobros, cuotas, comunicados a todas las familias): siempre `ConfirmDialog`. Marcar asistencia: nunca.
+7. Textos visibles siempre desde `src/i18n/`. Respeta la voz del club y el bloqueo de momentos sensibles.
+8. Sin emojis. Sin marca del producto dentro de la app de un club.
+9. Chat: nunca entre adultos del club y jugadores menores. Las familias solo ven datos de sus hijos.
+10. Si algo no está definido en `DESIGN.md`, para y pregunta.

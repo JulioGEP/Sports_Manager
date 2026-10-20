@@ -1,0 +1,83 @@
+{
+  "_meta": {
+    "locale": "ca",
+    "status": "Borrador. Revisar por una persona nativa antes de publicar.",
+    "fallback": "es"
+  },
+  "ui": {
+    "action.cancel": "Cancel·lar",
+    "attendance.present": "Present",
+    "attendance.absent": "Falta",
+    "attendance.group": "Assistència de {player}"
+  },
+  "relational": {
+    "callup.title": {
+      "cercana": "{player} té convocatòria per al {day}",
+      "profesional": "Convocatòria · {team} · {date}",
+      "vestuario": "Convocatòria per a {player}!"
+    },
+    "callup.body": {
+      "cercana": "Partit a les {time} a {place}. Comptem amb {player}?",
+      "profesional": "Partit {time}, {place}. Confirma l'assistència de {player}.",
+      "vestuario": "{day} a les {time} a {place}. Toca donar-ho tot. Juga?"
+    },
+    "attendance.question": {
+      "cercana": "Ve {player}?",
+      "profesional": "Assistència de {player}",
+      "vestuario": "{player} juga?"
+    },
+    "attendance.saved": {
+      "cercana": "Fet. Assistència desada per a {present} de {total}.",
+      "profesional": "Assistència desada · {present}/{total}",
+      "vestuario": "Llista passada! {present} de {total} a pista."
+    },
+    "empty.week.title": {
+      "cercana": "Setmana tranquil·la",
+      "profesional": "Sense activitats aquesta setmana",
+      "vestuario": "Setmana de descans"
+    },
+    "empty.week.body": {
+      "cercana": "No hi ha entrenaments ni partits aquests dies. T'avisarem tan bon punt hi hagi alguna cosa.",
+      "profesional": "Quan el club programi un entrenament o un partit, apareixerà aquí.",
+      "vestuario": "Res al calendari. Carrega piles, que tornem aviat."
+    }
+  },
+  "sensitive": {
+    "payment.failed.title": {
+      "cercana": "No hem pogut cobrar la quota",
+      "profesional": "Pagament rebutjat"
+    },
+    "payment.failed.body": {
+      "cercana": "El teu banc ha rebutjat el pagament. Prova amb una altra targeta o parla amb el club.",
+      "profesional": "El teu banc no ha autoritzat el càrrec de {amount}. Revisa la targeta o fes servir un altre mètode."
+    },
+    "payment.failed.action": {
+      "cercana": "Provar una altra targeta",
+      "profesional": "Canviar el mètode de pagament"
+    },
+    "fee.reminder.body": {
+      "cercana": "Et recordem la quota de {month}. Venç el {dueDate}.",
+      "profesional": "Quota de {month} pendent. Venciment: {dueDate}."
+    },
+    "fee.reminder.action": {
+      "cercana": "Pagar {amount}",
+      "profesional": "Pagar {amount}"
+    },
+    "chat.visibility": {
+      "cercana": "La coordinació del club també pot veure aquesta conversa. Així tenim cura de tothom.",
+      "profesional": "Conversa visible per a la coordinació del club, segons el seu protocol de protecció."
+    },
+    "member.remove.title": {
+      "cercana": "Vols donar de baixa {player}?",
+      "profesional": "Vols donar de baixa {player}?"
+    },
+    "member.remove.body": {
+      "cercana": "Deixarà de sortir a les convocatòries i no se li cobraran més quotes. L'historial es conserva i pots reactivar la fitxa quan vulguis.",
+      "profesional": "S'exclourà de convocatòries i cobraments. L'historial es conserva i la fitxa es pot reactivar."
+    },
+    "member.remove.confirm": {
+      "cercana": "Donar de baixa",
+      "profesional": "Donar de baixa"
+    }
+  }
+}

@@ -1,10 +1,10 @@
-"use client";
-
 import { MeResponseSchema, type MeResponse } from "@sportsmanager/shared";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { useLocation, useNavigate } from "react-router";
 import { ApiClientError, apiFetch } from "./api";
-import { readLocaleCookie, writeLocaleCookie } from "./locale-cookie";
+import { useLocale } from "./intl";
+import { isLocale } from "./locale";
 
 export type SessionState =
   | { kind: "loading" }
@@ -12,52 +12,54 @@ export type SessionState =
   | { kind: "authenticated"; me: MeResponse }
   | { kind: "error" };
 
-/** Sesión actual según `/api/me`, para páginas fuera del club (acceso, portada, negocio). */
-export function useSession(): SessionState {
-  const [state, setState] = useState<SessionState>({ kind: "loading" });
-  const router = useRouter();
-  useEffect(() => {
-    let cancelled = false;
-    apiFetch("/api/me", { schema: MeResponseSchema })
-      .then((me) => {
-        if (cancelled) return;
-        setState({ kind: "authenticated", me });
-        if (me.user.locale && readLocaleCookie() !== me.user.locale) {
-          writeLocaleCookie(me.user.locale);
-          router.refresh();
-        }
-      })
-      .catch((error: unknown) => {
-        if (cancelled) return;
-        if (error instanceof ApiClientError && error.status === 401)
-          setState({ kind: "anonymous" });
-        else setState({ kind: "error" });
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [router]);
-  return state;
+export const ME_QUERY = ["me"] as const;
+
+export async function fetchMe(): Promise<MeResponse | null> {
+  try {
+    return await apiFetch("/api/me", { schema: MeResponseSchema, club: null });
+  } catch (error) {
+    if (error instanceof ApiClientError && error.status === 401) return null;
+    throw error;
+  }
 }
 
-/**
- * Como `useSession`, pero sin sesión manda al login y vuelve después a la página actual.
- * El panel del negocio usa su propia entrada (`/admin/login`), sin marca de ningún club.
- */
+/** Sesión actual según `/api/me`. El idioma del perfil manda sobre la cookie. */
+export function useSession(): SessionState {
+  const { locale, setLocale } = useLocale();
+  const query = useQuery({ queryKey: ME_QUERY, queryFn: fetchMe, staleTime: 60_000, retry: false });
+  const profileLocale = query.data?.user.locale;
+  useEffect(() => {
+    if (isLocale(profileLocale) && profileLocale !== locale) setLocale(profileLocale);
+  }, [profileLocale, locale, setLocale]);
+  if (query.isPending) return { kind: "loading" };
+  if (query.isError) return { kind: "error" };
+  if (query.data === null) return { kind: "anonymous" };
+  return { kind: "authenticated", me: query.data };
+}
+
+/** Como `useSession`, pero sin sesión manda al login indicado y vuelve después a la página actual. */
 export function useRequiredSession(loginPath = "/login"): SessionState {
   const state = useSession();
-  const router = useRouter();
+  const navigate = useNavigate();
+  const location = useLocation();
   useEffect(() => {
     if (state.kind === "anonymous") {
-      const next = `${window.location.pathname}${window.location.search}`;
-      router.replace(`${loginPath}?next=${encodeURIComponent(next)}`);
+      const next = `${location.pathname}${location.search}`;
+      void navigate(`${loginPath}?next=${encodeURIComponent(next)}`, { replace: true });
     }
-  }, [state.kind, router, loginPath]);
+  }, [state.kind, navigate, loginPath, location.pathname, location.search]);
   return state;
 }
 
-export async function signOut(): Promise<void> {
-  await apiFetch("/api/auth/sign-out", { method: "POST", body: {} });
+export function useSignOut() {
+  const client = useQueryClient();
+  return async () => {
+    try {
+      await apiFetch("/api/auth/sign-out", { method: "POST", body: {}, club: null });
+    } finally {
+      await client.resetQueries();
+    }
+  };
 }
 
 /** Destino seguro tras el login: solo rutas internas. */

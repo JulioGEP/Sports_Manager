@@ -53,11 +53,9 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
         working-directory: apps/web
-      # La web se construye con el reenvío /api → API local (solo para estas pruebas).
+      # La web estática se sirve con `vite preview`, que reenvía /api a la API local en tiempo de ejecución.
       - run: pnpm --filter @sportsmanager/api build
       - run: pnpm --filter @sportsmanager/web build
-        env:
-          API_PROXY_TARGET: http://127.0.0.1:9999
       - run: pnpm test:ui
         env:
           CI: "true"

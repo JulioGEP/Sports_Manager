@@ -1,11 +1,52 @@
-import { isReservedSubdomain, subdomainFromHost } from "@sportsmanager/shared";
+import {
+  isReservedSubdomain,
+  ORGANIZATION_SLUG_PATTERN,
+  subdomainFromHost,
+} from "@sportsmanager/shared";
 import type { ApiConfig } from "./config.ts";
 
 export type HostClass =
-  | { kind: "organization"; slug: string; source: "subdomain" | "fallback" }
+  | { kind: "organization"; slug: string; source: "subdomain" | "path" | "fallback" }
   | { kind: "platform" }
   | { kind: "reserved"; label: string }
   | { kind: "unknown" };
+
+/**
+ * Señal del club cuando los clubes viven en una ruta del dominio base (ADR 0027): la web
+ * manda el slug en esta cabecera en cada petición del club. Para recursos que el navegador
+ * pide sin cabeceras (el logo en un `<img>`), el mismo slug viaja en la query `club`.
+ */
+export const CLUB_HEADER = "x-sm-club";
+export const CLUB_QUERY = "club";
+
+export interface RequestSignals {
+  host: string | undefined;
+  /** Valor de `x-sm-club` o de `?club=`, tal cual llega. */
+  club?: string | null | undefined;
+}
+
+/**
+ * Etapa 1 de la cadena con las dos señales: el subdominio manda si lo hay (dominio propio con
+ * comodín); si no, el slug de la ruta que la web declara. Un slug mal formado o reservado no
+ * resuelve nada. Sin ninguna señal, vale lo que diga el host (club de reserva o nada).
+ */
+export function classifyRequest(
+  signals: RequestSignals,
+  config: ApiConfig,
+  deployContext?: string,
+): HostClass {
+  const byHost = classifyHost(signals.host, config, deployContext);
+  if (byHost.kind === "organization" && byHost.source === "subdomain") return byHost;
+  if (byHost.kind === "platform" || byHost.kind === "reserved") return byHost;
+  const club = signals.club?.trim().toLowerCase();
+  if (club) {
+    if (!ORGANIZATION_SLUG_PATTERN.test(club) || isReservedSubdomain(club)) {
+      return { kind: "unknown" };
+    }
+    return { kind: "organization", slug: club, source: "path" };
+  }
+  return byHost;
+}
 
 /**
  * Etapa 1 de la cadena (ADR 0011 y 0016): el host decide el club. Función pura y testable,
@@ -55,27 +96,51 @@ export function publicOrigin(
   config: ApiConfig,
   deployContext?: string,
 ): string {
-  const klass = classifyHost(host, config, deployContext);
   const scheme = config.isLocal ? "http" : "https";
+  const normalized = (host ?? "").toLowerCase();
+  const hostname = normalized.split(":")[0] ?? "";
+  const trusted =
+    hostname === config.baseDomain ||
+    (config.isLocal && (hostname === "localhost" || hostname === "127.0.0.1")) ||
+    deployContext === "deploy-preview" ||
+    deployContext === "branch-deploy";
+  if (trusted && hostname) return `${scheme}://${normalized}`;
+  const klass = classifyHost(host, config, deployContext);
   if (klass.kind === "organization" || klass.kind === "platform") {
-    return `${scheme}://${(host ?? "").toLowerCase()}`;
+    return `${scheme}://${normalized}`;
   }
   return `${scheme}://${config.baseDomain}`;
 }
 
 /**
- * Dirección pública del espacio de un club: `https://<slug>.<dominio base>`. El club de reserva
- * (ADR 0016) vive en el dominio base a secas. En local conserva el puerto de la petición.
- * Hasta tener dominio propio con comodín, los subdominios solo resuelven en local (ADR 0021).
+ * Dirección pública del espacio de un club.
+ * - `path` (ADR 0027, hasta tener dominio con comodín): `https://<dominio base>/<slug>`, sobre el
+ *   mismo origen desde el que se pide (deploy previews y local incluidos).
+ * - `subdomain`: `https://<slug>.<dominio base>`; el club de reserva (ADR 0016) vive en el dominio
+ *   base a secas. En local conserva el puerto de la petición.
  */
 export function organizationUrl(
   slug: string,
   config: ApiConfig,
   requestHost: string | undefined,
+  deployContext?: string,
 ): string {
+  if (config.tenantRouting === "path") {
+    return `${publicOrigin(requestHost, config, deployContext)}/${slug}`;
+  }
   const scheme = config.isLocal ? "http" : "https";
   const port = requestHost?.split(":")[1];
   const suffix = port ? `:${port}` : "";
   if (slug === config.tenantFallbackSlug) return `${scheme}://${config.baseDomain}${suffix}`;
   return `${scheme}://${slug}.${config.baseDomain}${suffix}`;
+}
+
+/** URL absoluta de un recurso de la API (por ejemplo el logo) desde el origen de la petición. */
+export function absoluteApiUrl(
+  relativePath: string,
+  config: ApiConfig,
+  requestHost: string | undefined,
+  deployContext?: string,
+): string {
+  return `${publicOrigin(requestHost, config, deployContext)}${relativePath}`;
 }

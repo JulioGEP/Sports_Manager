@@ -36,7 +36,10 @@ describe("configuración", () => {
       EMAIL_TRANSPORT: "",
       RESEND_API_KEY: "",
       EMAIL_FROM: " ",
+      TENANT_FALLBACK_SLUG: "",
     });
+    expect(config.tenantFallbackSlug).toBeNull();
+    expect(config.tenantRouting).toBe("path");
     expect(config.email.transport).toBe("outbox");
     expect(config.email.resendApiKey).toBeNull();
   });

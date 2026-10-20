@@ -1,49 +1,40 @@
-"use client";
-
-import { LOCALES, MeResponseSchema, type Locale } from "@sportsmanager/shared";
-import { useLocale, useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { LOCALES, type Locale } from "@sportsmanager/shared";
+import { useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
-import { writeLocaleCookie } from "@/lib/locale-cookie";
+import { useLocale, useT } from "@/lib/intl";
+import { ME_QUERY } from "@/lib/session";
+import { controlClass } from "@/ui/field";
 
-/**
- * Selector de idioma (Bloque 7). Guarda la preferencia en la cookie y, con sesión, en el perfil
- * (`PATCH /api/me`), para que siga a la persona entre dispositivos y llegue a los emails.
- */
+/** Idioma de la interfaz. Con sesión, también se guarda en el perfil (Bloque 7). */
 export function LanguageSwitcher({
   hasSession,
-  className,
+  compact = false,
 }: {
   hasSession: boolean;
-  className?: string;
+  compact?: boolean;
 }) {
-  const t = useTranslations("locales");
-  const current = useLocale();
-  const router = useRouter();
-  const [busy, setBusy] = useState(false);
+  const { locale, setLocale } = useLocale();
+  const t = useT("locales");
+  const client = useQueryClient();
 
-  async function change(locale: Locale) {
-    setBusy(true);
-    writeLocaleCookie(locale);
+  async function onChange(next: Locale) {
+    setLocale(next);
     if (hasSession) {
       try {
-        await apiFetch("/api/me", { method: "PATCH", body: { locale }, schema: MeResponseSchema });
+        await apiFetch("/api/me", { method: "PATCH", body: { locale: next }, club: null });
+        await client.invalidateQueries({ queryKey: ME_QUERY });
       } catch {
-        // La cookie ya cambió: la página se ve en el idioma elegido aunque el perfil no se guarde.
+        /* la cookie ya está escrita; el perfil se actualizará la próxima vez */
       }
     }
-    router.refresh();
-    setBusy(false);
   }
 
   return (
     <select
-      className={["lang-select", className ?? ""].join(" ").trim()}
-      value={current}
-      disabled={busy}
       aria-label={t("label")}
-      onChange={(e) => void change(e.target.value as Locale)}
+      className={`${controlClass} ${compact ? "!h-10 w-auto px-3 text-secondary" : "w-auto"}`}
+      value={locale}
+      onChange={(e) => void onChange(e.target.value as Locale)}
     >
       {LOCALES.map((code) => (
         <option key={code} value={code}>

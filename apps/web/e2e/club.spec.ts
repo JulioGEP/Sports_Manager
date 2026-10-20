@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
-import { expectLegibleButtons, login, shot, suffix, TEST_LOGO_PNG } from "./helpers";
+import { CLUB, expectLegibleButtons, login, shot, suffix, TEST_LOGO_PNG } from "./helpers";
 
-test.describe("panel del club", () => {
+test.describe("espacio del club", () => {
   test.beforeEach(async ({ page }) => {
     await login(page);
   });
@@ -10,25 +10,25 @@ test.describe("panel del club", () => {
     const email = `entrenador-${suffix(info.project.name)}@demo.test`;
     await page.getByRole("link", { name: "Miembros" }).first().click();
     await expect(page.getByRole("heading", { name: "Miembros" })).toBeVisible();
-    await expect(page.getByRole("cell", { name: /Admin Demo/ })).toBeVisible();
+    await expect(page.getByText("Admin Demo").first()).toBeVisible();
     await shot(page, "10-miembros", info.project.name);
     await expectLegibleButtons(page);
 
-    await page.getByRole("button", { name: "Invitar" }).click();
-    const drawer = page.getByRole("dialog");
-    await expect(drawer.getByRole("heading", { name: "Invitar a alguien" })).toBeVisible();
-    await drawer.getByLabel("Email", { exact: true }).fill(email);
-    await drawer.getByLabel("Rol").selectOption("coach");
+    await page.getByRole("button", { name: "Invitar" }).first().click();
+    const sheet = page.getByRole("dialog");
+    await expect(sheet.getByRole("heading", { name: "Invitar a alguien" })).toBeVisible();
+    await sheet.getByLabel("Email", { exact: true }).fill(email);
+    await sheet.getByLabel("Rol").selectOption("coach");
     await shot(page, "11-miembros-invitar", info.project.name);
     await expectLegibleButtons(page);
-    await drawer.getByRole("button", { name: "Enviar invitación" }).click();
+    await sheet.getByRole("button", { name: "Enviar invitación" }).click();
 
     await expect(page.getByRole("tab", { name: /Invitaciones/ })).toHaveAttribute(
       "aria-selected",
       "true",
     );
     await expect(page.getByText(`comparte este enlace con ${email}`)).toBeVisible();
-    await expect(page.getByRole("cell", { name: email })).toBeVisible();
+    await expect(page.getByText(email).first()).toBeVisible();
     await shot(page, "12-invitaciones", info.project.name);
     await expectLegibleButtons(page);
 
@@ -57,9 +57,12 @@ test.describe("panel del club", () => {
     await expect(page.getByText("Colores guardados.")).toBeVisible();
     await expect
       .poll(async () =>
-        page
-          .locator("header.topbar")
-          .evaluate((el) => getComputedStyle(el).getPropertyValue("--color-brand-primary").trim()),
+        page.evaluate(() =>
+          getComputedStyle(document.documentElement)
+            .getPropertyValue("--club-fill")
+            .trim()
+            .toLowerCase(),
+        ),
       )
       .toBe("#0f766e");
     await shot(page, "22-ajustes-marca-guardada", info.project.name);
@@ -76,12 +79,24 @@ test.describe("panel del club", () => {
     await expect(page.getByRole("img", { name: "Logo del club" })).toBeVisible();
     await shot(page, "24-ajustes-logo-subido", info.project.name);
     await page.getByRole("button", { name: "Quitar logo" }).click();
+    await page.getByRole("dialog").getByRole("button", { name: "Quitar logo" }).click();
     await expect(page.getByText("Logo quitado.")).toBeVisible();
     await expect(page.getByText("Todavía no hay logo.")).toBeVisible();
 
+    // Deja el club demo con su marca de origen para el resto de pruebas y capturas.
     await page.getByRole("tab", { name: "Marca" }).click();
-    await page.getByLabel("Color principal").fill("#1d4ed8");
+    await page.getByLabel("Color principal").fill("#D71920");
     await page.getByRole("button", { name: "Guardar" }).click();
-    await expect(page.getByText("Colores guardados.")).toBeVisible();
+    await expect(page).toHaveURL(new RegExp(`${CLUB}/settings`));
+    await expect
+      .poll(async () =>
+        page.evaluate(() =>
+          getComputedStyle(document.documentElement)
+            .getPropertyValue("--club-fill")
+            .trim()
+            .toLowerCase(),
+        ),
+      )
+      .toBe("#d71920");
   });
 });

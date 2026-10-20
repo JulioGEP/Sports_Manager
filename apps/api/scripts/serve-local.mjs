@@ -24,7 +24,7 @@ const { default: handler } = await import("../netlify/functions/api/handler.mjs"
 const context = { server: { region: "local" }, deploy: { context: "dev" } };
 
 /**
- * Detrás del proxy de Next (`API_PROXY_TARGET`) el Host que llega es 127.0.0.1:9999 y el real viene en
+ * Detrás del proxy de Vite (`API_PROXY_TARGET`) el Host que llega es 127.0.0.1:9999 y el real viene en
  * `x-forwarded-host`. En Netlify la función recibe el Host real; aquí se reconstruye la petición para
  * que la cadena de inquilino y las URL de los clubes se comporten igual que en producción.
  */

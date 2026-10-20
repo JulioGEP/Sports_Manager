@@ -16,7 +16,11 @@ const optionalString = z.preprocess(
 
 const EnvSchema = z.object({
   APP_BASE_DOMAIN: z.string().trim().min(1).default("sportsmanager.localhost"),
-  TENANT_FALLBACK_SLUG: z.string().trim().min(1).optional(),
+  TENANT_ROUTING: z.preprocess(
+    (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
+    z.enum(["path", "subdomain"]).optional(),
+  ),
+  TENANT_FALLBACK_SLUG: optionalString,
   BETTER_AUTH_SECRET: z.string().min(32).optional(),
   SESSION_COOKIE_DOMAIN: z.string().trim().min(1).optional(),
   INVITATION_TTL_DAYS: z.coerce.number().int().positive().optional(),
@@ -49,6 +53,12 @@ export interface EmailConfig {
 export interface ApiConfig {
   /** Dominio base de la plataforma, sin protocolo. Los clubes viven en `<slug>.<baseDomain>`. */
   baseDomain: string;
+  /**
+   * Dónde viven los clubes en las URL (ADR 0027): `path` → `https://<dominio base>/<slug>`;
+   * `subdomain` → `https://<slug>.<dominio base>`. La API acepta siempre las dos señales
+   * (subdominio y cabecera `x-sm-club`); este valor solo decide cómo construye los enlaces.
+   */
+  tenantRouting: "path" | "subdomain";
   /** Club que se sirve cuando el host no lleva subdominio de club (ADR 0016). */
   tenantFallbackSlug: string | null;
   authSecret: string;
@@ -90,6 +100,7 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
   }
   return {
     baseDomain: parsed.APP_BASE_DOMAIN.toLowerCase(),
+    tenantRouting: parsed.TENANT_ROUTING ?? "path",
     tenantFallbackSlug: parsed.TENANT_FALLBACK_SLUG?.toLowerCase() ?? null,
     authSecret,
     sessionCookieDomain: parsed.SESSION_COOKIE_DOMAIN ?? null,

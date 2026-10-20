@@ -1,7 +1,7 @@
 import { PASSWORD_RESET_TTL_MINUTES, resolveLocale, WEB_PATHS } from "@sportsmanager/shared";
 import { brandTokens } from "@sportsmanager/shared/design";
 import type { ApiConfig } from "../../config.ts";
-import { classifyHost, publicOrigin } from "../../tenancy.ts";
+import { classifyRequest, publicOrigin } from "../../tenancy.ts";
 import type { EmailSender } from "../email/sender.ts";
 import { renderEmail } from "../email/templates.ts";
 import type { organizationsRepo } from "../organizations.ts";
@@ -19,8 +19,14 @@ export interface ResetPasswordDeps {
  * del club. Nombre y color del club van en el email cuando el host es un club.
  */
 export function createResetPasswordSender(deps: ResetPasswordDeps) {
-  return async ({ user, token, host, deployContext }: ResetPasswordRequest): Promise<void> => {
-    const klass = classifyHost(host, deps.config, deployContext);
+  return async ({
+    user,
+    token,
+    host,
+    club,
+    deployContext,
+  }: ResetPasswordRequest): Promise<void> => {
+    const klass = classifyRequest({ host, club }, deps.config, deployContext);
     const organization =
       klass.kind === "organization"
         ? (await deps.organizations.findBySlug(klass.slug))?.organization

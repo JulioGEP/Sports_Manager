@@ -9,6 +9,8 @@ export interface ResetPasswordRequest {
   token: string;
   /** Host de la petición, ya en minúsculas, o undefined si no llegó. */
   host: string | undefined;
+  /** Slug del club que declara la web con los clubes por ruta (cabecera `x-sm-club`, ADR 0027). */
+  club: string | undefined;
   /** Contexto de deploy de Netlify que la API fijó en la cabecera interna. */
   deployContext: string | undefined;
 }
@@ -66,6 +68,7 @@ export function createAuth(db: Database, config: ApiConfig, hooks: AuthHooks) {
           user: user,
           token,
           host: request?.headers.get("host")?.toLowerCase(),
+          club: request?.headers.get("x-sm-club")?.toLowerCase(),
           deployContext: request?.headers.get("x-sm-deploy-context") ?? undefined,
         });
       },

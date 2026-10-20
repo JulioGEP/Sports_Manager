@@ -1,21 +1,28 @@
-# Un solo proyecto Netlify sirve la web y la API en el mismo host (ADR 0010).
-# Base del proyecto: raíz del repo. La configuración vive aquí, no en la interfaz:
-# el adaptador de Next.js se declara explícitamente porque Netlify no detecta el framework
-# en la raíz de un monorepo, y localiza la app en apps/web gracias a `outputFileTracingRoot`
-# en apps/web/next.config.ts. Ver docs/deploy.md.
+# Un solo proyecto Netlify sirve la web y la API en el mismo host (ADR 0010 y 0027).
+# La web es una SPA estática (Vite) servida desde la CDN; `/api/*` lo atiende la función de la API.
+# Base del proyecto: raíz del repo. Ver docs/deploy.md.
 
 [build]
   command = "pnpm build"
-  publish = "apps/web/.next"
-
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
+  publish = "apps/web/dist"
 
 [functions]
   directory = "apps/api/netlify/functions"
   node_bundler = "esbuild"
 
-# Desarrollo local: `pnpm dev` arranca Next en :3000, esbuild en modo watch para la API, la función y la base local,
+# La API primero: las funciones se sirven en /api/* antes de caer en la SPA.
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+
+# Todo lo demás es la SPA: el enrutador del navegador decide (clubes por ruta, /admin, acceso).
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Desarrollo local: `pnpm dev` arranca Vite en :3000, esbuild en modo watch para la API, la función y la base local,
 # todo detrás de :8888. Sin shell: el comando no admite sintaxis de Bash.
 [dev]
   command = "pnpm run dev:servers"

@@ -1,11 +1,12 @@
 import { expect, type Locator, type Page } from "@playwright/test";
 import { mkdirSync } from "node:fs";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { deflateSync } from "node:zlib";
 
 export const DEMO = { email: "admin@demo.test", password: "123456" };
 
-const dir = join(__dirname, "screenshots");
+const dir = fileURLToPath(new URL("./screenshots/", import.meta.url));
 mkdirSync(dir, { recursive: true });
 
 /**
@@ -33,18 +34,29 @@ export async function expectNoHorizontalOverflow(page: Page, label: string) {
   );
 }
 
-export async function login(page: Page, email = DEMO.email, password = DEMO.password) {
-  await page.goto("/login");
+/** El club demo vive en /demo (ADR 0027). */
+export const CLUB = "/demo";
+
+/** Entra y espera a estar dentro de un club (con un solo club, el selector va directo). */
+export async function login(
+  page: Page,
+  email = DEMO.email,
+  password = DEMO.password,
+  next: string = CLUB,
+) {
+  // Con `next` la entrada vuelve siempre al club demo, aunque la cuenta ya pertenezca a más clubes
+  // creados por otras pruebas de la misma ejecución (escritorio y móvil comparten base).
+  await page.goto(`/login?next=${encodeURIComponent(next)}`);
   await page.getByLabel(/email|correo/i).fill(email);
   await page.getByLabel(/contraseña|contrasenya|password/i).fill(password);
   await page.getByRole("button", { name: /^(entrar|sign in)$/i }).click();
   await page.waitForURL((url) => !url.pathname.startsWith("/login"));
 }
 
-/** Abre el menú de persona de la barra superior y cierra la sesión. */
+/** Abre el menú de persona y cierra la sesión. */
 export async function signOut(page: Page) {
   await page.getByRole("button", { name: /menú de usuario|user menu/i }).click();
-  await page.getByRole("button", { name: /cerrar sesión|sign out/i }).click();
+  await page.getByRole("menuitem", { name: /cerrar sesión|sign out/i }).click();
   await page.waitForURL((url) => url.pathname.startsWith("/login"));
 }
 
@@ -120,7 +132,7 @@ export function suffix(project: string): string {
  * tiene que distinguirse del fondo. Es la prueba que evita botones blancos sobre blanco.
  */
 export async function expectLegibleButtons(page: Page) {
-  const buttons: Locator = page.locator("button, a.btn, label.btn");
+  const buttons: Locator = page.locator("button, a[href], label");
   const count = await buttons.count();
   for (let i = 0; i < count; i++) {
     const button = buttons.nth(i);

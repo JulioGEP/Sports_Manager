@@ -1,22 +1,27 @@
 import type { ReactNode } from "react";
 
-interface PageHeaderProps {
+/** Cabecera de pantalla (DESIGN.md 9.11): título en Título 1 y una línea de contexto. */
+export function PageHeader({
+  eyebrow,
+  title,
+  description,
+  actions,
+}: {
+  eyebrow?: ReactNode;
   title: ReactNode;
   description?: ReactNode;
   actions?: ReactNode;
-  /** Migas o contexto encima del título. */
-  eyebrow?: ReactNode;
-}
-
-export function PageHeader({ title, description, actions, eyebrow }: PageHeaderProps) {
+}) {
   return (
-    <header className="page-header">
-      <div>
-        {eyebrow ? <div className="page-header__eyebrow">{eyebrow}</div> : null}
-        <h1 className="page-header__title">{title}</h1>
-        {description ? <p className="page-header__description">{description}</p> : null}
+    <header className="flex flex-wrap items-end justify-between gap-4">
+      <div className="flex min-w-0 flex-col gap-1">
+        {eyebrow ? <div className="text-secondary text-muted">{eyebrow}</div> : null}
+        <h1 className="flex flex-wrap items-center gap-3 text-title1 lg:text-title1-lg text-ink">
+          {title}
+        </h1>
+        {description ? <p className="text-body text-muted">{description}</p> : null}
       </div>
-      {actions ? <div className="page-header__actions">{actions}</div> : null}
+      {actions ? <div className="flex flex-wrap gap-2">{actions}</div> : null}
     </header>
   );
 }

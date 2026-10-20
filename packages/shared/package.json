@@ -6,8 +6,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./i18n": "./src/i18n/index.ts",
-    "./design": "./design/tokens.ts",
-    "./design/tokens.css": "./design/tokens.css"
+    "./design": "./design/tokens.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
