@@ -176,7 +176,7 @@ textarea {
   border-radius: var(--radius-pill);
   border: 1px solid var(--color-brand-primary);
   background: var(--color-brand-primary);
-  color: var(--color-surface);
+  color: var(--color-on-brand-primary, var(--color-surface));
   font-weight: 700;
   text-decoration: none;
   cursor: pointer;
@@ -269,9 +269,6 @@ textarea {
 }
 
 /* --- Bloque 5: marca por club --- */
-.button {
-  color: var(--color-on-brand-primary, var(--color-surface));
-}
 
 .brand {
   display: flex;
@@ -364,4 +361,26 @@ input[type="color"] {
   overflow: hidden;
   clip: rect(0 0 0 0);
   white-space: nowrap;
+}
+
+/* --- Accesos rápidos de la portada del club --- */
+.actions {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.action {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-soft);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.action strong {
+  color: var(--color-brand-primary);
 }

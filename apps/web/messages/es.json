@@ -6,7 +6,17 @@
     "yourRoles": "Tus roles:",
     "supportLimited": "Entras como soporte de plataforma: solo ves estado y recuentos del club.",
     "supportFull": "Entras como soporte de plataforma con autorización del club: lectura completa.",
-    "apiStatus": "Estado de la API"
+    "apiStatus": "Estado de la API",
+    "actionsTitle": "Qué puedes hacer aquí",
+    "actionMembers": "Miembros",
+    "actionMembersBody": "Ver quién forma parte del club e invitar a entrenadores, tutores y administradores.",
+    "actionSettings": "Ajustes del club",
+    "actionSettingsBody": "Nombre, idioma, colores de marca y logo.",
+    "actionClubs": "Mis clubes",
+    "actionClubsBody": "Cambiar de club si perteneces a varios.",
+    "actionAdmin": "Admin interno",
+    "actionAdminBody": "Crear clubes, configurar su marca e invitar a su primer administrador.",
+    "phaseNote": "Fase 0: cuentas, clubes, roles, invitaciones y marca. Jugadores, equipos y secciones llegan en la Fase 1."
   },
   "apiStatus": {
     "loading": "Comprobando…",

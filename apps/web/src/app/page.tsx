@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 import { ApiStatus } from "@/components/api-status";
 import { AppShell } from "@/components/app-shell";
 import { useBranding } from "@/components/branding-provider";
@@ -13,7 +14,7 @@ export default function HomePage() {
   if (!branding) return <Landing />;
   return (
     <AppShell>
-      {({ org, userName }) => (
+      {({ org, userName, platformAdmin }) => (
         <>
           <section className="card">
             <h1>{t("greeting", { name: userName })}</h1>
@@ -30,6 +31,34 @@ export default function HomePage() {
             ) : (
               <p className="muted">{org.actor.hasGrant ? t("supportFull") : t("supportLimited")}</p>
             )}
+          </section>
+          <section className="card">
+            <h2>{t("actionsTitle")}</h2>
+            <div className="actions">
+              {org.actor.permissions.includes("org.members.read") ? (
+                <Link className="action" href="/members">
+                  <strong>{t("actionMembers")}</strong>
+                  <span className="muted">{t("actionMembersBody")}</span>
+                </Link>
+              ) : null}
+              {org.actor.permissions.includes("org.settings.write") ? (
+                <Link className="action" href="/settings">
+                  <strong>{t("actionSettings")}</strong>
+                  <span className="muted">{t("actionSettingsBody")}</span>
+                </Link>
+              ) : null}
+              <Link className="action" href="/clubs">
+                <strong>{t("actionClubs")}</strong>
+                <span className="muted">{t("actionClubsBody")}</span>
+              </Link>
+              {platformAdmin ? (
+                <Link className="action" href="/admin">
+                  <strong>{t("actionAdmin")}</strong>
+                  <span className="muted">{t("actionAdminBody")}</span>
+                </Link>
+              ) : null}
+            </div>
+            <p className="muted">{t("phaseNote")}</p>
           </section>
           <section className="card">
             <h2>{t("apiStatus")}</h2>
