@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "netlify dev --filter @sportsmanager/api",
-    "build": "pnpm --filter @sportsmanager/web build",
+    "build": "pnpm --filter @sportsmanager/api build && pnpm --filter @sportsmanager/web build",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
@@ -17,15 +17,18 @@
     "test:isolation": "pnpm --filter @sportsmanager/api test:isolation",
     "db:generate": "pnpm --filter @sportsmanager/db generate",
     "db:migrate": "netlify database migrations apply",
-    "db:status": "netlify database status"
+    "db:status": "netlify database status",
+    "dev:servers": "concurrently -k -n api,web -c cyan,magenta \"pnpm --filter @sportsmanager/api dev\" \"pnpm --filter @sportsmanager/web dev\""
   },
   "dependencies": {
     "@netlify/database": "2.0.1"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
+    "concurrently": "10.0.6",
     "eslint": "10.13.0",
     "eslint-config-prettier": "10.1.8",
+    "globals": "17.13.0",
     "netlify-cli": "27.13.0",
     "prettier": "3.9.10",
     "typescript": "5.9.3",

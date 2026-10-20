@@ -7,6 +7,8 @@
     "./app": "./src/app.ts"
   },
   "scripts": {
+    "build": "node scripts/bundle.mjs",
+    "dev": "node scripts/bundle.mjs --watch",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:isolation": "vitest run --config vitest.isolation.config.ts"
@@ -25,6 +27,7 @@
   "devDependencies": {
     "@netlify/database-dev": "1.0.1",
     "@types/node": "22.20.5",
+    "esbuild": "0.28.2",
     "typescript": "5.9.3",
     "vitest": "5.0.5"
   }
