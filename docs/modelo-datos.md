@@ -1,6 +1,6 @@
 # Modelo de datos
 
-Estado: Fase 0, Bloque 2. Solo lo necesario para organizaciones, identidad, pertenencias e invitaciones. Jugadores, equipos y secciones llegan en la Fase 1.
+Estado: Fase 0, Bloque 3. Solo lo necesario para organizaciones, identidad, pertenencias e invitaciones. Jugadores, equipos y secciones llegan en la Fase 1.
 
 Fuente de verdad: `packages/db/src/schema/`. Las migraciones están en `netlify/database/migrations/` y las aplica Netlify en cada deploy (ADR 0003).
 
@@ -18,12 +18,13 @@ Fuente de verdad: `packages/db/src/schema/`. Las migraciones están en `netlify/
 | Tabla | Para qué | Reglas |
 |---|---|---|
 | `sports` | Catálogo de deportes | `code` único. `config` guarda la configuración por deporte (vacía en Fase 0). Semilla: `futsal` |
-| `organizations` | Un club | `slug` único con formato de etiqueta DNS; los subdominios reservados se rechazan en la API. Idioma por defecto, deporte por defecto, dos colores de marca `#rrggbb`, logo (Bloque 5), estado `active`, `suspended` o `archived` |
+| `organizations` | Un club. Semilla: `demo`, el club de reserva (ADR 0016) | `slug` único con formato de etiqueta DNS; los subdominios reservados se rechazan en la API. Idioma por defecto, deporte por defecto, dos colores de marca `#rrggbb`, logo (Bloque 5), estado `active`, `suspended` o `archived` |
 | `users`, `sessions`, `accounts`, `verifications` | Identidad, Better Auth 1.7 | Generadas con el CLI de Better Auth. `users.locale` es columna propia |
 | `roles` | Roles de organización como datos | `code` como clave: `org_admin`, `coach`, `guardian`. Los permisos de cada rol están en `packages/shared` y un test comprueba que ambas listas coinciden |
 | `memberships` | Usuario + club + rol | Varias filas por usuario y club, una por rol (ADR 0014). Única por (usuario, club, rol) |
 | `invitations` | Invitación a un club con un rol | Solo se guarda el hash del token. Una sola invitación pendiente por club y email. Estados `pending`, `accepted`, `revoked`; "caducada" se deduce de `expires_at`. Caducidad por defecto 7 días |
 | `platform_admins` | Administradores de la plataforma | Ningún endpoint la escribe (ADR 0008) |
+| `support_access_grants` | Autorización de un club a un administrador de plataforma para ver su contenido completo | Caduca o se revoca. Sin ella, el administrador solo ve agregados (ADR 0017) |
 | `app_meta` | Metadatos de la aplicación | Comprueba la cadena de migraciones |
 
 ## Borrados en cascada

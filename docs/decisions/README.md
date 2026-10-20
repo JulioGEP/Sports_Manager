@@ -28,3 +28,6 @@ Las decisiones no se editan una vez aceptadas. Si cambian, se escribe una nueva 
 | 0012 | i18n con next-intl y diccionarios compartidos | Propuesta |
 | 0013 | La API se empaqueta con esbuild en un único fichero | Aceptada |
 | 0014 | Varios roles por usuario y club | Aceptada |
+| 0015 | Cadena de petición y ámbito de organización | Aceptada |
+| 0016 | Club de reserva cuando el host no lleva subdominio | Aceptada |
+| 0017 | Acceso de soporte del administrador de plataforma | Aceptada |

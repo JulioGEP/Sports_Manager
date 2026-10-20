@@ -1,0 +1,42 @@
+import type { Locale, Permission, RoleCode } from "@sportsmanager/shared";
+import type { OrganizationRow, OrgScope } from "../data/index.ts";
+
+/** Contexto que Netlify pasa a la función. En tests puede no existir. */
+export interface NetlifyContext {
+  server?: { region?: string };
+  deploy?: { context?: string; id?: string };
+}
+
+export interface NetlifyEnv {
+  context?: NetlifyContext;
+}
+
+/** Resultado de la etapa 1 de la cadena: qué dice el host. */
+export type Tenant =
+  { kind: "organization"; organization: OrganizationRow; scope: OrgScope } | { kind: "platform" };
+
+/** Resultado de la etapa 2: quién tiene la sesión. */
+export interface SessionUser {
+  id: string;
+  name: string;
+  email: string;
+  locale: Locale | null;
+}
+
+/** Resultado de la etapa 3: qué puede hacer dentro del club del host. */
+export type Actor =
+  | { kind: "member"; userId: string; roles: RoleCode[]; permissions: ReadonlySet<Permission> }
+  | {
+      kind: "platform_support";
+      userId: string;
+      hasGrant: boolean;
+      permissions: ReadonlySet<Permission>;
+    };
+
+export interface AppVariables {
+  tenant: Tenant;
+  sessionUser: SessionUser;
+  actor: Actor;
+}
+
+export type AppEnv = { Bindings: NetlifyEnv; Variables: AppVariables };

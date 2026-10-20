@@ -6,3 +6,4 @@ export * from "./roles.ts";
 export * from "./memberships.ts";
 export * from "./invitations.ts";
 export * from "./platform-admins.ts";
+export * from "./support-access-grants.ts";

@@ -1,40 +1,49 @@
-import { createDb, regionFromConnectionString, schema, type DbHandle } from "@sportsmanager/db";
+import { regionFromConnectionString, schema } from "@sportsmanager/db";
 import type { DatabaseStatus } from "@sportsmanager/shared";
 import { eq, sql } from "drizzle-orm";
+import type { ApiConfig } from "../config.ts";
+import { createAuth, type Auth } from "./auth/index.ts";
+import { createLazyDb } from "./db.ts";
+import { membershipsRepo } from "./memberships.ts";
+import { organizationsRepo } from "./organizations.ts";
+import { platformRepo } from "./platform.ts";
+
+export type { OrgScope } from "./scope.ts";
+export type { OrganizationRow, OrganizationSport, SupportCounts } from "./organizations.ts";
+export type { AssignRoleResult, Member, RemoveRoleResult, UserMembership } from "./memberships.ts";
+export { userLocale } from "./memberships.ts";
 
 /**
- * Única capa de acceso a datos de la API (ADR 0009).
- * Fuera de este directorio nadie importa @sportsmanager/db, drizzle-orm ni pg:
+ * Única capa de acceso a datos de la API (ADR 0009 y 0015).
+ * Fuera de este directorio nadie importa @sportsmanager/db, drizzle-orm, pg ni better-auth:
  * lo impiden ESLint y src/architecture.isolation.test.ts.
- *
- * En el Bloque 3 toda función de consulta recibirá el contexto de organización.
  */
-export interface DataLayer {
-  checkDatabase(): Promise<DatabaseStatus>;
-  getAppMeta(key: string): Promise<string | null>;
-  close(): Promise<void>;
-}
-
 export interface DataLayerOptions {
+  config: ApiConfig;
   connectionString?: string;
 }
 
-export function createDataLayer(options: DataLayerOptions = {}): DataLayer {
-  let handle: DbHandle | null = null;
-
-  const getHandle = (): DbHandle => {
-    handle ??= createDb(
-      options.connectionString ? { connectionString: options.connectionString } : {},
-    );
-    return handle;
-  };
+export function createDataLayer(options: DataLayerOptions) {
+  const lazy = createLazyDb(
+    options.connectionString ? { connectionString: options.connectionString } : {},
+  );
+  const db = () => lazy.get().db;
+  let auth: Auth | null = null;
 
   return {
-    async checkDatabase() {
+    get auth(): Auth {
+      auth ??= createAuth(db(), options.config);
+      return auth;
+    },
+    organizations: organizationsRepo(db),
+    memberships: membershipsRepo(db),
+    platform: platformRepo(db),
+
+    async checkDatabase(): Promise<DatabaseStatus> {
       try {
-        const { db, connectionString } = getHandle();
+        const { db: database, connectionString } = lazy.get();
         const started = performance.now();
-        await db.execute(sql`select 1`);
+        await database.execute(sql`select 1`);
         return {
           ok: true,
           region: regionFromConnectionString(connectionString),
@@ -46,9 +55,8 @@ export function createDataLayer(options: DataLayerOptions = {}): DataLayer {
       }
     },
 
-    async getAppMeta(key) {
-      const { db } = getHandle();
-      const rows = await db
+    async getAppMeta(key: string): Promise<string | null> {
+      const rows = await db()
         .select({ value: schema.appMeta.value })
         .from(schema.appMeta)
         .where(eq(schema.appMeta.key, key))
@@ -57,8 +65,10 @@ export function createDataLayer(options: DataLayerOptions = {}): DataLayer {
     },
 
     async close() {
-      await handle?.close();
-      handle = null;
+      await lazy.close();
+      auth = null;
     },
   };
 }
+
+export type DataLayer = ReturnType<typeof createDataLayer>;
