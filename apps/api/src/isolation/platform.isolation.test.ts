@@ -106,6 +106,53 @@ describe("admin interno", () => {
     await local?.stop();
   });
 
+  it("el alta del primer administrador solo vale para emails autorizados y sin cuenta (ADR 0026)", async () => {
+    const setup = (body: unknown, host = BASE) =>
+      request("POST", "/api/platform-setup", host, { body });
+
+    // Email fuera de PLATFORM_ADMIN_EMAILS: nada que crear, aunque el resto sea correcto.
+    const forbidden = await setup({ email: "intruso@test.test", name: "X", password: PASSWORD });
+    expect(forbidden.status).toBe(403);
+    expect(await seeder.userByEmail("intruso@test.test")).toBeNull();
+
+    // Email autorizado que ya tiene cuenta: no se pisa ni se cambia la contraseña.
+    const exists = await setup({ email: "root@plataforma.test", name: "X", password: "otra-1234" });
+    expect(exists.status).toBe(409);
+    expect((await signIn("root@plataforma.test", PASSWORD, BASE)).status).toBe(200);
+
+    // Email autorizado sin cuenta: se crea, inicia sesión y ya es administrador en cualquier host.
+    const created = await setup(
+      { email: "Otra@Plataforma.test", name: "Otra", password: PASSWORD },
+      hostOf("club-a"),
+    );
+    expect(created.status).toBe(201);
+    const cookie = created.headers
+      .getSetCookie()
+      .map((c) => c.split(";")[0] ?? "")
+      .join("; ");
+    expect(cookie).toContain("session");
+    const me = await request("GET", "/api/platform/me", BASE, { cookie });
+    expect(me.status).toBe(200);
+    expect(((await me.json()) as { platformAdmin: boolean }).platformAdmin).toBe(true);
+
+    // Segunda vez con el mismo email: la cuenta ya existe.
+    const again = await setup({ email: "otra@plataforma.test", name: "Otra", password: PASSWORD });
+    expect(again.status).toBe(409);
+
+    // Queda en la auditoría, sin club.
+    const audit = await request("GET", "/api/platform/audit?limit=5", BASE, {
+      cookie: cookies.get(root.id),
+    });
+    const { entries } = (await audit.json()) as {
+      entries: { action: string; target: string | null }[];
+    };
+    expect(
+      entries.some(
+        (e) => e.action === "platform.admin_created" && e.target === "otra@plataforma.test",
+      ),
+    ).toBe(true);
+  });
+
   it("solo administradores de plataforma, por tabla o por email, en cualquier host", async () => {
     for (const host of [BASE, hostOf("club-a"), hostOf("admin")]) {
       expect((await request("GET", "/api/platform/organizations", host)).status).toBe(401);

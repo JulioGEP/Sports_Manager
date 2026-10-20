@@ -3,7 +3,7 @@ import { AUDIT_ACTIONS } from "../audit.ts";
 import { LocaleSchema, LocalizedTextSchema } from "../locales.ts";
 import { ORGANIZATION_STATUSES, OrganizationUpdateSchema } from "../organizations.ts";
 import { RoleCodeSchema } from "../roles.ts";
-import { EmailSchema } from "../users.ts";
+import { EmailSchema, PasswordSchema } from "../users.ts";
 import { InvitationSchema } from "./invitations.ts";
 
 /** Contratos del admin interno (Bloque 6, ADR 0022). Solo administradores de plataforma. */
@@ -87,3 +87,15 @@ export const PlatformAdminSchema = z.object({
 });
 export const PlatformAdminsResponseSchema = z.object({ admins: z.array(PlatformAdminSchema) });
 export type PlatformAdminsResponse = z.infer<typeof PlatformAdminsResponseSchema>;
+
+/**
+ * Alta del primer administrador de plataforma (ADR 0026): solo para los emails fijados en
+ * PLATFORM_ADMIN_EMAILS y solo si la cuenta no existe todavía. No pasa por ningún club.
+ */
+export const PlatformSetupBodySchema = z.object({
+  email: EmailSchema,
+  name: z.string().trim().min(1).max(120),
+  password: PasswordSchema,
+});
+export type PlatformSetupBody = z.infer<typeof PlatformSetupBodySchema>;
+export const PlatformSetupResponseSchema = z.object({ created: z.literal(true) });

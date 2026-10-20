@@ -10,6 +10,7 @@ import { createInvitationRoutes } from "./routes/invitations.ts";
 import { createMeRoutes } from "./routes/me.ts";
 import { createOrgRoutes } from "./routes/org.ts";
 import { createPlatformRoutes } from "./routes/platform.ts";
+import { createPlatformSetupRoutes } from "./routes/platform-setup.ts";
 import { DEPLOY_CONTEXT_HEADER } from "./tenancy.ts";
 
 export type { NetlifyContext, NetlifyEnv } from "./http/context.ts";
@@ -61,6 +62,7 @@ export function createApp(options: AppOptions = {}) {
   app.route("/", createOrgRoutes(config, data));
   app.route("/", createInvitationRoutes(config, data));
   app.route("/", createPlatformRoutes(config, data));
+  app.route("/", createPlatformSetupRoutes(config, data));
 
   app.openAPIRegistry.registerComponent("securitySchemes", "sessionCookie", {
     type: "apiKey",

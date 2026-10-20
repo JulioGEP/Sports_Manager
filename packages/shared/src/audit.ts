@@ -13,5 +13,6 @@ export const AUDIT_ACTIONS = [
   "invitation.accepted",
   "membership.role_assigned",
   "membership.role_removed",
+  "platform.admin_created",
 ] as const;
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];

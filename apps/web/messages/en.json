@@ -235,7 +235,8 @@
       "mainNav": "Business navigation",
       "apiError": "The API is not responding.",
       "forbiddenTitle": "Platform administrators only",
-      "forbiddenBody": "Your account ({email}) is not a platform administrator."
+      "forbiddenBody": "Your account ({email}) is not a platform administrator.",
+      "switchAccount": "Sign in with another account"
     },
     "clubs": {
       "title": "Clubs",
@@ -317,6 +318,31 @@
       "title": "System",
       "description": "Technical status of the platform.",
       "apiTitle": "API and database"
+    },
+    "login": {
+      "title": "Business administration",
+      "subtitle": "Entry reserved for platform administrators.",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Sign in",
+      "forgot": "Forgot your password?",
+      "setup": "First time? Create your administrator account",
+      "notAdmin": "That account is not a platform administrator."
+    },
+    "setup": {
+      "title": "Create administrator account",
+      "subtitle": "Only for emails authorised as platform administrators. Afterwards you sign in through the business entrance.",
+      "name": "Your name",
+      "email": "Email",
+      "password": "Password",
+      "passwordHint": "At least {min} characters.",
+      "confirm": "Repeat the password",
+      "submit": "Create account and sign in",
+      "mismatch": "Passwords do not match.",
+      "tooShort": "The password must have at least {min} characters.",
+      "forbidden": "That email is not authorised as a platform administrator.",
+      "exists": "That account already exists. Sign in with your password or recover it.",
+      "backToLogin": "I already have an account"
     }
   },
   "apiStatus": {
@@ -387,6 +413,9 @@
     "membership": {
       "role_assigned": "Role assigned",
       "role_removed": "Role removed"
+    },
+    "platform": {
+      "admin_created": "Platform administrator created"
     }
   }
 }

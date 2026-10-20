@@ -46,7 +46,9 @@ export default defineConfig({
         PORT: "9999",
         APP_BASE_DOMAIN: "sportsmanager.localhost",
         SESSION_COOKIE_DOMAIN: "sportsmanager.localhost",
-        PLATFORM_ADMIN_EMAILS: "admin@demo.test",
+        // admin@demo.test administra también la plataforma en las pruebas; los otros dos se dan de alta en /admin/setup.
+        PLATFORM_ADMIN_EMAILS:
+          "admin@demo.test,plataforma-escritorio@demo.test,plataforma-movil@demo.test",
       },
     },
     {

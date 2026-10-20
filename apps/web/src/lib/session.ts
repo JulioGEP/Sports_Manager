@@ -40,16 +40,19 @@ export function useSession(): SessionState {
   return state;
 }
 
-/** Como `useSession`, pero sin sesión manda al login y vuelve después a la página actual. */
-export function useRequiredSession(): SessionState {
+/**
+ * Como `useSession`, pero sin sesión manda al login y vuelve después a la página actual.
+ * El panel del negocio usa su propia entrada (`/admin/login`), sin marca de ningún club.
+ */
+export function useRequiredSession(loginPath = "/login"): SessionState {
   const state = useSession();
   const router = useRouter();
   useEffect(() => {
     if (state.kind === "anonymous") {
       const next = `${window.location.pathname}${window.location.search}`;
-      router.replace(`/login?next=${encodeURIComponent(next)}`);
+      router.replace(`${loginPath}?next=${encodeURIComponent(next)}`);
     }
-  }, [state.kind, router]);
+  }, [state.kind, router, loginPath]);
   return state;
 }
 
