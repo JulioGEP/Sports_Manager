@@ -1,4 +1,5 @@
 import {
+  playerDisplayName,
   WEB_PATHS,
   type Invitation,
   type InvitationSentResponse,
@@ -25,6 +26,8 @@ export function invitationDto(record: InvitationRecord): Invitation {
     createdAt: record.createdAt.toISOString(),
     invitedByName: record.invitedByName,
     acceptedAt: record.acceptedAt?.toISOString() ?? null,
+    player: record.player ? { id: record.player.id, name: playerDisplayName(record.player) } : null,
+    relationship: record.relationship,
   };
 }
 

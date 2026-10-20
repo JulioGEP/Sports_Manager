@@ -6,7 +6,8 @@
     "close": "Tancar",
     "copy": "Copiar l'enllaç",
     "copied": "Copiat",
-    "remove": "Treure"
+    "remove": "Treure",
+    "open": "Obrir"
   },
   "nav": {
     "home": "Inici",
@@ -24,7 +25,10 @@
     "noMembershipBody": "El teu compte ({email}) no té cap rol aquí. Demana una invitació a qui administra el club.",
     "supportLimited": "Mode suport de plataforma: veus l'estat i els recomptes del club, sense dades personals.",
     "supportFull": "Mode suport de plataforma amb autorització del club: lectura completa, sense canvis.",
-    "clubNotFound": "Aquest club no existeix o no està actiu."
+    "clubNotFound": "Aquest club no existeix o no està actiu.",
+    "teams": "Equips",
+    "players": "Jugadors",
+    "family": "La meva família"
   },
   "auth": {
     "login": {
@@ -74,7 +78,8 @@
       "passwordHint": "Mínim {min} caràcters.",
       "confirm": "Repeteix la contrasenya",
       "mismatch": "Les contrasenyes no coincideixen.",
-      "tooShort": "La contrasenya ha de tenir com a mínim {min} caràcters."
+      "tooShort": "La contrasenya ha de tenir com a mínim {min} caràcters.",
+      "familyOf": "Com a família de {player}."
     },
     "product": {
       "tagline": "Gestió de clubs esportius"
@@ -93,7 +98,12 @@
     "stats": {
       "members": "Membres",
       "pending": "Invitacions pendents",
-      "yourRole": "El teu rol al club"
+      "yourRole": "El teu rol al club",
+      "teams": "Equips",
+      "players": "Jugadors",
+      "guardians": "Famílies",
+      "season": "Temporada actual",
+      "noSeason": "Sense temporada"
     },
     "support": {
       "badge": "Suport de plataforma"
@@ -107,20 +117,34 @@
       "colorsAction": "Triar colors",
       "invite": "Convida el primer entrenador",
       "inviteAction": "Convidar",
-      "done": "Fet"
-    },
-    "soon": {
-      "title": "Properament",
-      "body": "El que arriba a la Fase 1, sobre aquesta mateixa base.",
-      "players": "Jugadors i famílies",
-      "teams": "Equips i plantilles",
-      "sections": "Seccions i temporades",
-      "phase": "Fase 1"
+      "done": "Fet",
+      "team": "Crea el primer equip",
+      "teamAction": "Crear equip"
     },
     "hero": {
       "sport": "Esport principal: {sport}",
       "label": "Portada de {club}",
-      "members": "Veure membres"
+      "members": "Veure membres",
+      "teams": "Veure equips"
+    },
+    "structure": {
+      "title": "Estructura del club",
+      "description": "Seccions, equips i jugadors de la temporada actual.",
+      "sections": "{count, plural, one {# secció} other {# seccions}}",
+      "teams": "{count, plural, one {# equip} other {# equips}}",
+      "players": "{count, plural, one {# jugador} other {# jugadors}}",
+      "guardians": "{count, plural, one {# família} other {# famílies}}",
+      "openTeams": "Veure equips",
+      "openPlayers": "Veure jugadors",
+      "noSeasonTitle": "Encara no hi ha temporada",
+      "noSeasonBody": "Crea la primera temporada per començar a muntar equips.",
+      "createSeason": "Crear temporada"
+    },
+    "family": {
+      "title": "La teva família",
+      "description": "Els jugadors vinculats al teu compte.",
+      "open": "Veure la meva família",
+      "empty": "Encara no hi ha cap jugador vinculat al teu compte. Demana al club que et vinculi."
     }
   },
   "members": {
@@ -179,7 +203,8 @@
       "revoked": "Invitació a {email} revocada.",
       "confirmRevoke": "Revocar la invitació a {email}? L'enllaç deixarà de funcionar.",
       "confirmRevokeTitle": "Revocar la invitació a {email}?",
-      "confirmRevokeBody": "L’enllaç deixarà de funcionar. Podràs convidar de nou quan vulguis."
+      "confirmRevokeBody": "L’enllaç deixarà de funcionar. Podràs convidar de nou quan vulguis.",
+      "player": "Família de {name}"
     }
   },
   "settings": {
@@ -196,7 +221,9 @@
       "name": "Nom del club",
       "defaultLocale": "Idioma per defecte",
       "defaultLocaleHint": "Idioma dels correus i de la interfície per a qui no n'hagi triat cap altre.",
-      "saved": "Canvis desats."
+      "saved": "Canvis desats.",
+      "voice": "Veu del club",
+      "voiceHint": "Com parla el club a la seva gent en els avisos i missatges del dia a dia. Diners, baixes i dades personals fan servir sempre un to professional."
     },
     "brand": {
       "title": "Colors de marca",
@@ -431,6 +458,292 @@
     },
     "platform": {
       "admin_created": "Administrador de plataforma creat"
+    },
+    "season": {
+      "created": "Temporada creada",
+      "updated": "Temporada editada"
+    },
+    "section": {
+      "created": "Secció creada",
+      "updated": "Secció editada"
+    },
+    "team": {
+      "created": "Equip creat",
+      "updated": "Equip editat",
+      "roster_added": "Jugador afegit a la plantilla",
+      "roster_updated": "Plantilla editada",
+      "roster_removed": "Jugador tret de la plantilla",
+      "staff_added": "Cos tècnic afegit",
+      "staff_removed": "Cos tècnic retirat"
+    },
+    "player": {
+      "created": "Jugador donat d'alta",
+      "updated": "Jugador editat",
+      "guardian_linked": "Família vinculada",
+      "guardian_unlinked": "Família desvinculada"
+    }
+  },
+  "teams": {
+    "title": "Equips",
+    "description": "Seccions, temporades i equips amb la seva plantilla.",
+    "tabs": {
+      "teams": "Equips",
+      "sections": "Seccions",
+      "seasons": "Temporades"
+    },
+    "season": "Temporada",
+    "current": "Actual",
+    "newTeam": "Nou equip",
+    "newSection": "Nova secció",
+    "newSeason": "Nova temporada",
+    "empty": "Encara no hi ha equips en aquesta temporada.",
+    "emptySeason": "Sense temporada no hi ha equips. Crea la primera a la pestanya Temporades.",
+    "emptySections": "Encara no hi ha seccions.",
+    "emptySeasons": "Encara no hi ha temporades.",
+    "table": {
+      "team": "Equip",
+      "category": "Categoria",
+      "players": "Jugadors",
+      "staff": "Cos tècnic",
+      "section": "Secció",
+      "status": "Estat",
+      "teams": "Equips",
+      "dates": "Dates",
+      "name": "Nom"
+    },
+    "noStaff": "Sense cos tècnic",
+    "noCategory": "Sense categoria",
+    "open": "Obrir",
+    "edit": "Editar",
+    "makeCurrent": "Fer actual",
+    "madeCurrent": "{name} ja és la temporada actual.",
+    "archive": "Arxivar",
+    "reactivate": "Reactivar",
+    "sectionStatus": {
+      "active": "Activa",
+      "archived": "Arxivada"
+    },
+    "teamSheet": {
+      "title": "Nou equip",
+      "editTitle": "Editar {name}",
+      "description": "Un equip viu en una secció i una temporada.",
+      "name": "Nom de l'equip",
+      "nameHint": "Per exemple, Aleví A.",
+      "category": "Categoria",
+      "categoryHint": "Text lliure: cada club i federació l'anomena a la seva manera.",
+      "section": "Secció",
+      "season": "Temporada",
+      "submit": "Crear equip",
+      "save": "Desar",
+      "created": "Equip {name} creat.",
+      "saved": "Equip desat.",
+      "nameTaken": "Ja hi ha un equip amb aquest nom en aquesta secció i temporada."
+    },
+    "sectionSheet": {
+      "title": "Nova secció",
+      "editTitle": "Editar secció",
+      "description": "La capa entre el club i els seus equips: per esport, per gènere o com ho organitzi el club.",
+      "name": "Nom de la secció",
+      "submit": "Crear secció",
+      "save": "Desar",
+      "created": "Secció {name} creada.",
+      "saved": "Secció desada.",
+      "nameTaken": "Ja hi ha una secció amb aquest nom."
+    },
+    "seasonSheet": {
+      "title": "Nova temporada",
+      "editTitle": "Editar temporada",
+      "description": "Els equips i les plantilles van per temporada, per conservar l'historial.",
+      "name": "Nom",
+      "nameHint": "Per exemple, 2026-27.",
+      "startsOn": "Comença",
+      "endsOn": "Acaba",
+      "isCurrent": "Marcar com a temporada actual",
+      "submit": "Crear temporada",
+      "save": "Desar",
+      "created": "Temporada {name} creada.",
+      "saved": "Temporada desada.",
+      "nameTaken": "Ja hi ha una temporada amb aquest nom.",
+      "dates": "La temporada ha d'acabar després de començar."
+    }
+  },
+  "team": {
+    "back": "Equips",
+    "roster": "Plantilla",
+    "rosterDescription": "{count, plural, =0 {Sense jugadors encara} one {# jugador} other {# jugadors}}",
+    "rosterHidden": "La plantilla porta dades dels jugadors: només la veu el personal del club.",
+    "addPlayer": "Afegir jugador",
+    "newPlayer": "Nou jugador",
+    "emptyRoster": "Encara no hi ha ningú a la plantilla.",
+    "table": {
+      "number": "Dorsal",
+      "player": "Jugador",
+      "position": "Posició",
+      "age": "Edat",
+      "family": "Família"
+    },
+    "noNumber": "Sense dorsal",
+    "noPosition": "Sense posició",
+    "age": "{age, plural, one {# any} other {# anys}}",
+    "noBirthDate": "Sense data de naixement",
+    "familyCount": "{count, plural, =0 {Sense família} one {# familiar} other {# familiars}}",
+    "editEntry": "Editar",
+    "remove": "Treure",
+    "confirmRemoveTitle": "Treure {name} de {team}?",
+    "confirmRemoveBody": "Deixa d'estar en aquesta plantilla. La seva fitxa i el seu historial continuen al club.",
+    "removed": "{name} ja no és a {team}.",
+    "staff": "Cos tècnic",
+    "staffDescription": "Qui entrena i acompanya l'equip.",
+    "addStaff": "Afegir",
+    "emptyStaff": "Encara no hi ha cos tècnic.",
+    "removeStaff": "Treure",
+    "confirmRemoveStaffTitle": "Treure {name} del cos tècnic?",
+    "confirmRemoveStaffBody": "Deixa de veure aquest equip com a seu. Continua sent membre del club.",
+    "staffRemoved": "{name} ja no és al cos tècnic.",
+    "staffAdded": "{name} s'ha unit al cos tècnic.",
+    "addStaffSheet": {
+      "title": "Afegir al cos tècnic",
+      "description": "Membres del club amb rol d'entrenador o administrador.",
+      "member": "Persona",
+      "empty": "No hi ha ningú disponible. Convida un entrenador des de Membres.",
+      "submit": "Afegir"
+    },
+    "addPlayerSheet": {
+      "title": "Afegir jugador a {team}",
+      "description": "Tria algú que ja estigui donat d'alta al club.",
+      "player": "Jugador",
+      "search": "Cercar per nom",
+      "number": "Dorsal",
+      "position": "Posició",
+      "positionHint": "Text lliure: porter, tancament, ala, pivot…",
+      "submit": "Afegir a la plantilla",
+      "added": "{name} ja és a {team}.",
+      "empty": "No hi ha jugadors disponibles. Dona d'alta un de nou.",
+      "alreadyIn": "Aquest jugador ja és a la plantilla."
+    },
+    "entrySheet": {
+      "title": "{name} a {team}",
+      "description": "Dorsal i posició en aquest equip.",
+      "saved": "Canvis desats."
+    },
+    "edit": "Editar equip",
+    "archived": "Equip arxivat"
+  },
+  "players": {
+    "title": "Jugadors",
+    "description": "Totes les persones que juguen al club, amb el seu equip i la seva família.",
+    "new": "Nou jugador",
+    "search": "Cercar per nom",
+    "teamFilter": "Equip",
+    "allTeams": "Tots els equips",
+    "empty": "Encara no hi ha jugadors.",
+    "noResults": "Ningú coincideix amb la cerca.",
+    "table": {
+      "player": "Jugador",
+      "age": "Edat",
+      "teams": "Equips",
+      "family": "Família",
+      "status": "Estat"
+    },
+    "noTeam": "Sense equip",
+    "sheet": {
+      "title": "Nou jugador",
+      "description": "Les dades mínimes. La resta, des de la seva fitxa.",
+      "firstName": "Nom",
+      "lastName": "Cognoms",
+      "birthDate": "Data de naixement",
+      "birthDateHint": "Opcional. Serveix per calcular l'edat.",
+      "team": "Equip",
+      "noTeam": "Sense equip per ara",
+      "submit": "Donar d'alta",
+      "created": "{name} donat d'alta."
+    }
+  },
+  "playerStatus": {
+    "active": "Actiu",
+    "inactive": "De baixa"
+  },
+  "player": {
+    "back": "Jugadors",
+    "data": "Dades",
+    "dataDescription": "Nom, cognoms i data de naixement.",
+    "edit": "Editar",
+    "born": "Naixement",
+    "age": "Edat",
+    "since": "Al club des de",
+    "teams": "Equips",
+    "teamsDescription": "Plantilles de totes les temporades.",
+    "emptyTeams": "No és a cap equip.",
+    "currentSeason": "Temporada actual",
+    "family": "Família",
+    "familyDescription": "Les persones vinculades a aquest jugador.",
+    "emptyFamily": "Encara no hi ha família vinculada.",
+    "inviteFamily": "Convidar família",
+    "linkMember": "Vincular membre",
+    "unlink": "Desvincular",
+    "confirmUnlinkTitle": "Desvincular {name}?",
+    "confirmUnlinkBody": "Deixa de veure aquest jugador com a seu. El seu compte i el seu rol al club es conserven.",
+    "unlinked": "{name} ja no està vinculat.",
+    "pendingInvitations": "Invitacions pendents",
+    "status": "Estat",
+    "deactivate": "Donar de baixa",
+    "reactivate": "Reactivar fitxa",
+    "deactivated": "{name} ha causat baixa.",
+    "reactivated": "Fitxa de {name} reactivada.",
+    "editSheet": {
+      "title": "Editar dades",
+      "saved": "Dades desades."
+    },
+    "inviteSheet": {
+      "title": "Convidar la família de {name}",
+      "description": "Rep un enllaç, crea el seu compte i queda vinculada al jugador amb el rol de tutor.",
+      "email": "Email",
+      "relationship": "Relació",
+      "language": "Idioma de l'email",
+      "submit": "Enviar invitació",
+      "sent": "Invitació enviada a {email}.",
+      "failed": "La invitació de {email} s'ha registrat, però l'email no ha sortit.",
+      "linkHint": "Entorn de proves sense enviament d'emails: comparteix aquest enllaç amb {email}.",
+      "alreadyMember": "Aquesta persona ja és membre del club: vincula-la amb \"Vincular membre\"."
+    },
+    "linkSheet": {
+      "title": "Vincular un membre amb {name}",
+      "description": "Per a qui ja té compte al club. Si no té el rol de tutor, se li afegeix.",
+      "member": "Persona",
+      "relationship": "Relació",
+      "submit": "Vincular",
+      "linked": "{member} vinculat com a família de {name}.",
+      "empty": "No hi ha membres disponibles."
+    }
+  },
+  "family": {
+    "title": "La meva família",
+    "description": "Els jugadors vinculats al teu compte i els seus equips.",
+    "empty": "Encara no hi ha cap jugador vinculat al teu compte.",
+    "emptyHint": "Demana a qui administra el club que et vinculi des de la fitxa del jugador.",
+    "relationship": "Ets {relationship}",
+    "team": "Equip",
+    "noTeam": "Sense equip aquesta temporada",
+    "coaches": "Cos tècnic",
+    "noCoaches": "Sense cos tècnic assignat",
+    "number": "Dorsal {number}",
+    "inactive": "Fitxa de baixa"
+  },
+  "relationships": {
+    "mother": "Mare",
+    "father": "Pare",
+    "guardian": "Tutor o tutora",
+    "grandparent": "Avi o àvia",
+    "other": "Una altra relació"
+  },
+  "voices": {
+    "cercana": "Propera",
+    "profesional": "Professional",
+    "vestuario": "Vestidor",
+    "hint": {
+      "cercana": "Una bona coordinadora de club: càlida, clara, explica el perquè.",
+      "profesional": "La dada primer, zero adorns.",
+      "vestuario": "Energia i argot de joc. Mai en els moments sensibles."
     }
   }
 }

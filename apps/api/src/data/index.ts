@@ -20,8 +20,10 @@ import {
 import { membershipsRepo } from "./memberships.ts";
 import { organizationsRepo } from "./organizations.ts";
 import { platformRepo } from "./platform.ts";
+import { playersRepo } from "./players.ts";
 import { rolesRepo } from "./roles.ts";
 import { sportsRepo } from "./sports.ts";
+import { seasonsRepo, sectionsRepo, teamsRepo } from "./structure.ts";
 import { usersRepo } from "./users.ts";
 
 export type { OrgScope } from "./scope.ts";
@@ -36,6 +38,21 @@ export type { AuditInput, AuditRecord } from "./audit.ts";
 export type { AssignRoleResult, Member, RemoveRoleResult, UserMembership } from "./memberships.ts";
 export type { InvitationByToken, InvitationRecord, IssuedInvitation } from "./invitations.ts";
 export type { UserRecord } from "./users.ts";
+export type {
+  RosterRecord,
+  SeasonRecord,
+  SectionRecord,
+  StaffRecord,
+  StructureCounts,
+  TeamRecord,
+} from "./structure.ts";
+export type {
+  FamilyPlayerRecord,
+  GuardianRecord,
+  PlayerRow,
+  PlayerSummaryRecord,
+  PlayerTeamRecord,
+} from "./players.ts";
 export type { EmailSender, OutgoingEmail, SentEmail } from "./email/sender.ts";
 export type { ResendLike } from "./email/resend.ts";
 export {
@@ -102,6 +119,10 @@ export function createDataLayer(options: DataLayerOptions) {
     invitations: invitationsRepo(db),
     users: usersRepo(db, getAuth),
     roles: rolesRepo(db),
+    seasons: seasonsRepo(db),
+    sections: sectionsRepo(db),
+    teams: teamsRepo(db),
+    players: playersRepo(db),
     logos: logosRepo(
       db,
       options.logoStore ??

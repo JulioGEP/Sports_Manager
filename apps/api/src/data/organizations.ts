@@ -28,6 +28,8 @@ export interface OrganizationSport {
 export interface SupportCounts {
   membersByRole: Record<RoleCode, number>;
   pendingInvitations: number;
+  teams: number;
+  players: number;
 }
 
 export interface OrganizationCounts {
@@ -160,6 +162,7 @@ export function organizationsRepo(db: () => Database) {
       if (patch.brandPrimaryColor !== undefined) values.brandPrimaryColor = patch.brandPrimaryColor;
       if (patch.brandSecondaryColor !== undefined)
         values.brandSecondaryColor = patch.brandSecondaryColor;
+      if (patch.voice !== undefined) values.voice = patch.voice;
       if (Object.keys(values).length === 0) {
         const rows = await db()
           .select()
@@ -218,7 +221,32 @@ export function organizationsRepo(db: () => Database) {
             sql`${schema.invitations.expiresAt} > now()`,
           ),
         );
-      return { membersByRole, pendingInvitations: pending[0]?.total ?? 0 };
+      const teams = await db()
+        .select({ total: count() })
+        .from(schema.teams)
+        .innerJoin(schema.seasons, eq(schema.seasons.id, schema.teams.seasonId))
+        .where(
+          and(
+            eq(schema.teams.organizationId, scope.organizationId),
+            eq(schema.teams.status, "active"),
+            eq(schema.seasons.isCurrent, true),
+          ),
+        );
+      const players = await db()
+        .select({ total: count() })
+        .from(schema.players)
+        .where(
+          and(
+            eq(schema.players.organizationId, scope.organizationId),
+            eq(schema.players.status, "active"),
+          ),
+        );
+      return {
+        membersByRole,
+        pendingInvitations: pending[0]?.total ?? 0,
+        teams: teams[0]?.total ?? 0,
+        players: players[0]?.total ?? 0,
+      };
     },
   };
 }

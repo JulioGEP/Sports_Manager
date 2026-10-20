@@ -11,10 +11,15 @@ import { PlatformSystemPage } from "@/routes/admin/system";
 import { ForgotPasswordPage } from "@/routes/auth/forgot";
 import { LoginPage } from "@/routes/auth/login";
 import { ResetPasswordPage } from "@/routes/auth/reset";
+import { FamilyPage } from "@/routes/club/family";
 import { ClubHome } from "@/routes/club/home";
 import { InvitationPage } from "@/routes/club/invitation";
 import { MembersPage } from "@/routes/club/members";
+import { PlayerPage } from "@/routes/club/player";
+import { PlayersPage } from "@/routes/club/players";
 import { SettingsPage } from "@/routes/club/settings";
+import { TeamPage } from "@/routes/club/team";
+import { TeamsPage } from "@/routes/club/teams";
 import { ClubsPage } from "@/routes/clubs";
 import { Landing } from "@/routes/landing";
 import { ToastProvider } from "@/ui";
@@ -59,6 +64,11 @@ export const router = createBrowserRouter([
     element: <ClubShell />,
     children: [
       { index: true, element: <ClubHome /> },
+      { path: "teams", element: <TeamsPage /> },
+      { path: "teams/:id", element: <TeamPage /> },
+      { path: "players", element: <PlayersPage /> },
+      { path: "players/:id", element: <PlayerPage /> },
+      { path: "family", element: <FamilyPage /> },
       { path: "members", element: <MembersPage /> },
       { path: "settings", element: <SettingsPage /> },
     ],

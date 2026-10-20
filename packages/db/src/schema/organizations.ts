@@ -1,5 +1,6 @@
 import {
   BRAND_COLOR_PATTERN,
+  CLUB_VOICES,
   LOCALES,
   ORGANIZATION_SLUG_PATTERN,
   ORGANIZATION_STATUSES,
@@ -25,6 +26,8 @@ export const organizations = pgTable(
     /** Clave del logo en Netlify Blobs. Se rellena en el Bloque 5. */
     logoBlobKey: text("logo_blob_key"),
     status: text("status").notNull().default("active"),
+    /** Voz del club (DESIGN.md 11, Bloque 11): cercana, profesional o vestuario. */
+    voice: text("voice").notNull().default("cercana"),
     ...timestamps,
   },
   (t) => [
@@ -39,5 +42,6 @@ export const organizations = pgTable(
       sql`${t.brandSecondaryColor} ~ ${regexLiteral(BRAND_COLOR_PATTERN)}`,
     ),
     check("organizations_status_check", inList(t.status, ORGANIZATION_STATUSES)),
+    check("organizations_voice_check", inList(t.voice, CLUB_VOICES)),
   ],
 );
