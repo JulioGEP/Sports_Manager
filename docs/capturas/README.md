@@ -1,6 +1,6 @@
-# Capturas de la interfaz (Bloque 11)
+# Capturas de la interfaz (Bloque 12)
 
-Capturas que generan las pruebas de interfaz (`pnpm test:ui`) contra la API real con base embebida, con el front nuevo (Vite + React + Tailwind) sobre el design system del producto (`packages/design`, ADR 0027). Escritorio a 1280x800; móvil, Pixel 7. La fuente viva es el artefacto `capturas-interfaz` de CI; esta carpeta es la foto de la revisión del Bloque 11.
+Capturas que generan las pruebas de interfaz (`pnpm test:ui`) contra la API real con base embebida, con el front nuevo (Vite + React + Tailwind) sobre el design system del producto (`packages/design`, ADR 0027). Escritorio a 1280x800; móvil, Pixel 7. La fuente viva es el artefacto `capturas-interfaz` de CI; esta carpeta es la foto de la revisión del Bloque 11, con la ficha de jugador actualizada en el Bloque 12 (ADR 0029).
 
 Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negocio en `/admin`. Cuentas de demostración, todas con contraseña `123456`: `admin@demo.test` (administra el club demo; en este entorno también la plataforma), `entrenador@demo.test` (entrenadora del Alevín A) y `familia@demo.test` (madre de dos jugadores). El club demo llega con la temporada 2026-27, la sección "Fútbol sala" y cuatro equipos con plantilla (ADR 0028).
 
@@ -111,6 +111,14 @@ Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negoci
 ### Ficha de jugador: foto, indicadores, objetivo, acciones prioritarias, timeline, datos deportivos, PDI, equipos, familia y estado
 
 ![Ficha de jugador](escritorio-41-jugador-ficha.png)
+
+### Valorar los indicadores del jugador (hoja)
+
+![Valorar indicadores](escritorio-41b-jugador-valorar.png)
+
+### Ficha con foto, indicadores revisados y un registro añadido al timeline
+
+![Ficha completa](escritorio-41c-jugador-ficha-completa.png)
 
 ### Invitar a la familia desde la ficha
 
