@@ -1,6 +1,9 @@
 import {
   CLUB_VOICES,
+  DOMINANT_FEET,
   GUARDIAN_RELATIONSHIPS,
+  PLAYER_HEIGHT_MAX_CM,
+  PLAYER_HEIGHT_MIN_CM,
   PLAYER_STATUSES,
   SECTION_STATUSES,
   TEAM_STATUSES,
@@ -115,12 +118,24 @@ export const players = pgTable(
     lastName: text("last_name").notNull(),
     birthDate: date("birth_date"),
     status: text("status").notNull().default("active"),
+    /** Ficha ampliada (Bloque 12, ADR 0029): foto en Netlify Blobs, pie dominante y altura. */
+    photoBlobKey: text("photo_blob_key"),
+    dominantFoot: text("dominant_foot"),
+    heightCm: integer("height_cm"),
     ...timestamps,
   },
   (t) => [
     index("players_organization_id_idx").on(t.organizationId),
     index("players_org_name_idx").on(t.organizationId, t.lastName, t.firstName),
     check("players_status_check", inList(t.status, PLAYER_STATUSES)),
+    check(
+      "players_dominant_foot_check",
+      sql`${t.dominantFoot} is null or ${inList(t.dominantFoot, DOMINANT_FEET)}`,
+    ),
+    check(
+      "players_height_cm_check",
+      sql`${t.heightCm} is null or ${t.heightCm} between ${sql.raw(String(PLAYER_HEIGHT_MIN_CM))} and ${sql.raw(String(PLAYER_HEIGHT_MAX_CM))}`,
+    ),
   ],
 );
 

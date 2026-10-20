@@ -12,14 +12,16 @@ import type { ResendLike } from "./email/resend.ts";
 import { createEmailSender, type EmailSender } from "./email/sender.ts";
 import { invitationsRepo } from "./invitations.ts";
 import {
-  createMemoryLogoStore,
+  createMemoryBlobStore,
   createNetlifyLogoStore,
+  createNetlifyPhotoStore,
   logosRepo,
-  type LogoStore,
+  type BlobStore,
 } from "./logos.ts";
 import { membershipsRepo } from "./memberships.ts";
 import { organizationsRepo } from "./organizations.ts";
 import { platformRepo } from "./platform.ts";
+import { playerProfileRepo } from "./player-profile.ts";
 import { playersRepo } from "./players.ts";
 import { rolesRepo } from "./roles.ts";
 import { sportsRepo } from "./sports.ts";
@@ -53,14 +55,24 @@ export type {
   PlayerSummaryRecord,
   PlayerTeamRecord,
 } from "./players.ts";
+export type {
+  DevelopmentPlanRecord,
+  PlayerEventDetails,
+  PlayerEventRecord,
+  PlayerIndicatorRecord,
+  PlayerObjectiveRecord,
+} from "./player-profile.ts";
+export { playerPhotoUrlFor } from "./player-profile.ts";
 export type { EmailSender, OutgoingEmail, SentEmail } from "./email/sender.ts";
 export type { ResendLike } from "./email/resend.ts";
 export {
+  createMemoryBlobStore,
   createMemoryLogoStore,
   isLogoContentType,
   logoUrlFor,
   logoVersion,
   sniffImageType,
+  type BlobStore,
   type LogoStore,
 } from "./logos.ts";
 export { renderEmail, type EmailContent, type RenderedEmail } from "./email/templates.ts";
@@ -80,7 +92,9 @@ export interface DataLayerOptions {
   /** Destino del log de depuración de emails. */
   emailLog?: (line: string) => void;
   /** Almacén de logos. Por defecto Netlify Blobs en eu-central-1; en tests, uno en memoria. */
-  logoStore?: LogoStore;
+  logoStore?: BlobStore;
+  /** Almacén de fotos de jugador (Bloque 12). Mismo criterio que los logos. */
+  photoStore?: BlobStore;
 }
 
 export function createDataLayer(options: DataLayerOptions) {
@@ -127,8 +141,15 @@ export function createDataLayer(options: DataLayerOptions) {
       db,
       options.logoStore ??
         (options.config.logoStore === "memory"
-          ? createMemoryLogoStore()
+          ? createMemoryBlobStore()
           : createNetlifyLogoStore()),
+    ),
+    playerProfile: playerProfileRepo(
+      db,
+      options.photoStore ??
+        (options.config.logoStore === "memory"
+          ? createMemoryBlobStore()
+          : createNetlifyPhotoStore()),
     ),
     email,
 

@@ -480,7 +480,14 @@
       "created": "Jugador donat d'alta",
       "updated": "Jugador editat",
       "guardian_linked": "Família vinculada",
-      "guardian_unlinked": "Família desvinculada"
+      "guardian_unlinked": "Família desvinculada",
+      "photo_updated": "Foto de jugador canviada",
+      "photo_removed": "Foto de jugador treta",
+      "objective_updated": "Objectiu individual desat",
+      "objective_removed": "Objectiu individual tret",
+      "indicators_updated": "Indicadors de jugador valorats",
+      "plan_updated": "Pla de desenvolupament desat",
+      "note_added": "Registre afegit al jugador"
     }
   },
   "teams": {
@@ -667,7 +674,7 @@
     "back": "Jugadors",
     "data": "Dades",
     "dataDescription": "Nom, cognoms i data de naixement.",
-    "edit": "Editar",
+    "edit": "Editar perfil",
     "born": "Naixement",
     "age": "Edat",
     "since": "Al club des de",
@@ -691,8 +698,12 @@
     "deactivated": "{name} ha causat baixa.",
     "reactivated": "Fitxa de {name} reactivada.",
     "editSheet": {
-      "title": "Editar dades",
-      "saved": "Dades desades."
+      "title": "Editar perfil",
+      "saved": "Perfil desat.",
+      "foot": "Peu dominant",
+      "footNone": "Sense indicar",
+      "height": "Alçada (cm)",
+      "heightHint": "Opcional. Entre 50 i 250."
     },
     "inviteSheet": {
       "title": "Convidar la família de {name}",
@@ -714,6 +725,192 @@
       "submit": "Vincular",
       "linked": "{member} vinculat com a família de {name}.",
       "empty": "No hi ha membres disponibles."
+    },
+    "editProfile": "Editar perfil",
+    "manageAccess": "Gestionar accessos",
+    "noCurrentTeam": "Sense equip aquesta temporada",
+    "number": "#{number}",
+    "chips": {
+      "age": "{age, plural, one {# any} other {# anys}}",
+      "yearsAtClub": "{count, plural, =0 {Primer any al club} one {# any al club} other {# anys al club}}",
+      "familyAccess": "{count, plural, =0 {Sense accés familiar} one {# accés familiar} other {# accessos familiars}}"
+    },
+    "dominantFoot": {
+      "right": "Peu dret",
+      "left": "Peu esquerre",
+      "both": "Ambidextre",
+      "unknown": "Peu sense indicar"
+    },
+    "photo": {
+      "change": "Canviar foto",
+      "remove": "Treure foto",
+      "alt": "Foto de {name}",
+      "uploading": "Pujant…",
+      "saved": "Foto desada.",
+      "removed": "Foto treta.",
+      "confirmRemoveTitle": "Treure la foto de {name}?",
+      "confirmRemoveBody": "La fitxa tornarà a mostrar les inicials. Pots pujar-ne una altra quan vulguis."
+    },
+    "indicators": {
+      "title": "Indicadors",
+      "description": "Esport, cos, benestar i compromís, de 0 a 100, amb una lectura curta.",
+      "rate": "Valorar",
+      "unrated": "Sense valorar",
+      "progressLabel": "{dimension}: {score} de 100",
+      "sheet": {
+        "title": "Valorar {name}",
+        "description": "Puntua de 0 a 100 i resumeix en una línia què hi ha darrere de la xifra.",
+        "score": "Puntuació",
+        "note": "Lectura curta",
+        "noteHint": "Per exemple: Bé · Tècnica i tàctica",
+        "saved": "Indicadors desats."
+      }
+    },
+    "indicatorNames": {
+      "sport": "Esport",
+      "body": "Cos",
+      "wellbeing": "Benestar",
+      "commitment": "Compromís"
+    },
+    "indicatorCodes": {
+      "sport": "ES",
+      "body": "CS",
+      "wellbeing": "BE",
+      "commitment": "CM"
+    },
+    "objective": {
+      "eyebrow": "Prioritat actual",
+      "title": "Objectiu individual",
+      "edit": "Editar",
+      "define": "Definir objectiu",
+      "remove": "Treure",
+      "empty": "Encara no hi ha objectiu individual.",
+      "emptyHint": "Una sola prioritat, amb progrés, responsable i data de revisió.",
+      "progress": "Progrés registrat",
+      "progressLabel": "Progrés de l'objectiu: {progress} de 100",
+      "owner": "Responsable: {name}",
+      "noOwner": "Sense responsable",
+      "review": "Revisió: {date}",
+      "noReview": "Sense data de revisió",
+      "confirmRemoveTitle": "Treure l'objectiu de {name}?",
+      "confirmRemoveBody": "L'objectiu desapareix de la fitxa. El registre del seu progrés es queda al timeline.",
+      "removed": "Objectiu tret.",
+      "sheet": {
+        "title": "Objectiu de {name}",
+        "description": "Una sola prioritat, en una frase, amb el progrés que porta.",
+        "name": "Objectiu",
+        "progress": "Progrés (%)",
+        "owner": "Responsable",
+        "noOwner": "Sense responsable",
+        "reviewOn": "Data de revisió",
+        "saved": "Objectiu desat."
+      }
+    },
+    "actions": {
+      "eyebrow": "Què cal fer avui",
+      "title": "Accions prioritàries",
+      "allDone": "Tot al dia.",
+      "allDoneHint": "No hi ha res pendent en aquesta fitxa.",
+      "photo": "Afegir fotografia",
+      "photoHint": "Completa la identificació visual del jugador.",
+      "birthDate": "Afegir la data de naixement",
+      "birthDateHint": "Sense ella no es calcula l'edat ni la categoria.",
+      "sportsData": "Completar les dades esportives",
+      "sportsDataHint": "Falten l'alçada o el peu dominant.",
+      "family": "Vincular la família",
+      "familyHint": "Ningú de la seva família té accés encara.",
+      "team": "Assignar a un equip",
+      "teamHint": "No és a cap plantilla de la temporada actual.",
+      "objective": "Definir l'objectiu individual",
+      "objectiveHint": "Una prioritat clara per a aquesta temporada.",
+      "objectiveReview": "Revisar l'objectiu",
+      "objectiveReviewHint": "La data de revisió ja ha passat.",
+      "indicators": "Valorar els indicadors",
+      "indicatorsHint": "Falten dimensions per puntuar.",
+      "plan": "Crear el pla de desenvolupament",
+      "planHint": "Sis àrees, una línia per àrea.",
+      "planReview": "Revisar el pla de desenvolupament",
+      "planReviewHint": "La propera revisió ja ha passat.",
+      "go": "Anar-hi"
+    },
+    "timeline": {
+      "eyebrow": "Últims moviments",
+      "title": "Timeline",
+      "count": "{count, plural, one {# registre} other {# registres}}",
+      "add": "Afegir registre",
+      "by": "per {name}",
+      "events": {
+        "joined": "Alta al club",
+        "roster_added": "Entra a la plantilla de {team} ({season})",
+        "roster_removed": "Surt de la plantilla de {team} ({season})",
+        "status_changed": "{status, select, inactive {Baixa de la fitxa} other {Fitxa reactivada}}",
+        "objective_updated": "Objectiu: {title} · {progress}% assolit",
+        "indicators_updated": "Indicadors actualitzats",
+        "plan_updated": "Pla de desenvolupament {status, select, draft {en estructura inicial} active {en marxa} shared {compartit amb la família} other {actualitzat}}",
+        "photo_updated": "Foto actualitzada",
+        "note": "{text}"
+      },
+      "sheet": {
+        "title": "Afegir registre a {name}",
+        "description": "Una anotació amb data: una revisió, una fita, alguna cosa que convé recordar.",
+        "text": "Anotació",
+        "date": "Data",
+        "submit": "Afegir registre",
+        "saved": "Registre afegit."
+      }
+    },
+    "sportsData": {
+      "title": "Dades esportives",
+      "description": "Equip, categoria i mides d'aquesta temporada.",
+      "team": "Equip",
+      "category": "Categoria",
+      "position": "Posició",
+      "number": "Dorsal",
+      "height": "Alçada",
+      "heightValue": "{cm} cm",
+      "foot": "Peu dominant",
+      "birthYear": "Naixement"
+    },
+    "quickActions": {
+      "title": "Accions ràpides",
+      "openTeam": "Obrir {team}",
+      "familyAccess": "Accessos familiars"
+    },
+    "plan": {
+      "eyebrow": "Pla de desenvolupament individual",
+      "title": "PDI compartit",
+      "description": "Una línia per àrea. Es comparteix amb la família quan el club ho decideix.",
+      "edit": "Editar",
+      "create": "Crear PDI",
+      "empty": "Encara no hi ha pla de desenvolupament.",
+      "emptyHint": "Sis àrees: tècnic, tàctic, físic, emocional, hàbits i persona.",
+      "coordinator": "Coordinació: {name}",
+      "noCoordinator": "Sense coordinació",
+      "nextReview": "Propera revisió: {date}",
+      "noReview": "Sense data de revisió",
+      "undefined": "Sense definir",
+      "sheet": {
+        "title": "PDI de {name}",
+        "description": "Una frase per àrea. El que no s'omple queda pendent.",
+        "coordinator": "Coordinació",
+        "noCoordinator": "Sense coordinació",
+        "nextReviewOn": "Propera revisió",
+        "status": "Estat",
+        "saved": "Pla de desenvolupament desat."
+      }
+    },
+    "planStatus": {
+      "draft": "Estructura inicial",
+      "active": "En marxa",
+      "shared": "Compartit amb la família"
+    },
+    "developmentAreas": {
+      "technical": "Tècnic",
+      "tactical": "Tàctic",
+      "physical": "Físic",
+      "emotional": "Emocional",
+      "habits": "Hàbits",
+      "person": "Persona"
     }
   },
   "family": {

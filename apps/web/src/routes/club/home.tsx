@@ -291,7 +291,7 @@ export function ClubHome() {
               <ul className="flex flex-col divide-y divide-line">
                 {family.data?.players.map((p) => (
                   <li key={p.id} className="flex min-h-16 items-center gap-3 px-5 py-3">
-                    <Avatar name={playerDisplayName(p)} />
+                    <Avatar name={playerDisplayName(p)} src={p.photoUrl} />
                     <span className="flex min-w-0 flex-1 flex-col">
                       <Link to={paths.family} className="truncate font-medium text-ink">
                         {playerDisplayName(p)}

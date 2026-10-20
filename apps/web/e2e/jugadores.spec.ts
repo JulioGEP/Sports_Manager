@@ -7,9 +7,13 @@ import {
   shot,
   signOut,
   suffix,
+  TEST_LOGO_PNG,
 } from "./helpers";
 
-/** Jugadores y familias (Bloque 11): lista, ficha, invitación de familia y alta de un jugador. */
+/**
+ * Jugadores y familias (Bloque 11): lista, ficha, invitación de familia y alta de un jugador.
+ * Ficha ampliada (Bloque 12): foto, indicadores, objetivo, PDI, timeline y acciones prioritarias.
+ */
 test.describe("jugadores y familias", () => {
   test("lista, ficha, invitación de familia aceptada y baja", async ({ page }, info) => {
     const sfx = suffix(info.project.name);
@@ -30,9 +34,49 @@ test.describe("jugadores y familias", () => {
     await expect(page.getByRole("heading", { name: "Clara Martí" })).toBeVisible();
     await expect(page.getByText("Laura Martí")).toBeVisible();
     await expect(page.getByText("Madre")).toBeVisible();
-    await expect(page.getByRole("link", { name: "Alevín A" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Alevín A" }).first()).toBeVisible();
+    // La ficha ampliada llega sembrada: datos deportivos, indicadores, objetivo, PDI y timeline.
+    await expect(page.getByText("Alevín · 2026-27")).toBeVisible();
+    await expect(page.getByText("Pie derecho").first()).toBeVisible();
+    await expect(page.getByText("142 cm")).toBeVisible();
+    await expect(
+      page.getByText("Mejorar la conducción con la pierna no dominante", { exact: true }),
+    ).toBeVisible();
+    await expect(page.getByText("Responsable: Carla Vidal")).toBeVisible();
+    await expect(page.getByText("Estructura inicial")).toBeVisible();
+    await expect(page.getByText("Dormir 9 horas")).toBeVisible();
+    await expect(page.getByText("Entra en la plantilla de Alevín A (2026-27)")).toBeVisible();
+    await expect(page.getByText("Alta en el club")).toBeVisible();
     await shot(page, "41-jugador-ficha", info.project.name);
     await expectLegibleButtons(page);
+
+    // Foto: se reduce en el navegador y aparece en la cabecera.
+    await page.getByLabel("Cambiar foto").setInputFiles({
+      name: "clara.png",
+      mimeType: "image/png",
+      buffer: TEST_LOGO_PNG,
+    });
+    await expect(page.getByText("Foto guardada.")).toBeVisible();
+    await expect(page.getByRole("img", { name: "Foto de Clara Martí" })).toBeVisible();
+
+    // Indicadores: valorar una dimensión cambia la cifra.
+    await page.getByRole("button", { name: "Valorar" }).click();
+    const rate = page.getByRole("dialog");
+    await expect(rate.getByRole("heading", { name: "Valorar a Clara Martí" })).toBeVisible();
+    await rate.getByLabel("Puntuación").first().fill("75");
+    await shot(page, "41b-jugador-valorar", info.project.name);
+    await rate.getByRole("button", { name: "Guardar" }).click();
+    await expect(page.getByText("Indicadores guardados.")).toBeVisible();
+    await expect(page.getByText("75", { exact: true })).toBeVisible();
+
+    // Timeline: una anotación con fecha.
+    await page.getByRole("button", { name: "Añadir registro" }).click();
+    const note = page.getByRole("dialog");
+    await note.getByLabel("Anotación").fill("Revisión trimestral con la familia.");
+    await note.getByRole("button", { name: "Añadir registro" }).click();
+    await expect(page.getByText("Registro añadido.")).toBeVisible();
+    await expect(page.getByText("Revisión trimestral con la familia.")).toBeVisible();
+    await shot(page, "41c-jugador-ficha-completa", info.project.name);
 
     // Invitar a la familia desde la ficha.
     await page.getByRole("button", { name: "Invitar familia" }).click();
@@ -73,7 +117,11 @@ test.describe("jugadores y familias", () => {
     await create.getByRole("button", { name: "Dar de alta" }).click();
     await expect(page.getByText(`Teo Prueba ${sfx} dado de alta.`)).toBeVisible();
     await expect(page.getByRole("heading", { name: `Teo Prueba ${sfx}` })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Alevín A" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Alevín A" }).first()).toBeVisible();
+    // Una ficha nueva lista lo que falta y aún no tiene indicadores.
+    await expect(page.getByText("Añadir fotografía")).toBeVisible();
+    await expect(page.getByText("Definir el objetivo individual")).toBeVisible();
+    await expect(page.getByText("Sin valorar").first()).toBeVisible();
 
     await page.getByRole("button", { name: "Dar de baja" }).click();
     const confirm = page.getByRole("dialog");

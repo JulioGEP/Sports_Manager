@@ -43,6 +43,13 @@
       "when": 1792520530862,
       "tag": "20261020182210_create_club_structure",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792529119725,
+      "tag": "20261020204519_player_profile",
+      "breakpoints": true
     }
   ]
 }

@@ -44,7 +44,7 @@ export function FamilyPage() {
               key={p.id}
               title={
                 <span className="flex items-center gap-3">
-                  <Avatar name={playerDisplayName(p)} />
+                  <Avatar name={playerDisplayName(p)} src={p.photoUrl} />
                   {playerDisplayName(p)}
                 </span>
               }

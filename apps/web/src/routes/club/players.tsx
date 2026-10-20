@@ -165,7 +165,7 @@ export function PlayersPage() {
               header: t("table.player"),
               cell: (p) => (
                 <span className="flex items-center gap-3">
-                  <Avatar name={playerDisplayName(p)} size="sm" />
+                  <Avatar name={playerDisplayName(p)} size="sm" src={p.photoUrl} />
                   <span className="flex min-w-0 flex-col">
                     <Link to={paths.player(p.id)} className="font-medium text-ink">
                       {playerDisplayName(p)}
@@ -208,7 +208,7 @@ export function PlayersPage() {
             },
           ]}
           mobileRow={(p) => ({
-            leading: <Avatar name={playerDisplayName(p)} />,
+            leading: <Avatar name={playerDisplayName(p)} src={p.photoUrl} />,
             title: <Link to={paths.player(p.id)}>{playerDisplayName(p)}</Link>,
             subtitle: `${p.teams.map((x) => x.teamName).join(", ") || t("noTeam")} · ${ageOf(p)}`,
             trailing:

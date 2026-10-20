@@ -102,11 +102,27 @@ export const PlayerCreateSchema = z.object({
   teamId: z.string().uuid().optional(),
 });
 export type PlayerCreate = z.infer<typeof PlayerCreateSchema>;
+/** Pie dominante (Bloque 12, ADR 0029). Dato deportivo de la ficha; opcional. */
+export const DOMINANT_FEET = ["right", "left", "both"] as const;
+export type DominantFoot = (typeof DOMINANT_FEET)[number];
+export const DominantFootSchema = z.enum(DOMINANT_FEET);
+
+/** Altura en centímetros. Límites amplios: solo descartan errores de tecleo. */
+export const PLAYER_HEIGHT_MIN_CM = 50;
+export const PLAYER_HEIGHT_MAX_CM = 250;
+export const PlayerHeightSchema = z
+  .number()
+  .int()
+  .min(PLAYER_HEIGHT_MIN_CM)
+  .max(PLAYER_HEIGHT_MAX_CM);
+
 export const PlayerUpdateSchema = z.object({
   firstName: ShortName.optional(),
   lastName: z.string().trim().min(1).max(80).optional(),
   birthDate: DateOnlySchema.nullable().optional(),
   status: z.enum(PLAYER_STATUSES).optional(),
+  dominantFoot: DominantFootSchema.nullable().optional(),
+  heightCm: PlayerHeightSchema.nullable().optional(),
 });
 export type PlayerUpdate = z.infer<typeof PlayerUpdateSchema>;
 

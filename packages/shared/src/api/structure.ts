@@ -1,11 +1,17 @@
 import { z } from "zod";
 import { LocaleSchema } from "../locales.ts";
 import {
+  DOMINANT_FEET,
   GUARDIAN_RELATIONSHIPS,
   PLAYER_STATUSES,
   SECTION_STATUSES,
   TEAM_STATUSES,
 } from "../structure.ts";
+import {
+  DEVELOPMENT_PLAN_STATUSES,
+  PLAYER_EVENT_KINDS,
+  PLAYER_INDICATOR_DIMENSIONS,
+} from "../player-profile.ts";
 import { INVITATION_STATES } from "../invitations.ts";
 
 /** Contratos de la estructura del club (Fase 1, Bloque 11). Todo bajo el club de la petición. */
@@ -63,6 +69,7 @@ export const RosterEntrySchema = z.object({
   shirtNumber: z.number().int().nullable(),
   position: z.string().nullable(),
   guardiansCount: z.number().int().nonnegative(),
+  photoUrl: z.string().nullable(),
 });
 export type RosterEntry = z.infer<typeof RosterEntrySchema>;
 
@@ -76,6 +83,8 @@ export type TeamDetailResponse = z.infer<typeof TeamDetailResponseSchema>;
 export const PlayerTeamSchema = z.object({
   teamId: z.string(),
   teamName: z.string(),
+  /** Categoría del equipo ("Alevín"): la del jugador en esa temporada. */
+  category: z.string().nullable(),
   sectionName: z.string(),
   seasonId: z.string(),
   seasonName: z.string(),
@@ -93,6 +102,7 @@ export const PlayerSummarySchema = z.object({
   /** Equipos de la temporada actual. */
   teams: z.array(z.object({ teamId: z.string(), teamName: z.string() })),
   guardiansCount: z.number().int().nonnegative(),
+  photoUrl: z.string().nullable(),
 });
 export type PlayerSummary = z.infer<typeof PlayerSummarySchema>;
 export const PlayersResponseSchema = z.object({ players: z.array(PlayerSummarySchema) });
@@ -106,6 +116,53 @@ export const GuardianSchema = z.object({
 });
 export type Guardian = z.infer<typeof GuardianSchema>;
 
+/** Quién lleva algo del jugador (responsable del objetivo, coordinación del PDI): un miembro del club. */
+const PersonRef = z.object({ userId: z.string(), name: z.string() });
+
+/** Indicador del jugador (Bloque 12): dimensión, puntuación de 0 a 100 y lectura corta. */
+export const PlayerIndicatorSchema = z.object({
+  dimension: z.enum(PLAYER_INDICATOR_DIMENSIONS),
+  score: z.number().int().min(0).max(100),
+  note: z.string().nullable(),
+  updatedAt: z.string(),
+});
+export type PlayerIndicator = z.infer<typeof PlayerIndicatorSchema>;
+
+/** Objetivo individual vigente, con progreso, responsable y fecha de revisión. */
+export const PlayerObjectiveSchema = z.object({
+  title: z.string(),
+  progress: z.number().int().min(0).max(100),
+  owner: PersonRef.nullable(),
+  reviewOn: z.string().nullable(),
+  updatedAt: z.string(),
+});
+export type PlayerObjective = z.infer<typeof PlayerObjectiveSchema>;
+
+/** Plan de desarrollo individual: una línea por área, coordinación, estado y próxima revisión. */
+export const DevelopmentPlanSchema = z.object({
+  technical: z.string().nullable(),
+  tactical: z.string().nullable(),
+  physical: z.string().nullable(),
+  emotional: z.string().nullable(),
+  habits: z.string().nullable(),
+  person: z.string().nullable(),
+  coordinator: PersonRef.nullable(),
+  nextReviewOn: z.string().nullable(),
+  status: z.enum(DEVELOPMENT_PLAN_STATUSES),
+  updatedAt: z.string(),
+});
+export type DevelopmentPlan = z.infer<typeof DevelopmentPlanSchema>;
+
+/** Registro del timeline. `details` lleva solo lo que el texto necesita: nombres y cifras. */
+export const PlayerEventSchema = z.object({
+  id: z.string(),
+  kind: z.enum(PLAYER_EVENT_KINDS),
+  happenedOn: z.string(),
+  details: z.record(z.string(), z.union([z.string(), z.number()])),
+  actorName: z.string().nullable(),
+});
+export type PlayerEvent = z.infer<typeof PlayerEventSchema>;
+
 export const PlayerDetailResponseSchema = z.object({
   player: z.object({
     id: z.string(),
@@ -114,6 +171,9 @@ export const PlayerDetailResponseSchema = z.object({
     birthDate: z.string().nullable(),
     status: z.enum(PLAYER_STATUSES),
     createdAt: z.string(),
+    photoUrl: z.string().nullable(),
+    dominantFoot: z.enum(DOMINANT_FEET).nullable(),
+    heightCm: z.number().int().nullable(),
   }),
   teams: z.array(PlayerTeamSchema),
   guardians: z.array(GuardianSchema),
@@ -127,6 +187,11 @@ export const PlayerDetailResponseSchema = z.object({
       expiresAt: z.string(),
     }),
   ),
+  objective: PlayerObjectiveSchema.nullable(),
+  indicators: z.array(PlayerIndicatorSchema),
+  developmentPlan: DevelopmentPlanSchema.nullable(),
+  /** Del más reciente al más antiguo; el último es siempre el alta en el club. */
+  timeline: z.array(PlayerEventSchema),
 });
 export type PlayerDetailResponse = z.infer<typeof PlayerDetailResponseSchema>;
 export const PlayerResponseSchema = z.object({ player: PlayerDetailResponseSchema.shape.player });
@@ -139,6 +204,7 @@ export const FamilyPlayerSchema = z.object({
   birthDate: z.string().nullable(),
   status: z.enum(PLAYER_STATUSES),
   relationship: z.enum(GUARDIAN_RELATIONSHIPS),
+  photoUrl: z.string().nullable(),
   teams: z.array(
     z.object({
       teamId: z.string(),

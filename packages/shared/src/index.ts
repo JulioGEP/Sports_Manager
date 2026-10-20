@@ -8,6 +8,7 @@ export * from "./users.ts";
 export * from "./email.ts";
 export * from "./invitations.ts";
 export * from "./structure.ts";
+export * from "./player-profile.ts";
 export * from "./api/health.ts";
 export * from "./api/errors.ts";
 export * from "./api/me.ts";
