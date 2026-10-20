@@ -39,3 +39,33 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm test:isolation
+
+  ui:
+    name: interfaz
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+        working-directory: apps/web
+      # La web se construye con el reenvío /api → API local (solo para estas pruebas).
+      - run: pnpm --filter @sportsmanager/api build
+      - run: pnpm --filter @sportsmanager/web build
+        env:
+          API_PROXY_TARGET: http://127.0.0.1:9999
+      - run: pnpm test:ui
+        env:
+          CI: "true"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: capturas-interfaz
+          path: |
+            apps/web/e2e/screenshots
+            apps/web/playwright-report
+          retention-days: 14

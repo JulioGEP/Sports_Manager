@@ -38,3 +38,4 @@ Las decisiones no se editan una vez aceptadas. Si cambian, se escribe una nueva 
 | 0022 | Admin interno en `/admin` del dominio base | Aceptada |
 | 0023 | Primer administrador de plataforma por variable de entorno | Aceptada |
 | 0024 | Logos de club en Netlify Blobs a través de la API | Aceptada |
+| 0025 | Interfaz: dos espacios, sistema de componentes y pruebas de interfaz con capturas | Aceptada |

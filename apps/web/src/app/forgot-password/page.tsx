@@ -4,11 +4,12 @@ import { RequestPasswordResetBodySchema } from "@sportsmanager/shared";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
-import { Alert } from "@/components/alert";
+import { AuthShell } from "@/layouts/auth-shell";
 import { apiFetch, errorKey } from "@/lib/api";
+import { Alert, Button, Field, Input } from "@/ui";
 
 export default function ForgotPasswordPage() {
-  const t = useTranslations("forgot");
+  const t = useTranslations("auth.forgot");
   const errors = useTranslations("errors");
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
@@ -35,34 +36,35 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <main className="page">
-      <form className="card form" onSubmit={(e) => void onSubmit(e)}>
-        <h1>{t("title")}</h1>
-        <p className="muted">{t("subtitle")}</p>
-        {done ? (
-          <Alert kind="ok">{t("sent")}</Alert>
-        ) : (
-          <>
-            <label className="field">
-              <span>{t("email")}</span>
-              <input
+    <AuthShell title={t("title")} description={t("subtitle")}>
+      {done ? (
+        <div className="stack stack--tight">
+          <Alert kind="success">{t("sent")}</Alert>
+          <Link href="/login">{t("backToLogin")}</Link>
+        </div>
+      ) : (
+        <form className="form" onSubmit={(e) => void onSubmit(e)}>
+          <Field label={t("email")}>
+            {(id) => (
+              <Input
+                id={id}
                 type="email"
                 autoComplete="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
-            </label>
-            {error ? <Alert kind="error">{error}</Alert> : null}
-            <button type="submit" className="button" disabled={busy}>
-              {busy ? t("submitting") : t("submit")}
-            </button>
-          </>
-        )}
-        <p className="muted">
-          <Link href="/login">{t("backToLogin")}</Link>
-        </p>
-      </form>
-    </main>
+            )}
+          </Field>
+          {error ? <Alert kind="error">{error}</Alert> : null}
+          <Button type="submit" block loading={busy}>
+            {t("submit")}
+          </Button>
+          <p className="small" style={{ textAlign: "center" }}>
+            <Link href="/login">{t("backToLogin")}</Link>
+          </p>
+        </form>
+      )}
+    </AuthShell>
   );
 }

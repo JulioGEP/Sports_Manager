@@ -47,6 +47,19 @@ describe("configuración", () => {
     expect(loadConfig({ ...base, EMAIL_DEBUG_LOG: "false" }).email.debugLog).toBe(false);
   });
 
+  it("el almacén de logos es Netlify salvo que local pida memoria", () => {
+    expect(loadConfig(base).logoStore).toBe("netlify");
+    expect(loadConfig({ ...base, LOGO_STORE: "memory" }).logoStore).toBe("memory");
+    expect(loadConfig({ ...base, LOGO_STORE: "" }).logoStore).toBe("netlify");
+    expect(() =>
+      loadConfig({
+        NODE_ENV: "production",
+        BETTER_AUTH_SECRET: "x".repeat(32),
+        LOGO_STORE: "memory",
+      }),
+    ).toThrow(/LOGO_STORE/);
+  });
+
   it("fuera de local exige el secreto de sesiones", () => {
     expect(() => loadConfig({ NODE_ENV: "production" })).toThrow(/BETTER_AUTH_SECRET/);
     const config = loadConfig({ NODE_ENV: "production", BETTER_AUTH_SECRET: "x".repeat(32) });

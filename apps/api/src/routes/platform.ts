@@ -7,6 +7,7 @@ import {
   LOGO_MAX_BYTES,
   MeResponseSchema,
   OrganizationCreateSchema,
+  PlatformAdminsResponseSchema,
   PlatformInvitationCreateSchema,
   PlatformOrganizationDetailSchema,
   PlatformOrganizationResponseSchema,
@@ -416,6 +417,39 @@ export function createPlatformRoutes(config: ApiConfig, data: DataLayer) {
         details: { roleCode: body.roleCode, locale, from: "platform" },
       });
       return c.json(sent, 201);
+    },
+  );
+
+  app.openapi(
+    createRoute({
+      method: "get",
+      path: "/api/platform/organizations/{slug}/admins",
+      tags: ["Plataforma"],
+      summary: "Administradores del club: los contactos del negocio con ese club",
+      security: [{ sessionCookie: [] }],
+      request: { params: slugParam },
+      responses: {
+        200: {
+          description: "Administradores",
+          content: { "application/json": { schema: PlatformAdminsResponseSchema } },
+        },
+        404: error("No existe"),
+        ...errors,
+      },
+    }),
+    async (c) => {
+      const { slug } = c.req.valid("param");
+      const { scope } = await load(slug);
+      const members = await data.memberships.listMembers(scope);
+      const admins = members
+        .filter((m) => m.roles.includes("org_admin"))
+        .map((m) => ({
+          userId: m.userId,
+          name: m.name,
+          email: m.email,
+          memberSince: m.memberSince.toISOString(),
+        }));
+      return c.json({ admins }, 200);
     },
   );
 

@@ -50,6 +50,7 @@ describe("API", () => {
       "/api/platform/organizations/{slug}",
       "/api/platform/organizations/{slug}/logo",
       "/api/platform/organizations/{slug}/invitations",
+      "/api/platform/organizations/{slug}/admins",
       "/api/platform/audit",
       "/api/platform/sports",
     ]) {

@@ -1,35 +1,40 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import Link from "next/link";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { useSession } from "@/lib/session";
+import { ButtonLink, Icon } from "@/ui";
 
 /** Portada de la plataforma cuando el host no es ningún club: entrar o elegir club. */
 export function Landing() {
   const t = useTranslations("landing");
   const session = useSession();
   return (
-    <main className="page">
-      <section className="card landing">
+    <div className="auth">
+      <div className="auth__box landing">
+        <span className="brand-mark" aria-hidden="true">
+          SM
+        </span>
         <h1>{t("title")}</h1>
         <p className="muted">{t("subtitle")}</p>
         {session.kind === "authenticated" ? (
           <div className="row">
-            <Link className="button" href="/clubs">
+            <ButtonLink href="/clubs" icon={<Icon.Grid size={18} />}>
               {t("myClubs")}
-            </Link>
+            </ButtonLink>
             {session.me.platformAdmin ? (
-              <Link className="button button--secondary" href="/admin">
+              <ButtonLink href="/admin" variant="secondary" icon={<Icon.Shield size={18} />}>
                 {t("admin")}
-              </Link>
+              </ButtonLink>
             ) : null}
           </div>
         ) : (
-          <Link className="button" href="/login">
-            {t("signIn")}
-          </Link>
+          <ButtonLink href="/login">{t("signIn")}</ButtonLink>
         )}
-      </section>
-    </main>
+        <div className="auth__footer">
+          <LanguageSwitcher hasSession={session.kind === "authenticated"} />
+        </div>
+      </div>
+    </div>
   );
 }

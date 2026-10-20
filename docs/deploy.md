@@ -48,6 +48,7 @@ Notas:
 | `EMAIL_FROM` | pendiente | no | Remitente con el dominio verificado, por ejemplo `Sports Manager <no-reply@dominio>` |
 | `EMAIL_DEBUG_LOG` | no definida | `true` | Escribe los emails en el log de la función. Nunca en producción |
 | `PLATFORM_ADMIN_EMAILS` | emails separados por comas | igual | Administradores de plataforma además de la tabla (ADR 0023). Hoy: el email del responsable de producto |
+| `LOGO_STORE` | no definida | no definida | Solo local: `memory` sustituye Netlify Blobs (servidor local y pruebas de interfaz, ADR 0025). Fuera de local la API se niega a arrancar con ese valor |
 
 ## Base de datos y entornos
 
@@ -139,14 +140,27 @@ pnpm test:isolation
 pnpm format:check
 ```
 
-Si `netlify dev` no arranca, las dos piezas se pueden levantar por separado:
+Si `netlify dev` no arranca, la API se puede servir sin Netlify CLI con Postgres embebido y las migraciones del repo, y la web con el reenvío de `/api` hacia ella:
 
 ```bash
-pnpm --filter @sportsmanager/web dev                            # Next en http://localhost:3000
-pnpm --filter @sportsmanager/api build                          # genera el bundle de la API
-pnpm exec netlify functions:serve --filter @sportsmanager/api   # función de la API en http://localhost:9999/api/health
+pnpm --filter @sportsmanager/api build                                   # genera el bundle de la API
+pnpm --filter @sportsmanager/api serve:local                             # API en http://127.0.0.1:9999/api/health (base embebida, emails en outbox, logos en memoria)
+API_PROXY_TARGET=http://127.0.0.1:9999 pnpm --filter @sportsmanager/web dev   # Next en http://localhost:3000 reenviando /api a la API local
 ```
 
-En ese modo la web no encuentra `/api` en su mismo origen y el widget de estado marcará error; es normal.
+`API_PROXY_TARGET` se lee al construir o arrancar Next; en producción no existe y `/api` lo sirve la función en el mismo origen. El servidor local reconstruye el `Host` real a partir de `x-forwarded-host`, que es lo que envía el reenvío de Next, así que los subdominios de club (`http://<club>.sportsmanager.localhost:3000`) resuelven igual que en Netlify. Cuenta demo: `admin@demo.test` / `123456`; `PLATFORM_ADMIN_EMAILS=admin@demo.test` la convierte además en administradora de plataforma.
 
-Subdominios locales por club: `http://<club>.sportsmanager.localhost:8888` (ver `docs/dominio-y-dns.md`).
+### Pruebas de interfaz (Bloque 8)
+
+Playwright levanta esas dos piezas solo, en escritorio (1280x800) y móvil (Pixel 7), y guarda una captura de cada pantalla en `apps/web/e2e/screenshots`:
+
+```bash
+pnpm --filter @sportsmanager/api build
+API_PROXY_TARGET=http://127.0.0.1:9999 pnpm --filter @sportsmanager/web build
+pnpm exec playwright install chromium --with-deps   # una vez, desde apps/web
+pnpm test:ui                                        # o `pnpm test:ui --project=escritorio`
+```
+
+En CI es el job `interfaz`; las capturas y el informe quedan en el artefacto `capturas-interfaz` de cada ejecución. Si Chromium ya está instalado en otra ruta, `PW_CHROMIUM_PATH` apunta al binario. Las pruebas no tocan ninguna base externa: cada ejecución arranca con una base vacía más las migraciones y el club demo.
+
+Subdominios locales por club: `http://<club>.sportsmanager.localhost:8888` con `netlify dev`, o `:3000` con el servidor local (ver `docs/dominio-y-dns.md`).

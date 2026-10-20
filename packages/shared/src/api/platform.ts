@@ -77,3 +77,13 @@ export const AuditEntrySchema = z.object({
 export type AuditEntry = z.infer<typeof AuditEntrySchema>;
 export const AuditResponseSchema = z.object({ entries: z.array(AuditEntrySchema) });
 export type AuditResponse = z.infer<typeof AuditResponseSchema>;
+
+/** Administradores de un club, para el negocio: son los contactos del club, no datos de menores ni familias. */
+export const PlatformAdminSchema = z.object({
+  userId: z.string(),
+  name: z.string(),
+  email: z.string(),
+  memberSince: z.string(),
+});
+export const PlatformAdminsResponseSchema = z.object({ admins: z.array(PlatformAdminSchema) });
+export type PlatformAdminsResponse = z.infer<typeof PlatformAdminsResponseSchema>;

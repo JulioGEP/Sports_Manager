@@ -3,8 +3,8 @@
 import { MeResponseSchema, type MeResponse } from "@sportsmanager/shared";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { readLocaleCookie, writeLocaleCookie } from "@/components/language-switcher";
 import { ApiClientError, apiFetch } from "./api";
+import { readLocaleCookie, writeLocaleCookie } from "./locale-cookie";
 
 export type SessionState =
   | { kind: "loading" }
@@ -12,7 +12,7 @@ export type SessionState =
   | { kind: "authenticated"; me: MeResponse }
   | { kind: "error" };
 
-/** Sesión actual según `/api/me`. La web no guarda nada: pregunta a la API en cada carga. */
+/** Sesión actual según `/api/me`, para páginas fuera del club (acceso, portada, negocio). */
 export function useSession(): SessionState {
   const [state, setState] = useState<SessionState>({ kind: "loading" });
   const router = useRouter();
@@ -22,7 +22,6 @@ export function useSession(): SessionState {
       .then((me) => {
         if (cancelled) return;
         setState({ kind: "authenticated", me });
-        // Idioma de la persona (Bloque 7): si el perfil tiene uno distinto a la cookie, manda el perfil.
         if (me.user.locale && readLocaleCookie() !== me.user.locale) {
           writeLocaleCookie(me.user.locale);
           router.refresh();

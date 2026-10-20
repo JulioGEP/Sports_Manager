@@ -5,12 +5,13 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, type FormEvent } from "react";
-import { Alert } from "@/components/alert";
+import { AuthShell } from "@/layouts/auth-shell";
 import { apiFetch, errorKey } from "@/lib/api";
 import { safeNext } from "@/lib/session";
+import { Alert, Button, Field, Input } from "@/ui";
 
 export function LoginForm() {
-  const t = useTranslations("login");
+  const t = useTranslations("auth.login");
   const errors = useTranslations("errors");
   const router = useRouter();
   const params = useSearchParams();
@@ -38,38 +39,40 @@ export function LoginForm() {
   }
 
   return (
-    <main className="page">
-      <form className="card form" onSubmit={(e) => void onSubmit(e)}>
-        <h1>{t("title")}</h1>
-        <p className="muted">{t("subtitle")}</p>
-        <label className="field">
-          <span>{t("email")}</span>
-          <input
-            type="email"
-            autoComplete="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </label>
-        <label className="field">
-          <span>{t("password")}</span>
-          <input
-            type="password"
-            autoComplete="current-password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </label>
+    <AuthShell title={t("title")} description={t("subtitle")}>
+      <form className="form" onSubmit={(e) => void onSubmit(e)}>
+        <Field label={t("email")}>
+          {(id) => (
+            <Input
+              id={id}
+              type="email"
+              autoComplete="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          )}
+        </Field>
+        <Field label={t("password")}>
+          {(id) => (
+            <Input
+              id={id}
+              type="password"
+              autoComplete="current-password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          )}
+        </Field>
         {error ? <Alert kind="error">{error}</Alert> : null}
-        <button type="submit" className="button" disabled={busy}>
-          {busy ? t("submitting") : t("submit")}
-        </button>
-        <p className="muted">
+        <Button type="submit" block loading={busy}>
+          {t("submit")}
+        </Button>
+        <p className="small" style={{ textAlign: "center" }}>
           <Link href="/forgot-password">{t("forgot")}</Link>
         </p>
       </form>
-    </main>
+    </AuthShell>
   );
 }
