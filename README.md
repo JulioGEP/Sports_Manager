@@ -4,17 +4,28 @@ SaaS B2B para la gestión de clubes deportivos. Cada club tiene su espacio aisla
 
 ## Estado
 
-Fase 0, Bloque 0 completado: el prototipo de un solo club se ha retirado y su conocimiento de negocio está documentado. Todavía no hay código de aplicación. El Bloque 1 monta el monorepo, el tooling, la integración continua y el despliegue.
+Fase 0, Bloque 1: monorepo, tooling, integración continua y despliegue en Netlify. Todavía no hay modelo de negocio ni autenticación; llegan en los bloques 2 a 4.
+
+## Desarrollo local
+
+Requisitos: Node 22 y pnpm 10 (`corepack enable`).
+
+```bash
+pnpm install
+pnpm dev          # web, API y base de datos local en http://localhost:8888 (la primera vez descarga Deno)
+```
+
+Comprobaciones: `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:isolation`, `pnpm format:check`. Detalle en `docs/deploy.md`.
 
 ## Documentación
 
-| Documento | Contenido |
-|---|---|
-| `docs/plan-fase-0.md` | Plan de la Fase 0: bloques, decisiones, riesgos y preguntas con sus respuestas |
-| `docs/dominio.md` | Conocimiento de negocio extraído del prototipo |
-| `docs/informe-sportsmanager.md` | Auditoría del prototipo y propuesta de arquitectura |
-| `docs/decisions/` | Decisiones de arquitectura (ADR) |
-| `packages/shared/design/` | Design tokens de la plataforma |
+| Documento                       | Contenido                                                                      |
+| ------------------------------- | ------------------------------------------------------------------------------ |
+| `docs/plan-fase-0.md`           | Plan de la Fase 0: bloques, decisiones, riesgos y preguntas con sus respuestas |
+| `docs/dominio.md`               | Conocimiento de negocio extraído del prototipo                                 |
+| `docs/informe-sportsmanager.md` | Auditoría del prototipo y propuesta de arquitectura                            |
+| `docs/decisions/`               | Decisiones de arquitectura (ADR)                                               |
+| `packages/shared/design/`       | Design tokens de la plataforma                                                 |
 
 ## Arquitectura prevista
 
@@ -22,6 +33,17 @@ Monorepo con pnpm workspaces: `apps/web` (Next.js, solo interfaz), `apps/api` (H
 
 Las decisiones y su justificación están en `docs/decisions/`.
 
+## Estructura
+
+```
+apps/web          Next.js (App Router). Solo interfaz. Nunca accede a la base de datos.
+apps/api          Hono desplegado como Netlify Function en /api/*. Única puerta a los datos.
+packages/shared   Tipos, validaciones Zod, tokens de diseño, diccionarios es/ca.
+packages/db       Esquema Drizzle y cliente. Solo lo usa apps/api.
+netlify/database  Migraciones SQL que Netlify aplica en cada deploy.
+docs              Plan, dominio, decisiones (ADR) y despliegue.
+```
+
 ## Cómo contribuir
 
-Una rama y una PR por bloque de trabajo. Nada directo a `main`. Cada decisión técnica relevante va a `docs/decisions/` como ADR corto. Las instrucciones para levantar el entorno local llegan con el Bloque 1.
+Una rama y una PR por bloque de trabajo. Nada directo a `main`. Cada decisión técnica relevante va a `docs/decisions/` como ADR corto. CI exige lint, typecheck, tests y tests de aislamiento en verde.

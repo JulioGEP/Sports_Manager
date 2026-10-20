@@ -1,0 +1,20 @@
+# Un solo proyecto Netlify sirve la web y la API en el mismo host (ADR 0010).
+# Base del proyecto: raíz del repo. En la interfaz de Netlify, "Package directory" = apps/web
+# para que el adaptador de Next.js encuentre la aplicación. Ver docs/deploy.md.
+
+[build]
+  command = "pnpm build"
+  publish = "apps/web/.next"
+
+[functions]
+  directory = "apps/api/netlify/functions"
+  node_bundler = "esbuild"
+
+# Desarrollo local: `pnpm dev` arranca Next en :3000, las funciones y la base local,
+# todo detrás de :8888. Sin shell: el comando no admite sintaxis de Bash.
+[dev]
+  command = "pnpm --filter @sportsmanager/web dev"
+  targetPort = 3000
+  port = 8888
+  framework = "#custom"
+  autoLaunch = false
