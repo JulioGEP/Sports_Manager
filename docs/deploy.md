@@ -16,19 +16,23 @@ Un solo proyecto Netlify, `hubsports`, sirve la web y la API en el mismo host (A
 
 ## Configuración del proyecto en Netlify
 
-`netlify.toml` en la raíz fija el comando de build, el directorio de publicación, el directorio de funciones y el modo de desarrollo local. Lo que `netlify.toml` no puede fijar se configura en la interfaz:
+Toda la configuración de build vive en `netlify.toml`, en la raíz del repo: comando de build, directorio de publicación, adaptador de Next.js, directorio de funciones y modo de desarrollo local. No hace falta ningún ajuste de build en la interfaz.
 
-| Dónde                                                                           | Ajuste            | Valor                       |
-| ------------------------------------------------------------------------------- | ----------------- | --------------------------- |
-| Project configuration → Build & deploy → Continuous deployment → Build settings | Base directory    | vacío (raíz del repo)       |
-| Misma pantalla                                                                  | Package directory | `apps/web`                  |
-| Misma pantalla                                                                  | Production branch | `main`                      |
-| Project configuration → Cloud compute → Functions                               | Region            | Frankfurt (`fra`)           |
-| Project configuration → Build & deploy → Deploy Previews                        | Deploy Previews   | activadas para todas las PR |
+Cómo encaja el monorepo:
+
+- Netlify no detecta Next.js en la raíz de un monorepo, así que el adaptador `@netlify/plugin-nextjs` se declara explícitamente en `[[plugins]]`. Netlify lo instala en cada build y lo mantiene actualizado; no se fija versión.
+- El adaptador localiza la app por el manifiesto que genera `next build` (`relativeAppDir`), no por ajustes de interfaz. Para eso `apps/web/next.config.ts` fija `outputFileTracingRoot` en la raíz del repo.
+- "Package directory" en la interfaz queda vacío. Si algún día se rellena con `apps/web`, el adaptador también funciona.
+
+Ajustes que sí son de interfaz, una sola vez:
+
+| Dónde | Ajuste | Valor |
+|---|---|---|
+| Project configuration → Cloud compute → Functions | Region | Frankfurt (`fra`) |
+| Project configuration → Developer settings → Continuous deployment → Deploy Previews | Deploy Previews | activadas para todas las PR |
 
 Notas:
 
-- "Package directory" indica al adaptador de Next.js dónde está la aplicación. Es un ajuste solo de interfaz. El comando `pnpm build` funciona tanto si Netlify lo ejecuta en la raíz como en `apps/web`.
 - La región de funciones a nivel de proyecto cubre también las funciones que genera el adaptador de Next.js, que no admiten configuración en código. Tras cambiarla hay que volver a desplegar.
 - La versión de Node la toma Netlify de `.nvmrc`.
 - No hace falta ninguna variable de entorno para el Bloque 1. Las que lleguen después se crean en Project configuration → Environment variables, por contexto y con ámbito "Functions" cuando las lea la API. Nunca en `netlify.toml`.
@@ -43,7 +47,7 @@ Notas:
 
 Aprovisionamiento: `@netlify/database` está declarado en el `package.json` de la raíz (además de en `packages/db` y `apps/api`) porque Netlify decide si aprovisiona la base mirando las dependencias del proyecto. Si tras un deploy la base no aparece en Data & Storage → Database, se crea desde ahí con el botón de crear base de datos; a partir de entonces el deploy aplica las migraciones. La cadena de conexión llega a las funciones en `NETLIFY_DB_URL`.
 
-Comprobado en la primera deploy preview (19 de octubre de 2026): función `api` desplegada en `/api/*` con región `eu-central-1`, Blobs en `eu-central-1`, sin base de datos aprovisionada todavía.
+Comprobado en el primer deploy de producción (20 de octubre de 2026): función `api` desplegada en `/api/*` con región `eu-central-1`, Blobs en `eu-central-1`, base aprovisionada y las dos migraciones aplicadas con snapshot al publicar.
 
 Reglas de migraciones (ADR 0003):
 
