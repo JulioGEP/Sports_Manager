@@ -4,7 +4,7 @@ SaaS B2B para la gestión de clubes deportivos. Cada club tiene su espacio aisla
 
 ## Estado
 
-Fase 0, Bloque 1: monorepo, tooling, integración continua y despliegue en Netlify. Todavía no hay modelo de negocio ni autenticación; llegan en los bloques 2 a 4.
+Fase 0, Bloque 2: modelo de datos mínimo (clubes, deportes, identidad, roles, pertenencias e invitaciones). La autenticación y el aislamiento llegan en los bloques 3 y 4.
 
 ## Desarrollo local
 

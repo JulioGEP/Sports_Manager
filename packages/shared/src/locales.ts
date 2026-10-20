@@ -1,10 +1,18 @@
 import { z } from "zod";
 
-/** Idiomas soportados por la plataforma. Castellano y catalán desde el día 1. */
-export const LOCALES = ["es", "ca"] as const;
+/** Idiomas soportados por la plataforma: castellano, catalán e inglés. */
+export const LOCALES = ["es", "ca", "en"] as const;
 export type Locale = (typeof LOCALES)[number];
 export const DEFAULT_LOCALE: Locale = "es";
 export const LocaleSchema = z.enum(LOCALES);
+
+/** Texto traducido a todos los idiomas, por ejemplo el nombre de un deporte o de un rol. */
+export const LocalizedTextSchema = z.object({
+  es: z.string().min(1),
+  ca: z.string().min(1),
+  en: z.string().min(1),
+});
+export type LocalizedText = z.infer<typeof LocalizedTextSchema>;
 
 export function isLocale(value: unknown): value is Locale {
   return typeof value === "string" && (LOCALES as readonly string[]).includes(value);

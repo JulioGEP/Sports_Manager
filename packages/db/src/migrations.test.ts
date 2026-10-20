@@ -1,7 +1,7 @@
 import { NetlifyDB } from "@netlify/database-dev";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createDb, type DbHandle } from "./index.ts";
-import { appMeta } from "./schema.ts";
+import { appMeta } from "./schema/index.ts";
 
 /**
  * Arranca un Postgres local embebido, aplica las migraciones del repo y comprueba

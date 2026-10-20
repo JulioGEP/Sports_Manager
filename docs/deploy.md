@@ -75,6 +75,8 @@ En cada deploy preview, abre `/api/health`. La respuesta trae:
 
 Si cualquiera de las dos no es UE, se para el trabajo y se revisa la configuración antes de seguir.
 
+Verificado el 20 de octubre de 2026 en producción tras mezclar la PR 6: `region` y `db.region` devuelven `eu-central-1` (Frankfurt).
+
 ## Ficheros (Bloque 5)
 
 Netlify Blobs con `region: "eu-central-1"` en todas las llamadas, centralizado en un único módulo de la API. Los stores de proyecto no siguen la región de las funciones y usarían `us-east-2` por defecto.
