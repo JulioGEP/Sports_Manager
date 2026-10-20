@@ -1,14 +1,29 @@
 import { schema, type Database } from "@sportsmanager/db";
+import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from "@sportsmanager/shared";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import type { ApiConfig } from "../../config.ts";
 
+export interface ResetPasswordRequest {
+  user: { id: string; name: string; email: string; locale?: string | null };
+  token: string;
+  /** Host de la petición, ya en minúsculas, o undefined si no llegó. */
+  host: string | undefined;
+  /** Contexto de deploy de Netlify que la API fijó en la cabecera interna. */
+  deployContext: string | undefined;
+}
+
+export interface AuthHooks {
+  /** Envía el email de restablecer contraseña (ADR 0018). Lo implementa la capa de datos. */
+  sendResetPassword: (request: ResetPasswordRequest) => Promise<void>;
+}
+
 /**
  * Instancia de Better Auth (ADR 0004). Vive en la capa de datos porque lee y escribe
  * usuarios, sesiones y cuentas. Registro público desactivado: las cuentas nacen al
- * aceptar una invitación (Bloque 4).
+ * aceptar una invitación (ADR 0019).
  */
-export function createAuth(db: Database, config: ApiConfig) {
+export function createAuth(db: Database, config: ApiConfig, hooks: AuthHooks) {
   const staticOrigins = [
     `https://${config.baseDomain}`,
     `https://*.${config.baseDomain}`,
@@ -36,21 +51,45 @@ export function createAuth(db: Database, config: ApiConfig) {
         sessions: schema.sessions,
         accounts: schema.accounts,
         verifications: schema.verifications,
+        rateLimits: schema.rateLimits,
       },
     }),
     emailAndPassword: {
       enabled: true,
       disableSignUp: true,
+      minPasswordLength: PASSWORD_MIN_LENGTH,
+      maxPasswordLength: PASSWORD_MAX_LENGTH,
+      /** Al cambiar la contraseña se cierran las demás sesiones (ADR 0020). */
+      revokeSessionsOnPasswordReset: true,
+      sendResetPassword: async ({ user, token }, request) => {
+        await hooks.sendResetPassword({
+          user: user,
+          token,
+          host: request?.headers.get("host")?.toLowerCase(),
+          deployContext: request?.headers.get("x-sm-deploy-context") ?? undefined,
+        });
+      },
     },
     user: {
       additionalFields: {
         locale: { type: "string", required: false, input: true },
       },
     },
+    /**
+     * Límite de intentos (ADR 0020): reglas por defecto de Better Auth (3 intentos de login
+     * por IP cada 10 s, 3 peticiones de restablecer por minuto), con contadores en la base
+     * para que valgan entre instancias de la función. Desactivado en local y en tests.
+     */
+    rateLimit: {
+      enabled: !config.isLocal,
+      storage: "database",
+    },
     advanced: {
       database: { generateId: "uuid" },
       cookiePrefix: "sm",
       useSecureCookies: config.secureCookies,
+      /** Netlify entrega la IP del cliente en esta cabecera; la segunda es la convención general. */
+      ipAddress: { ipAddressHeaders: ["x-nf-client-connection-ip", "x-forwarded-for"] },
       ...(config.sessionCookieDomain
         ? { crossSubDomainCookies: { enabled: true, domain: config.sessionCookieDomain } }
         : {}),

@@ -1,12 +1,12 @@
 import { createDb, schema } from "@sportsmanager/db";
 import type { RoleCode } from "@sportsmanager/shared";
 import { hashPassword } from "better-auth/crypto";
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 
 /**
  * Datos de prueba para los tests de aislamiento. Vive en la capa de datos porque escribe
- * directamente en la base; los tests solo lo usan para preparar escenarios y después
- * hablan con la API por HTTP.
+ * directamente en la base; los tests solo lo usan para preparar escenarios y comprobar
+ * efectos, y después hablan con la API por HTTP.
  */
 export function createSeeder(connectionString: string) {
   const handle = createDb({ connectionString, maxConnections: 2 });
@@ -16,6 +16,7 @@ export function createSeeder(connectionString: string) {
     async organization(input: {
       slug: string;
       name: string;
+      defaultLocale?: "es" | "ca" | "en";
     }): Promise<{ id: string; slug: string }> {
       const sport = await db
         .select({ id: schema.sports.id })
@@ -29,7 +30,7 @@ export function createSeeder(connectionString: string) {
         .values({
           slug: input.slug,
           name: input.name,
-          defaultLocale: "es",
+          defaultLocale: input.defaultLocale ?? "es",
           defaultSportId: sportId,
           brandPrimaryColor: "#d71920",
           brandSecondaryColor: "#e8b52a",
@@ -42,10 +43,16 @@ export function createSeeder(connectionString: string) {
       name: string;
       email: string;
       password: string;
+      locale?: "es" | "ca" | "en";
     }): Promise<{ id: string; email: string }> {
       const rows = await db
         .insert(schema.users)
-        .values({ name: input.name, email: input.email.toLowerCase(), emailVerified: true })
+        .values({
+          name: input.name,
+          email: input.email.toLowerCase(),
+          emailVerified: true,
+          locale: input.locale ?? null,
+        })
         .returning({ id: schema.users.id, email: schema.users.email });
       const user = rows[0]!;
       await db.insert(schema.accounts).values({
@@ -55,6 +62,15 @@ export function createSeeder(connectionString: string) {
         password: await hashPassword(input.password),
       });
       return user;
+    },
+
+    async userByEmail(email: string): Promise<{ id: string; name: string } | null> {
+      const rows = await db
+        .select({ id: schema.users.id, name: schema.users.name })
+        .from(schema.users)
+        .where(eq(schema.users.email, email.toLowerCase()))
+        .limit(1);
+      return rows[0] ?? null;
     },
 
     async membership(organizationId: string, userId: string, roleCode: RoleCode): Promise<void> {
@@ -88,6 +104,62 @@ export function createSeeder(connectionString: string) {
           ),
         );
       return rows.map((r) => r.roleCode).sort();
+    },
+
+    /** Último email registrado para un destinatario, con su cuerpo en texto (contiene el enlace). */
+    async lastEmailTo(email: string) {
+      const rows = await db
+        .select({
+          template: schema.emailOutbox.template,
+          subject: schema.emailOutbox.subject,
+          textBody: schema.emailOutbox.textBody,
+          htmlBody: schema.emailOutbox.htmlBody,
+          locale: schema.emailOutbox.locale,
+          status: schema.emailOutbox.status,
+          transport: schema.emailOutbox.transport,
+          organizationId: schema.emailOutbox.organizationId,
+        })
+        .from(schema.emailOutbox)
+        .where(eq(schema.emailOutbox.toEmail, email.toLowerCase()))
+        .orderBy(desc(schema.emailOutbox.createdAt))
+        .limit(1);
+      return rows[0] ?? null;
+    },
+
+    async countEmailsTo(email: string): Promise<number> {
+      const rows = await db
+        .select({ id: schema.emailOutbox.id })
+        .from(schema.emailOutbox)
+        .where(eq(schema.emailOutbox.toEmail, email.toLowerCase()));
+      return rows.length;
+    },
+
+    async invitationStatus(organizationId: string, email: string): Promise<string[]> {
+      const rows = await db
+        .select({ status: schema.invitations.status })
+        .from(schema.invitations)
+        .where(
+          and(
+            eq(schema.invitations.organizationId, organizationId),
+            eq(schema.invitations.email, email.toLowerCase()),
+          ),
+        )
+        .orderBy(desc(schema.invitations.createdAt));
+      return rows.map((r) => r.status);
+    },
+
+    /** Fuerza la caducidad de la invitación pendiente de un email en un club. */
+    async expireInvitation(organizationId: string, email: string): Promise<void> {
+      await db
+        .update(schema.invitations)
+        .set({ expiresAt: new Date(Date.now() - 60_000) })
+        .where(
+          and(
+            eq(schema.invitations.organizationId, organizationId),
+            eq(schema.invitations.email, email.toLowerCase()),
+            eq(schema.invitations.status, "pending"),
+          ),
+        );
     },
 
     async close() {

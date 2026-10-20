@@ -1,0 +1,411 @@
+import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
+import {
+  AcceptInvitationBodySchema,
+  AcceptInvitationResponseSchema,
+  ApiErrorSchema,
+  InvitationCreateSchema,
+  InvitationSchema,
+  InvitationSentResponseSchema,
+  InvitationsResponseSchema,
+  PublicInvitationSchema,
+  WEB_PATHS,
+  type Invitation,
+  type Locale,
+} from "@sportsmanager/shared";
+import type { ApiConfig } from "../config.ts";
+import {
+  invitationState,
+  renderEmail,
+  type DataLayer,
+  type InvitationRecord,
+  type IssuedInvitation,
+  type OrganizationRow,
+} from "../data/index.ts";
+import { requireActor, requirePermission } from "../http/actor.ts";
+import type { AppEnv } from "../http/context.ts";
+import {
+  badRequest,
+  conflict,
+  invitationEmailMismatch,
+  invitationExpired,
+  notFound,
+  unauthorized,
+} from "../http/errors.ts";
+import { optionalSession, requireSession } from "../http/session.ts";
+import { requireOrganizationHost, resolveTenant } from "../http/tenant.ts";
+import { publicOrigin } from "../tenancy.ts";
+
+const error = (description: string) => ({
+  description,
+  content: { "application/json": { schema: ApiErrorSchema } },
+});
+const orgErrors = {
+  401: error("Sin sesión"),
+  403: error("Sin pertenencia o sin permiso"),
+  404: error("Host sin club o invitación inexistente"),
+};
+
+function invitationDto(record: InvitationRecord): Invitation {
+  return {
+    id: record.id,
+    email: record.email,
+    roleCode: record.roleCode,
+    locale: record.locale,
+    state: invitationState(record.status, record.expiresAt),
+    expiresAt: record.expiresAt.toISOString(),
+    createdAt: record.createdAt.toISOString(),
+    invitedByName: record.invitedByName,
+    acceptedAt: record.acceptedAt?.toISOString() ?? null,
+  };
+}
+
+function isUniqueViolation(error: unknown): boolean {
+  return typeof error === "object" && error !== null && "code" in error && error.code === "23505";
+}
+
+/** Rutas de invitaciones (ADR 0019): gestión desde el club y aceptación pública por token. */
+export function createInvitationRoutes(config: ApiConfig, data: DataLayer) {
+  const app = new OpenAPIHono<AppEnv>();
+
+  /** Envía el email de invitación y devuelve el enlace de aceptación en el host actual. */
+  async function sendInvitationEmail(
+    host: string | undefined,
+    deployContext: string | undefined,
+    organization: OrganizationRow,
+    issued: IssuedInvitation,
+    inviterName: string,
+  ) {
+    const origin = publicOrigin(host, config, deployContext);
+    const url = `${origin}${WEB_PATHS.invitation(issued.token)}`;
+    const locale: Locale = issued.invitation.locale;
+    const roleName = await data.roles.nameOf(issued.invitation.roleCode);
+    const rendered = renderEmail(
+      locale,
+      {
+        template: "invitation",
+        clubName: organization.name,
+        inviterName,
+        roleName: roleName[locale],
+        url,
+        expiresDays: config.invitationTtlDays,
+      },
+      { brandColor: organization.brandPrimaryColor },
+    );
+    const sent = await data.email.send({
+      organizationId: organization.id,
+      to: issued.invitation.email,
+      locale,
+      template: "invitation",
+      ...rendered,
+    });
+    return {
+      invitation: invitationDto(issued.invitation),
+      emailStatus: sent.status,
+      /** Solo con transporte `outbox`: permite probar el flujo sin Resend (ADR 0018). */
+      acceptUrl: config.email.transport === "outbox" ? url : null,
+    };
+  }
+
+  // --- Gestión desde el club: cadena completa y permiso org.members.invite ---
+  const orgChain = [
+    resolveTenant(config, data),
+    requireOrganizationHost,
+    requireSession(data),
+    requireActor(data),
+    requirePermission("org.members.invite"),
+  ] as const;
+  app.use("/api/org/invitations", ...orgChain);
+  app.use("/api/org/invitations/*", ...orgChain);
+
+  app.openapi(
+    createRoute({
+      method: "get",
+      path: "/api/org/invitations",
+      tags: ["Invitaciones"],
+      summary: "Invitaciones del club, las más recientes primero",
+      security: [{ sessionCookie: [] }],
+      responses: {
+        200: {
+          description: "Invitaciones",
+          content: { "application/json": { schema: InvitationsResponseSchema } },
+        },
+        ...orgErrors,
+      },
+    }),
+    async (c) => {
+      const tenant = c.get("tenant");
+      if (tenant.kind !== "organization") throw notFound();
+      const invitations = await data.invitations.list(tenant.scope);
+      return c.json({ invitations: invitations.map(invitationDto) }, 200);
+    },
+  );
+
+  app.openapi(
+    createRoute({
+      method: "post",
+      path: "/api/org/invitations",
+      tags: ["Invitaciones"],
+      summary: "Invita a alguien al club con un rol y le envía el email",
+      security: [{ sessionCookie: [] }],
+      request: {
+        body: {
+          content: { "application/json": { schema: InvitationCreateSchema } },
+          required: true,
+        },
+      },
+      responses: {
+        201: {
+          description: "Invitación creada",
+          content: { "application/json": { schema: InvitationSentResponseSchema } },
+        },
+        409: error("Ya es miembro con ese rol o ya tiene una invitación pendiente"),
+        ...orgErrors,
+      },
+    }),
+    async (c) => {
+      const tenant = c.get("tenant");
+      if (tenant.kind !== "organization") throw notFound();
+      const user = c.get("sessionUser");
+      const body = c.req.valid("json");
+      const locale = body.locale ?? (tenant.organization.defaultLocale as Locale);
+
+      const existing = await data.users.findByEmail(body.email);
+      if (existing) {
+        const roles = await data.memberships.rolesFor(tenant.scope, existing.id);
+        if (roles.includes(body.roleCode))
+          throw conflict("Esa persona ya es miembro del club con ese rol.");
+      }
+
+      let result;
+      try {
+        result = await data.invitations.create(tenant.scope, {
+          email: body.email,
+          roleCode: body.roleCode,
+          locale,
+          invitedBy: user.id,
+          ttlDays: config.invitationTtlDays,
+        });
+      } catch (err) {
+        if (isUniqueViolation(err)) result = { outcome: "pending_exists" as const };
+        else throw err;
+      }
+      if (result.outcome === "pending_exists")
+        throw conflict("Ya hay una invitación pendiente para ese email. Reenvíala o revócala.");
+
+      const sent = await sendInvitationEmail(
+        c.req.header("host"),
+        c.env?.context?.deploy?.context,
+        tenant.organization,
+        result,
+        user.name,
+      );
+      return c.json(sent, 201);
+    },
+  );
+
+  app.openapi(
+    createRoute({
+      method: "post",
+      path: "/api/org/invitations/{id}/resend",
+      tags: ["Invitaciones"],
+      summary: "Reenvía una invitación pendiente con un enlace nuevo. El anterior deja de valer",
+      security: [{ sessionCookie: [] }],
+      request: { params: z.object({ id: z.string().uuid() }) },
+      responses: {
+        200: {
+          description: "Invitación reenviada",
+          content: { "application/json": { schema: InvitationSentResponseSchema } },
+        },
+        ...orgErrors,
+      },
+    }),
+    async (c) => {
+      const tenant = c.get("tenant");
+      if (tenant.kind !== "organization") throw notFound();
+      const user = c.get("sessionUser");
+      const { id } = c.req.valid("param");
+      const issued = await data.invitations.rotate(tenant.scope, id, config.invitationTtlDays);
+      if (!issued) throw notFound("No hay ninguna invitación pendiente con ese identificador.");
+      const sent = await sendInvitationEmail(
+        c.req.header("host"),
+        c.env?.context?.deploy?.context,
+        tenant.organization,
+        issued,
+        user.name,
+      );
+      return c.json(sent, 200);
+    },
+  );
+
+  app.openapi(
+    createRoute({
+      method: "delete",
+      path: "/api/org/invitations/{id}",
+      tags: ["Invitaciones"],
+      summary: "Revoca una invitación pendiente",
+      security: [{ sessionCookie: [] }],
+      request: { params: z.object({ id: z.string().uuid() }) },
+      responses: {
+        200: {
+          description: "Invitación revocada",
+          content: { "application/json": { schema: z.object({ invitation: InvitationSchema }) } },
+        },
+        ...orgErrors,
+      },
+    }),
+    async (c) => {
+      const tenant = c.get("tenant");
+      if (tenant.kind !== "organization") throw notFound();
+      const { id } = c.req.valid("param");
+      const revoked = await data.invitations.revoke(tenant.scope, id);
+      if (!revoked) throw notFound("No hay ninguna invitación pendiente con ese identificador.");
+      return c.json({ invitation: invitationDto(revoked) }, 200);
+    },
+  );
+
+  // --- Aceptación pública: el token identifica la invitación; el host debe ser su club ---
+  const publicChain = [
+    resolveTenant(config, data),
+    requireOrganizationHost,
+    optionalSession(data),
+  ] as const;
+  app.use("/api/invitations/*", ...publicChain);
+
+  const tokenParam = z.object({ token: z.string().min(1).max(128) });
+
+  async function findForHost(
+    c: { get: (key: "tenant") => AppEnv["Variables"]["tenant"] },
+    token: string,
+  ) {
+    const tenant = c.get("tenant");
+    if (tenant.kind !== "organization") throw notFound();
+    const found = await data.invitations.findByToken(token);
+    if (!found || found.organization.id !== tenant.organization.id)
+      throw notFound("Esta invitación no existe o no es de este club.");
+    const state = invitationState(found.invitation.status, found.invitation.expiresAt);
+    if (state === "revoked") throw notFound("Esta invitación ya no es válida.");
+    return { tenant, found, state };
+  }
+
+  app.openapi(
+    createRoute({
+      method: "get",
+      path: "/api/invitations/{token}",
+      tags: ["Invitaciones"],
+      summary: "Qué invita y a quién, para la pantalla de aceptación. Sin sesión",
+      request: { params: tokenParam },
+      responses: {
+        200: {
+          description: "Invitación",
+          content: { "application/json": { schema: PublicInvitationSchema } },
+        },
+        404: error("Token inexistente, revocado o de otro club"),
+      },
+    }),
+    async (c) => {
+      const { token } = c.req.valid("param");
+      const { found, state } = await findForHost(c, token);
+      const org = found.organization;
+      const hasAccount = (await data.users.findByEmail(found.invitation.email)) !== null;
+      return c.json(
+        {
+          organization: {
+            slug: org.slug,
+            name: org.name,
+            brandPrimaryColor: org.brandPrimaryColor,
+            brandSecondaryColor: org.brandSecondaryColor,
+          },
+          email: found.invitation.email,
+          roleCode: found.invitation.roleCode,
+          roleName: found.roleName,
+          locale: found.invitation.locale,
+          state,
+          expiresAt: found.invitation.expiresAt.toISOString(),
+          hasAccount,
+        },
+        200,
+      );
+    },
+  );
+
+  app.openapi(
+    createRoute({
+      method: "post",
+      path: "/api/invitations/{token}/accept",
+      tags: ["Invitaciones"],
+      summary:
+        "Acepta la invitación. Sin cuenta: crea la cuenta con nombre y contraseña e inicia sesión. Con cuenta: exige la sesión de ese email y añade el rol",
+      request: {
+        params: tokenParam,
+        body: {
+          content: { "application/json": { schema: AcceptInvitationBodySchema } },
+          required: false,
+        },
+      },
+      responses: {
+        200: {
+          description: "Pertenencia creada o ampliada",
+          content: { "application/json": { schema: AcceptInvitationResponseSchema } },
+        },
+        400: error("Faltan nombre o contraseña para crear la cuenta"),
+        401: error("Ese email ya tiene cuenta: hay que iniciar sesión para aceptar"),
+        403: error("La sesión es de otra persona"),
+        404: error("Token inexistente, revocado o de otro club"),
+        409: error("Ya aceptada"),
+        410: error("Caducada"),
+      },
+    }),
+    async (c) => {
+      const { token } = c.req.valid("param");
+      const { tenant, found, state } = await findForHost(c, token);
+      if (state === "expired") throw invitationExpired();
+      if (state === "accepted") throw conflict("Esta invitación ya se ha aceptado.");
+      const invitation = found.invitation;
+      const session = c.get("optionalSessionUser");
+      const existing = await data.users.findByEmail(invitation.email);
+      const organization = { slug: tenant.organization.slug, name: tenant.organization.name };
+
+      if (existing) {
+        if (!session)
+          throw unauthorized(
+            "Ese email ya tiene cuenta. Inicia sesión para aceptar la invitación.",
+          );
+        if (session.id !== existing.id) throw invitationEmailMismatch();
+        const roles = await data.memberships.join(tenant.scope, existing.id, invitation.roleCode);
+        await data.invitations.markAccepted(tenant.scope, invitation.id, existing.id);
+        return c.json({ organization, roles, accountCreated: false }, 200);
+      }
+
+      if (session) throw invitationEmailMismatch();
+      const body = c.req.valid("json");
+      if (!body?.name || !body.password)
+        throw badRequest("Para crear la cuenta hacen falta nombre y contraseña.");
+
+      const user = await data.users.createWithPassword({
+        email: invitation.email,
+        name: body.name,
+        password: body.password,
+        locale: invitation.locale,
+      });
+      const roles = await data.memberships.join(tenant.scope, user.id, invitation.roleCode);
+      await data.invitations.markAccepted(tenant.scope, invitation.id, user.id);
+
+      // Sesión para la cuenta recién creada, con las mismas cookies que un login normal.
+      const signIn = await data.auth.api.signInEmail({
+        body: { email: invitation.email, password: body.password },
+        headers: c.req.raw.headers,
+        asResponse: true,
+      });
+      if (signIn.ok) {
+        for (const cookie of signIn.headers.getSetCookie()) {
+          c.header("set-cookie", cookie, { append: true });
+        }
+      } else {
+        console.error("[invitations] la sesión tras aceptar no se pudo iniciar", signIn.status);
+      }
+      return c.json({ organization, roles, accountCreated: true }, 200);
+    },
+  );
+
+  return app;
+}

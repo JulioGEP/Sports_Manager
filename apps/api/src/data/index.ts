@@ -3,24 +3,41 @@ import type { DatabaseStatus } from "@sportsmanager/shared";
 import { eq, sql } from "drizzle-orm";
 import type { ApiConfig } from "../config.ts";
 import { createAuth, type Auth } from "./auth/index.ts";
+import { createResetPasswordSender } from "./auth/reset-password.ts";
 import { createLazyDb } from "./db.ts";
+import { emailOutboxRepo } from "./email/outbox.ts";
+import type { ResendLike } from "./email/resend.ts";
+import { createEmailSender, type EmailSender } from "./email/sender.ts";
+import { invitationsRepo } from "./invitations.ts";
 import { membershipsRepo } from "./memberships.ts";
 import { organizationsRepo } from "./organizations.ts";
 import { platformRepo } from "./platform.ts";
+import { rolesRepo } from "./roles.ts";
+import { usersRepo } from "./users.ts";
 
 export type { OrgScope } from "./scope.ts";
 export type { OrganizationRow, OrganizationSport, SupportCounts } from "./organizations.ts";
 export type { AssignRoleResult, Member, RemoveRoleResult, UserMembership } from "./memberships.ts";
+export type { InvitationByToken, InvitationRecord, IssuedInvitation } from "./invitations.ts";
+export type { UserRecord } from "./users.ts";
+export type { EmailSender, OutgoingEmail, SentEmail } from "./email/sender.ts";
+export type { ResendLike } from "./email/resend.ts";
+export { renderEmail, type EmailContent, type RenderedEmail } from "./email/templates.ts";
+export { invitationState } from "./invitation-tokens.ts";
 export { userLocale } from "./memberships.ts";
 
 /**
  * Única capa de acceso a datos de la API (ADR 0009 y 0015).
- * Fuera de este directorio nadie importa @sportsmanager/db, drizzle-orm, pg ni better-auth:
- * lo impiden ESLint y src/architecture.isolation.test.ts.
+ * Fuera de este directorio nadie importa @sportsmanager/db, drizzle-orm, pg, better-auth
+ * ni resend: lo impiden ESLint y src/architecture.isolation.test.ts.
  */
 export interface DataLayerOptions {
   config: ApiConfig;
   connectionString?: string;
+  /** Cliente de Resend sustituible en tests. */
+  resend?: ResendLike | null;
+  /** Destino del log de depuración de emails. */
+  emailLog?: (line: string) => void;
 }
 
 export function createDataLayer(options: DataLayerOptions) {
@@ -30,14 +47,34 @@ export function createDataLayer(options: DataLayerOptions) {
   const db = () => lazy.get().db;
   let auth: Auth | null = null;
 
+  const organizations = organizationsRepo(db);
+  const email: EmailSender = createEmailSender({
+    config: options.config.email,
+    outbox: emailOutboxRepo(db),
+    resend: options.resend ?? null,
+    ...(options.emailLog ? { log: options.emailLog } : {}),
+  });
+  const sendResetPassword = createResetPasswordSender({
+    config: options.config,
+    organizations,
+    email,
+  });
+  const getAuth = (): Auth => {
+    auth ??= createAuth(db(), options.config, { sendResetPassword });
+    return auth;
+  };
+
   return {
     get auth(): Auth {
-      auth ??= createAuth(db(), options.config);
-      return auth;
+      return getAuth();
     },
-    organizations: organizationsRepo(db),
+    organizations,
     memberships: membershipsRepo(db),
     platform: platformRepo(db),
+    invitations: invitationsRepo(db),
+    users: usersRepo(db, getAuth),
+    roles: rolesRepo(db),
+    email,
 
     async checkDatabase(): Promise<DatabaseStatus> {
       try {

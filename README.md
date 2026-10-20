@@ -4,7 +4,7 @@ SaaS B2B para la gestión de clubes deportivos. Cada club tiene su espacio aisla
 
 ## Estado
 
-Fase 0, Bloque 3: aislamiento entre clubes. Cada petición resuelve el club por subdominio, el usuario por sesión (Better Auth) y los permisos por pertenencia; la suite de aislamiento con dos clubes es un check obligatorio en CI. Los flujos de login e invitaciones llegan en el Bloque 4.
+Fase 0, Bloque 4: autenticación e invitaciones. Login con email y contraseña, recuperación de contraseña, alta solo por invitación con un único login válido en todos los clubes, emails en castellano, catalán e inglés con Resend preparado y sin conectar hasta tener dominio (transporte `outbox`). La suite de aislamiento (dos clubes, invitaciones cruzadas, caducadas y reutilizadas, restablecimiento de contraseña) es un check obligatorio en CI.
 
 ## Desarrollo local
 
@@ -38,7 +38,7 @@ Las decisiones y su justificación están en `docs/decisions/`.
 ```
 apps/web          Next.js (App Router). Solo interfaz. Nunca accede a la base de datos.
 apps/api          Hono desplegado como Netlify Function en /api/*. Única puerta a los datos.
-packages/shared   Tipos, validaciones Zod, tokens de diseño, diccionarios es/ca.
+packages/shared   Tipos, validaciones Zod, tokens de diseño, diccionarios es/ca/en.
 packages/db       Esquema Drizzle y cliente. Solo lo usa apps/api.
 netlify/database  Migraciones SQL que Netlify aplica en cada deploy.
 docs              Plan, dominio, decisiones (ADR) y despliegue.

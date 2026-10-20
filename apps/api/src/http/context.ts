@@ -36,6 +36,8 @@ export type Actor =
 export interface AppVariables {
   tenant: Tenant;
   sessionUser: SessionUser;
+  /** Sesión si la hay, en rutas que funcionan con y sin ella (aceptar invitación). */
+  optionalSessionUser: SessionUser | null;
   actor: Actor;
 }
 

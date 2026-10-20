@@ -40,6 +40,11 @@ describe("API", () => {
       "/api/me/memberships",
       "/api/org",
       "/api/org/members",
+      "/api/org/invitations",
+      "/api/org/invitations/{id}/resend",
+      "/api/org/invitations/{id}",
+      "/api/invitations/{token}",
+      "/api/invitations/{token}/accept",
       "/api/platform/me",
     ]) {
       expect(Object.keys(spec.paths), path).toContain(path);
