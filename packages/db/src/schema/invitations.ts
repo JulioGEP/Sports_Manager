@@ -1,4 +1,4 @@
-import { INVITATION_STATUSES } from "@sportsmanager/shared";
+import { INVITATION_STATUSES, LOCALES } from "@sportsmanager/shared";
 import { sql } from "drizzle-orm";
 import { check, index, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 import { id, inList, timestamps } from "./_shared.ts";
@@ -9,6 +9,7 @@ import { roles } from "./roles.ts";
 /**
  * Invitación a unirse a un club con un rol. Solo se guarda el hash del token; el token
  * va en el enlace del email. "Caducada" se deduce de `expires_at`, no es un estado.
+ * `locale` es el idioma del email de invitación (Bloque 4): lo elige quien invita.
  */
 export const invitations = pgTable(
   "invitations",
@@ -21,6 +22,7 @@ export const invitations = pgTable(
     roleCode: text("role_code")
       .notNull()
       .references(() => roles.code, { onDelete: "restrict" }),
+    locale: text("locale").notNull().default("es"),
     tokenHash: text("token_hash").notNull().unique(),
     expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
     status: text("status").notNull().default("pending"),
@@ -36,6 +38,7 @@ export const invitations = pgTable(
     index("invitations_organization_id_idx").on(t.organizationId),
     index("invitations_email_idx").on(t.email),
     check("invitations_email_lowercase", sql`${t.email} = lower(${t.email})`),
+    check("invitations_locale_check", inList(t.locale, LOCALES)),
     check("invitations_status_check", inList(t.status, INVITATION_STATUSES)),
   ],
 );

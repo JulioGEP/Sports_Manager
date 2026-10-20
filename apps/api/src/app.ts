@@ -5,9 +5,11 @@ import { createDataLayer, type DataLayer } from "./data/index.ts";
 import type { AppEnv } from "./http/context.ts";
 import { ApiError, badRequest, notFound } from "./http/errors.ts";
 import { createHealthRoutes } from "./routes/health.ts";
+import { createInvitationRoutes } from "./routes/invitations.ts";
 import { createMeRoutes } from "./routes/me.ts";
 import { createOrgRoutes } from "./routes/org.ts";
 import { createPlatformRoutes } from "./routes/platform.ts";
+import { DEPLOY_CONTEXT_HEADER } from "./tenancy.ts";
 
 export type { NetlifyContext, NetlifyEnv } from "./http/context.ts";
 
@@ -16,7 +18,7 @@ export interface AppOptions {
   data?: DataLayer;
 }
 
-export const API_VERSION = "0.2.0";
+export const API_VERSION = "0.3.0";
 
 export function createApp(options: AppOptions = {}) {
   const config = options.config ?? loadConfig();
@@ -38,12 +40,23 @@ export function createApp(options: AppOptions = {}) {
   });
   app.notFound((c) => c.json(notFound(`No existe ${c.req.method} ${c.req.path}.`).toBody(), 404));
 
-  // Better Auth: login, logout, recuperación de contraseña (Bloque 4) y sesión.
-  app.on(["GET", "POST"], "/api/auth/*", (c) => data.auth.handler(c.req.raw));
+  /**
+   * Better Auth: login, logout, recuperación de contraseña y sesión. La API fija la cabecera
+   * interna con el contexto de deploy (nunca se acepta del cliente) para que los enlaces de los
+   * emails se construyan con el mismo criterio que la cadena de petición (ADR 0016).
+   */
+  app.on(["GET", "POST"], "/api/auth/*", (c) => {
+    const headers = new Headers(c.req.raw.headers);
+    const deployContext = c.env?.context?.deploy?.context;
+    if (deployContext) headers.set(DEPLOY_CONTEXT_HEADER, deployContext);
+    else headers.delete(DEPLOY_CONTEXT_HEADER);
+    return data.auth.handler(new Request(c.req.raw, { headers }));
+  });
 
   app.route("/", createHealthRoutes(data));
   app.route("/", createMeRoutes(data));
   app.route("/", createOrgRoutes(config, data));
+  app.route("/", createInvitationRoutes(config, data));
   app.route("/", createPlatformRoutes(config, data));
 
   app.openAPIRegistry.registerComponent("securitySchemes", "sessionCookie", {
@@ -51,7 +64,7 @@ export function createApp(options: AppOptions = {}) {
     in: "cookie",
     name: "sm.session_token",
     description:
-      "Cookie de sesión emitida por /api/auth. Cada club se resuelve por el subdominio de la petición.",
+      "Cookie de sesión emitida por /api/auth (con prefijo __Secure- fuera de local). Cada club se resuelve por el subdominio de la petición.",
   });
   app.doc("/api/openapi.json", {
     openapi: "3.1.0",
@@ -59,7 +72,7 @@ export function createApp(options: AppOptions = {}) {
       title: "Sports Manager API",
       version: API_VERSION,
       description:
-        "API de la plataforma. Toda petición a /api/org/* se resuelve por el subdominio del club, la sesión identifica al usuario y la pertenencia fija los permisos.",
+        "API de la plataforma. Toda petición a /api/org/* se resuelve por el subdominio del club, la sesión identifica al usuario y la pertenencia fija los permisos. Login, logout y recuperación de contraseña viven en /api/auth/* (Better Auth): POST /api/auth/sign-in/email, POST /api/auth/sign-out, POST /api/auth/request-password-reset, POST /api/auth/reset-password.",
     },
   });
   app.get("/api/docs", Scalar({ url: "/api/openapi.json" }));

@@ -43,6 +43,10 @@ Notas:
 | `APP_BASE_DOMAIN` | `hubsports.netlify.app` | igual | Cambiará al dominio propio |
 | `TENANT_FALLBACK_SLUG` | `demo` | `demo` | Club de reserva (ADR 0016) |
 | `SESSION_COOKIE_DOMAIN` | vacía | vacía | Solo con dominio propio (ADR 0006) |
+| `EMAIL_TRANSPORT` | `outbox` | `outbox` | Pasa a `resend` cuando haya dominio verificado (ADR 0018) |
+| `RESEND_API_KEY` | pendiente | no | Marcada como secreto. Solo con transporte `resend` |
+| `EMAIL_FROM` | pendiente | no | Remitente con el dominio verificado, por ejemplo `Sports Manager <no-reply@dominio>` |
+| `EMAIL_DEBUG_LOG` | no definida | `true` | Escribe los emails en el log de la función. Nunca en producción |
 
 ## Base de datos y entornos
 
@@ -83,6 +87,24 @@ En cada deploy preview, abre `/api/health`. La respuesta trae:
 Si cualquiera de las dos no es UE, se para el trabajo y se revisa la configuración antes de seguir.
 
 Verificado el 20 de octubre de 2026 en producción tras mezclar la PR 6: `region` y `db.region` devuelven `eu-central-1` (Frankfurt).
+
+## Emails (Bloque 4)
+
+Hoy ningún email sale de la plataforma: el transporte es `outbox` (ADR 0018) y cada email queda guardado en la tabla `email_outbox`. Para probar:
+
+- Invitaciones: la página Miembros muestra el enlace de aceptación con un botón de copiar mientras el transporte sea `outbox`. Compártelo con la persona invitada.
+- Restablecer contraseña: en un deploy preview, el email completo (con el enlace) sale en el log de la función `api`. En Netlify: proyecto `hubsports` → Logs → Functions → `api`, con el deploy preview seleccionado. En producción nunca se escribe.
+- Cuenta de demostración (ADR 0020): `admin@demo.test`, contraseña `123456`, administradora del club `demo`, que es el que se sirve en `hubsports.netlify.app` y en las previews. Cámbiale la contraseña o desactívala antes de tener datos reales.
+
+Conectar Resend cuando exista el dominio propio (pasos según la documentación de Resend, https://resend.com/docs; compruébalos allí porque su interfaz cambia):
+
+1. Crear la cuenta en Resend y añadir el dominio remitente en la sección de dominios. Resend da los registros DNS (SPF y DKIM) que hay que crear en el proveedor del dominio. Esperar a que marque el dominio como verificado.
+2. Crear una clave de API con permiso de envío y copiarla una sola vez.
+3. En Netlify, proyecto `hubsports` → Project configuration → Environment variables → Add a variable: `RESEND_API_KEY` (marcar como secreto, ámbito Functions, contexto Production) y `EMAIL_FROM` con el remitente del dominio verificado. Cambiar `EMAIL_TRANSPORT` de `outbox` a `resend` en el contexto Production.
+4. Volver a desplegar: Deploys → Trigger deploy → Deploy project.
+5. Probar con "Recuperar contraseña" desde el login y comprobar en Resend que el email aparece como entregado.
+
+Las previews pueden seguir con `outbox` el tiempo que haga falta.
 
 ## Ficheros (Bloque 5)
 

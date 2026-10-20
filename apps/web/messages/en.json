@@ -1,7 +1,11 @@
 {
   "home": {
     "title": "Sports Manager",
-    "subtitle": "Sports club management platform. Phase 0 under construction.",
+    "greeting": "Hello, {name}",
+    "club": "You are in {club}.",
+    "yourRoles": "Your roles:",
+    "supportLimited": "You are in as platform support: only the club's status and counts are visible.",
+    "supportFull": "You are in as platform support with the club's authorisation: full read access.",
     "apiStatus": "API status"
   },
   "apiStatus": {
@@ -12,5 +16,113 @@
     "dbRegion": "Database region",
     "dbDown": "The database is not responding",
     "unknown": "unknown"
+  },
+  "shell": {
+    "appName": "Sports Manager",
+    "loading": "Loading…",
+    "apiError": "The API is not responding. Try again in a few seconds.",
+    "home": "Home",
+    "members": "Members",
+    "signOut": "Sign out",
+    "noMembershipTitle": "You are not a member of this club",
+    "noMembershipBody": "Your account ({email}) has no role here. Ask the club for an invitation."
+  },
+  "login": {
+    "title": "Sign in",
+    "subtitle": "One login for all your clubs.",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Sign in",
+    "submitting": "Signing in…",
+    "forgot": "Forgot your password?"
+  },
+  "forgot": {
+    "title": "Recover password",
+    "subtitle": "We will send you a link to choose a new password.",
+    "email": "Email",
+    "submit": "Send link",
+    "submitting": "Sending…",
+    "sent": "If an account exists for that email, you will receive a message within a few minutes.",
+    "backToLogin": "Back to sign in"
+  },
+  "reset": {
+    "title": "New password",
+    "password": "New password (at least {min} characters)",
+    "confirm": "Repeat the password",
+    "submit": "Save password",
+    "submitting": "Saving…",
+    "done": "Password changed. Your other sessions have been signed out.",
+    "goToLogin": "Sign in",
+    "mismatch": "The passwords do not match.",
+    "tooShort": "The password must have at least {min} characters.",
+    "missingToken": "This link is not valid. Request a new one from “Recover password”."
+  },
+  "invitation": {
+    "loading": "Loading the invitation…",
+    "title": "Invitation to {club}",
+    "summary": "Role: {role}. Email: {email}.",
+    "missingTitle": "Invitation not found",
+    "missingBody": "The link is not valid, was revoked or belongs to another club.",
+    "alreadyAccepted": "This invitation was already accepted.",
+    "goToLogin": "Sign in",
+    "otherSession": "This invitation is for {email}, but you are signed in as {current}.",
+    "signOutAndRetry": "Sign out and try again",
+    "joinAs": "You are joining as {email}.",
+    "join": "Join {club}",
+    "hasAccount": "An account already exists for {email}. Sign in to accept.",
+    "createAccount": "Create your account for {email}.",
+    "name": "Your name",
+    "password": "Password (at least {min} characters)",
+    "confirm": "Repeat the password",
+    "submitting": "One moment…",
+    "mismatch": "The passwords do not match.",
+    "tooShort": "The password must have at least {min} characters."
+  },
+  "members": {
+    "membersTitle": "Members",
+    "noMembers": "No members yet.",
+    "inviteTitle": "Invite someone",
+    "email": "Email",
+    "role": "Role",
+    "emailLanguage": "Email language",
+    "invite": "Send invitation",
+    "submitting": "Sending…",
+    "invited": "Invitation sent to {email}.",
+    "emailFailed": "Invitation created for {email}, but the email could not be sent. Resend it later.",
+    "testLinkHint": "Test environment without email delivery: share this link with the invited person.",
+    "copyLink": "Copy link",
+    "copied": "Copied",
+    "pendingTitle": "Pending invitations",
+    "noPending": "No pending invitations.",
+    "expired": "expired",
+    "expiresOn": "expires on {date}",
+    "resend": "Resend",
+    "revoke": "Revoke",
+    "forbidden": "You cannot see this club's members."
+  },
+  "roles": {
+    "org_admin": "Club admin",
+    "coach": "Coach",
+    "guardian": "Guardian"
+  },
+  "locales": {
+    "es": "Spanish",
+    "ca": "Catalan",
+    "en": "English"
+  },
+  "errors": {
+    "bad_request": "Check the form data.",
+    "unauthorized": "You need to sign in.",
+    "forbidden": "You do not have permission to do this.",
+    "not_found": "We could not find what you are looking for.",
+    "conflict": "Already exists: that person is already a member with that role or already has a pending invitation.",
+    "invitation_expired": "This invitation has expired. Ask the club for a new one.",
+    "invitation_email_mismatch": "This invitation is for a different email address.",
+    "internal": "An unexpected error occurred.",
+    "INVALID_EMAIL_OR_PASSWORD": "Wrong email or password.",
+    "INVALID_TOKEN": "The link is not valid or has expired. Request a new one.",
+    "rate_limited": "Too many attempts. Wait a moment and try again.",
+    "network": "No connection to the server.",
+    "unknown": "An unexpected error occurred."
   }
 }

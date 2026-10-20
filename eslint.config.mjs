@@ -20,10 +20,18 @@ const dataLayerOnly = [
     name: "@netlify/database",
     message: "Solo la capa de datos (apps/api/src/data) accede a la base.",
   },
+  { name: "better-auth", message: "Solo la capa de datos (apps/api/src/data) usa Better Auth." },
+  { name: "resend", message: "Solo la capa de datos (apps/api/src/data) envía emails." },
 ];
 const dataLayerOnlyPatterns = [
   {
-    group: ["@sportsmanager/db/*", "drizzle-orm/*", "@netlify/database/*", "better-auth/*"],
+    group: [
+      "@sportsmanager/db/*",
+      "drizzle-orm/*",
+      "@netlify/database/*",
+      "better-auth/*",
+      "resend/*",
+    ],
     message: "Solo la capa de datos (apps/api/src/data) accede a la base.",
   },
 ];

@@ -6,6 +6,8 @@ export const API_ERROR_CODES = [
   "forbidden",
   "not_found",
   "conflict",
+  "invitation_expired",
+  "invitation_email_mismatch",
   "internal",
 ] as const;
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];

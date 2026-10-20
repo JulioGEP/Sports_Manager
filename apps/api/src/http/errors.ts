@@ -1,6 +1,6 @@
 import type { ApiError as ApiErrorBody, ApiErrorCode } from "@sportsmanager/shared";
 
-export type ApiErrorStatus = 400 | 401 | 403 | 404 | 409 | 500;
+export type ApiErrorStatus = 400 | 401 | 403 | 404 | 409 | 410 | 500;
 
 /** Error con respuesta JSON estable. Lo convierte `app.onError`. */
 export class ApiError extends Error {
@@ -31,3 +31,11 @@ export const notFound = (message = "No se ha encontrado lo que buscas.") =>
   new ApiError(404, "not_found", message);
 export const conflict = (message = "El cambio choca con el estado actual.") =>
   new ApiError(409, "conflict", message);
+export const invitationExpired = () =>
+  new ApiError(410, "invitation_expired", "La invitación ha caducado. Pide una nueva al club.");
+export const invitationEmailMismatch = () =>
+  new ApiError(
+    403,
+    "invitation_email_mismatch",
+    "Esta invitación es para otra dirección de email.",
+  );

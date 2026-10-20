@@ -123,6 +123,18 @@ export function membershipsRepo(db: () => Database) {
       return [...byOrg.values()];
     },
 
+    /**
+     * Alta en el club con un rol, al aceptar una invitación (ADR 0019). Si ya era miembro,
+     * solo añade el rol. Devuelve los roles resultantes.
+     */
+    async join(scope: OrgScope, userId: string, roleCode: RoleCode): Promise<RoleCode[]> {
+      await db()
+        .insert(schema.memberships)
+        .values({ organizationId: scope.organizationId, userId, roleCode })
+        .onConflictDoNothing();
+      return activeRolesOf(scope, userId);
+    },
+
     /** Añade un rol a alguien que ya es miembro del club. El alta de nuevos miembros es por invitación. */
     async assignRole(
       scope: OrgScope,
