@@ -6,3 +6,4 @@ coverage
 pnpm-lock.yaml
 netlify/database/migrations
 *.md
+apps/api/netlify/functions/api/handler.mjs

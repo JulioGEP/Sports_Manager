@@ -13,7 +13,7 @@ describe("API", () => {
   const app = createApp({ data: fakeData });
 
   it("GET /api/health responde con el contrato compartido", async () => {
-    const res = await app.request("/api/health", {}, { server: { region: "fra" } });
+    const res = await app.request("/api/health", {}, { context: { server: { region: "fra" } } });
     expect(res.status).toBe(200);
     const body = HealthResponseSchema.parse(await res.json());
     expect(body.region).toBe("fra");

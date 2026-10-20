@@ -11,3 +11,5 @@ coverage/
 .DS_Store
 *.tsbuildinfo
 next-env.d.ts
+apps/api/netlify/functions/api/handler.mjs
+apps/api/netlify/functions/api/handler.mjs.map

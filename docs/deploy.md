@@ -10,7 +10,7 @@ Un solo proyecto Netlify, `hubsports`, sirve la web y la API en el mismo host (A
 └── /*       → Next.js (apps/web) a través del adaptador OpenNext de Netlify, región fra
 ```
 
-- La función de la API declara `path: "/api/*"` y `region: "fra"` en `apps/api/netlify/functions/api.mts`.
+- La función de la API declara `path: "/api/*"` y `region: "fra"` en `apps/api/netlify/functions/api/api.mts`, y reexporta el bundle que genera esbuild (ADR 0013). Verificado: con el adaptador activo, `/api/*` lo atiende la función de la API y no Next.js.
 - Next.js no define ninguna ruta bajo `/api`.
 - Mismo host para web y API: cookies de host único y sin CORS.
 
@@ -90,15 +90,16 @@ pnpm db:migrate     # aplica las migraciones pendientes a la base local
 pnpm db:status      # qué migraciones están aplicadas
 ```
 
-`pnpm dev` ejecuta `netlify dev --filter @sportsmanager/api`. El filtro es necesario en un monorepo y se apunta a la API, no a la web, porque en desarrollo el CLI no empaqueta las dependencias de la función: las resuelve desde el `node_modules` del paquete filtrado, y es `apps/api` el que las tiene.
+`pnpm dev` ejecuta `netlify dev --filter @sportsmanager/api` (el filtro es obligatorio en un monorepo). Dentro, `netlify.toml` lanza `pnpm run dev:servers`: esbuild en modo watch para la API y Next.js para la web. La API se empaqueta en un único fichero (ADR 0013), así que la función no depende de `node_modules` ni en local ni en producción.
 
-Consecuencia para el código: en desarrollo, Node ejecuta `packages/shared` y `packages/db` como TypeScript sin compilar. Por eso los imports relativos de esos paquetes y de `apps/api` llevan extensión explícita (`./locales.ts`) y los diccionarios compartidos son módulos TypeScript, no JSON. En producción Netlify empaqueta todo con esbuild y la regla no haría falta, pero se mantiene para que local y producción se comporten igual.
+Convención de código heredada de esa decisión: los imports relativos de `packages/shared`, `packages/db` y `apps/api` llevan extensión explícita (`./locales.ts`) y los diccionarios compartidos son módulos TypeScript, no JSON. Así los paquetes se pueden ejecutar también sin empaquetar.
 
 Comprobaciones que ejecuta CI y que puedes lanzar en local:
 
 ```bash
 pnpm lint
 pnpm typecheck
+pnpm build
 pnpm test
 pnpm test:isolation
 pnpm format:check
@@ -107,7 +108,8 @@ pnpm format:check
 Si `netlify dev` no arranca, las dos piezas se pueden levantar por separado:
 
 ```bash
-pnpm --filter @sportsmanager/web dev                        # Next en http://localhost:3000
+pnpm --filter @sportsmanager/web dev                            # Next en http://localhost:3000
+pnpm --filter @sportsmanager/api build                          # genera el bundle de la API
 pnpm exec netlify functions:serve --filter @sportsmanager/api   # función de la API en http://localhost:9999/api/health
 ```
 
