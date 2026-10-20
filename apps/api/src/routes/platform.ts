@@ -39,7 +39,7 @@ import {
 } from "../http/errors.ts";
 import { requireSession } from "../http/session.ts";
 import { invitationDto, sendInvitationEmail } from "../services/invitations.ts";
-import { organizationUrl } from "../tenancy.ts";
+import { absoluteApiUrl, organizationUrl } from "../tenancy.ts";
 
 const error = (description: string) => ({
   description,
@@ -67,7 +67,7 @@ export function createPlatformRoutes(config: ApiConfig, data: DataLayer) {
     host: string | undefined,
   ): PlatformOrganization {
     const url = organizationUrl(org.slug, config, host);
-    const logo = logoUrlFor(org.logoBlobKey);
+    const logo = logoUrlFor(org.logoBlobKey, org.slug);
     return {
       id: org.id,
       slug: org.slug,
@@ -77,7 +77,7 @@ export function createPlatformRoutes(config: ApiConfig, data: DataLayer) {
       sport,
       brandPrimaryColor: org.brandPrimaryColor,
       brandSecondaryColor: org.brandSecondaryColor,
-      logoUrl: logo ? `${url}${logo}` : null,
+      logoUrl: logo ? absoluteApiUrl(logo, config, host) : null,
       url,
       createdAt: org.createdAt.toISOString(),
       counts,

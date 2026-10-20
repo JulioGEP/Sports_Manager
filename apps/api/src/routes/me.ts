@@ -10,7 +10,7 @@ import type { ApiConfig } from "../config.ts";
 import { logoUrlFor, type DataLayer } from "../data/index.ts";
 import type { AppEnv } from "../http/context.ts";
 import { requireSession } from "../http/session.ts";
-import { organizationUrl } from "../tenancy.ts";
+import { absoluteApiUrl, organizationUrl } from "../tenancy.ts";
 
 const errors = {
   401: { description: "Sin sesión", content: { "application/json": { schema: ApiErrorSchema } } },
@@ -67,7 +67,7 @@ export function createMeRoutes(config: ApiConfig, data: DataLayer) {
         {
           memberships: memberships.map((m) => {
             const url = organizationUrl(m.organization.slug, config, host);
-            const logo = logoUrlFor(m.organization.logoBlobKey);
+            const logo = logoUrlFor(m.organization.logoBlobKey, m.organization.slug);
             return {
               organization: {
                 slug: m.organization.slug,
@@ -76,7 +76,7 @@ export function createMeRoutes(config: ApiConfig, data: DataLayer) {
                 defaultLocale: m.organization.defaultLocale as Locale,
                 brandPrimaryColor: m.organization.brandPrimaryColor,
                 brandSecondaryColor: m.organization.brandSecondaryColor,
-                logoUrl: logo ? `${url}${logo}` : null,
+                logoUrl: logo ? absoluteApiUrl(logo, config, host) : null,
                 url,
               },
               roles: m.roles,

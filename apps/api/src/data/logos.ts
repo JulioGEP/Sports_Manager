@@ -91,8 +91,12 @@ export function logoVersion(key: string): string {
   return key.split("/")[1] ?? key;
 }
 
-export function logoUrlFor(key: string | null): string | null {
-  return key ? `/api/org/logo?v=${logoVersion(key)}` : null;
+/**
+ * Ruta pública del logo. Lleva el club en la query porque un `<img>` no manda cabeceras y, con
+ * los clubes por ruta (ADR 0027), el host no identifica al club. La versión invalida la caché.
+ */
+export function logoUrlFor(key: string | null, slug: string): string | null {
+  return key ? `/api/org/logo?club=${encodeURIComponent(slug)}&v=${logoVersion(key)}` : null;
 }
 
 export function logosRepo(db: () => Database, store: LogoStore) {

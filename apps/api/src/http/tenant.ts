@@ -1,16 +1,23 @@
 import type { MiddlewareHandler } from "hono";
 import type { ApiConfig } from "../config.ts";
 import type { DataLayer } from "../data/index.ts";
-import { classifyHost } from "../tenancy.ts";
+import { classifyRequest, CLUB_HEADER, CLUB_QUERY } from "../tenancy.ts";
 import type { AppEnv } from "./context.ts";
 import { forbidden, notFound } from "./errors.ts";
 
 export { classifyHost, type HostClass } from "../tenancy.ts";
 
-/** Resuelve el club del host y lo deja en el contexto. Sin club ni plataforma: 404. */
+/**
+ * Resuelve el club de la petición y lo deja en el contexto. Señales: subdominio, cabecera
+ * `x-sm-club` o query `club` (ADR 0027). Sin club ni plataforma: 404.
+ */
 export function resolveTenant(config: ApiConfig, data: DataLayer): MiddlewareHandler<AppEnv> {
   return async (c, next) => {
-    const klass = classifyHost(c.req.header("host"), config, c.env?.context?.deploy?.context);
+    const klass = classifyRequest(
+      { host: c.req.header("host"), club: c.req.header(CLUB_HEADER) ?? c.req.query(CLUB_QUERY) },
+      config,
+      c.env?.context?.deploy?.context,
+    );
     if (klass.kind === "platform") {
       c.set("tenant", { kind: "platform" });
       return next();

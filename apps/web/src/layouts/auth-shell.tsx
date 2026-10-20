@@ -1,62 +1,70 @@
-"use client";
-
-import { useTranslations } from "next-intl";
-import type { ReactNode } from "react";
-import { useBranding } from "@/components/branding-provider";
+import { useEffect, type ReactNode } from "react";
 import { LanguageSwitcher } from "@/components/language-switcher";
-import { Card, initials } from "@/ui";
+import { useT } from "@/lib/intl";
+import { useMediaQuery } from "@/lib/media";
+import { applyProductColors, DESKTOP_QUERY, setShape } from "@/lib/theme";
+import { Card, Crest } from "@/ui";
 
 /**
- * Pantallas de acceso: una tarjeta centrada. Con `platform`, la marca es la de la plataforma
- * (entrada del negocio, ADR 0026); si no, la del club del host.
+ * Pantallas de acceso: tarjeta centrada. Con un club, su escudo y su color; fuera de un club
+ * (negocio, acceso general), la marca del producto. DESIGN.md, secciones 2 y 7.
  */
 export function AuthShell({
   title,
   description,
   children,
   footer,
+  club,
   platform = false,
 }: {
   title: ReactNode;
   description?: ReactNode;
   children: ReactNode;
   footer?: ReactNode;
-  platform?: boolean;
+  club?: { name: string; logoUrl: string | null } | null | undefined;
+  /** Entrada del negocio: subtítulo de administración en vez del lema del producto. */
+  platform?: boolean | undefined;
 }) {
-  const t = useTranslations("platform.nav");
-  const branding = useBranding();
-  const clubName = branding?.name ?? "Sports Manager";
+  const nav = useT("platform.nav");
+  const product = useT("auth.product");
+  const desktop = useMediaQuery(DESKTOP_QUERY);
+  useEffect(() => {
+    setShape(desktop ? "precisa" : "envolvente");
+  }, [desktop]);
+  useEffect(() => {
+    if (!club) applyProductColors();
+  }, [club]);
+
   return (
-    <div className={`auth${platform ? " auth--platform" : ""}`}>
-      <div className="auth__box">
-        <div className="auth__brand">
-          {platform ? (
+    <div className="grid min-h-screen place-items-center px-5 py-8">
+      <div className="flex w-full max-w-md flex-col gap-6">
+        <div className="flex flex-col items-center gap-2 text-center">
+          {club ? (
             <>
-              <span className="brand-mark" aria-hidden="true">
-                SM
-              </span>
-              <strong>Sports Manager</strong>
-              <span className="muted small">{t("subtitle")}</span>
+              <Crest name={club.name} logoUrl={club.logoUrl} size="lg" />
+              <strong className="text-title2 text-ink">{club.name}</strong>
             </>
           ) : (
             <>
-              {branding?.logoUrl ? (
-                <img src={branding.logoUrl} alt="" className="topbar__logo" />
-              ) : (
-                <span className="brand-mark" aria-hidden="true">
-                  {initials(clubName)}
-                </span>
-              )}
-              <strong>{clubName}</strong>
+              <span
+                aria-hidden="true"
+                className="grid size-14 place-items-center rounded-full bg-brand font-semibold text-white"
+              >
+                SM
+              </span>
+              <strong className="text-title2 text-ink">Sports Manager</strong>
+              <span className="text-secondary text-muted">
+                {platform ? nav("subtitle") : product("tagline")}
+              </span>
             </>
           )}
         </div>
         <Card title={title} description={description}>
           {children}
         </Card>
-        <div className="auth__footer">
+        <div className="flex flex-col items-center gap-3">
           {footer}
-          <LanguageSwitcher hasSession={false} />
+          <LanguageSwitcher hasSession={false} compact />
         </div>
       </div>
     </div>

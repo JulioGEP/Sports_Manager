@@ -76,6 +76,7 @@ describe("admin interno", () => {
       NODE_ENV: "test",
       APP_BASE_DOMAIN: BASE,
       TENANT_FALLBACK_SLUG: "demo",
+      TENANT_ROUTING: "subdomain",
       PLATFORM_ADMIN_EMAILS: "Root@Plataforma.test, otra@plataforma.test",
     });
     data = createDataLayer({ config, connectionString, logoStore: createMemoryLogoStore() });
@@ -325,7 +326,7 @@ describe("admin interno", () => {
     expect(logo.status, await logo.clone().text()).toBe(200);
     const body = (await logo.json()) as { organization: { logoUrl: string | null } };
     expect(body.organization.logoUrl).toMatch(
-      /^http:\/\/nuevo\.sportsmanager\.test\/api\/org\/logo\?v=/,
+      /^http:\/\/sportsmanager\.test\/api\/org\/logo\?club=nuevo&v=/,
     );
     expect((await request("GET", "/api/org/logo", hostOf("nuevo"))).status).toBe(200);
     expect(

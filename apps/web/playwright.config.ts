@@ -1,9 +1,10 @@
 import { defineConfig, devices } from "@playwright/test";
 
 /**
- * Pruebas de interfaz contra la aplicación real: la API con Postgres embebido (serve-local) y
- * la web de Next ya construida. Capturas de cada pantalla en e2e/screenshots.
- * Chromium propio cuando el entorno lo indica (PW_CHROMIUM_PATH); si no, el que instala Playwright.
+ * Pruebas de interfaz contra la aplicación real: la API con Postgres embebido (serve-local) y la
+ * web estática ya construida, servida por `vite preview`, que reenvía /api a la API local.
+ * Capturas de cada pantalla en e2e/screenshots. Chromium propio si el entorno lo indica (PW_CHROMIUM_PATH).
+ * Los clubes viven en una ruta del mismo origen (ADR 0027): `/demo`, `/prueba-escritorio`.
  */
 const chromiumPath = process.env["PW_CHROMIUM_PATH"];
 
@@ -16,9 +17,7 @@ export default defineConfig({
   retries: process.env["CI"] ? 1 : 0,
   reporter: process.env["CI"] ? [["list"], ["html", { open: "never" }]] : [["list"]],
   use: {
-    // Chromium resuelve *.localhost sin DNS: el club demo responde en el dominio base y cada club
-    // nuevo en su subdominio, como en producción. Node no lo resuelve, por eso los webServer usan localhost.
-    baseURL: "http://sportsmanager.localhost:3000",
+    baseURL: "http://localhost:3000",
     locale: "es-ES",
     timezoneId: "Europe/Madrid",
     screenshot: "only-on-failure",
@@ -44,15 +43,16 @@ export default defineConfig({
       timeout: 180_000,
       env: {
         PORT: "9999",
-        APP_BASE_DOMAIN: "sportsmanager.localhost",
-        SESSION_COOKIE_DOMAIN: "sportsmanager.localhost",
+        APP_BASE_DOMAIN: "localhost",
+        TENANT_ROUTING: "path",
+        TENANT_FALLBACK_SLUG: "",
         // admin@demo.test administra también la plataforma en las pruebas; los otros dos se dan de alta en /admin/setup.
         PLATFORM_ADMIN_EMAILS:
           "admin@demo.test,plataforma-escritorio@demo.test,plataforma-movil@demo.test",
       },
     },
     {
-      command: "pnpm exec next start --port 3000",
+      command: "pnpm exec vite preview --port 3000 --strictPort",
       url: "http://localhost:3000/login",
       reuseExistingServer: false,
       timeout: 120_000,

@@ -55,7 +55,7 @@ export function brandingDto(org: OrganizationRow) {
     defaultLocale: org.defaultLocale as Locale,
     brandPrimaryColor: org.brandPrimaryColor,
     brandSecondaryColor: org.brandSecondaryColor,
-    logoUrl: logoUrlFor(org.logoBlobKey),
+    logoUrl: logoUrlFor(org.logoBlobKey, org.slug),
   };
 }
 
@@ -81,7 +81,7 @@ export function createOrgRoutes(config: ApiConfig, data: DataLayer) {
       sport,
       brandPrimaryColor: org.brandPrimaryColor,
       brandSecondaryColor: org.brandSecondaryColor,
-      logoUrl: logoUrlFor(org.logoBlobKey),
+      logoUrl: logoUrlFor(org.logoBlobKey, org.slug),
       createdAt: org.createdAt.toISOString(),
     };
   }

@@ -1,8 +1,6 @@
-"use client";
-
 import { useState } from "react";
 import { Button } from "./button";
-import { Icon } from "./icons";
+import { Check, Copy } from "./icons";
 
 /** Enlace de invitación en modo pruebas: visible y copiable en un clic. */
 export function CopyLink({
@@ -27,14 +25,16 @@ export function CopyLink({
     }
   }
   return (
-    <div className="copy-link">
-      <p className="copy-link__hint">{hint}</p>
-      <div className="copy-link__row">
-        <code className="copy-link__code">{url}</code>
+    <div className="flex flex-col gap-3 rounded-field border border-dashed border-control bg-surface p-4">
+      <p className="text-secondary text-muted">{hint}</p>
+      <div className="flex flex-wrap items-center gap-3">
+        <code className="min-w-0 flex-1 break-all font-mono text-secondary text-ink">{url}</code>
         <Button
           variant="secondary"
           size="sm"
-          icon={copied ? <Icon.Check size={16} /> : <Icon.Copy size={16} />}
+          icon={
+            copied ? <Check size={16} aria-hidden="true" /> : <Copy size={16} aria-hidden="true" />
+          }
           onClick={() => void copy()}
         >
           {copied ? copiedLabel : copyLabel}

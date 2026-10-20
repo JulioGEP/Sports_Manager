@@ -71,6 +71,7 @@ describe("aislamiento entre clubes", () => {
       NODE_ENV: "test",
       APP_BASE_DOMAIN: BASE,
       TENANT_FALLBACK_SLUG: "demo",
+      TENANT_ROUTING: "subdomain",
     });
     data = createDataLayer({ config, connectionString });
     app = createApp({ config, data });
@@ -109,6 +110,36 @@ describe("aislamiento entre clubes", () => {
     await seeder?.close();
     await data?.close();
     await local?.stop();
+  });
+
+  it("clubes por ruta (ADR 0027): la cabecera x-sm-club resuelve el club en el dominio base y la cookie sigue valiendo", async () => {
+    const withClub = (path: string, club: string, cookie?: string) =>
+      app.request(path, {
+        headers: { host: BASE, "x-sm-club": club, ...(cookie ? { cookie } : {}) },
+      });
+    const brandA = await withClub("/api/org/branding", "club-a");
+    expect(brandA.status).toBe(200);
+    expect(((await brandA.json()) as { slug: string }).slug).toBe("club-a");
+    const brandB = await withClub("/api/org/branding", "club-b");
+    expect(((await brandB.json()) as { slug: string }).slug).toBe("club-b");
+
+    // Reservado o inexistente: nada que servir.
+    expect((await withClub("/api/org/branding", "admin")).status).toBe(404);
+    expect((await withClub("/api/org/branding", "no-existe")).status).toBe(404);
+
+    // Misma sesión, distinto club: el admin del club A entra en A y no en B.
+    expect((await withClub("/api/org", "club-a", cookies.get(adminA.id))).status).toBe(200);
+    expect((await withClub("/api/org", "club-b", cookies.get(adminA.id))).status).toBe(403);
+
+    // El subdominio manda sobre la cabecera: nadie cambia de club con una cabecera.
+    const crossed = await app.request("/api/org/branding", {
+      headers: { host: hostOf("club-a"), "x-sm-club": "club-b" },
+    });
+    expect(((await crossed.json()) as { slug: string }).slug).toBe("club-a");
+
+    // El logo se pide con `?club=`, porque un <img> no manda cabeceras.
+    expect((await get("/api/org/logo?club=club-a", BASE)).status).toBe(404); // sin logo todavía, pero resuelve el club
+    expect((await get("/api/org/logo?club=admin", BASE)).status).toBe(404);
   });
 
   it("sin cookie: 401 en el club; con host desconocido o reservado: 404", async () => {

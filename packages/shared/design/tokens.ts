@@ -1,7 +1,6 @@
 /**
- * Design tokens de la plataforma, en forma programática.
- * Debe mantenerse igual que tokens.css. En el Bloque 1 se añadirá un test
- * que compara ambos ficheros para que no diverjan.
+ * Marca por defecto de un club recién creado y neutros que la API usa en los emails.
+ * El design system de la interfaz vive en packages/design (ADR 0027).
  */
 
 export const brandTokens = {

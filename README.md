@@ -4,7 +4,7 @@ SaaS B2B para la gestión de clubes deportivos. Cada club tiene su espacio aisla
 
 ## Estado
 
-Fase 0, Bloque 9: entrada propia del negocio en `/admin/login` y alta del primer administrador de plataforma en `/admin/setup`, sin pasar por ningún club (ADR 0026). Bloque 8: interfaz rehecha con dos espacios claramente separados (el del club, con su marca, y el panel del negocio en `/admin`), sistema de componentes propio, marca y logo gestionados solo por cada club, y pruebas de interfaz en escritorio y móvil contra la API real con captura de cada pantalla (`docs/capturas/`, job `interfaz` en CI). Bloque 7: idioma por persona (cookie y perfil) con el del club como fallback, en web y emails. Bloque 6: admin interno en `/admin` solo para administradores de plataforma (crear clubes, editar marca y logo, invitar al primer administrador, auditoría). Bloque 5: multi-tenant y marca. La web pinta cada club con su nombre, colores y logo según el host, con la API como única autoridad; selector de club para quien pertenece a varios; logos en Netlify Blobs (eu-central-1) servidos por la API; subdominios locales como parche hasta el dominio final (`docs/dominio-y-dns.md`). Bloque 4: autenticación e invitaciones. Login con email y contraseña, recuperación de contraseña, alta solo por invitación con un único login válido en todos los clubes, emails en castellano, catalán e inglés con Resend preparado y sin conectar hasta tener dominio (transporte `outbox`). La suite de aislamiento (dos clubes, invitaciones cruzadas, caducadas y reutilizadas, restablecimiento de contraseña) es un check obligatorio en CI.
+Bloque 10: front nuevo como SPA con Vite + React + Tailwind sobre el design system del producto (`packages/design`, ADR 0027); cada club vive en una ruta del mismo dominio (`/demo`) hasta tener dominio propio; API con el club en la cabecera `x-sm-club`. Fase 0, Bloque 9: entrada propia del negocio en `/admin/login` y alta del primer administrador de plataforma en `/admin/setup`, sin pasar por ningún club (ADR 0026). Bloque 8: interfaz rehecha con dos espacios claramente separados (el del club, con su marca, y el panel del negocio en `/admin`), sistema de componentes propio, marca y logo gestionados solo por cada club, y pruebas de interfaz en escritorio y móvil contra la API real con captura de cada pantalla (`docs/capturas/`, job `interfaz` en CI). Bloque 7: idioma por persona (cookie y perfil) con el del club como fallback, en web y emails. Bloque 6: admin interno en `/admin` solo para administradores de plataforma (crear clubes, editar marca y logo, invitar al primer administrador, auditoría). Bloque 5: multi-tenant y marca. La web pinta cada club con su nombre, colores y logo según el host, con la API como única autoridad; selector de club para quien pertenece a varios; logos en Netlify Blobs (eu-central-1) servidos por la API; subdominios locales como parche hasta el dominio final (`docs/dominio-y-dns.md`). Bloque 4: autenticación e invitaciones. Login con email y contraseña, recuperación de contraseña, alta solo por invitación con un único login válido en todos los clubes, emails en castellano, catalán e inglés con Resend preparado y sin conectar hasta tener dominio (transporte `outbox`). La suite de aislamiento (dos clubes, invitaciones cruzadas, caducadas y reutilizadas, restablecimiento de contraseña) es un check obligatorio en CI.
 
 ## Desarrollo local
 
@@ -12,7 +12,7 @@ Requisitos: Node 22 y pnpm 10 (`corepack enable`).
 
 ```bash
 pnpm install
-pnpm dev          # web, API y base de datos local en http://localhost:8888 (la primera vez descarga Deno)
+pnpm dev          # web, API y base de datos local en http://localhost:8888 (la primera vez descarga Deno); el club demo en /demo
 ```
 
 Comprobaciones: `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:isolation`, `pnpm format:check` y `pnpm test:ui` (pruebas de interfaz con capturas; necesita construir antes la API y la web). Detalle en `docs/deploy.md`.
@@ -26,8 +26,9 @@ Comprobaciones: `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:isolation
 | `docs/informe-sportsmanager.md` | Auditoría del prototipo y propuesta de arquitectura                            |
 | `docs/dominio-y-dns.md`         | Subdominios por club, parche local y pasos para el dominio definitivo          |
 | `docs/capturas/`                | Capturas de cada pantalla (escritorio y móvil) de la última revisión de interfaz |
+| `packages/design/DESIGN.md`     | Design system del producto: fuente de verdad de toda la interfaz              |
 | `docs/decisions/`               | Decisiones de arquitectura (ADR)                                               |
-| `packages/shared/design/`       | Design tokens de la plataforma                                                 |
+| `packages/shared/design/`       | Marca por defecto de un club nuevo (compartida con la API)                     |
 
 ## Arquitectura prevista
 

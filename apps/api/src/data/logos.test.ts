@@ -17,8 +17,8 @@ describe("logos", () => {
   it("la URL pública lleva solo la parte aleatoria de la clave, nunca el id del club", () => {
     const key = "11111111-1111-1111-1111-111111111111/abcd-efgh";
     expect(logoVersion(key)).toBe("abcd-efgh");
-    expect(logoUrlFor(key)).toBe("/api/org/logo?v=abcd-efgh");
-    expect(logoUrlFor(null)).toBeNull();
+    expect(logoUrlFor(key, "club-a")).toBe("/api/org/logo?club=club-a&v=abcd-efgh");
+    expect(logoUrlFor(null, "club-a")).toBeNull();
   });
 
   it("el almacén en memoria guarda, devuelve y borra", async () => {

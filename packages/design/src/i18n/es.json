@@ -1,0 +1,79 @@
+{
+  "_meta": { "locale": "es", "status": "Base. Revisado en el canvas del design system." },
+  "ui": {
+    "action.cancel": "Cancelar",
+    "attendance.present": "Presente",
+    "attendance.absent": "Falta",
+    "attendance.group": "Asistencia de {player}"
+  },
+  "relational": {
+    "callup.title": {
+      "cercana": "{player} tiene convocatoria para el {day}",
+      "profesional": "Convocatoria · {team} · {date}",
+      "vestuario": "¡Convocatoria para {player}!"
+    },
+    "callup.body": {
+      "cercana": "Partido a las {time} en {place}. ¿Contamos con {player}?",
+      "profesional": "Partido {time}, {place}. Confirma la asistencia de {player}.",
+      "vestuario": "{day} a las {time} en {place}. Toca darlo todo. ¿Juega?"
+    },
+    "attendance.question": {
+      "cercana": "¿Viene {player}?",
+      "profesional": "Asistencia de {player}",
+      "vestuario": "¿{player} juega?"
+    },
+    "attendance.saved": {
+      "cercana": "Hecho. Asistencia guardada para {present} de {total}.",
+      "profesional": "Asistencia guardada · {present}/{total}",
+      "vestuario": "¡Lista pasada! {present} de {total} en pista."
+    },
+    "empty.week.title": {
+      "cercana": "Semana tranquila",
+      "profesional": "Sin eventos esta semana",
+      "vestuario": "Semana de descanso"
+    },
+    "empty.week.body": {
+      "cercana": "No hay entrenos ni partidos estos días. Te avisamos en cuanto haya algo.",
+      "profesional": "Cuando el club programe un entreno o un partido, aparecerá aquí.",
+      "vestuario": "Nada en el calendario. Recarga pilas, que volvemos pronto."
+    }
+  },
+  "sensitive": {
+    "payment.failed.title": {
+      "cercana": "No hemos podido cobrar la cuota",
+      "profesional": "Pago rechazado"
+    },
+    "payment.failed.body": {
+      "cercana": "Tu banco ha rechazado el pago. Prueba con otra tarjeta o habla con el club.",
+      "profesional": "Tu banco no ha autorizado el cargo de {amount}. Revisa la tarjeta o usa otro método."
+    },
+    "payment.failed.action": {
+      "cercana": "Probar otra tarjeta",
+      "profesional": "Cambiar método de pago"
+    },
+    "fee.reminder.body": {
+      "cercana": "Te recordamos la cuota de {month}. Vence el {dueDate}.",
+      "profesional": "Cuota de {month} pendiente. Vencimiento: {dueDate}."
+    },
+    "fee.reminder.action": {
+      "cercana": "Pagar {amount}",
+      "profesional": "Pagar {amount}"
+    },
+    "chat.visibility": {
+      "cercana": "La coordinación del club también puede ver esta conversación. Así cuidamos de todos.",
+      "profesional": "Conversación visible para la coordinación del club, según su protocolo de protección."
+    },
+    "member.remove.title": {
+      "cercana": "¿Dar de baja a {player}?",
+      "profesional": "¿Dar de baja a {player}?"
+    },
+    "member.remove.body": {
+      "cercana": "Dejará de salir en convocatorias y no se le cobrarán más cuotas. Su historial se conserva y puedes reactivar la ficha cuando quieras.",
+      "profesional": "Se excluirá de convocatorias y cobros. El historial se conserva y la ficha se puede reactivar."
+    },
+    "member.remove.confirm": {
+      "cercana": "Dar de baja",
+      "profesional": "Dar de baja"
+    }
+  }
+}

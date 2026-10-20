@@ -81,6 +81,7 @@ describe("marca y logos por club", () => {
       NODE_ENV: "test",
       APP_BASE_DOMAIN: BASE,
       TENANT_FALLBACK_SLUG: "demo",
+      TENANT_ROUTING: "subdomain",
     });
     data = createDataLayer({ config, connectionString, logoStore: createMemoryLogoStore() });
     app = createApp({ config, data });
@@ -251,7 +252,7 @@ describe("marca y logos por club", () => {
     });
     expect(up.status, await up.clone().text()).toBe(200);
     const branding = (await up.json()) as { logoUrl: string | null };
-    expect(branding.logoUrl).toMatch(/^\/api\/org\/logo\?v=[0-9a-f-]{36}$/);
+    expect(branding.logoUrl).toMatch(/^\/api\/org\/logo\?club=club-a&v=[0-9a-f-]{36}$/);
     expect(branding.logoUrl).not.toContain(clubA.id);
 
     const served = await request("GET", "/api/org/logo", hostOf("club-a"));
@@ -287,7 +288,7 @@ describe("marca y logos por club", () => {
     );
     expect(byslug["club-a"]?.url).toBe("http://club-a.sportsmanager.test");
     expect(byslug["club-a"]?.logoUrl).toMatch(
-      /^http:\/\/club-a\.sportsmanager\.test\/api\/org\/logo\?v=/,
+      /^http:\/\/club-a\.sportsmanager\.test\/api\/org\/logo\?club=club-a&v=/,
     );
     expect(byslug["club-b"]).toMatchObject({
       url: "http://club-b.sportsmanager.test",
