@@ -12,7 +12,7 @@ import {
   type MembersResponse,
   type RoleCode,
 } from "@sportsmanager/shared";
-import { useTranslations } from "next-intl";
+import { useFormatter, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { Alert } from "@/components/alert";
 import { AppShell } from "@/components/app-shell";
@@ -23,6 +23,7 @@ function MembersPanel({ canInvite, defaultLocale }: { canInvite: boolean; defaul
   const roles = useTranslations("roles");
   const locales = useTranslations("locales");
   const errors = useTranslations("errors");
+  const format = useFormatter();
   const [members, setMembers] = useState<MembersResponse["members"]>([]);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [email, setEmail] = useState("");
@@ -205,7 +206,9 @@ function MembersPanel({ canInvite, defaultLocale }: { canInvite: boolean; defaul
                       {roles(i.roleCode)} · {locales(i.locale)} ·{" "}
                       {i.state === "expired"
                         ? t("expired")
-                        : t("expiresOn", { date: new Date(i.expiresAt).toLocaleDateString() })}
+                        : t("expiresOn", {
+                            date: format.dateTime(new Date(i.expiresAt), { dateStyle: "medium" }),
+                          })}
                     </div>
                   </div>
                   <div className="row">

@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@hono/zod-openapi": "1.6.3",
+    "@netlify/blobs": "^11.1.5",
     "@netlify/database": "2.0.1",
     "@netlify/functions": "6.0.2",
     "@scalar/hono-api-reference": "0.12.13",

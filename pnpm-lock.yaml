@@ -48,6 +48,9 @@ importers:
       '@hono/zod-openapi':
         specifier: 1.6.3
         version: 1.6.3(hono@4.13.13)(zod@4.6.7)
+      '@netlify/blobs':
+        specifier: ^11.1.5
+        version: 11.1.5
       '@netlify/database':
         specifier: 2.0.1
         version: 2.0.1(better-sqlite3@12.11.1)
@@ -1748,6 +1751,10 @@ packages:
     resolution: {integrity: sha512-rtvtXG0NQkmIdpdI8AI/LKesf3TdZJwNP0VaxodPpb/yYzME62YAaqYVmB2MC5gO5Wxls1aIzcCK2xJFRNRhoQ==}
     engines: {node: '>=22.12.0'}
 
+  '@netlify/blobs@11.1.5':
+    resolution: {integrity: sha512-nyuLyRn9iZKffWA3A+KkAw9lqitwNKHZGV9MDRtGoay6NOqspAYaj0JXU5+Wofv6CcmVoA72D+veaXfryOd3ZA==}
+    engines: {node: '>=22.12.0'}
+
   '@netlify/build-info@11.3.0':
     resolution: {integrity: sha512-xhoPqbfTSroUtFElUR6Wsw0+XlSihtLxvuaNQKv5+JTkvNqpBNIVPdo9drqwhh1eqlUeHJszfCGc1P6950yL0w==}
     engines: {node: '>=22.12.0'}
@@ -1787,6 +1794,10 @@ packages:
 
   '@netlify/dev-utils@6.0.3':
     resolution: {integrity: sha512-p+M9a8mI0H0rRohY7Z4TkblvJMwsl5nfNKzmmhz1XBgSLBoDcgwf1TroHvM0TyK5sRiD8LViXe1wuJbzYlilUQ==}
+    engines: {node: '>=22.12.0'}
+
+  '@netlify/dev-utils@6.0.4':
+    resolution: {integrity: sha512-VZgq2gqRLQual8P2v6B8/W1WgUNYJvVvgqCIbviPR/BcI6hKvxVBdAMjz+84eU3qpfMau1Bn2J70JDSQSNkNgg==}
     engines: {node: '>=22.12.0'}
 
   '@netlify/dev@5.1.7':
@@ -1927,6 +1938,10 @@ packages:
 
   '@netlify/otel@7.0.4':
     resolution: {integrity: sha512-HrGxXgauSZEzSd2mKu5YlqCvHpaNjQzf/yvwBdVXstZLRWWvbWIZBanrbXG0poyq70PBuiL+zVp3lU48aWnRNg==}
+    engines: {node: '>=22.12.0'}
+
+  '@netlify/otel@7.0.5':
+    resolution: {integrity: sha512-IfUmLWZxB2jSEvspuIhLk+S5H4wKeFnJIYkESa8iXeF8/rb3YVAyC+lvqdfF0nrZFetnK0putFQp2onVgWTeyQ==}
     engines: {node: '>=22.12.0'}
 
   '@netlify/plugins-list@6.81.13':
@@ -8058,6 +8073,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@netlify/blobs@11.1.5':
+    dependencies:
+      '@netlify/dev-utils': 6.0.4
+      '@netlify/otel': 7.0.5
+      '@netlify/runtime-utils': 3.0.0
+    transitivePeerDependencies:
+      - supports-color
+
   '@netlify/build-info@11.3.0':
     dependencies:
       '@bugsnag/js': 8.10.0
@@ -8199,6 +8222,20 @@ snapshots:
       - utf-8-validate
 
   '@netlify/dev-utils@6.0.3':
+    dependencies:
+      '@whatwg-node/server': 0.11.0
+      ansis: 4.4.0
+      atomically: 2.1.1
+      chokidar: 5.0.0
+      decache: 4.6.2
+      dettle: 1.0.5
+      dot-prop: 9.0.0
+      empathic: 2.1.0
+      env-paths: 3.0.0
+      parse-gitignore: 2.0.0
+      semver: 7.8.5
+
+  '@netlify/dev-utils@6.0.4':
     dependencies:
       '@whatwg-node/server': 0.11.0
       ansis: 4.4.0
@@ -8429,6 +8466,16 @@ snapshots:
       '@opentelemetry/api': 1.9.1
 
   '@netlify/otel@7.0.4(supports-color@11.0.0)':
+    dependencies:
+      '@opentelemetry/api': 1.9.1
+      '@opentelemetry/core': 2.10.0(@opentelemetry/api@1.9.1)
+      '@opentelemetry/instrumentation': 0.221.0(@opentelemetry/api@1.9.1)(supports-color@11.0.0)
+      '@opentelemetry/resources': 2.10.0(@opentelemetry/api@1.9.1)
+      '@opentelemetry/sdk-trace-node': 2.10.0(@opentelemetry/api@1.9.1)
+    transitivePeerDependencies:
+      - supports-color
+
+  '@netlify/otel@7.0.5':
     dependencies:
       '@opentelemetry/api': 1.9.1
       '@opentelemetry/core': 2.10.0(@opentelemetry/api@1.9.1)

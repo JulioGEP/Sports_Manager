@@ -3,18 +3,36 @@ import {
   ApiErrorSchema,
   AssignRoleBodySchema,
   AssignRoleResponseSchema,
+  LOGO_CONTENT_TYPES,
+  LOGO_MAX_BYTES,
   MembersResponseSchema,
+  OrganizationBrandingSchema,
   OrganizationResponseSchema,
+  OrganizationUpdateResponseSchema,
+  OrganizationUpdateSchema,
   RoleCodeSchema,
   type Actor as ActorDto,
   type Locale,
   type OrganizationResponse,
 } from "@sportsmanager/shared";
 import type { ApiConfig } from "../config.ts";
-import type { DataLayer } from "../data/index.ts";
+import {
+  isLogoContentType,
+  logoUrlFor,
+  sniffImageType,
+  type DataLayer,
+  type OrganizationRow,
+  type OrgScope,
+} from "../data/index.ts";
 import { requireActor, requirePermission } from "../http/actor.ts";
 import type { Actor, AppEnv } from "../http/context.ts";
-import { conflict, notFound } from "../http/errors.ts";
+import {
+  badRequest,
+  conflict,
+  notFound,
+  payloadTooLarge,
+  unsupportedMediaType,
+} from "../http/errors.ts";
 import { requireSession } from "../http/session.ts";
 import { requireOrganizationHost, resolveTenant } from "../http/tenant.ts";
 
@@ -30,6 +48,17 @@ const errorResponses = {
   },
 };
 
+export function brandingDto(org: OrganizationRow) {
+  return {
+    slug: org.slug,
+    name: org.name,
+    defaultLocale: org.defaultLocale as Locale,
+    brandPrimaryColor: org.brandPrimaryColor,
+    brandSecondaryColor: org.brandSecondaryColor,
+    logoUrl: logoUrlFor(org.logoBlobKey),
+  };
+}
+
 function actorDto(actor: Actor): ActorDto {
   return actor.kind === "member"
     ? { kind: "member", roles: actor.roles, permissions: [...actor.permissions] }
@@ -39,6 +68,23 @@ function actorDto(actor: Actor): ActorDto {
 /** Rutas del club del host. Cadena completa: club → sesión → pertenencia → permiso. */
 export function createOrgRoutes(config: ApiConfig, data: DataLayer) {
   const app = new OpenAPIHono<AppEnv>();
+
+  async function fullView(org: OrganizationRow, scope: OrgScope) {
+    const sport = await data.organizations.getSport(scope);
+    return {
+      view: "full" as const,
+      id: org.id,
+      slug: org.slug,
+      name: org.name,
+      status: org.status as "active" | "suspended" | "archived",
+      defaultLocale: org.defaultLocale as Locale,
+      sport,
+      brandPrimaryColor: org.brandPrimaryColor,
+      brandSecondaryColor: org.brandSecondaryColor,
+      logoUrl: logoUrlFor(org.logoBlobKey),
+      createdAt: org.createdAt.toISOString(),
+    };
+  }
   const chain = [
     resolveTenant(config, data),
     requireOrganizationHost,
@@ -74,20 +120,7 @@ export function createOrgRoutes(config: ApiConfig, data: DataLayer) {
 
       let organization: OrganizationResponse["organization"];
       if (actor.permissions.has("org.settings.read")) {
-        const sport = await data.organizations.getSport(tenant.scope);
-        organization = {
-          view: "full",
-          id: org.id,
-          slug: org.slug,
-          name: org.name,
-          status,
-          defaultLocale,
-          sport,
-          brandPrimaryColor: org.brandPrimaryColor,
-          brandSecondaryColor: org.brandSecondaryColor,
-          logoUrl: null,
-          createdAt: org.createdAt.toISOString(),
-        };
+        organization = await fullView(org, tenant.scope);
       } else {
         const counts = await data.organizations.supportCounts(tenant.scope);
         organization = {
@@ -158,6 +191,15 @@ export function createOrgRoutes(config: ApiConfig, data: DataLayer) {
       const result = await data.memberships.assignRole(tenant.scope, userId, roleCode);
       if (result.outcome === "not_member")
         throw notFound("Esa persona no es miembro de este club.");
+      if (result.outcome === "assigned") {
+        await data.audit.record({
+          actorUserId: c.get("sessionUser").id,
+          organizationId: tenant.organization.id,
+          action: "membership.role_assigned",
+          target: userId,
+          details: { roleCode },
+        });
+      }
       return c.json({ userId, roleCode, roles: result.roles }, 200);
     },
   );
@@ -192,7 +234,141 @@ export function createOrgRoutes(config: ApiConfig, data: DataLayer) {
         throw notFound("Esa persona no tiene ese rol en este club.");
       if (result.outcome === "last_admin")
         throw conflict("No se puede quitar al último administrador del club.");
+      await data.audit.record({
+        actorUserId: c.get("sessionUser").id,
+        organizationId: tenant.organization.id,
+        action: "membership.role_removed",
+        target: userId,
+        details: { roleCode },
+      });
       return c.json({ userId, roleCode, roles: result.roles }, 200);
+    },
+  );
+
+  app.openapi(
+    createRoute({
+      method: "patch",
+      path: "/api/org",
+      tags: ["Club"],
+      summary: "Cambia nombre, idioma o colores de marca del club. Permiso `org.settings.write`",
+      security: [{ sessionCookie: [] }],
+      middleware: [requirePermission("org.settings.write")],
+      request: {
+        body: {
+          content: { "application/json": { schema: OrganizationUpdateSchema } },
+          required: true,
+        },
+      },
+      responses: {
+        200: {
+          description: "Club actualizado",
+          content: { "application/json": { schema: OrganizationUpdateResponseSchema } },
+        },
+        ...errorResponses,
+      },
+    }),
+    async (c) => {
+      const tenant = c.get("tenant");
+      if (tenant.kind !== "organization") throw notFound();
+      const patch = c.req.valid("json");
+      if (Object.keys(patch).length === 0) throw badRequest("No hay nada que cambiar.");
+      const updated = await data.organizations.update(tenant.scope, patch);
+      await data.audit.record({
+        actorUserId: c.get("sessionUser").id,
+        organizationId: updated.id,
+        action: "organization.updated",
+        target: updated.slug,
+        details: { fields: Object.keys(patch) },
+      });
+      return c.json({ organization: await fullView(updated, tenant.scope) }, 200);
+    },
+  );
+
+  const logoBody = Object.fromEntries(
+    LOGO_CONTENT_TYPES.map((type) => [type, { schema: z.string().openapi({ format: "binary" }) }]),
+  );
+
+  app.openapi(
+    createRoute({
+      method: "put",
+      path: "/api/org/logo",
+      tags: ["Club"],
+      summary: `Sube el logo del club (cuerpo binario, ${LOGO_CONTENT_TYPES.join(", ")}, máximo ${LOGO_MAX_BYTES} bytes). Permiso \`org.settings.write\``,
+      security: [{ sessionCookie: [] }],
+      middleware: [requirePermission("org.settings.write")],
+      request: { body: { content: logoBody, required: true } },
+      responses: {
+        200: {
+          description: "Marca con el logo nuevo",
+          content: { "application/json": { schema: OrganizationBrandingSchema } },
+        },
+        413: {
+          description: "Demasiado grande",
+          content: { "application/json": { schema: ApiErrorSchema } },
+        },
+        415: {
+          description: "Formato no admitido",
+          content: { "application/json": { schema: ApiErrorSchema } },
+        },
+        ...errorResponses,
+      },
+    }),
+    async (c) => {
+      const tenant = c.get("tenant");
+      if (tenant.kind !== "organization") throw notFound();
+      const declared =
+        (c.req.header("content-type") ?? "").split(";")[0]?.trim().toLowerCase() ?? "";
+      if (!isLogoContentType(declared)) throw unsupportedMediaType();
+      const length = Number(c.req.header("content-length") ?? "0");
+      if (length > LOGO_MAX_BYTES) throw payloadTooLarge();
+      const body = await c.req.arrayBuffer();
+      if (body.byteLength === 0) throw badRequest("El fichero está vacío.");
+      if (body.byteLength > LOGO_MAX_BYTES) throw payloadTooLarge();
+      const actual = sniffImageType(new Uint8Array(body));
+      if (actual !== declared)
+        throw unsupportedMediaType("El contenido no coincide con el formato declarado.");
+      const key = await data.logos.upload(tenant.scope, body, declared, {
+        cleanup: c.env?.context?.deploy?.context === "production",
+      });
+      await data.audit.record({
+        actorUserId: c.get("sessionUser").id,
+        organizationId: tenant.organization.id,
+        action: "organization.logo_updated",
+        target: tenant.organization.slug,
+      });
+      return c.json({ ...brandingDto({ ...tenant.organization, logoBlobKey: key }) }, 200);
+    },
+  );
+
+  app.openapi(
+    createRoute({
+      method: "delete",
+      path: "/api/org/logo",
+      tags: ["Club"],
+      summary: "Quita el logo del club. Permiso `org.settings.write`",
+      security: [{ sessionCookie: [] }],
+      middleware: [requirePermission("org.settings.write")],
+      responses: {
+        200: {
+          description: "Marca sin logo",
+          content: { "application/json": { schema: OrganizationBrandingSchema } },
+        },
+        ...errorResponses,
+      },
+    }),
+    async (c) => {
+      const tenant = c.get("tenant");
+      if (tenant.kind !== "organization") throw notFound();
+      await data.logos.remove(tenant.scope, {
+        cleanup: c.env?.context?.deploy?.context === "production",
+      });
+      await data.audit.record({
+        actorUserId: c.get("sessionUser").id,
+        organizationId: tenant.organization.id,
+        action: "organization.logo_removed",
+        target: tenant.organization.slug,
+      });
+      return c.json({ ...brandingDto({ ...tenant.organization, logoBlobKey: null }) }, 200);
     },
   );
 

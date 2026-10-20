@@ -29,6 +29,13 @@
       "when": 1792496770180,
       "tag": "20261020114610_create_email_outbox_and_rate_limits",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792501679670,
+      "tag": "20261020130759_create_audit_log",
+      "breakpoints": true
     }
   ]
 }

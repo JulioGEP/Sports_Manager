@@ -8,19 +8,10 @@ import {
   InvitationSentResponseSchema,
   InvitationsResponseSchema,
   PublicInvitationSchema,
-  WEB_PATHS,
-  type Invitation,
   type Locale,
 } from "@sportsmanager/shared";
 import type { ApiConfig } from "../config.ts";
-import {
-  invitationState,
-  renderEmail,
-  type DataLayer,
-  type InvitationRecord,
-  type IssuedInvitation,
-  type OrganizationRow,
-} from "../data/index.ts";
+import { invitationState, isUniqueViolation, type DataLayer } from "../data/index.ts";
 import { requireActor, requirePermission } from "../http/actor.ts";
 import type { AppEnv } from "../http/context.ts";
 import {
@@ -33,6 +24,7 @@ import {
 } from "../http/errors.ts";
 import { optionalSession, requireSession } from "../http/session.ts";
 import { requireOrganizationHost, resolveTenant } from "../http/tenant.ts";
+import { invitationDto, sendInvitationEmail } from "../services/invitations.ts";
 import { publicOrigin } from "../tenancy.ts";
 
 const error = (description: string) => ({
@@ -45,66 +37,9 @@ const orgErrors = {
   404: error("Host sin club o invitación inexistente"),
 };
 
-function invitationDto(record: InvitationRecord): Invitation {
-  return {
-    id: record.id,
-    email: record.email,
-    roleCode: record.roleCode,
-    locale: record.locale,
-    state: invitationState(record.status, record.expiresAt),
-    expiresAt: record.expiresAt.toISOString(),
-    createdAt: record.createdAt.toISOString(),
-    invitedByName: record.invitedByName,
-    acceptedAt: record.acceptedAt?.toISOString() ?? null,
-  };
-}
-
-function isUniqueViolation(error: unknown): boolean {
-  return typeof error === "object" && error !== null && "code" in error && error.code === "23505";
-}
-
 /** Rutas de invitaciones (ADR 0019): gestión desde el club y aceptación pública por token. */
 export function createInvitationRoutes(config: ApiConfig, data: DataLayer) {
   const app = new OpenAPIHono<AppEnv>();
-
-  /** Envía el email de invitación y devuelve el enlace de aceptación en el host actual. */
-  async function sendInvitationEmail(
-    host: string | undefined,
-    deployContext: string | undefined,
-    organization: OrganizationRow,
-    issued: IssuedInvitation,
-    inviterName: string,
-  ) {
-    const origin = publicOrigin(host, config, deployContext);
-    const url = `${origin}${WEB_PATHS.invitation(issued.token)}`;
-    const locale: Locale = issued.invitation.locale;
-    const roleName = await data.roles.nameOf(issued.invitation.roleCode);
-    const rendered = renderEmail(
-      locale,
-      {
-        template: "invitation",
-        clubName: organization.name,
-        inviterName,
-        roleName: roleName[locale],
-        url,
-        expiresDays: config.invitationTtlDays,
-      },
-      { brandColor: organization.brandPrimaryColor },
-    );
-    const sent = await data.email.send({
-      organizationId: organization.id,
-      to: issued.invitation.email,
-      locale,
-      template: "invitation",
-      ...rendered,
-    });
-    return {
-      invitation: invitationDto(issued.invitation),
-      emailStatus: sent.status,
-      /** Solo con transporte `outbox`: permite probar el flujo sin Resend (ADR 0018). */
-      acceptUrl: config.email.transport === "outbox" ? url : null,
-    };
-  }
 
   // --- Gestión desde el club: cadena completa y permiso org.members.invite ---
   const orgChain = [
@@ -192,13 +127,19 @@ export function createInvitationRoutes(config: ApiConfig, data: DataLayer) {
       if (result.outcome === "pending_exists")
         throw conflict("Ya hay una invitación pendiente para ese email. Reenvíala o revócala.");
 
-      const sent = await sendInvitationEmail(
-        c.req.header("host"),
-        c.env?.context?.deploy?.context,
-        tenant.organization,
-        result,
-        user.name,
-      );
+      const sent = await sendInvitationEmail(config, data, {
+        organization: tenant.organization,
+        issued: result,
+        inviterName: user.name,
+        origin: publicOrigin(c.req.header("host"), config, c.env?.context?.deploy?.context),
+      });
+      await data.audit.record({
+        actorUserId: user.id,
+        organizationId: tenant.organization.id,
+        action: "invitation.created",
+        target: body.email,
+        details: { roleCode: body.roleCode, locale },
+      });
       return c.json(sent, 201);
     },
   );
@@ -226,13 +167,18 @@ export function createInvitationRoutes(config: ApiConfig, data: DataLayer) {
       const { id } = c.req.valid("param");
       const issued = await data.invitations.rotate(tenant.scope, id, config.invitationTtlDays);
       if (!issued) throw notFound("No hay ninguna invitación pendiente con ese identificador.");
-      const sent = await sendInvitationEmail(
-        c.req.header("host"),
-        c.env?.context?.deploy?.context,
-        tenant.organization,
+      const sent = await sendInvitationEmail(config, data, {
+        organization: tenant.organization,
         issued,
-        user.name,
-      );
+        inviterName: user.name,
+        origin: publicOrigin(c.req.header("host"), config, c.env?.context?.deploy?.context),
+      });
+      await data.audit.record({
+        actorUserId: user.id,
+        organizationId: tenant.organization.id,
+        action: "invitation.resent",
+        target: issued.invitation.email,
+      });
       return c.json(sent, 200);
     },
   );
@@ -259,6 +205,12 @@ export function createInvitationRoutes(config: ApiConfig, data: DataLayer) {
       const { id } = c.req.valid("param");
       const revoked = await data.invitations.revoke(tenant.scope, id);
       if (!revoked) throw notFound("No hay ninguna invitación pendiente con ese identificador.");
+      await data.audit.record({
+        actorUserId: c.get("sessionUser").id,
+        organizationId: tenant.organization.id,
+        action: "invitation.revoked",
+        target: revoked.email,
+      });
       return c.json({ invitation: invitationDto(revoked) }, 200);
     },
   );
@@ -373,6 +325,13 @@ export function createInvitationRoutes(config: ApiConfig, data: DataLayer) {
         if (session.id !== existing.id) throw invitationEmailMismatch();
         const roles = await data.memberships.join(tenant.scope, existing.id, invitation.roleCode);
         await data.invitations.markAccepted(tenant.scope, invitation.id, existing.id);
+        await data.audit.record({
+          actorUserId: existing.id,
+          organizationId: tenant.organization.id,
+          action: "invitation.accepted",
+          target: invitation.email,
+          details: { roleCode: invitation.roleCode, accountCreated: false },
+        });
         return c.json({ organization, roles, accountCreated: false }, 200);
       }
 
@@ -389,6 +348,13 @@ export function createInvitationRoutes(config: ApiConfig, data: DataLayer) {
       });
       const roles = await data.memberships.join(tenant.scope, user.id, invitation.roleCode);
       await data.invitations.markAccepted(tenant.scope, invitation.id, user.id);
+      await data.audit.record({
+        actorUserId: user.id,
+        organizationId: tenant.organization.id,
+        action: "invitation.accepted",
+        target: invitation.email,
+        details: { roleCode: invitation.roleCode, accountCreated: true },
+      });
 
       // Sesión para la cuenta recién creada, con las mismas cookies que un login normal.
       const signIn = await data.auth.api.signInEmail({

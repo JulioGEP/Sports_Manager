@@ -25,7 +25,10 @@
     "members": "Members",
     "signOut": "Sign out",
     "noMembershipTitle": "You are not a member of this club",
-    "noMembershipBody": "Your account ({email}) has no role here. Ask the club for an invitation."
+    "noMembershipBody": "Your account ({email}) has no role here. Ask the club for an invitation.",
+    "settings": "Settings",
+    "clubs": "My clubs",
+    "admin": "Admin"
   },
   "login": {
     "title": "Sign in",
@@ -108,7 +111,8 @@
   "locales": {
     "es": "Spanish",
     "ca": "Catalan",
-    "en": "English"
+    "en": "English",
+    "label": "Language"
   },
   "errors": {
     "bad_request": "Check the form data.",
@@ -123,6 +127,101 @@
     "INVALID_TOKEN": "The link is not valid or has expired. Request a new one.",
     "rate_limited": "Too many attempts. Wait a moment and try again.",
     "network": "No connection to the server.",
-    "unknown": "An unexpected error occurred."
+    "unknown": "An unexpected error occurred.",
+    "payload_too_large": "The file exceeds the maximum size.",
+    "unsupported_media_type": "Unsupported file format."
+  },
+  "landing": {
+    "title": "Sports Manager",
+    "subtitle": "The management platform for your club. Sign in and choose your club.",
+    "signIn": "Sign in",
+    "myClubs": "My clubs",
+    "admin": "Internal admin"
+  },
+  "clubs": {
+    "title": "My clubs",
+    "subtitle": "Clubs that {email} belongs to.",
+    "loading": "Loading…",
+    "none": "Your account does not belong to any club yet. Ask for an invitation.",
+    "open": "Open",
+    "current": "You are here",
+    "inactive": "club not active",
+    "backToClub": "Back to {club}",
+    "signOut": "Sign out"
+  },
+  "settings": {
+    "title": "Club settings",
+    "name": "Club name",
+    "defaultLocale": "Default language",
+    "primaryColor": "Primary colour",
+    "secondaryColor": "Secondary colour",
+    "save": "Save changes",
+    "saving": "Saving…",
+    "saved": "Changes saved.",
+    "logoTitle": "Logo",
+    "logoHint": "PNG, JPEG or WebP up to {mb} MB. Shown in the header and in the club selector.",
+    "logoAlt": "Club logo",
+    "noLogo": "No logo.",
+    "upload": "Upload logo",
+    "uploading": "Uploading…",
+    "logoSaved": "Logo saved.",
+    "removeLogo": "Remove logo",
+    "forbidden": "You cannot edit this club's settings.",
+    "status": "Status",
+    "logoRemoved": "Logo removed."
+  },
+  "status": {
+    "active": "active",
+    "suspended": "suspended",
+    "archived": "archived"
+  },
+  "admin": {
+    "title": "Internal admin",
+    "loading": "Loading…",
+    "apiError": "The API is not responding.",
+    "forbiddenTitle": "Platform administrators only",
+    "forbiddenBody": "Your account ({email}) is not a platform administrator.",
+    "backToApp": "Back to the app",
+    "organizations": "Clubs",
+    "signOut": "Sign out",
+    "createTitle": "Create club",
+    "name": "Name",
+    "slug": "Subdomain",
+    "defaultLocale": "Default language",
+    "sport": "Sport",
+    "primaryColor": "Primary colour",
+    "secondaryColor": "Secondary colour",
+    "create": "Create club",
+    "creating": "Creating…",
+    "created": "Club {name} created.",
+    "manage": "Manage",
+    "listTitle": "Clubs",
+    "domainNote": "Until there is a custom domain with a wildcard, only the demo club is reachable in production; the rest is tested locally.",
+    "counts": "{members} members · {pending} pending invitations",
+    "auditTitle": "Latest actions",
+    "auditEmpty": "No actions recorded yet.",
+    "system": "System",
+    "notFound": "That club does not exist.",
+    "inviteTitle": "Invite the first administrator",
+    "inviteHint": "The person receives the link, creates their account and enters as the club administrator. You can choose another role.",
+    "clubLanguage": "The club's ({locale})",
+    "invitationState": {
+      "pending": "pending",
+      "accepted": "accepted",
+      "revoked": "revoked",
+      "expired": "expired"
+    }
+  },
+  "audit": {
+    "organization.created": "Club created",
+    "organization.updated": "Club edited",
+    "organization.logo_updated": "Logo changed",
+    "organization.logo_removed": "Logo removed",
+    "invitation.created": "Invitation sent",
+    "invitation.resent": "Invitation resent",
+    "invitation.revoked": "Invitation revoked",
+    "invitation.accepted": "Invitation accepted",
+    "membership.role_assigned": "Role assigned",
+    "membership.role_removed": "Role removed"
   }
 }

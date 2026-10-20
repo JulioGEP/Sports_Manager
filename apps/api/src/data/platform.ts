@@ -1,15 +1,20 @@
 import { schema, type Database } from "@sportsmanager/db";
 import { and, eq, isNull, sql } from "drizzle-orm";
+import type { ApiConfig } from "../config.ts";
 import type { OrgScope } from "./scope.ts";
 
-export function platformRepo(db: () => Database) {
+export function platformRepo(db: () => Database, config: ApiConfig) {
   return {
-    /** Solo lectura: la tabla se alimenta por migración de datos o script de operaciones (ADR 0008). */
-    async isPlatformAdmin(userId: string): Promise<boolean> {
+    /**
+     * Administrador de plataforma: por email en `PLATFORM_ADMIN_EMAILS` (ADR 0023) o por fila en
+     * `platform_admins` (ADR 0008). Ningún endpoint escribe en esa tabla.
+     */
+    async isPlatformAdmin(user: { id: string; email: string }): Promise<boolean> {
+      if (config.platformAdminEmails.includes(user.email.toLowerCase())) return true;
       const rows = await db()
         .select({ userId: schema.platformAdmins.userId })
         .from(schema.platformAdmins)
-        .where(eq(schema.platformAdmins.userId, userId))
+        .where(eq(schema.platformAdmins.userId, user.id))
         .limit(1);
       return rows.length > 0;
     },

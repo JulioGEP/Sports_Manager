@@ -1,12 +1,17 @@
 "use client";
 
-import { OrganizationResponseSchema, type OrganizationResponse } from "@sportsmanager/shared";
+import {
+  MyMembershipsResponseSchema,
+  OrganizationResponseSchema,
+  type OrganizationResponse,
+} from "@sportsmanager/shared";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import { apiFetch } from "@/lib/api";
 import { signOut, useRequiredSession } from "@/lib/session";
+import { useBranding } from "./branding-provider";
 
 export type OrgState =
   | { kind: "loading" }
@@ -14,7 +19,7 @@ export type OrgState =
   | { kind: "forbidden" }
   | { kind: "error" };
 
-/** Cabecera común de las páginas con sesión: club del host, persona, navegación y salir. */
+/** Cabecera común de las páginas con sesión: marca del club del host, persona, navegación y salir. */
 export function AppShell({
   children,
 }: {
@@ -23,7 +28,9 @@ export function AppShell({
   const t = useTranslations("shell");
   const router = useRouter();
   const session = useRequiredSession();
+  const branding = useBranding();
   const [orgState, setOrgState] = useState<OrgState>({ kind: "loading" });
+  const [clubCount, setClubCount] = useState(0);
 
   useEffect(() => {
     if (session.kind !== "authenticated") return;
@@ -37,6 +44,11 @@ export function AppShell({
         const status = (error as { status?: number }).status;
         setOrgState({ kind: status === 403 ? "forbidden" : "error" });
       });
+    apiFetch("/api/me/memberships", { schema: MyMembershipsResponseSchema })
+      .then((res) => {
+        if (!cancelled) setClubCount(res.memberships.length);
+      })
+      .catch(() => undefined);
     return () => {
       cancelled = true;
     };
@@ -57,23 +69,31 @@ export function AppShell({
     return <p className="alert alert--error page page--wide">{t("apiError")}</p>;
   }
 
+  const permissions = orgState.kind === "ready" ? orgState.org.actor.permissions : [];
   const canSeeMembers =
-    orgState.kind === "ready" &&
-    (orgState.org.actor.permissions.includes("org.members.read") ||
-      orgState.org.actor.permissions.includes("org.members.invite"));
+    permissions.includes("org.members.read") || permissions.includes("org.members.invite");
+  const canEditSettings = permissions.includes("org.settings.write");
+  const clubName =
+    branding?.name ?? (orgState.kind === "ready" ? orgState.org.organization.name : t("appName"));
 
   return (
     <div className="page page--wide">
       <header className="topbar">
-        <div>
-          <strong>
-            {orgState.kind === "ready" ? orgState.org.organization.name : t("appName")}
-          </strong>
-          <span className="muted"> · {session.me.user.name}</span>
+        <div className="brand">
+          {branding?.logoUrl ? (
+            <img src={branding.logoUrl} alt="" className="brand__logo brand__logo--header" />
+          ) : null}
+          <div>
+            <strong>{clubName}</strong>
+            <span className="muted"> · {session.me.user.name}</span>
+          </div>
         </div>
         <nav className="row">
           <Link href="/">{t("home")}</Link>
           {canSeeMembers ? <Link href="/members">{t("members")}</Link> : null}
+          {canEditSettings ? <Link href="/settings">{t("settings")}</Link> : null}
+          {clubCount > 1 ? <Link href="/clubs">{t("clubs")}</Link> : null}
+          {session.me.platformAdmin ? <Link href="/admin">{t("admin")}</Link> : null}
           <button
             type="button"
             className="button button--secondary"

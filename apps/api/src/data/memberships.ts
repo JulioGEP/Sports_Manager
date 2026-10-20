@@ -21,6 +21,7 @@ export interface UserMembership {
     | "defaultLocale"
     | "brandPrimaryColor"
     | "brandSecondaryColor"
+    | "logoBlobKey"
   >;
   roles: RoleCode[];
 }
@@ -103,6 +104,7 @@ export function membershipsRepo(db: () => Database) {
           defaultLocale: schema.organizations.defaultLocale,
           brandPrimaryColor: schema.organizations.brandPrimaryColor,
           brandSecondaryColor: schema.organizations.brandSecondaryColor,
+          logoBlobKey: schema.organizations.logoBlobKey,
           roleCode: schema.memberships.roleCode,
         })
         .from(schema.memberships)

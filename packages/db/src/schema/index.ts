@@ -9,3 +9,4 @@ export * from "./invitations.ts";
 export * from "./platform-admins.ts";
 export * from "./support-access-grants.ts";
 export * from "./email-outbox.ts";
+export * from "./audit-log.ts";

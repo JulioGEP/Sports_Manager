@@ -8,6 +8,8 @@ export const API_ERROR_CODES = [
   "conflict",
   "invitation_expired",
   "invitation_email_mismatch",
+  "payload_too_large",
+  "unsupported_media_type",
   "internal",
 ] as const;
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];

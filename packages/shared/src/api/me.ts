@@ -11,6 +11,10 @@ export const SessionUserSchema = z.object({
   locale: LocaleSchema.nullable(),
 });
 
+/** Preferencias propias editables (Bloque 7): el idioma. Nulo = usar el del club. */
+export const UpdateMeBodySchema = z.object({ locale: LocaleSchema.nullable() });
+export type UpdateMeBody = z.infer<typeof UpdateMeBodySchema>;
+
 export const MeResponseSchema = z.object({
   user: SessionUserSchema,
   platformAdmin: z.boolean(),
@@ -25,6 +29,9 @@ export const MembershipOrganizationSchema = z.object({
   defaultLocale: LocaleSchema,
   brandPrimaryColor: z.string(),
   brandSecondaryColor: z.string(),
+  logoUrl: z.string().nullable(),
+  /** Dirección del espacio del club, calculada por la API: `https://<slug>.<dominio base>`. */
+  url: z.string(),
 });
 
 export const MyMembershipsResponseSchema = z.object({

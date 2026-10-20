@@ -27,6 +27,7 @@ export interface InvitationRecord {
   createdAt: Date;
   acceptedAt: Date | null;
   invitedByName: string | null;
+  invitedByUserId: string | null;
 }
 
 export interface IssuedInvitation {
@@ -56,6 +57,7 @@ const selection = {
   createdAt: schema.invitations.createdAt,
   acceptedAt: schema.invitations.acceptedAt,
   invitedByName: schema.users.name,
+  invitedByUserId: schema.invitations.invitedBy,
 };
 
 type Row = {
@@ -77,6 +79,7 @@ function toRecord(row: Row): InvitationRecord {
     createdAt: row.createdAt,
     acceptedAt: row.acceptedAt ?? null,
     invitedByName: row.invitedByName ?? null,
+    invitedByUserId: row.invitedByUserId ?? null,
   };
 }
 

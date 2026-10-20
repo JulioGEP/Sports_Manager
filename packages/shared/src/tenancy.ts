@@ -39,3 +39,15 @@ export function subdomainFromHost(host: string, baseDomain: string): string | nu
   if (prefix === "" || prefix.includes(".")) return null;
   return prefix;
 }
+
+/** Propone un slug a partir de un nombre: minúsculas, sin acentos, guiones, máximo 63. */
+export function slugify(name: string): string {
+  return name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 63)
+    .replace(/-+$/g, "");
+}

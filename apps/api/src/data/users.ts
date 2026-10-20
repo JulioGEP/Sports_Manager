@@ -33,6 +33,11 @@ export function usersRepo(db: () => Database, auth: () => Auth) {
       return { ...row, locale: isLocale(row.locale) ? row.locale : null };
     },
 
+    /** Idioma preferido (Bloque 7). Nulo = usar el del club. */
+    async updateLocale(userId: string, locale: Locale | null): Promise<void> {
+      await db().update(schema.users).set({ locale }).where(eq(schema.users.id, userId));
+    },
+
     /** Crea usuario y cuenta de contraseña. El email llega verificado: viene de una invitación aceptada. */
     async createWithPassword(input: {
       email: string;

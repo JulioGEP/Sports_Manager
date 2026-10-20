@@ -25,7 +25,7 @@ interface Parser<T> {
 }
 
 export interface ApiFetchOptions<T> {
-  method?: "GET" | "POST" | "DELETE";
+  method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   body?: unknown;
   schema?: Parser<T>;
 }
@@ -53,17 +53,37 @@ export async function apiFetch<T = unknown>(
   path: string,
   options: ApiFetchOptions<T> = {},
 ): Promise<T> {
-  let res: Response;
-  try {
-    res = await fetch(path, {
+  return send(
+    path,
+    {
       method: options.method ?? "GET",
-      credentials: "same-origin",
       headers: {
         accept: "application/json",
         ...(options.body !== undefined ? { "content-type": "application/json" } : {}),
       },
       ...(options.body !== undefined ? { body: JSON.stringify(options.body) } : {}),
-    });
+    },
+    options.schema,
+  );
+}
+
+/** Sube un fichero con `PUT`: cuerpo binario con el tipo del fichero (logos, Bloque 5). */
+export async function uploadFile<T>(path: string, file: File, schema: Parser<T>): Promise<T> {
+  return send(
+    path,
+    {
+      method: "PUT",
+      headers: { accept: "application/json", "content-type": file.type },
+      body: file,
+    },
+    schema,
+  );
+}
+
+async function send<T>(path: string, init: RequestInit, schema?: Parser<T>): Promise<T> {
+  let res: Response;
+  try {
+    res = await fetch(path, { ...init, credentials: "same-origin" });
   } catch {
     throw new ApiClientError(0, "network", "network");
   }
@@ -77,7 +97,7 @@ export async function apiFetch<T = unknown>(
     }
   }
   if (!res.ok) throw errorFromBody(res.status, json);
-  return options.schema ? options.schema.parse(json) : (json as T);
+  return schema ? schema.parse(json) : (json as T);
 }
 
 /** Clave de mensaje para un error, dentro del bloque `errors` de los diccionarios de la web. */
