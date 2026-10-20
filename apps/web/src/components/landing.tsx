@@ -14,9 +14,16 @@ export function Landing() {
         <h1>{t("title")}</h1>
         <p className="muted">{t("subtitle")}</p>
         {session.kind === "authenticated" ? (
-          <Link className="button" href="/clubs">
-            {t("myClubs")}
-          </Link>
+          <div className="row">
+            <Link className="button" href="/clubs">
+              {t("myClubs")}
+            </Link>
+            {session.me.platformAdmin ? (
+              <Link className="button button--secondary" href="/admin">
+                {t("admin")}
+              </Link>
+            ) : null}
+          </div>
         ) : (
           <Link className="button" href="/login">
             {t("signIn")}

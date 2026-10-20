@@ -93,6 +93,7 @@ export function AppShell({
           {canSeeMembers ? <Link href="/members">{t("members")}</Link> : null}
           {canEditSettings ? <Link href="/settings">{t("settings")}</Link> : null}
           {clubCount > 1 ? <Link href="/clubs">{t("clubs")}</Link> : null}
+          {session.me.platformAdmin ? <Link href="/admin">{t("admin")}</Link> : null}
           <button
             type="button"
             className="button button--secondary"

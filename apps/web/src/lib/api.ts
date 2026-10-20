@@ -67,10 +67,10 @@ export async function apiFetch<T = unknown>(
   );
 }
 
-/** Sube el logo del club del host: cuerpo binario con el tipo del fichero (Bloque 5). */
-export async function uploadLogo<T>(file: File, schema: Parser<T>): Promise<T> {
+/** Sube un fichero con `PUT`: cuerpo binario con el tipo del fichero (logos, Bloque 5). */
+export async function uploadFile<T>(path: string, file: File, schema: Parser<T>): Promise<T> {
   return send(
-    "/api/org/logo",
+    path,
     {
       method: "PUT",
       headers: { accept: "application/json", "content-type": file.type },

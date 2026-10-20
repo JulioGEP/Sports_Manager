@@ -24,8 +24,8 @@ Las decisiones no se editan una vez aceptadas. Si cambian, se escribe una nueva 
 | 0008 | Roles como datos y platform_admin fuera de la aplicación | Aceptada |
 | 0009 | Aislamiento entre clubes por código | Aceptada |
 | 0010 | Un solo proyecto Netlify con la API en /api del mismo host | Aceptada |
-| 0011 | Resolución del club por entorno y subdominios reservados | Aceptada |
-| 0012 | i18n con next-intl y diccionarios compartidos | Propuesta |
+| 0011 | Resolución del club por entorno y subdominios reservados | Aceptada; panel interno sustituido por 0022 |
+| 0012 | i18n con next-intl y diccionarios compartidos | Aceptada |
 | 0013 | La API se empaqueta con esbuild en un único fichero | Aceptada |
 | 0014 | Varios roles por usuario y club | Aceptada |
 | 0015 | Cadena de petición y ámbito de organización | Aceptada |
@@ -35,4 +35,6 @@ Las decisiones no se editan una vez aceptadas. Si cambian, se escribe una nueva 
 | 0019 | Alta de cuentas solo por invitación | Aceptada |
 | 0020 | Política de contraseñas y límite de intentos | Aceptada |
 | 0021 | Subdominios por club, parche local y comodín en Netlify | Aceptada |
+| 0022 | Admin interno en `/admin` del dominio base | Aceptada |
+| 0023 | Primer administrador de plataforma por variable de entorno | Aceptada |
 | 0024 | Logos de club en Netlify Blobs a través de la API | Aceptada |

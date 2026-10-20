@@ -322,17 +322,57 @@ describe("aislamiento entre clubes", () => {
     );
   });
 
-  it("host admin: solo administradores de plataforma", async () => {
+  it("rutas de plataforma: solo administradores de plataforma, en cualquier host (ADR 0022)", async () => {
     expect((await get("/api/platform/me", hostOf("admin"), cookies.get(platform.id))).status).toBe(
+      200,
+    );
+    expect((await get("/api/platform/me", hostOf("club-a"), cookies.get(platform.id))).status).toBe(
       200,
     );
     expect((await get("/api/platform/me", hostOf("admin"), cookies.get(adminA.id))).status).toBe(
       403,
     );
-    expect((await get("/api/platform/me", hostOf("admin"))).status).toBe(401);
-    expect((await get("/api/platform/me", hostOf("club-a"), cookies.get(platform.id))).status).toBe(
-      404,
+    expect((await get("/api/platform/me", hostOf("club-a"), cookies.get(adminA.id))).status).toBe(
+      403,
     );
+    expect((await get("/api/platform/me", hostOf("admin"))).status).toBe(401);
+  });
+
+  it("PATCH /api/me cambia solo el idioma propio (Bloque 7)", async () => {
+    const res = await send("POST", "/api/me", hostOf("club-a"), cookies.get(both.id)!, {});
+    expect(res.status).toBe(404);
+    const patch = await app.request("/api/me", {
+      method: "PATCH",
+      headers: {
+        host: hostOf("club-a"),
+        origin: `https://${hostOf("club-a")}`,
+        cookie: cookies.get(both.id)!,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({ locale: "ca" }),
+    });
+    expect(patch.status).toBe(200);
+    expect(await patch.json()).toMatchObject({ user: { locale: "ca" } });
+    const mine = (await (await get("/api/me", hostOf("club-a"), cookies.get(both.id))).json()) as {
+      user: { locale: string | null };
+    };
+    expect(mine.user.locale).toBe("ca");
+    const other = (await (
+      await get("/api/me", hostOf("club-a"), cookies.get(adminA.id))
+    ).json()) as {
+      user: { locale: string | null };
+    };
+    expect(other.user.locale).toBeNull();
+    const bad = await app.request("/api/me", {
+      method: "PATCH",
+      headers: {
+        host: hostOf("club-a"),
+        cookie: cookies.get(both.id)!,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({ locale: "fr" }),
+    });
+    expect(bad.status).toBe(400);
   });
 
   it("sin subdominio o en una deploy preview se sirve el club de reserva", async () => {

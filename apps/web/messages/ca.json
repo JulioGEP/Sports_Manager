@@ -27,7 +27,8 @@
     "noMembershipTitle": "No pertanys a aquest club",
     "noMembershipBody": "El teu compte ({email}) no té cap rol aquí. Demana una invitació al club.",
     "settings": "Configuració",
-    "clubs": "Els meus clubs"
+    "clubs": "Els meus clubs",
+    "admin": "Admin"
   },
   "login": {
     "title": "Iniciar sessió",
@@ -110,7 +111,8 @@
   "locales": {
     "es": "Castellà",
     "ca": "Català",
-    "en": "Anglès"
+    "en": "Anglès",
+    "label": "Idioma"
   },
   "errors": {
     "bad_request": "Revisa les dades del formulari.",
@@ -133,7 +135,8 @@
     "title": "Sports Manager",
     "subtitle": "La plataforma de gestió del teu club. Entra amb el teu compte i tria el club.",
     "signIn": "Iniciar sessió",
-    "myClubs": "Els meus clubs"
+    "myClubs": "Els meus clubs",
+    "admin": "Admin intern"
   },
   "clubs": {
     "title": "Els meus clubs",
@@ -163,6 +166,62 @@
     "uploading": "Pujant…",
     "logoSaved": "Logo desat.",
     "removeLogo": "Treure el logo",
-    "forbidden": "No pots editar la configuració d'aquest club."
+    "forbidden": "No pots editar la configuració d'aquest club.",
+    "status": "Estat",
+    "logoRemoved": "Logo tret."
+  },
+  "status": {
+    "active": "actiu",
+    "suspended": "suspès",
+    "archived": "arxivat"
+  },
+  "admin": {
+    "title": "Admin intern",
+    "loading": "Carregant…",
+    "apiError": "L'API no respon.",
+    "forbiddenTitle": "Només administradors de plataforma",
+    "forbiddenBody": "El teu compte ({email}) no és administrador de plataforma.",
+    "backToApp": "Tornar a l'aplicació",
+    "organizations": "Clubs",
+    "signOut": "Tancar sessió",
+    "createTitle": "Crear club",
+    "name": "Nom",
+    "slug": "Subdomini",
+    "defaultLocale": "Idioma per defecte",
+    "sport": "Esport",
+    "primaryColor": "Color principal",
+    "secondaryColor": "Color secundari",
+    "create": "Crear club",
+    "creating": "Creant…",
+    "created": "Club {name} creat.",
+    "manage": "Gestionar",
+    "listTitle": "Clubs",
+    "domainNote": "Fins a tenir domini propi amb comodí, només el club demo és accessible en producció; la resta es prova en local.",
+    "counts": "{members} membres · {pending} invitacions pendents",
+    "auditTitle": "Últimes accions",
+    "auditEmpty": "Encara no hi ha accions registrades.",
+    "system": "Sistema",
+    "notFound": "Aquest club no existeix.",
+    "inviteTitle": "Convidar el primer administrador",
+    "inviteHint": "La persona rep l'enllaç, crea el compte i entra com a administradora del club. Pots triar un altre rol.",
+    "clubLanguage": "El del club ({locale})",
+    "invitationState": {
+      "pending": "pendent",
+      "accepted": "acceptada",
+      "revoked": "revocada",
+      "expired": "caducada"
+    }
+  },
+  "audit": {
+    "organization.created": "Club creat",
+    "organization.updated": "Club editat",
+    "organization.logo_updated": "Logo canviat",
+    "organization.logo_removed": "Logo tret",
+    "invitation.created": "Invitació enviada",
+    "invitation.resent": "Invitació reenviada",
+    "invitation.revoked": "Invitació revocada",
+    "invitation.accepted": "Invitació acceptada",
+    "membership.role_assigned": "Rol assignat",
+    "membership.role_removed": "Rol retirat"
   }
 }

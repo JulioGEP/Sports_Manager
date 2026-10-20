@@ -47,6 +47,7 @@ Notas:
 | `RESEND_API_KEY` | pendiente | no | Marcada como secreto. Solo con transporte `resend` |
 | `EMAIL_FROM` | pendiente | no | Remitente con el dominio verificado, por ejemplo `Sports Manager <no-reply@dominio>` |
 | `EMAIL_DEBUG_LOG` | no definida | `true` | Escribe los emails en el log de la función. Nunca en producción |
+| `PLATFORM_ADMIN_EMAILS` | emails separados por comas | igual | Administradores de plataforma además de la tabla (ADR 0023). Hoy: el email del responsable de producto |
 
 ## Base de datos y entornos
 

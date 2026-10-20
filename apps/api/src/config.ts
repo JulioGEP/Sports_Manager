@@ -27,6 +27,7 @@ const EnvSchema = z.object({
   RESEND_API_KEY: optionalString,
   EMAIL_FROM: optionalString,
   EMAIL_DEBUG_LOG: optionalString,
+  PLATFORM_ADMIN_EMAILS: optionalString,
   NETLIFY_DEV: z.string().optional(),
   NODE_ENV: z.string().optional(),
 });
@@ -53,6 +54,11 @@ export interface ApiConfig {
   isLocal: boolean;
   invitationTtlDays: number;
   email: EmailConfig;
+  /**
+   * Emails que cuentan como administradores de plataforma además de la tabla `platform_admins`
+   * (ADR 0023). Es la vía para el primer administrador, sin contraseñas sembradas.
+   */
+  platformAdminEmails: string[];
 }
 
 export function loadConfig(env: Record<string, string | undefined> = process.env): ApiConfig {
@@ -77,6 +83,10 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     secureCookies: !isLocal,
     isLocal,
     invitationTtlDays: parsed.INVITATION_TTL_DAYS ?? DEFAULT_INVITATION_TTL_DAYS,
+    platformAdminEmails: (parsed.PLATFORM_ADMIN_EMAILS ?? "")
+      .split(",")
+      .map((value) => value.trim().toLowerCase())
+      .filter((value) => value.length > 0),
     email: {
       transport,
       from: parsed.EMAIL_FROM ?? null,

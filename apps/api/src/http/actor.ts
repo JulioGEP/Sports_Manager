@@ -29,7 +29,7 @@ export function requireActor(data: DataLayer): MiddlewareHandler<AppEnv> {
       });
       return next();
     }
-    if (await data.platform.isPlatformAdmin(user.id)) {
+    if (await data.platform.isPlatformAdmin(user)) {
       const hasGrant = await data.platform.hasActiveSupportGrant(tenant.scope, user.id);
       c.set("actor", {
         kind: "platform_support",
@@ -51,11 +51,11 @@ export function requirePermission(permission: Permission): MiddlewareHandler<App
   };
 }
 
-/** Host `admin`: solo administradores de plataforma. */
+/** Admin interno (ADR 0022): solo administradores de plataforma, en cualquier host. */
 export function requirePlatformAdmin(data: DataLayer): MiddlewareHandler<AppEnv> {
   return async (c, next) => {
     const user = c.get("sessionUser");
-    if (!(await data.platform.isPlatformAdmin(user.id))) throw forbidden();
+    if (!(await data.platform.isPlatformAdmin(user))) throw forbidden();
     await next();
   };
 }

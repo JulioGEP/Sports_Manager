@@ -191,6 +191,15 @@ export function createOrgRoutes(config: ApiConfig, data: DataLayer) {
       const result = await data.memberships.assignRole(tenant.scope, userId, roleCode);
       if (result.outcome === "not_member")
         throw notFound("Esa persona no es miembro de este club.");
+      if (result.outcome === "assigned") {
+        await data.audit.record({
+          actorUserId: c.get("sessionUser").id,
+          organizationId: tenant.organization.id,
+          action: "membership.role_assigned",
+          target: userId,
+          details: { roleCode },
+        });
+      }
       return c.json({ userId, roleCode, roles: result.roles }, 200);
     },
   );
@@ -225,6 +234,13 @@ export function createOrgRoutes(config: ApiConfig, data: DataLayer) {
         throw notFound("Esa persona no tiene ese rol en este club.");
       if (result.outcome === "last_admin")
         throw conflict("No se puede quitar al último administrador del club.");
+      await data.audit.record({
+        actorUserId: c.get("sessionUser").id,
+        organizationId: tenant.organization.id,
+        action: "membership.role_removed",
+        target: userId,
+        details: { roleCode },
+      });
       return c.json({ userId, roleCode, roles: result.roles }, 200);
     },
   );
@@ -257,6 +273,13 @@ export function createOrgRoutes(config: ApiConfig, data: DataLayer) {
       const patch = c.req.valid("json");
       if (Object.keys(patch).length === 0) throw badRequest("No hay nada que cambiar.");
       const updated = await data.organizations.update(tenant.scope, patch);
+      await data.audit.record({
+        actorUserId: c.get("sessionUser").id,
+        organizationId: updated.id,
+        action: "organization.updated",
+        target: updated.slug,
+        details: { fields: Object.keys(patch) },
+      });
       return c.json({ organization: await fullView(updated, tenant.scope) }, 200);
     },
   );
@@ -307,6 +330,12 @@ export function createOrgRoutes(config: ApiConfig, data: DataLayer) {
       const key = await data.logos.upload(tenant.scope, body, declared, {
         cleanup: c.env?.context?.deploy?.context === "production",
       });
+      await data.audit.record({
+        actorUserId: c.get("sessionUser").id,
+        organizationId: tenant.organization.id,
+        action: "organization.logo_updated",
+        target: tenant.organization.slug,
+      });
       return c.json({ ...brandingDto({ ...tenant.organization, logoBlobKey: key }) }, 200);
     },
   );
@@ -332,6 +361,12 @@ export function createOrgRoutes(config: ApiConfig, data: DataLayer) {
       if (tenant.kind !== "organization") throw notFound();
       await data.logos.remove(tenant.scope, {
         cleanup: c.env?.context?.deploy?.context === "production",
+      });
+      await data.audit.record({
+        actorUserId: c.get("sessionUser").id,
+        organizationId: tenant.organization.id,
+        action: "organization.logo_removed",
+        target: tenant.organization.slug,
       });
       return c.json({ ...brandingDto({ ...tenant.organization, logoBlobKey: null }) }, 200);
     },

@@ -3,6 +3,7 @@ import {
   ApiErrorSchema,
   MeResponseSchema,
   MyMembershipsResponseSchema,
+  UpdateMeBodySchema,
   type Locale,
 } from "@sportsmanager/shared";
 import type { ApiConfig } from "../config.ts";
@@ -38,7 +39,7 @@ export function createMeRoutes(config: ApiConfig, data: DataLayer) {
     }),
     async (c) => {
       const user = c.get("sessionUser");
-      const platformAdmin = await data.platform.isPlatformAdmin(user.id);
+      const platformAdmin = await data.platform.isPlatformAdmin(user);
       return c.json({ user, platformAdmin }, 200);
     },
   );
@@ -84,6 +85,33 @@ export function createMeRoutes(config: ApiConfig, data: DataLayer) {
         },
         200,
       );
+    },
+  );
+
+  app.openapi(
+    createRoute({
+      method: "patch",
+      path: "/api/me",
+      tags: ["Yo"],
+      summary: "Cambia el idioma preferido. Nulo = usar el del club (Bloque 7)",
+      security: [{ sessionCookie: [] }],
+      request: {
+        body: { content: { "application/json": { schema: UpdateMeBodySchema } }, required: true },
+      },
+      responses: {
+        200: {
+          description: "Usuario actualizado",
+          content: { "application/json": { schema: MeResponseSchema } },
+        },
+        ...errors,
+      },
+    }),
+    async (c) => {
+      const user = c.get("sessionUser");
+      const { locale } = c.req.valid("json");
+      await data.users.updateLocale(user.id, locale);
+      const platformAdmin = await data.platform.isPlatformAdmin(user);
+      return c.json({ user: { ...user, locale }, platformAdmin }, 200);
     },
   );
 

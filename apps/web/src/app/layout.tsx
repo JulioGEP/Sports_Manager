@@ -6,6 +6,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getLocale } from "next-intl/server";
 import type { CSSProperties, ReactNode } from "react";
 import { BrandingProvider } from "@/components/branding-provider";
+import { LanguageCorner } from "@/components/language-corner";
 import { getBranding } from "@/lib/branding";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -27,7 +28,10 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     <html lang={locale} style={style}>
       <body>
         <NextIntlClientProvider>
-          <BrandingProvider value={branding}>{children}</BrandingProvider>
+          <BrandingProvider value={branding}>
+            {children}
+            <LanguageCorner />
+          </BrandingProvider>
         </NextIntlClientProvider>
       </body>
     </html>

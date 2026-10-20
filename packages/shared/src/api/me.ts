@@ -11,6 +11,10 @@ export const SessionUserSchema = z.object({
   locale: LocaleSchema.nullable(),
 });
 
+/** Preferencias propias editables (Bloque 7): el idioma. Nulo = usar el del club. */
+export const UpdateMeBodySchema = z.object({ locale: LocaleSchema.nullable() });
+export type UpdateMeBody = z.infer<typeof UpdateMeBodySchema>;
+
 export const MeResponseSchema = z.object({
   user: SessionUserSchema,
   platformAdmin: z.boolean(),
