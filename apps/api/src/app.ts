@@ -4,8 +4,13 @@ import { ApiErrorSchema, HealthResponseSchema, type ApiError } from "@sportsmana
 import { createDataLayer, type DataLayer } from "./data/index.ts";
 
 /** Contexto que Netlify pasa a la función. Solo usamos la región; en tests puede no existir. */
-export interface NetlifyEnv {
+export interface NetlifyContext {
   server?: { region?: string };
+}
+
+/** Bindings de Hono: el handler de la función coloca el contexto de Netlify en `env.context`. */
+export interface NetlifyEnv {
+  context?: NetlifyContext;
 }
 
 export interface AppOptions {
@@ -62,7 +67,7 @@ export function createApp(options: AppOptions = {}) {
         status: "ok" as const,
         service: "api" as const,
         time: new Date().toISOString(),
-        region: c.env?.server?.region ?? null,
+        region: c.env?.context?.server?.region ?? null,
         db,
       },
       200,

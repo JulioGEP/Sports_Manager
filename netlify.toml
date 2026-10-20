@@ -15,10 +15,10 @@
   directory = "apps/api/netlify/functions"
   node_bundler = "esbuild"
 
-# Desarrollo local: `pnpm dev` arranca Next en :3000, la función de la API y la base local,
+# Desarrollo local: `pnpm dev` arranca Next en :3000, esbuild en modo watch para la API, la función y la base local,
 # todo detrás de :8888. Sin shell: el comando no admite sintaxis de Bash.
 [dev]
-  command = "pnpm --filter @sportsmanager/web dev"
+  command = "pnpm run dev:servers"
   targetPort = 3000
   port = 8888
   framework = "#custom"

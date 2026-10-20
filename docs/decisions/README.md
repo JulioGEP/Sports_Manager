@@ -23,6 +23,7 @@ Las decisiones no se editan una vez aceptadas. Si cambian, se escribe una nueva 
 | 0007 | Región UE: Frankfurt para funciones y base, eu-central-1 para Blobs | Aceptada |
 | 0008 | Roles como datos y platform_admin fuera de la aplicación | Aceptada |
 | 0009 | Aislamiento entre clubes por código | Aceptada |
-| 0010 | Un solo proyecto Netlify con la API en /api del mismo host | Propuesta |
+| 0010 | Un solo proyecto Netlify con la API en /api del mismo host | Aceptada |
 | 0011 | Resolución del club por entorno y subdominios reservados | Aceptada |
 | 0012 | i18n con next-intl y diccionarios compartidos | Propuesta |
+| 0013 | La API se empaqueta con esbuild en un único fichero | Aceptada |

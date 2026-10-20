@@ -11,6 +11,10 @@ const SOURCE_DIRS = ["apps/web", "apps/api"];
 const DATA_LAYER = join("apps", "api", "src", "data");
 const FORBIDDEN = ["@sportsmanager/db", "drizzle-orm", "pg", "@netlify/database"];
 const SKIP_DIRS = new Set(["node_modules", ".next", ".netlify", "dist", "coverage"]);
+/** Ficheros generados por la build (no commiteados) que no son código fuente. */
+const GENERATED_FILES = new Set([
+  join("apps", "api", "netlify", "functions", "api", "handler.mjs"),
+]);
 const SOURCE_EXT = /\.(ts|tsx|mts|cts|js|mjs|cjs|jsx)$/;
 
 function walk(dir: string): string[] {
@@ -42,7 +46,7 @@ describe("fronteras de importación", () => {
     const violations: string[] = [];
     for (const file of files) {
       const rel = relative(REPO_ROOT, file);
-      if (rel.startsWith(DATA_LAYER + sep)) continue;
+      if (rel.startsWith(DATA_LAYER + sep) || GENERATED_FILES.has(rel)) continue;
       for (const spec of importsOf(file)) {
         if (FORBIDDEN.some((f) => spec === f || spec.startsWith(`${f}/`))) {
           violations.push(`${rel} importa ${spec}`);
