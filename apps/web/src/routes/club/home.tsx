@@ -131,7 +131,7 @@ export function ClubHome() {
       )
         .map((a) => ({ ...a, count: operations[a.key] }))
         .filter((a) => a.count > 0)
-        .filter((a) => a.key !== "pendingInvitations" || has("org.members.invite"))
+        .filter((a) => a.key !== "pendingInvitations" || has("org.members.read"))
         .filter((a) => a.key !== "challengeSubmissionsPending" || has("org.challenges.read"))
         .filter((a) => a.key !== "feesOverdue" || has("org.fees.read"))
         .filter((a) => a.key !== "facilitiesWithoutHours" || has("org.facilities.write"))
@@ -155,6 +155,14 @@ export function ClubHome() {
     org.organization.view === "full" &&
     Date.now() - new Date(org.organization.createdAt).getTime() < 30 * 24 * 60 * 60 * 1000;
   const onboarding = canSettings && youngClub && (!branding.logoUrl || defaultColors);
+  /** Ámbito restringido (Bloque 19): el inicio dice qué parte del club se ve, o que no hay nada asignado. */
+  const scope = org.actor.kind === "member" ? org.actor.scope : null;
+  const restricted = scope && scope.kind === "restricted" ? scope : null;
+  const scopeEmpty =
+    restricted !== null &&
+    restricted.sections === 0 &&
+    restricted.teams === 0 &&
+    restricted.players === 0;
 
   // Sin resumen (familias y quien no lee deportistas), el héroe dice con qué papel entra.
   const roleLine =
@@ -208,6 +216,22 @@ export function ClubHome() {
           </>
         }
       />
+
+      {restricted ? (
+        scopeEmpty ? (
+          <Alert kind="warning" title={t("scope.emptyTitle")}>
+            {t("scope.emptyBody")}
+          </Alert>
+        ) : (
+          <Alert kind="info">
+            {t("scope.restricted", {
+              sections: restricted.sections,
+              teams: restricted.teams,
+              players: restricted.players,
+            })}
+          </Alert>
+        )
+      ) : null}
 
       {onboarding ? (
         <Alert
@@ -342,8 +366,8 @@ export function ClubHome() {
         </div>
       ) : null}
 
-      {/* 4. Secciones */}
-      {canStructure && data ? (
+      {/* 4. Secciones (con ámbito restringido sin secciones, no hay nada que enseñar) */}
+      {canStructure && data && (!restricted || restricted.sections > 0) ? (
         <section className="flex flex-col gap-3" aria-labelledby="home-sections">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div className="flex flex-col gap-0.5">

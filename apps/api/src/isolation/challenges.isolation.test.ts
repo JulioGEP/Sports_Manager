@@ -249,15 +249,40 @@ describe("personal con cargo, permisos por equipo, familia y reto", () => {
     const physio = members.members.find((m) => m.email === physioA.email);
     expect(physio).toMatchObject({ position: "physio", teams: [{ teamName: "Alevín A" }] });
 
-    // La fisio valora el cuerpo de cualquier jugador; no cambia su nombre.
+    // La fisio valora el cuerpo de quien atiende: los de su equipo y los que le asignan
+    // (Bloque 19). Al del otro equipo no llega hasta que la administración se lo asigna.
     const rated = await json<{ indicators: { dimension: string; score: number }[] }>(
-      await request("PUT", `/api/org/players/${otherPlayerId}/indicators`, A, {
+      await request("PUT", `/api/org/players/${playerId}/indicators`, A, {
         cookie: as(physioA),
         body: { body: { score: 40, note: "Molestias en el tobillo" } },
       }),
       200,
     );
     expect(rated.indicators).toMatchObject([{ dimension: "body", score: 40 }]);
+    expect(
+      (
+        await request("PUT", `/api/org/players/${otherPlayerId}/indicators`, A, {
+          cookie: as(physioA),
+          body: { body: { score: 40 } },
+        })
+      ).status,
+    ).toBe(404);
+    await json(
+      await request("POST", `/api/org/players/${otherPlayerId}/staff`, A, {
+        cookie: as(adminA),
+        body: { userId: physioA.id },
+      }),
+      200,
+    );
+    expect(
+      (
+        await request("PUT", `/api/org/players/${otherPlayerId}/indicators`, A, {
+          cookie: as(physioA),
+          body: { body: { score: 40 } },
+        })
+      ).status,
+    ).toBe(200);
+    // No cambia su nombre.
     expect(
       (
         await request("PATCH", `/api/org/players/${otherPlayerId}`, A, {
@@ -267,7 +292,8 @@ describe("personal con cargo, permisos por equipo, familia y reto", () => {
       ).status,
     ).toBe(403);
 
-    // La administración cambia el cargo a dirección: ahora escribe estructura y jugadores.
+    // La administración cambia el cargo a dirección: ahora escribe estructura y jugadores, en
+    // las secciones a su cargo (Bloque 19).
     const changed = await json<{ roles: string[]; position: string | null }>(
       await request("POST", `/api/org/members/${physioA.id}/roles`, A, {
         cookie: as(adminA),
@@ -276,6 +302,13 @@ describe("personal con cargo, permisos por equipo, familia y reto", () => {
       200,
     );
     expect(changed).toMatchObject({ roles: ["staff"], position: "director" });
+    await json(
+      await request("PUT", `/api/org/members/${physioA.id}/sections`, A, {
+        cookie: as(adminA),
+        body: { sectionIds: [sectionId] },
+      }),
+      200,
+    );
     expect(
       (
         await request("PATCH", `/api/org/players/${otherPlayerId}`, A, {
@@ -320,6 +353,7 @@ describe("personal con cargo, permisos por equipo, familia y reto", () => {
         })
       ).status,
     ).toBe(200);
+    // El otro equipo no existe para ella (Bloque 19).
     expect(
       (
         await request("PATCH", `/api/org/teams/${otherTeamId}/players/${otherPlayerId}`, A, {
@@ -327,17 +361,15 @@ describe("personal con cargo, permisos por equipo, familia y reto", () => {
           body: { shirtNumber: 9 },
         })
       ).status,
-    ).toBe(403);
+    ).toBe(404);
     const detail = await json<{ access: { roster: boolean } }>(
       await request("GET", `/api/org/teams/${teamId}`, A, { cookie: as(coachA) }),
       200,
     );
     expect(detail.access.roster).toBe(true);
-    const otherDetail = await json<{ access: { roster: boolean } }>(
-      await request("GET", `/api/org/teams/${otherTeamId}`, A, { cookie: as(coachA) }),
-      200,
-    );
-    expect(otherDetail.access.roster).toBe(false);
+    expect(
+      (await request("GET", `/api/org/teams/${otherTeamId}`, A, { cookie: as(coachA) })).status,
+    ).toBe(404);
 
     // Valoraciones: su jugador sí, el del otro equipo no.
     expect(
@@ -355,7 +387,7 @@ describe("personal con cargo, permisos por equipo, familia y reto", () => {
           body: { text: "No es mi jugador" },
         })
       ).status,
-    ).toBe(403);
+    ).toBe(404);
 
     // La vista de conjunto en ámbito propio solo trae su equipo.
     const own = await json<{ players: { firstName: string }[]; scope: string }>(
@@ -386,8 +418,12 @@ describe("personal con cargo, permisos por equipo, familia y reto", () => {
     expect(summary.readiness?.total).toBe(2);
     expect(summary.readiness!.percent).toBeGreaterThan(0);
 
+    // Los movimientos del club son de la administración; el cuerpo técnico no los ve (Bloque 19).
+    expect(
+      (await request("GET", "/api/org/activity?limit=5", A, { cookie: as(coachA) })).status,
+    ).toBe(403);
     const activity = await json<{ entries: { action: string; actorName: string | null }[] }>(
-      await request("GET", "/api/org/activity?limit=5", A, { cookie: as(coachA) }),
+      await request("GET", "/api/org/activity?limit=5", A, { cookie: as(adminA) }),
       200,
     );
     expect(activity.entries.length).toBeGreaterThan(0);
@@ -646,7 +682,8 @@ describe("personal con cargo, permisos por equipo, familia y reto", () => {
       200,
     );
     expect(adminList.manage.scope).toBe("club");
-    // La otra entrenadora no gestiona el reto del Alevín A; la delegación no gestiona ninguno.
+    // Para la otra entrenadora el reto del Alevín A no existe (Bloque 19: fuera de sus equipos);
+    // la delegación no gestiona ninguno.
     expect(
       (
         await request("PATCH", `/api/org/challenges/${teamChallengeId}`, A, {
@@ -654,7 +691,7 @@ describe("personal con cargo, permisos por equipo, familia y reto", () => {
           body: { name: "Mío" },
         })
       ).status,
-    ).toBe(403);
+    ).toBe(404);
     expect(
       (
         await request("POST", `/api/org/challenges/${challengeId}/tasks`, A, {

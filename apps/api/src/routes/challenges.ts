@@ -27,7 +27,7 @@ import {
   type StandingRecord,
   type SubmissionRecord,
 } from "../data/index.ts";
-import { requireActor, requirePermission } from "../http/actor.ts";
+import { accessScopeOf, requireActor, requirePermission } from "../http/actor.ts";
 import type { Actor, AppEnv } from "../http/context.ts";
 import { badRequest, conflict, forbidden, notFound } from "../http/errors.ts";
 import { requireSession } from "../http/session.ts";
@@ -138,9 +138,27 @@ export function createChallengeRoutes(config: ApiConfig, data: DataLayer) {
     reachedTarget: s.totals.approved >= challenge.targetPoints,
   });
 
-  async function challengeOr404(tenant: Tenant, id: string): Promise<ChallengeRecord> {
+  type RouteCtx = Parameters<typeof accessScopeOf>[1];
+
+  /**
+   * Ámbito restringido (Bloque 19, ADR 0033): quien ve solo sus secciones o sus equipos ve los
+   * retos de esas secciones y, de los de equipo, solo los de sus equipos. El resto no existe.
+   */
+  async function visibleChallenges(c: RouteCtx, challenges: ChallengeRecord[]) {
+    const access = await accessScopeOf(data, c);
+    if (access.kind === "club") return challenges;
+    return challenges.filter(
+      (ch) =>
+        access.sectionIds.includes(ch.section.id) &&
+        (ch.team === null || access.teamIds.includes(ch.team.id)),
+    );
+  }
+
+  async function challengeOr404(c: RouteCtx, tenant: Tenant, id: string): Promise<ChallengeRecord> {
     const challenge = await data.challenges.byId(tenant.scope, id);
     if (!challenge) throw notFound("Ese reto no existe.");
+    if ((await visibleChallenges(c, [challenge])).length === 0)
+      throw notFound("Ese reto no existe.");
     return challenge;
   }
 
@@ -233,7 +251,7 @@ export function createChallengeRoutes(config: ApiConfig, data: DataLayer) {
     async (c) => {
       const tenant = scopeOf(c);
       const [challenges, manage] = await Promise.all([
-        data.challenges.list(tenant.scope),
+        data.challenges.list(tenant.scope).then((all) => visibleChallenges(c, all)),
         manageScopeOf(c, tenant),
       ]);
       return c.json({ challenges: challenges.map(challengeDto), manage }, 200);
@@ -298,7 +316,7 @@ export function createChallengeRoutes(config: ApiConfig, data: DataLayer) {
     async (c) => {
       const tenant = scopeOf(c);
       const { id } = c.req.valid("param");
-      const challenge = await challengeOr404(tenant, id);
+      const challenge = await challengeOr404(c, tenant, id);
       return c.json(await detailOf(c, tenant, challenge), 200);
     },
   );
@@ -330,7 +348,7 @@ export function createChallengeRoutes(config: ApiConfig, data: DataLayer) {
       const tenant = scopeOf(c);
       const { id } = c.req.valid("param");
       const body = c.req.valid("json");
-      const before = await challengeOr404(tenant, id);
+      const before = await challengeOr404(c, tenant, id);
       const manageScope = await manageScopeOf(c, tenant);
       if (!canManage(manageScope, before))
         throw forbidden("Solo puedes gestionar los retos de tus equipos.");
@@ -390,7 +408,7 @@ export function createChallengeRoutes(config: ApiConfig, data: DataLayer) {
       const tenant = scopeOf(c);
       const { id } = c.req.valid("param");
       const body = c.req.valid("json");
-      const challenge = await challengeOr404(tenant, id);
+      const challenge = await challengeOr404(c, tenant, id);
       await requireManageOf(c, tenant, challenge);
       if (challenge.status === "closed") throw conflict("Un reto cerrado no admite cambios.");
       const task = await data.challenges.createTask(tenant.scope, id, body);
@@ -425,7 +443,7 @@ export function createChallengeRoutes(config: ApiConfig, data: DataLayer) {
       const tenant = scopeOf(c);
       const { id, taskId } = c.req.valid("param");
       const body = c.req.valid("json");
-      const challenge = await challengeOr404(tenant, id);
+      const challenge = await challengeOr404(c, tenant, id);
       await requireManageOf(c, tenant, challenge);
       if (challenge.status === "closed") throw conflict("Un reto cerrado no admite cambios.");
       const task = await data.challenges.updateTask(tenant.scope, id, taskId, body);
@@ -455,7 +473,7 @@ export function createChallengeRoutes(config: ApiConfig, data: DataLayer) {
     async (c) => {
       const tenant = scopeOf(c);
       const { id, taskId } = c.req.valid("param");
-      const challenge = await challengeOr404(tenant, id);
+      const challenge = await challengeOr404(c, tenant, id);
       await requireManageOf(c, tenant, challenge);
       if (challenge.status === "closed") throw conflict("Un reto cerrado no admite cambios.");
       const outcome = await data.challenges.removeTask(tenant.scope, id, taskId);
@@ -487,7 +505,7 @@ export function createChallengeRoutes(config: ApiConfig, data: DataLayer) {
       const tenant = scopeOf(c);
       const { id } = c.req.valid("param");
       const { status } = c.req.valid("query");
-      await challengeOr404(tenant, id);
+      await challengeOr404(c, tenant, id);
       const teamIds = await reviewScope(c, tenant);
       const submissions = await data.challenges.submissions(tenant.scope, id, { status, teamIds });
       return c.json(
@@ -521,7 +539,7 @@ export function createChallengeRoutes(config: ApiConfig, data: DataLayer) {
       const tenant = scopeOf(c);
       const { id, submissionId } = c.req.valid("param");
       const body = c.req.valid("json");
-      const challenge = await challengeOr404(tenant, id);
+      const challenge = await challengeOr404(c, tenant, id);
       if (challenge.status === "closed") throw conflict("Un reto cerrado no admite validaciones.");
       const existing = await data.challenges.submissionById(tenant.scope, submissionId);
       if (!existing || existing.challengeId !== id) throw notFound("Ese registro no existe.");
@@ -557,7 +575,7 @@ export function createChallengeRoutes(config: ApiConfig, data: DataLayer) {
     async (c) => {
       const tenant = scopeOf(c);
       const { id } = c.req.valid("param");
-      const challenge = await challengeOr404(tenant, id);
+      const challenge = await challengeOr404(c, tenant, id);
       const teamIds = await reviewScope(c, tenant);
       const standings = await data.challenges.standings(tenant.scope, id, { teamIds });
       return c.json(

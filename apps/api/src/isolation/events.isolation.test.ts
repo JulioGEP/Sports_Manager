@@ -225,12 +225,13 @@ describe("agenda, instalaciones y pase de lista", () => {
     });
     expect(badHours.status).toBe(400);
 
-    // La entrenadora las ve pero no las cambia.
+    // La entrenadora solo ve las instalaciones que usa su equipo (Bloque 19): todavía ninguna.
+    // Y no las cambia.
     const listed = await json<{ facilities: { id: string }[] }>(
       await request("GET", "/api/org/facilities", A, { cookie: as(coachA) }),
       200,
     );
-    expect(listed.facilities.map((f) => f.id)).toEqual([facilityA]);
+    expect(listed.facilities).toEqual([]);
     const forbidden = await request("POST", "/api/org/facilities", A, {
       cookie: as(coachA),
       body: { name: "Pista 2", kind: "court" },
@@ -298,6 +299,21 @@ describe("agenda, instalaciones y pase de lista", () => {
     );
     expect(listed.events.map((e) => e.id)).toEqual([seriesFirst, overlapping.event.id]);
     expect(listed.conflicts).toHaveLength(1);
+
+    // Con un entrenamiento de su equipo en la pista, la entrenadora ya la ve (Bloque 19); la
+    // reserva sin equipo es del club entero y también sale en su agenda.
+    const coachFacilities = await json<{ facilities: { id: string }[] }>(
+      await request("GET", "/api/org/facilities", A, { cookie: as(coachA) }),
+      200,
+    );
+    expect(coachFacilities.facilities.map((f) => f.id)).toEqual([facilityA]);
+    const coachAgenda = await json<{ events: EventDto[] }>(
+      await request("GET", `/api/org/events?from=${at(0, 0)}&to=${at(2, 0)}`, A, {
+        cookie: as(coachA),
+      }),
+      200,
+    );
+    expect(coachAgenda.events.map((e) => e.id)).toEqual([seriesFirst, overlapping.event.id]);
 
     const unknownFacility = await request("POST", "/api/org/events", A, {
       cookie: as(adminA),
@@ -439,14 +455,14 @@ describe("agenda, instalaciones y pase de lista", () => {
     );
     expect(excused.event.attendance).toEqual({ present: 0, total: 1 });
 
-    // Sin equipo propio, la otra entrenadora lo consulta (todo el personal lee) pero no lo escribe.
-    const readOnly = await json<{ access: { write: boolean } }>(
-      await request("GET", `/api/org/events/${seriesFirst}/attendance`, A, {
-        cookie: as(coachFreeA),
-      }),
-      200,
-    );
-    expect(readOnly.access.write).toBe(false);
+    // Sin equipo propio, para la otra entrenadora el evento no existe (Bloque 19): ni lo lee ni lo escribe.
+    expect(
+      (
+        await request("GET", `/api/org/events/${seriesFirst}/attendance`, A, {
+          cookie: as(coachFreeA),
+        })
+      ).status,
+    ).toBe(404);
     expect(
       (
         await request("PUT", `/api/org/events/${seriesFirst}/attendance`, A, {
@@ -454,7 +470,15 @@ describe("agenda, instalaciones y pase de lista", () => {
           body: { entries: [{ playerId: playerA, status: "present" }] },
         })
       ).status,
-    ).toBe(403);
+    ).toBe(404);
+    // La administración lo lee sin escribirlo desde el pase de lista propio de un equipo ajeno: todo.
+    const readByAdmin = await json<{ access: { write: boolean } }>(
+      await request("GET", `/api/org/events/${seriesFirst}/attendance`, A, {
+        cookie: as(adminA),
+      }),
+      200,
+    );
+    expect(readByAdmin.access.write).toBe(true);
 
     // La administración lee el resumen del deportista.
     const summary = await json<{
@@ -506,16 +530,21 @@ describe("agenda, instalaciones y pase de lista", () => {
     expect(again.generated).toBeLessThan(20);
 
     const listed = await json<{ schedule: unknown[] }>(
-      await request("GET", `/api/org/teams/${teamA}/schedule`, A, { cookie: as(coachFreeA) }),
+      await request("GET", `/api/org/teams/${teamA}/schedule`, A, { cookie: as(adminA) }),
       200,
     );
     expect(listed.schedule).toHaveLength(1);
+    // Para quien no lleva el equipo, ni el horario existe (Bloque 19).
+    expect(
+      (await request("GET", `/api/org/teams/${teamA}/schedule`, A, { cookie: as(coachFreeA) }))
+        .status,
+    ).toBe(404);
 
     const notOwn = await request("PUT", `/api/org/teams/${otherTeamA}/schedule`, A, {
       cookie: as(coachA),
       body: { slots: [] },
     });
-    expect(notOwn.status).toBe(403);
+    expect(notOwn.status).toBe(404);
     const badFacility = await request("PUT", `/api/org/teams/${teamA}/schedule`, A, {
       cookie: as(adminA),
       body: {

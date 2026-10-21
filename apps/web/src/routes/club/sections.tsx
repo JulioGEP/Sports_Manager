@@ -1,5 +1,5 @@
 import {
-  MembersResponseSchema,
+  EligibleMembersResponseSchema,
   SeasonsResponseSchema,
   SectionResponseSchema,
   SectionsResponseSchema,
@@ -284,9 +284,11 @@ export function SectionSheet({
     enabled: open,
     staleTime: 300_000,
   });
+  // Quien escribe la estructura (dirección, coordinación) no siempre lee el personal (Bloque 19):
+  // la lista de candidatos a coordinar sale de un listado propio, sin datos del resto.
   const members = useQuery({
-    queryKey: ["org", slug, "members"],
-    queryFn: () => apiFetch("/api/org/members", { schema: MembersResponseSchema }),
+    queryKey: ["org", slug, "eligible-staff"],
+    queryFn: () => apiFetch("/api/org/eligible-staff", { schema: EligibleMembersResponseSchema }),
     enabled: open,
   });
   const seasons = useQuery({
@@ -389,9 +391,7 @@ export function SectionSheet({
     }
   }
 
-  const staff = (members.data?.members ?? []).filter((m) =>
-    m.roles.some((r) => r === "org_admin" || r === "staff" || r === "coach"),
-  );
+  const staff = members.data?.members ?? [];
 
   return (
     <Sheet
