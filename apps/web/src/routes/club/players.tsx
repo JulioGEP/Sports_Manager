@@ -138,10 +138,7 @@ export function PlayersPage() {
         description={t("description")}
         actions={
           canWrite ? (
-            <Button
-              icon={<Icon.Plus size={20} aria-hidden="true" />}
-              onClick={() => update({ new: "1" })}
-            >
+            <Button action="add" onClick={() => update({ new: "1" })}>
               {t("new")}
             </Button>
           ) : null
@@ -298,7 +295,12 @@ export function PlayersPage() {
               }
               action={
                 canWrite && players.data && players.data.players.length === 0 ? (
-                  <Button variant="secondary" size="sm" onClick={() => update({ new: "1" })}>
+                  <Button
+                    action="add"
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => update({ new: "1" })}
+                  >
                     {t("new")}
                   </Button>
                 ) : null
@@ -382,7 +384,7 @@ export function PlayersPage() {
               ) : undefined,
           })}
           actions={(p) => (
-            <ButtonLink to={paths.player(p.id)} variant="secondary" size="sm">
+            <ButtonLink action="open" to={paths.player(p.id)} variant="secondary" size="sm">
               {c("open")}
             </ButtonLink>
           )}
@@ -473,7 +475,7 @@ function NewPlayerSheet({
           <Button variant="secondary" onClick={onClose}>
             {c("cancel")}
           </Button>
-          <Button type="submit" form="player-form" loading={busy}>
+          <Button action="add" type="submit" form="player-form" loading={busy}>
             {t("submit")}
           </Button>
         </>

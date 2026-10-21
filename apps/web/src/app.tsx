@@ -91,7 +91,7 @@ export const router = createBrowserRouter([
       // Las secciones sustituyen a la lista de equipos (Bloque 14); la ficha de equipo sigue aquí.
       { path: "teams", element: <ClubRedirect to="/sections" /> },
       { path: "teams/:id", element: <TeamPage /> },
-      // Partido en directo (Bloque 19): partidos del equipo, histórico, consola y estadísticas.
+      // Partido en directo (Bloque 20): partidos del equipo, histórico, consola y estadísticas.
       { path: "teams/:id/matches", element: <TeamMatchesPage /> },
       { path: "teams/:id/matches/history", element: <TeamMatchHistoryPage /> },
       { path: "matches/:id", element: <MatchLivePage /> },

@@ -66,7 +66,8 @@ type Pending = PlayerDetailResponse["pendingInvitations"][number];
 type Objective = NonNullable<PlayerDetailResponse["objective"]>;
 type Plan = NonNullable<PlayerDetailResponse["developmentPlan"]>;
 type Indicator = PlayerDetailResponse["indicators"][number];
-type SheetName = "edit" | "invite" | "link" | "objective" | "indicators" | "plan" | "note";
+type SheetName =
+  "edit" | "invite" | "link" | "objective" | "indicators" | "plan" | "note" | "staff";
 
 const inviteKind: Record<Pending["state"], StatusKind> = {
   pending: "info",
@@ -137,6 +138,7 @@ function useEligibleStaff(playerId: string) {
  */
 export function PlayerPage() {
   const t = useT("player");
+  const positionsT = useT("positions");
   const genders = useT("genders");
   const ps = useT("playerStatus");
   const rel = useT("relationships");
@@ -189,6 +191,9 @@ export function PlayerPage() {
   const { player, teams, guardians, pendingInvitations, objective, indicators, developmentPlan } =
     detail.data;
   const timeline = detail.data.timeline;
+  /** Personal asignado (Bloque 19): quien atiende al deportista sin llevar su equipo. */
+  const assignedStaff = detail.data.staff;
+  const canAssignStaff = detail.data.access.staff;
   /** Valorar y cambiar la foto: lo decide la API (permiso de club o cuerpo técnico del jugador). */
   const canAssess = detail.data.access.assess;
   const canPhoto = detail.data.access.photo;
@@ -228,6 +233,15 @@ export function PlayerPage() {
     try {
       await apiFetch(`/api/org/players/${id}/guardians/${g.userId}`, { method: "DELETE" });
       toast("success", t("unlinked", { name: g.name }));
+      void reload();
+    } catch (err) {
+      toast("error", errors(errorKey(err)));
+    }
+  }
+  async function unassignStaff(member: { userId: string; name: string }) {
+    try {
+      await apiFetch(`/api/org/players/${id}/staff/${member.userId}`, { method: "DELETE" });
+      toast("success", t("staff.removed", { member: member.name, name }));
       void reload();
     } catch (err) {
       toast("error", errors(errorKey(err)));
@@ -320,12 +334,7 @@ export function PlayerPage() {
   return (
     <div className="flex flex-col gap-5">
       <div>
-        <ButtonLink
-          to={paths.players}
-          variant="tertiary"
-          size="sm"
-          icon={<Icon.ArrowLeft size={16} aria-hidden="true" />}
-        >
+        <ButtonLink action="back" to={paths.players} variant="tertiary" size="sm">
           {t("back")}
         </ButtonLink>
       </div>
@@ -352,6 +361,7 @@ export function PlayerPage() {
                   onChange={(e) => void uploadPhoto(e.target.files?.[0])}
                 />
                 <Button
+                  action="photo"
                   variant="tertiary"
                   size="sm"
                   loading={photoBusy}
@@ -360,7 +370,12 @@ export function PlayerPage() {
                   {photoBusy ? t("photo.uploading") : t("photo.change")}
                 </Button>
                 {player.photoUrl ? (
-                  <Button variant="tertiary" size="sm" onClick={() => setRemovingPhoto(true)}>
+                  <Button
+                    action="delete"
+                    variant="danger"
+                    size="sm"
+                    onClick={() => setRemovingPhoto(true)}
+                  >
                     {t("photo.remove")}
                   </Button>
                 ) : null}
@@ -396,11 +411,7 @@ export function PlayerPage() {
         </div>
         <div className="flex flex-wrap gap-2">
           {canWrite ? (
-            <Button
-              variant="secondary"
-              icon={<Icon.PencilSimple size={18} aria-hidden="true" />}
-              onClick={() => setSheet("edit")}
-            >
+            <Button action="edit" variant="secondary" onClick={() => setSheet("edit")}>
               {t("editProfile")}
             </Button>
           ) : null}
@@ -478,11 +489,21 @@ export function PlayerPage() {
             canAssess ? (
               <>
                 {objective ? (
-                  <Button variant="tertiary" size="sm" onClick={() => setRemovingObjective(true)}>
+                  <Button
+                    action="delete"
+                    variant="danger"
+                    size="sm"
+                    onClick={() => setRemovingObjective(true)}
+                  >
                     {t("objective.remove")}
                   </Button>
                 ) : null}
-                <Button variant="secondary" size="sm" onClick={() => setSheet("objective")}>
+                <Button
+                  action={objective ? "edit" : "add"}
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setSheet("objective")}
+                >
                   {objective ? t("objective.edit") : t("objective.define")}
                 </Button>
               </>
@@ -522,7 +543,12 @@ export function PlayerPage() {
               description={t("objective.emptyHint")}
               action={
                 canAssess ? (
-                  <Button variant="secondary" size="sm" onClick={() => setSheet("objective")}>
+                  <Button
+                    action="add"
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setSheet("objective")}
+                  >
                     {t("objective.define")}
                   </Button>
                 ) : null
@@ -562,21 +588,16 @@ export function PlayerPage() {
                   </span>
                   {item.to ? (
                     <ButtonLink
+                      action="open"
                       to={item.to}
                       external={item.external ?? false}
                       variant="tertiary"
                       size="sm"
-                      icon={<Icon.ArrowRight size={16} aria-hidden="true" />}
                     >
                       {t("actions.go")}
                     </ButtonLink>
                   ) : item.onClick ? (
-                    <Button
-                      variant="tertiary"
-                      size="sm"
-                      icon={<Icon.ArrowRight size={16} aria-hidden="true" />}
-                      onClick={item.onClick}
-                    >
+                    <Button action="open" variant="tertiary" size="sm" onClick={item.onClick}>
                       {t("actions.go")}
                     </Button>
                   ) : null}
@@ -602,7 +623,7 @@ export function PlayerPage() {
                 {t("timeline.count", { count: timeline.length })}
               </StatusChip>
               {canAssess ? (
-                <Button variant="secondary" size="sm" onClick={() => setSheet("note")}>
+                <Button action="add" variant="secondary" size="sm" onClick={() => setSheet("note")}>
                   {t("timeline.add")}
                 </Button>
               ) : null}
@@ -683,15 +704,15 @@ export function PlayerPage() {
           <Card title={t("quickActions.title")}>
             <div className="flex flex-col gap-2">
               {current ? (
-                <ButtonLink to={paths.team(current.teamId)} variant="secondary">
+                <ButtonLink action="open" to={paths.team(current.teamId)} variant="secondary">
                   {t("quickActions.openTeam", { team: current.teamName })}
                 </ButtonLink>
               ) : null}
-              <ButtonLink to={`#${FAMILY_ANCHOR}`} external variant="secondary">
+              <ButtonLink action="open" to={`#${FAMILY_ANCHOR}`} external variant="secondary">
                 {t("quickActions.familyAccess")}
               </ButtonLink>
               {canChallenges ? (
-                <ButtonLink to={paths.challenges} variant="secondary">
+                <ButtonLink action="open" to={paths.challenges} variant="secondary">
                   {t("quickActions.challenge")}
                 </ButtonLink>
               ) : null}
@@ -717,7 +738,12 @@ export function PlayerPage() {
               </StatusChip>
             ) : null}
             {canAssess ? (
-              <Button variant="secondary" size="sm" onClick={() => setSheet("plan")}>
+              <Button
+                action={developmentPlan ? "edit" : "add"}
+                variant="secondary"
+                size="sm"
+                onClick={() => setSheet("plan")}
+              >
                 {developmentPlan ? t("plan.edit") : t("plan.create")}
               </Button>
             ) : null}
@@ -763,7 +789,7 @@ export function PlayerPage() {
             description={t("plan.emptyHint")}
             action={
               canAssess ? (
-                <Button variant="secondary" size="sm" onClick={() => setSheet("plan")}>
+                <Button action="add" variant="secondary" size="sm" onClick={() => setSheet("plan")}>
                   {t("plan.create")}
                 </Button>
               ) : null
@@ -842,15 +868,16 @@ export function PlayerPage() {
             actions={
               canWrite ? (
                 <>
-                  <Button variant="secondary" size="sm" onClick={() => setSheet("link")}>
+                  <Button
+                    action="link"
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setSheet("link")}
+                  >
                     {t("linkMember")}
                   </Button>
                   {canInvite ? (
-                    <Button
-                      size="sm"
-                      icon={<Icon.Envelope size={16} aria-hidden="true" />}
-                      onClick={() => setSheet("invite")}
-                    >
+                    <Button action="invite" size="sm" onClick={() => setSheet("invite")}>
                       {t("inviteFamily")}
                     </Button>
                   ) : null}
@@ -884,7 +911,12 @@ export function PlayerPage() {
                     </span>
                     <StatusChip kind="club">{rel(g.relationship)}</StatusChip>
                     {canWrite ? (
-                      <Button variant="tertiary" size="sm" onClick={() => setUnlinking(g)}>
+                      <Button
+                        action="unlink"
+                        variant="tertiary"
+                        size="sm"
+                        onClick={() => setUnlinking(g)}
+                      >
                         {t("unlink")}
                       </Button>
                     ) : null}
@@ -910,6 +942,45 @@ export function PlayerPage() {
           </Card>
         </div>
 
+        <Card
+          title={t("staff.title")}
+          description={t("staff.description")}
+          padded={false}
+          actions={
+            canAssignStaff ? (
+              <Button variant="secondary" size="sm" onClick={() => setSheet("staff")}>
+                {t("staff.assign")}
+              </Button>
+            ) : null
+          }
+        >
+          {assignedStaff.length === 0 ? (
+            <EmptyState icon={<Icon.Heartbeat weight="duotone" />} title={t("staff.empty")} />
+          ) : (
+            <ul className="flex flex-col divide-y divide-line">
+              {assignedStaff.map((member) => (
+                <li
+                  key={member.userId}
+                  className="flex min-h-16 flex-wrap items-center gap-3 px-5 py-3"
+                >
+                  <Avatar name={member.name} />
+                  <span className="flex min-w-0 flex-1 flex-col">
+                    <span className="truncate font-medium text-ink">{member.name}</span>
+                  </span>
+                  {member.position ? (
+                    <StatusChip kind="club">{positionsT(member.position)}</StatusChip>
+                  ) : null}
+                  {canAssignStaff ? (
+                    <Button variant="tertiary" size="sm" onClick={() => void unassignStaff(member)}>
+                      {t("staff.remove")}
+                    </Button>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+
         {canWrite ? (
           <Card title={t("status")}>
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -917,11 +988,21 @@ export function PlayerPage() {
                 {ps(player.status)}
               </StatusChip>
               {player.status === "active" ? (
-                <Button variant="danger" size="sm" onClick={() => setDeactivating(true)}>
+                <Button
+                  action="deactivate"
+                  variant="danger"
+                  size="sm"
+                  onClick={() => setDeactivating(true)}
+                >
                   {t("deactivate")}
                 </Button>
               ) : (
-                <Button variant="secondary" size="sm" onClick={() => void setStatus("active")}>
+                <Button
+                  action="restore"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => void setStatus("active")}
+                >
                   {t("reactivate")}
                 </Button>
               )}
@@ -993,11 +1074,21 @@ export function PlayerPage() {
           onLinked={() => void reload()}
         />
       ) : null}
+      {sheet === "staff" ? (
+        <AssignStaffSheet
+          playerId={id}
+          playerName={name}
+          excluded={assignedStaff.map((m) => m.userId)}
+          onClose={() => setSheet(null)}
+          onAssigned={() => void reload()}
+        />
+      ) : null}
       <ConfirmDialog
         open={unlinking !== null}
         title={t("confirmUnlinkTitle", { name: unlinking?.name ?? "" })}
         body={t("confirmUnlinkBody")}
         confirmLabel={t("unlink")}
+        confirmAction="unlink"
         cancelLabel={c("cancel")}
         onConfirm={() => unlinking && void unlink(unlinking)}
         onCancel={() => setUnlinking(null)}
@@ -1007,6 +1098,7 @@ export function PlayerPage() {
         title={t("photo.confirmRemoveTitle", { name })}
         body={t("photo.confirmRemoveBody")}
         confirmLabel={t("photo.remove")}
+        confirmAction="delete"
         cancelLabel={c("cancel")}
         onConfirm={() => void removePhoto()}
         onCancel={() => setRemovingPhoto(false)}
@@ -1016,6 +1108,7 @@ export function PlayerPage() {
         title={t("objective.confirmRemoveTitle", { name })}
         body={t("objective.confirmRemoveBody")}
         confirmLabel={t("objective.remove")}
+        confirmAction="delete"
         cancelLabel={c("cancel")}
         onConfirm={() => void removeObjective()}
         onCancel={() => setRemovingObjective(false)}
@@ -1026,6 +1119,7 @@ export function PlayerPage() {
         title={voice("member.remove.title", { player: name })}
         body={voice("member.remove.body")}
         confirmLabel={voice("member.remove.confirm")}
+        confirmAction="deactivate"
         cancelLabel={c("cancel")}
         onConfirm={() => void setStatus("inactive")}
         onCancel={() => setDeactivating(false)}
@@ -1104,7 +1198,7 @@ function EditPlayerSheet({
           <Button variant="secondary" onClick={onClose}>
             {c("cancel")}
           </Button>
-          <Button type="submit" form="edit-player-form" loading={busy}>
+          <Button action="save" type="submit" form="edit-player-form" loading={busy}>
             {c("save")}
           </Button>
         </>
@@ -1332,7 +1426,7 @@ function ObjectiveSheet({
           <Button variant="secondary" onClick={onClose}>
             {c("cancel")}
           </Button>
-          <Button type="submit" form="objective-form" loading={busy}>
+          <Button action="save" type="submit" form="objective-form" loading={busy}>
             {c("save")}
           </Button>
         </>
@@ -1463,7 +1557,7 @@ function IndicatorsSheet({
           <Button variant="secondary" onClick={onClose}>
             {c("cancel")}
           </Button>
-          <Button type="submit" form="indicators-form" loading={busy}>
+          <Button action="save" type="submit" form="indicators-form" loading={busy}>
             {c("save")}
           </Button>
         </>
@@ -1572,7 +1666,7 @@ function PlanSheet({
           <Button variant="secondary" onClick={onClose}>
             {c("cancel")}
           </Button>
-          <Button type="submit" form="plan-form" loading={busy}>
+          <Button action="save" type="submit" form="plan-form" loading={busy}>
             {c("save")}
           </Button>
         </>
@@ -1684,7 +1778,7 @@ function NoteSheet({
           <Button variant="secondary" onClick={onClose}>
             {c("cancel")}
           </Button>
-          <Button type="submit" form="note-form" loading={busy}>
+          <Button action="add" type="submit" form="note-form" loading={busy}>
             {t("submit")}
           </Button>
         </>
@@ -1781,7 +1875,7 @@ function InviteFamilySheet({
           <Button variant="secondary" onClick={onClose}>
             {c("cancel")}
           </Button>
-          <Button type="submit" form="invite-family-form" loading={busy}>
+          <Button action="send" type="submit" form="invite-family-form" loading={busy}>
             {t("submit")}
           </Button>
         </>
@@ -1902,7 +1996,13 @@ function LinkMemberSheet({
           <Button variant="secondary" onClick={onClose}>
             {c("cancel")}
           </Button>
-          <Button type="submit" form="link-member-form" loading={busy} disabled={!selected}>
+          <Button
+            action="link"
+            type="submit"
+            form="link-member-form"
+            loading={busy}
+            disabled={!selected}
+          >
             {t("submit")}
           </Button>
         </>
@@ -1943,6 +2043,101 @@ function LinkMemberSheet({
             </Select>
           )}
         </Field>
+      </form>
+    </Sheet>
+  );
+}
+
+/** Asignar personal a un deportista (Bloque 19): un miembro con rol de personal, entrenador o administración. */
+function AssignStaffSheet({
+  playerId,
+  playerName,
+  excluded,
+  onClose,
+  onAssigned,
+}: {
+  playerId: string;
+  playerName: string;
+  excluded: string[];
+  onClose: () => void;
+  onAssigned: () => void;
+}) {
+  const t = useT("player.staff.sheet");
+  const tp = useT("player.staff");
+  const c = useT("common");
+  const errors = useT("errors");
+  const toast = useToast();
+  const { slug } = useReadyClub();
+  const [userId, setUserId] = useState("");
+  const [busy, setBusy] = useState(false);
+  const members = useQuery({
+    queryKey: ["org", slug, "player", playerId, "eligible-staff"],
+    queryFn: () =>
+      apiFetch(`/api/org/players/${playerId}/eligible-staff`, {
+        schema: EligibleMembersResponseSchema,
+      }),
+  });
+  const candidates = (members.data?.members ?? []).filter((m) => !excluded.includes(m.userId));
+  const selected = candidates.find((m) => m.userId === userId) ?? candidates[0] ?? null;
+
+  async function submit(e: FormEvent) {
+    e.preventDefault();
+    if (!selected) return;
+    setBusy(true);
+    try {
+      await apiFetch(`/api/org/players/${playerId}/staff`, {
+        method: "POST",
+        body: { userId: selected.userId },
+        schema: PlayerDetailResponseSchema,
+      });
+      toast("success", tp("assigned", { member: selected.name, name: playerName }));
+      onClose();
+      onAssigned();
+    } catch (err) {
+      toast("error", errors(errorKey(err)));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Sheet
+      open
+      onClose={onClose}
+      closeLabel={c("close")}
+      title={t("title", { name: playerName })}
+      description={t("description")}
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose}>
+            {c("cancel")}
+          </Button>
+          <Button type="submit" form="assign-staff-form" loading={busy} disabled={!selected}>
+            {t("submit")}
+          </Button>
+        </>
+      }
+    >
+      <form id="assign-staff-form" className="flex flex-col gap-4" onSubmit={(e) => void submit(e)}>
+        {members.data && candidates.length === 0 ? (
+          <Alert kind="info">{t("empty")}</Alert>
+        ) : (
+          <Field label={t("member")}>
+            {(id) => (
+              <Select
+                id={id}
+                value={selected?.userId ?? ""}
+                onChange={(e) => setUserId(e.target.value)}
+              >
+                {candidates.map((m) => (
+                  <option key={m.userId} value={m.userId}>
+                    {m.name} · {m.email}
+                  </option>
+                ))}
+              </Select>
+            )}
+          </Field>
+        )}
       </form>
     </Sheet>
   );

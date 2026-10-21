@@ -222,7 +222,7 @@ export const clubPaths = (slug: string) => ({
   /** `/teams` redirige a secciones; la ficha de equipo sigue en `/teams/:id`. */
   teams: `/${slug}/sections`,
   team: (id: string) => `/${slug}/teams/${id}`,
-  /** Partido en directo (Bloque 19): partidos del equipo, histórico, consola y estadísticas. */
+  /** Partido en directo (Bloque 20): partidos del equipo, histórico, consola y estadísticas. */
   teamMatches: (id: string) => `/${slug}/teams/${id}/matches`,
   teamMatchHistory: (id: string) => `/${slug}/teams/${id}/matches/history`,
   match: (id: string) => `/${slug}/matches/${id}`,

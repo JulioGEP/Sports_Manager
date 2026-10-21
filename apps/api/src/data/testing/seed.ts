@@ -1,5 +1,5 @@
 import { createDb, schema } from "@sportsmanager/db";
-import type { RoleCode } from "@sportsmanager/shared";
+import type { RoleCode, StaffPosition } from "@sportsmanager/shared";
 import { hashPassword } from "better-auth/crypto";
 import { and, desc, eq } from "drizzle-orm";
 
@@ -73,10 +73,20 @@ export function createSeeder(connectionString: string) {
       return rows[0] ?? null;
     },
 
-    async membership(organizationId: string, userId: string, roleCode: RoleCode): Promise<void> {
+    async membership(
+      organizationId: string,
+      userId: string,
+      roleCode: RoleCode,
+      position: StaffPosition | null = null,
+    ): Promise<void> {
       await db
         .insert(schema.memberships)
-        .values({ organizationId, userId, roleCode })
+        .values({
+          organizationId,
+          userId,
+          roleCode,
+          position: roleCode === "staff" ? position : null,
+        })
         .onConflictDoNothing();
     },
 

@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { CLUB, expectLegibleButtons, login, shot, signOut, suffix } from "./helpers";
 
 /**
- * Partido en directo (Bloque 19, ADR 0032): configuración del motor por sección, partidos del
+ * Partido en directo (Bloque 20, ADR 0034): configuración del motor por sección, partidos del
  * equipo, estadísticas e histórico de los partidos sembrados, un partido nuevo registrado desde
  * la consola (quinteto, cronómetro, gol con zona, gol rival, cambio, deshacer y cierre) y lo que
  * ven la entrenadora y la familia.

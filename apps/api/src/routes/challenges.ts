@@ -11,7 +11,7 @@ import {
   ChallengeTaskUpdateSchema,
   ChallengeUpdateSchema,
   ChallengesResponseSchema,
-  FamilyChallengeResponseSchema,
+  FamilyChallengesResponseSchema,
   SubmissionCreateSchema,
   SubmissionReviewSchema,
   SUBMISSION_STATUSES,
@@ -27,7 +27,7 @@ import {
   type StandingRecord,
   type SubmissionRecord,
 } from "../data/index.ts";
-import { requireActor, requirePermission } from "../http/actor.ts";
+import { accessScopeOf, requireActor, requirePermission } from "../http/actor.ts";
 import type { Actor, AppEnv } from "../http/context.ts";
 import { badRequest, conflict, forbidden, notFound } from "../http/errors.ts";
 import { requireSession } from "../http/session.ts";
@@ -55,6 +55,11 @@ const challengeDto = (c: ChallengeRecord) => ({ ...c, updatedAt: c.updatedAt.toI
  * gestiona el catálogo (`org.challenges.manage`) y valida registros, de todo el club
  * (`org.challenges.review`) o solo de sus equipos (`org.challenges.review_own`). La familia
  * registra la actividad de los suyos y ve solo sus puntos (`org.family.*`): nunca una comparativa.
+ *
+ * Ámbito (ADR 0032): cada reto es de una sección o de un equipo de esa sección. Quien valida
+ * todo el club gestiona retos de cualquier sección o equipo; quien solo valida lo suyo (la
+ * entrenadora) crea y gestiona solo retos de equipo de los equipos que lleva. La familia ve, por
+ * cada jugador, los retos activos de su sección y de su equipo.
  */
 export function createChallengeRoutes(config: ApiConfig, data: DataLayer) {
   const app = new OpenAPIHono<AppEnv>();
@@ -133,11 +138,79 @@ export function createChallengeRoutes(config: ApiConfig, data: DataLayer) {
     reachedTarget: s.totals.approved >= challenge.targetPoints,
   });
 
-  async function challengeOr404(tenant: Tenant, id: string): Promise<ChallengeRecord> {
+  type RouteCtx = Parameters<typeof accessScopeOf>[1];
+
+  /**
+   * Ámbito restringido (Bloque 19, ADR 0033): quien ve solo sus secciones o sus equipos ve los
+   * retos de esas secciones y, de los de equipo, solo los de sus equipos. El resto no existe.
+   */
+  async function visibleChallenges(c: RouteCtx, challenges: ChallengeRecord[]) {
+    const access = await accessScopeOf(data, c);
+    if (access.kind === "club") return challenges;
+    return challenges.filter(
+      (ch) =>
+        access.sectionIds.includes(ch.section.id) &&
+        (ch.team === null || access.teamIds.includes(ch.team.id)),
+    );
+  }
+
+  async function challengeOr404(c: RouteCtx, tenant: Tenant, id: string): Promise<ChallengeRecord> {
     const challenge = await data.challenges.byId(tenant.scope, id);
     if (!challenge) throw notFound("Ese reto no existe.");
+    if ((await visibleChallenges(c, [challenge])).length === 0)
+      throw notFound("Ese reto no existe.");
     return challenge;
   }
+
+  /**
+   * Hasta dónde llega quien pregunta al gestionar retos. Con `org.challenges.review` (todo el
+   * club), cualquier sección o equipo; con solo `review_own`, retos de equipo de los suyos.
+   */
+  async function manageScopeOf(
+    c: Ctx,
+    tenant: Tenant,
+  ): Promise<{ scope: "club" | "own" | "none"; ownTeamIds: string[] }> {
+    const actor = c.get("actor");
+    if (!actor.permissions.has("org.challenges.manage")) return { scope: "none", ownTeamIds: [] };
+    if (actor.permissions.has("org.challenges.review")) return { scope: "club", ownTeamIds: [] };
+    if (actor.permissions.has("org.challenges.review_own")) {
+      return {
+        scope: "own",
+        ownTeamIds: await data.memberships.ownTeamIds(tenant.scope, actorId(c)),
+      };
+    }
+    return { scope: "club", ownTeamIds: [] };
+  }
+
+  const canManage = (
+    manage: { scope: "club" | "own" | "none"; ownTeamIds: string[] },
+    challenge: { team: { id: string } | null },
+  ) =>
+    manage.scope === "club" ||
+    (manage.scope === "own" &&
+      challenge.team !== null &&
+      manage.ownTeamIds.includes(challenge.team.id));
+
+  async function requireManageOf(c: Ctx, tenant: Tenant, challenge: ChallengeRecord) {
+    if (!canManage(await manageScopeOf(c, tenant), challenge))
+      throw forbidden("Solo puedes gestionar los retos de tus equipos.");
+  }
+
+  const detailOf = async (c: Ctx, tenant: Tenant, challenge: ChallengeRecord) => {
+    const actor = c.get("actor");
+    const manageScope = await manageScopeOf(c, tenant);
+    return {
+      challenge: challengeDto(challenge),
+      tasks: await data.challenges.tasksOf(tenant.scope, challenge.id),
+      access: {
+        manage: canManage(manageScope, challenge),
+        review:
+          actor.permissions.has("org.challenges.review") ||
+          actor.permissions.has("org.challenges.review_own"),
+      },
+      manage: manageScope,
+    };
+  };
 
   /**
    * Ámbito de validación: `undefined` es todo el club; una lista de equipos, solo los propios.
@@ -169,15 +242,19 @@ export function createChallengeRoutes(config: ApiConfig, data: DataLayer) {
       method: "get",
       path: "/api/org/challenges",
       tags: ["Retos"],
-      summary: "Retos del club: activos primero",
+      summary:
+        "Retos del club: activos primero, agrupados por sección. `manage` dice hasta dónde llega quien pregunta",
       security: [{ sessionCookie: [] }],
       middleware: [read],
       responses: { 200: json("Retos", ChallengesResponseSchema), ...errors },
     }),
     async (c) => {
       const tenant = scopeOf(c);
-      const challenges = await data.challenges.list(tenant.scope);
-      return c.json({ challenges: challenges.map(challengeDto) }, 200);
+      const [challenges, manage] = await Promise.all([
+        data.challenges.list(tenant.scope).then((all) => visibleChallenges(c, all)),
+        manageScopeOf(c, tenant),
+      ]);
+      return c.json({ challenges: challenges.map(challengeDto), manage }, 200);
     },
   );
 
@@ -187,7 +264,7 @@ export function createChallengeRoutes(config: ApiConfig, data: DataLayer) {
       path: "/api/org/challenges",
       tags: ["Retos"],
       summary:
-        "Crea un reto. Con `withDefaultTasks`, nace con el catálogo de ejemplo en el idioma del club",
+        "Crea un reto de una sección o de un equipo de esa sección. Con `withDefaultTasks`, nace con el catálogo de ejemplo en el idioma del club. Quien solo valida lo suyo crea solo retos de sus equipos",
       security: [{ sessionCookie: [] }],
       middleware: [manage],
       request: {
@@ -198,20 +275,27 @@ export function createChallengeRoutes(config: ApiConfig, data: DataLayer) {
       },
       responses: {
         201: json("Reto creado", ChallengeResponseSchema),
-        400: error("Temporada desconocida"),
+        400: error("Sección, equipo o temporada desconocidos"),
         ...errors,
       },
     }),
     async (c) => {
       const tenant = scopeOf(c);
       const body = c.req.valid("json");
+      const manageScope = await manageScopeOf(c, tenant);
+      if (!canManage(manageScope, { team: body.teamId ? { id: body.teamId } : null }))
+        throw forbidden("Solo puedes crear retos para tus equipos.");
       const tasks = body.withDefaultTasks
         ? defaultChallengeTasks(tenant.organization.defaultLocale as Locale)
         : [];
       const result = await data.challenges.create(tenant.scope, body, actorId(c), tasks);
+      if (result === "unknown_section") throw badRequest("Esa sección no es de este club.");
+      if (result === "unknown_team") throw badRequest("Ese equipo no es de esa sección.");
       if (result === "unknown_season") throw badRequest("Esa temporada no es de este club.");
       await audit(c, tenant, "challenge.created", result.name, {
         status: result.status,
+        section: result.section.name,
+        team: result.team?.name ?? null,
         tasks: tasks.length,
       });
       return c.json({ challenge: challengeDto(result) }, 201);
@@ -223,7 +307,7 @@ export function createChallengeRoutes(config: ApiConfig, data: DataLayer) {
       method: "get",
       path: "/api/org/challenges/{id}",
       tags: ["Retos"],
-      summary: "Un reto con su catálogo de pruebas",
+      summary: "Un reto con su catálogo de pruebas y lo que quien pregunta puede hacer con él",
       security: [{ sessionCookie: [] }],
       middleware: [read],
       request: { params: idParam },
@@ -232,9 +316,8 @@ export function createChallengeRoutes(config: ApiConfig, data: DataLayer) {
     async (c) => {
       const tenant = scopeOf(c);
       const { id } = c.req.valid("param");
-      const challenge = await challengeOr404(tenant, id);
-      const tasks = await data.challenges.tasksOf(tenant.scope, id);
-      return c.json({ challenge: challengeDto(challenge), tasks }, 200);
+      const challenge = await challengeOr404(c, tenant, id);
+      return c.json(await detailOf(c, tenant, challenge), 200);
     },
   );
 
@@ -244,7 +327,7 @@ export function createChallengeRoutes(config: ApiConfig, data: DataLayer) {
       path: "/api/org/challenges/{id}",
       tags: ["Retos"],
       summary:
-        "Edita un reto, lo activa o lo cierra. Al cerrarlo, cada jugador con puntos aprobados recibe un registro en su timeline",
+        "Edita un reto, lo activa o lo cierra. El ámbito (sección o equipo) solo cambia en borrador. Al cerrarlo, cada jugador con puntos aprobados recibe un registro en su timeline",
       security: [{ sessionCookie: [] }],
       middleware: [manage],
       request: {
@@ -256,7 +339,8 @@ export function createChallengeRoutes(config: ApiConfig, data: DataLayer) {
       },
       responses: {
         200: json("Reto", ChallengeResponseSchema),
-        400: error("Temporada desconocida o puntos incoherentes"),
+        400: error("Sección, equipo o temporada desconocidos, o puntos incoherentes"),
+        409: error("Reto cerrado, o cambio de ámbito fuera del borrador"),
         ...errors,
       },
     }),
@@ -264,7 +348,18 @@ export function createChallengeRoutes(config: ApiConfig, data: DataLayer) {
       const tenant = scopeOf(c);
       const { id } = c.req.valid("param");
       const body = c.req.valid("json");
-      const before = await challengeOr404(tenant, id);
+      const before = await challengeOr404(c, tenant, id);
+      const manageScope = await manageScopeOf(c, tenant);
+      if (!canManage(manageScope, before))
+        throw forbidden("Solo puedes gestionar los retos de tus equipos.");
+      const changesScope = body.sectionId !== undefined || body.teamId !== undefined;
+      if (changesScope && before.status !== "draft")
+        throw conflict("El ámbito de un reto solo cambia mientras es un borrador.");
+      if (
+        changesScope &&
+        !canManage(manageScope, { team: body.teamId ? { id: body.teamId } : null })
+      )
+        throw forbidden("Solo puedes crear retos para tus equipos.");
       const minPoints = body.minPoints ?? before.minPoints;
       const targetPoints = body.targetPoints ?? before.targetPoints;
       if (targetPoints < minPoints)
@@ -273,6 +368,8 @@ export function createChallengeRoutes(config: ApiConfig, data: DataLayer) {
         throw conflict("Un reto cerrado no se vuelve a abrir.");
       const result = await data.challenges.update(tenant.scope, id, body);
       if (result === "not_found") throw notFound("Ese reto no existe.");
+      if (result === "unknown_section") throw badRequest("Esa sección no es de este club.");
+      if (result === "unknown_team") throw badRequest("Ese equipo no es de esa sección.");
       if (result === "unknown_season") throw badRequest("Esa temporada no es de este club.");
       if (body.status === "closed" && before.status !== "closed") {
         const approved = await data.challenges.approvedByPlayer(tenant.scope, id);
@@ -311,15 +408,13 @@ export function createChallengeRoutes(config: ApiConfig, data: DataLayer) {
       const tenant = scopeOf(c);
       const { id } = c.req.valid("param");
       const body = c.req.valid("json");
-      const challenge = await challengeOr404(tenant, id);
+      const challenge = await challengeOr404(c, tenant, id);
+      await requireManageOf(c, tenant, challenge);
       if (challenge.status === "closed") throw conflict("Un reto cerrado no admite cambios.");
       const task = await data.challenges.createTask(tenant.scope, id, body);
       await audit(c, tenant, "challenge.task_created", challenge.name, { task: task.name });
       return c.json(
-        {
-          challenge: challengeDto((await data.challenges.byId(tenant.scope, id))!),
-          tasks: await data.challenges.tasksOf(tenant.scope, id),
-        },
+        await detailOf(c, tenant, (await data.challenges.byId(tenant.scope, id))!),
         201,
       );
     },
@@ -348,7 +443,8 @@ export function createChallengeRoutes(config: ApiConfig, data: DataLayer) {
       const tenant = scopeOf(c);
       const { id, taskId } = c.req.valid("param");
       const body = c.req.valid("json");
-      const challenge = await challengeOr404(tenant, id);
+      const challenge = await challengeOr404(c, tenant, id);
+      await requireManageOf(c, tenant, challenge);
       if (challenge.status === "closed") throw conflict("Un reto cerrado no admite cambios.");
       const task = await data.challenges.updateTask(tenant.scope, id, taskId, body);
       if (!task) throw notFound("Esa prueba no existe.");
@@ -357,10 +453,7 @@ export function createChallengeRoutes(config: ApiConfig, data: DataLayer) {
         ...body,
       });
       return c.json(
-        {
-          challenge: challengeDto((await data.challenges.byId(tenant.scope, id))!),
-          tasks: await data.challenges.tasksOf(tenant.scope, id),
-        },
+        await detailOf(c, tenant, (await data.challenges.byId(tenant.scope, id))!),
         200,
       );
     },
@@ -380,16 +473,14 @@ export function createChallengeRoutes(config: ApiConfig, data: DataLayer) {
     async (c) => {
       const tenant = scopeOf(c);
       const { id, taskId } = c.req.valid("param");
-      const challenge = await challengeOr404(tenant, id);
+      const challenge = await challengeOr404(c, tenant, id);
+      await requireManageOf(c, tenant, challenge);
       if (challenge.status === "closed") throw conflict("Un reto cerrado no admite cambios.");
       const outcome = await data.challenges.removeTask(tenant.scope, id, taskId);
       if (outcome === "not_found") throw notFound("Esa prueba no existe.");
       await audit(c, tenant, "challenge.task_removed", challenge.name, { taskId, outcome });
       return c.json(
-        {
-          challenge: challengeDto((await data.challenges.byId(tenant.scope, id))!),
-          tasks: await data.challenges.tasksOf(tenant.scope, id),
-        },
+        await detailOf(c, tenant, (await data.challenges.byId(tenant.scope, id))!),
         200,
       );
     },
@@ -414,7 +505,7 @@ export function createChallengeRoutes(config: ApiConfig, data: DataLayer) {
       const tenant = scopeOf(c);
       const { id } = c.req.valid("param");
       const { status } = c.req.valid("query");
-      await challengeOr404(tenant, id);
+      await challengeOr404(c, tenant, id);
       const teamIds = await reviewScope(c, tenant);
       const submissions = await data.challenges.submissions(tenant.scope, id, { status, teamIds });
       return c.json(
@@ -448,7 +539,7 @@ export function createChallengeRoutes(config: ApiConfig, data: DataLayer) {
       const tenant = scopeOf(c);
       const { id, submissionId } = c.req.valid("param");
       const body = c.req.valid("json");
-      const challenge = await challengeOr404(tenant, id);
+      const challenge = await challengeOr404(c, tenant, id);
       if (challenge.status === "closed") throw conflict("Un reto cerrado no admite validaciones.");
       const existing = await data.challenges.submissionById(tenant.scope, submissionId);
       if (!existing || existing.challengeId !== id) throw notFound("Ese registro no existe.");
@@ -484,7 +575,7 @@ export function createChallengeRoutes(config: ApiConfig, data: DataLayer) {
     async (c) => {
       const tenant = scopeOf(c);
       const { id } = c.req.valid("param");
-      const challenge = await challengeOr404(tenant, id);
+      const challenge = await challengeOr404(c, tenant, id);
       const teamIds = await reviewScope(c, tenant);
       const standings = await data.challenges.standings(tenant.scope, id, { teamIds });
       return c.json(
@@ -497,48 +588,61 @@ export function createChallengeRoutes(config: ApiConfig, data: DataLayer) {
     },
   );
 
-  // --- Familia: el reto de uno de los suyos ---
+  // --- Familia: los retos de uno de los suyos ---
 
   const playerParam = z.object({ playerId: z.string().uuid() });
+  const playerChallengeParam = z.object({
+    playerId: z.string().uuid(),
+    challengeId: z.string().uuid(),
+  });
 
   async function requireOwnPlayer(c: Ctx, tenant: Tenant, playerId: string) {
     if (!(await data.players.isGuardianOf(tenant.scope, actorId(c), playerId)))
       throw notFound("Ese jugador no está vinculado a tu cuenta.");
   }
 
+  /** Un reto activo en el que participa el jugador (su sección o su equipo). Si no, 404. */
+  async function activeChallengeOf(tenant: Tenant, playerId: string, challengeId: string) {
+    const challenge = (await data.challenges.activeFor(tenant.scope, playerId)).find(
+      (ch) => ch.id === challengeId,
+    );
+    if (!challenge) throw notFound("Ese reto no es de este jugador o ya no está activo.");
+    return challenge;
+  }
+
+  /** Los retos activos del jugador, cada uno con sus pruebas, sus puntos y sus registros. */
   async function familyView(tenant: Tenant, playerId: string) {
-    const challenge = await data.challenges.active(tenant.scope);
-    if (!challenge) {
-      return {
-        challenge: null,
-        tasks: [],
-        totals: { approved: 0, pending: 0, byArea: { training: 0, technique: 0, habits: 0 } },
-        submissions: [],
-      };
-    }
-    const [tasks, totals, submissions] = await Promise.all([
-      data.challenges.tasksOf(tenant.scope, challenge.id),
-      data.challenges.totalsFor(tenant.scope, challenge.id, playerId),
-      data.challenges.submissionsOfPlayer(tenant.scope, challenge.id, playerId),
-    ]);
+    const challenges = await data.challenges.activeFor(tenant.scope, playerId);
     return {
-      challenge: challengeDto(challenge),
-      tasks: tasks.filter((t) => t.status === "active"),
-      totals,
-      submissions: submissions.map((s) => submissionDto(s, tenant.organization.slug)),
+      challenges: await Promise.all(
+        challenges.map(async (challenge) => {
+          const [tasks, totals, submissions] = await Promise.all([
+            data.challenges.tasksOf(tenant.scope, challenge.id),
+            data.challenges.totalsFor(tenant.scope, challenge.id, playerId),
+            data.challenges.submissionsOfPlayer(tenant.scope, challenge.id, playerId),
+          ]);
+          return {
+            challenge: challengeDto(challenge),
+            tasks: tasks.filter((t) => t.status === "active"),
+            totals,
+            submissions: submissions.map((s) => submissionDto(s, tenant.organization.slug)),
+          };
+        }),
+      ),
     };
   }
 
   app.openapi(
     createRoute({
       method: "get",
-      path: "/api/org/family/players/{playerId}/challenge",
+      path: "/api/org/family/players/{playerId}/challenges",
       tags: ["Retos"],
-      summary: "El reto activo visto por la familia: pruebas, puntos del jugador y sus registros",
+      summary:
+        "Los retos activos de uno de los suyos vistos por la familia (los de su sección y los de su equipo): pruebas, puntos del jugador y sus registros",
       security: [{ sessionCookie: [] }],
       middleware: [family],
       request: { params: playerParam },
-      responses: { 200: json("Reto de la familia", FamilyChallengeResponseSchema), ...errors },
+      responses: { 200: json("Retos de la familia", FamilyChallengesResponseSchema), ...errors },
     }),
     async (c) => {
       const tenant = scopeOf(c);
@@ -551,32 +655,31 @@ export function createChallengeRoutes(config: ApiConfig, data: DataLayer) {
   app.openapi(
     createRoute({
       method: "post",
-      path: "/api/org/family/players/{playerId}/challenge/submissions",
+      path: "/api/org/family/players/{playerId}/challenges/{challengeId}/submissions",
       tags: ["Retos"],
-      summary: "La familia registra actividad de uno de los suyos. Queda pendiente de validación",
+      summary:
+        "La familia registra actividad de uno de los suyos en uno de sus retos. Queda pendiente de validación",
       security: [{ sessionCookie: [] }],
       middleware: [familyWrite],
       request: {
-        params: playerParam,
+        params: playerChallengeParam,
         body: {
           content: { "application/json": { schema: SubmissionCreateSchema } },
           required: true,
         },
       },
       responses: {
-        201: json("Reto de la familia", FamilyChallengeResponseSchema),
+        201: json("Retos de la familia", FamilyChallengesResponseSchema),
         400: error("Prueba desconocida o archivada"),
-        409: error("No hay ningún reto activo"),
         ...errors,
       },
     }),
     async (c) => {
       const tenant = scopeOf(c);
-      const { playerId } = c.req.valid("param");
+      const { playerId, challengeId } = c.req.valid("param");
       const body = c.req.valid("json");
       await requireOwnPlayer(c, tenant, playerId);
-      const challenge = await data.challenges.active(tenant.scope);
-      if (!challenge) throw conflict("No hay ningún reto activo.");
+      const challenge = await activeChallengeOf(tenant, playerId, challengeId);
       const result = await data.challenges.submit(tenant.scope, {
         challengeId: challenge.id,
         taskId: body.taskId,
@@ -601,27 +704,29 @@ export function createChallengeRoutes(config: ApiConfig, data: DataLayer) {
   app.openapi(
     createRoute({
       method: "delete",
-      path: "/api/org/family/players/{playerId}/challenge/submissions/{submissionId}",
+      path: "/api/org/family/players/{playerId}/challenges/{challengeId}/submissions/{submissionId}",
       tags: ["Retos"],
       summary: "La familia retira un registro suyo que todavía nadie ha validado",
       security: [{ sessionCookie: [] }],
       middleware: [familyWrite],
       request: {
-        params: z.object({ playerId: z.string().uuid(), submissionId: z.string().uuid() }),
+        params: playerChallengeParam.extend({ submissionId: z.string().uuid() }),
       },
-      responses: { 200: json("Reto de la familia", FamilyChallengeResponseSchema), ...errors },
+      responses: { 200: json("Retos de la familia", FamilyChallengesResponseSchema), ...errors },
     }),
     async (c) => {
       const tenant = scopeOf(c);
-      const { playerId, submissionId } = c.req.valid("param");
+      const { playerId, challengeId, submissionId } = c.req.valid("param");
       await requireOwnPlayer(c, tenant, playerId);
+      const existing = await data.challenges.submissionById(tenant.scope, submissionId);
+      if (!existing || existing.player.id !== playerId || existing.challengeId !== challengeId)
+        throw notFound("Ese registro no existe o ya está validado.");
       const removed = await data.challenges.removeOwnSubmission(
         tenant.scope,
         submissionId,
         actorId(c),
       );
-      if (!removed || removed.player.id !== playerId)
-        throw notFound("Ese registro no existe o ya está validado.");
+      if (!removed) throw notFound("Ese registro no existe o ya está validado.");
       await audit(c, tenant, "challenge.submission_removed", playerDisplayName(removed.player), {
         task: removed.task.name,
       });

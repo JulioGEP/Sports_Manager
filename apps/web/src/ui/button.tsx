@@ -1,37 +1,33 @@
-import { Button as DsButton, type ButtonProps as DsButtonProps } from "@sportsmanager/design";
+import {
+  Button as DsButton,
+  ButtonContent,
+  buttonClassName,
+  type ActionKind,
+  type ButtonProps as DsButtonProps,
+  type ButtonSize,
+  type ButtonVariant,
+} from "@sportsmanager/design";
 import type { ReactNode } from "react";
 import { Link, type LinkProps } from "react-router";
 
-export type { ButtonVariant } from "@sportsmanager/design";
+export type { ButtonVariant, ButtonSize, ActionKind } from "@sportsmanager/design";
 
 export interface ButtonProps extends DsButtonProps {
   loading?: boolean | undefined;
-  icon?: ReactNode;
-  /** Botón compacto para filas de tabla y cabeceras de tarjeta. */
-  size?: "md" | "sm" | undefined;
 }
 
-/** Botón del design system con estado de carga e icono. El texto es siempre un verbo. */
-export function Button({
-  loading = false,
-  icon,
-  size = "md",
-  disabled,
-  children,
-  className = "",
-  ...rest
-}: ButtonProps) {
-  const compact = size === "sm" ? "!h-10 px-4 text-secondary" : "";
+/**
+ * Botón del design system con estado de carga. El texto es siempre un verbo y, si la acción está en
+ * el catálogo (DESIGN.md 8.1), lleva su icono: `action="edit"`, `action="delete"`, `action="add"`.
+ */
+export function Button({ loading = false, icon, disabled, ...rest }: ButtonProps) {
   return (
     <DsButton
       disabled={disabled || loading}
       aria-busy={loading || undefined}
-      className={`${compact} ${className}`}
+      icon={loading ? <Spinner /> : icon}
       {...rest}
-    >
-      {loading ? <Spinner /> : icon}
-      <span>{children}</span>
-    </DsButton>
+    />
   );
 }
 
@@ -44,17 +40,11 @@ function Spinner() {
   );
 }
 
-const linkBase =
-  "inline-flex items-center justify-center gap-2 rounded-control px-5 text-body font-medium no-underline transition-colors duration-150";
-const linkVariants = {
-  primary: "border border-club-edge bg-club text-on-club",
-  secondary: "border border-control bg-surface text-ink",
-  tertiary: "bg-transparent px-3 text-club-text",
-} as const;
-
 export interface ButtonLinkProps extends LinkProps {
-  variant?: keyof typeof linkVariants | undefined;
-  size?: "md" | "sm" | undefined;
+  variant?: ButtonVariant | undefined;
+  size?: ButtonSize | undefined;
+  /** Acción del catálogo (DESIGN.md 8.1): `open` lleva la flecha detrás del verbo. */
+  action?: ActionKind | undefined;
   icon?: ReactNode;
   /** Otro origen: `<a>` normal en vez del enrutador. */
   external?: boolean | undefined;
@@ -64,6 +54,7 @@ export interface ButtonLinkProps extends LinkProps {
 export function ButtonLink({
   variant = "primary",
   size = "md",
+  action,
   icon,
   external = false,
   className = "",
@@ -71,20 +62,22 @@ export function ButtonLink({
   to,
   ...rest
 }: ButtonLinkProps) {
-  const height = size === "sm" ? "h-10 px-4 text-secondary" : "h-(--h-control)";
-  const cls = `${linkBase} ${linkVariants[variant]} ${height} ${className}`;
+  const cls = `${buttonClassName({ variant, size })} no-underline ${className}`;
+  const content = (
+    <ButtonContent action={action} icon={icon} size={size}>
+      {children}
+    </ButtonContent>
+  );
   if (external) {
     return (
       <a className={cls} href={typeof to === "string" ? to : (to.pathname ?? "/")}>
-        {icon}
-        <span>{children}</span>
+        {content}
       </a>
     );
   }
   return (
     <Link className={cls} to={to} {...rest}>
-      {icon}
-      <span>{children}</span>
+      {content}
     </Link>
   );
 }

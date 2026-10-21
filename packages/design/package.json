@@ -9,6 +9,7 @@
     "./theme": "./src/theme/clubTheme.ts",
     "./voice": "./src/i18n/voice.ts",
     "./icons": "./src/icons/sport.tsx",
+    "./icons/actions": "./src/icons/actions.tsx",
     "./tailwind/theme.css": "./tailwind/theme.css",
     "./tokens.css": "./src/theme/tokens.css",
     "./tokens.json": "./tokens/tokens.json",
@@ -16,6 +17,9 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@phosphor-icons/react": "2.1.10"
   },
   "peerDependencies": {
     "react": "^19.0.0"

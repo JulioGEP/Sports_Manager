@@ -38,7 +38,7 @@ const statusKind: Record<MatchSummary["status"], StatusKind> = {
   finished: "neutral",
 };
 
-/** Partidos de un equipo (Bloque 19): la lista, el alta y la entrada al partido en directo. */
+/** Partidos de un equipo (Bloque 20): la lista, el alta y la entrada al partido en directo. */
 export function TeamMatchesPage() {
   const t = useT("matches");
   const c = useT("common");

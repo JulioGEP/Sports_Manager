@@ -45,7 +45,7 @@ const categoryKind: Record<MatchActionCategory, StatusKind> = {
 };
 
 /**
- * Configuración del partido en directo de una sección (Bloque 19): cómo se juega (periodos,
+ * Configuración del partido en directo de una sección (Bloque 20): cómo se juega (periodos,
  * minutos, jugadores en pista, portero, faltas, sistemas, zonas) y el catálogo de acciones que se
  * pueden registrar. El deporte propone; el club decide.
  */

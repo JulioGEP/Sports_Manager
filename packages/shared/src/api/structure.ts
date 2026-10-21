@@ -20,6 +20,7 @@ import {
   PLAYER_INDICATOR_DIMENSIONS,
 } from "../player-profile.ts";
 import { INVITATION_STATES } from "../invitations.ts";
+import { StaffPositionSchema } from "../roles.ts";
 
 /** Contratos de la estructura del club (Fase 1, Bloque 11). Todo bajo el club de la petición. */
 
@@ -297,11 +298,23 @@ export const PlayerDetailResponseSchema = z.object({
   /** Del más reciente al más antiguo; el último es siempre el alta en el club. */
   timeline: z.array(PlayerEventSchema),
   /**
-   * Lo que quien pregunta puede hacer en esta ficha (Bloque 13): valorar (objetivo, indicadores,
-   * PDI, anotaciones) con permiso de club o como cuerpo técnico del jugador; cambiar la foto.
+   * Personal asignado al deportista (Bloque 19): quien le atiende aunque no lleve su equipo
+   * (fisioterapia, preparación física, psicología). Es lo que le abre la ficha a ese personal.
    */
-  access: z.object({ assess: z.boolean(), photo: z.boolean() }),
+  staff: z.array(
+    z.object({ userId: z.string(), name: z.string(), position: StaffPositionSchema.nullable() }),
+  ),
+  /**
+   * Lo que quien pregunta puede hacer en esta ficha (Bloque 13): valorar (objetivo, indicadores,
+   * PDI, anotaciones) con permiso de club o como cuerpo técnico del jugador; cambiar la foto;
+   * asignar personal (Bloque 19).
+   */
+  access: z.object({ assess: z.boolean(), photo: z.boolean(), staff: z.boolean() }),
 });
+
+/** Asignar a alguien del personal a un deportista: un miembro con rol de personal, entrenador o administración. */
+export const PlayerStaffAssignSchema = z.object({ userId: z.string().uuid() });
+export type PlayerStaffAssign = z.infer<typeof PlayerStaffAssignSchema>;
 export type PlayerDetailResponse = z.infer<typeof PlayerDetailResponseSchema>;
 export const PlayerResponseSchema = z.object({ player: PlayerDetailResponseSchema.shape.player });
 
@@ -356,16 +369,19 @@ export const FamilyPlayerDetailResponseSchema = z.object({
   /** Solo cuando el estado del plan es `shared`. */
   developmentPlan: DevelopmentPlanSchema.nullable(),
   timeline: z.array(PlayerEventSchema),
-  challenge: z
-    .object({
+  /** Los retos activos en los que participa (su sección y su equipo, ADR 0032), con sus puntos. */
+  challenges: z.array(
+    z.object({
       id: z.string(),
       name: z.string(),
+      section: z.object({ id: z.string(), name: z.string() }),
+      team: z.object({ id: z.string(), name: z.string() }).nullable(),
       minPoints: z.number().int(),
       targetPoints: z.number().int(),
       approvedPoints: z.number().int().nonnegative(),
       pendingPoints: z.number().int().nonnegative(),
-    })
-    .nullable(),
+    }),
+  ),
 });
 export type FamilyPlayerDetailResponse = z.infer<typeof FamilyPlayerDetailResponseSchema>;
 

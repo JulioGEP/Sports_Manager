@@ -116,6 +116,12 @@ export interface PlayerOverviewRecord extends PlayerRow {
   lastNoteOn: string | null;
 }
 
+/** Lo que un ámbito restringido deja ver (Bloque 19): equipos visibles y deportistas sueltos. */
+export interface VisiblePlayers {
+  teamIds: string[];
+  playerIds: string[];
+}
+
 /** Recuentos de operación y preparación de las fichas para el inicio (Bloque 13). */
 export interface PlayersOperations {
   pendingInvitations: number;
@@ -227,6 +233,17 @@ export function playersRepo(db: () => Database) {
           ...(teamIds ? [inArray(schema.teamPlayers.teamId, teamIds)] : []),
         ),
       );
+  /**
+   * Ámbito restringido (Bloque 19): un deportista se ve si está en plantilla de uno de los
+   * equipos visibles esta temporada o en la lista de deportistas atendidos.
+   */
+  const visibleCondition = (scope: OrgScope, visible: VisiblePlayers) => {
+    const parts = [];
+    if (visible.teamIds.length > 0)
+      parts.push(inArray(schema.players.id, inCurrentRoster(scope, visible.teamIds)));
+    if (visible.playerIds.length > 0) parts.push(inArray(schema.players.id, visible.playerIds));
+    return parts.length === 0 ? sql`false` : or(...parts)!;
+  };
   const withGuardianQuery = (scope: OrgScope) =>
     db()
       .select({ id: schema.playerGuardians.playerId })
@@ -435,9 +452,12 @@ export function playersRepo(db: () => Database) {
         categoryId?: string | undefined;
         missing?: PlayerMissingFilter | undefined;
         teamIds?: string[] | undefined;
+        /** Ámbito restringido (Bloque 19): solo lo visible para quien pregunta. */
+        visible?: VisiblePlayers | undefined;
       } = {},
     ): Promise<PlayerSummaryRecord[]> {
       const conditions = [eq(schema.players.organizationId, scope.organizationId)];
+      if (filter.visible) conditions.push(visibleCondition(scope, filter.visible));
       const q = filter.query?.trim();
       if (q) {
         const pattern = `%${q.replaceAll("%", "\\%").replaceAll("_", "\\_")}%`;
@@ -530,12 +550,13 @@ export function playersRepo(db: () => Database) {
      */
     async overview(
       scope: OrgScope,
-      filter: { teamIds?: string[] | undefined } = {},
+      filter: { teamIds?: string[] | undefined; visible?: VisiblePlayers | undefined } = {},
     ): Promise<PlayerOverviewRecord[]> {
       const conditions = [
         eq(schema.players.organizationId, scope.organizationId),
         eq(schema.players.status, "active"),
       ];
+      if (filter.visible) conditions.push(visibleCondition(scope, filter.visible));
       if (filter.teamIds) {
         if (filter.teamIds.length === 0) return [];
         conditions.push(inArray(schema.players.id, inCurrentRoster(scope, filter.teamIds)));
@@ -648,13 +669,18 @@ export function playersRepo(db: () => Database) {
       });
     },
 
-    /** Recuentos para las alertas y la preparación de fichas del inicio (Bloque 13). */
+    /**
+     * Recuentos para las alertas y la preparación de fichas del inicio (Bloque 13). Con
+     * `visible` (Bloque 19), solo sobre los deportistas y equipos del ámbito de quien pregunta.
+     */
     async operations(
       scope: OrgScope,
+      visible?: VisiblePlayers,
     ): Promise<{ operations: PlayersOperations; readiness: PlayersReadiness }> {
       const active = and(
         eq(schema.players.organizationId, scope.organizationId),
         eq(schema.players.status, "active"),
+        ...(visible ? [visibleCondition(scope, visible)] : []),
       );
       const countWhere = async (...conditions: Parameters<typeof and>) => {
         const rows = await db()
@@ -675,6 +701,13 @@ export function playersRepo(db: () => Database) {
               eq(schema.teams.organizationId, scope.organizationId),
               eq(schema.teams.status, "active"),
               eq(schema.seasons.isCurrent, true),
+              ...(visible
+                ? [
+                    visible.teamIds.length > 0
+                      ? inArray(schema.teams.id, visible.teamIds)
+                      : sql`false`,
+                  ]
+                : []),
               notInArray(
                 schema.teams.id,
                 db()

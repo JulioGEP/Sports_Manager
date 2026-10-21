@@ -53,7 +53,7 @@ const json = <T extends z.ZodTypeAny>(description: string, schema: T) => ({
 const idParam = z.object({ id: z.string().uuid() });
 
 /**
- * Partido en directo (Fase 1, Bloque 19, ADR 0032). El personal consulta partidos y
+ * Partido en directo (Fase 1, Bloque 20, ADR 0034). El personal consulta partidos y
  * estadísticas (`org.matches.read`); los registra en cualquier equipo (`org.matches.write`) o
  * solo en los suyos (`org.matches.write_own`); configura el motor por sección
  * (`org.matches.configure`). La familia ve la línea de los suyos y nada más (`org.family.read`).

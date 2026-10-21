@@ -131,7 +131,7 @@ export function ClubHome() {
       )
         .map((a) => ({ ...a, count: operations[a.key] }))
         .filter((a) => a.count > 0)
-        .filter((a) => a.key !== "pendingInvitations" || has("org.members.invite"))
+        .filter((a) => a.key !== "pendingInvitations" || has("org.members.read"))
         .filter((a) => a.key !== "challengeSubmissionsPending" || has("org.challenges.read"))
         .filter((a) => a.key !== "feesOverdue" || has("org.fees.read"))
         .filter((a) => a.key !== "facilitiesWithoutHours" || has("org.facilities.write"))
@@ -155,6 +155,14 @@ export function ClubHome() {
     org.organization.view === "full" &&
     Date.now() - new Date(org.organization.createdAt).getTime() < 30 * 24 * 60 * 60 * 1000;
   const onboarding = canSettings && youngClub && (!branding.logoUrl || defaultColors);
+  /** Ámbito restringido (Bloque 19): el inicio dice qué parte del club se ve, o que no hay nada asignado. */
+  const scope = org.actor.kind === "member" ? org.actor.scope : null;
+  const restricted = scope && scope.kind === "restricted" ? scope : null;
+  const scopeEmpty =
+    restricted !== null &&
+    restricted.sections === 0 &&
+    restricted.teams === 0 &&
+    restricted.players === 0;
 
   // Sin resumen (familias y quien no lee deportistas), el héroe dice con qué papel entra.
   const roleLine =
@@ -192,16 +200,16 @@ export function ClubHome() {
         actions={
           <>
             {has("org.players.write") ? (
-              <ClubHeroButton onClick={() => void navigate(`${paths.players}?new=1`)}>
+              <ClubHeroButton action="add" onClick={() => void navigate(`${paths.players}?new=1`)}>
                 {t("hero.newPlayer")}
               </ClubHeroButton>
             ) : canFamily ? (
-              <ClubHeroButton onClick={() => void navigate(paths.family)}>
+              <ClubHeroButton action="open" onClick={() => void navigate(paths.family)}>
                 {t("hero.family")}
               </ClubHeroButton>
             ) : null}
             {canEvents || canFamily ? (
-              <ClubHeroButton ghost onClick={() => void navigate(paths.agenda)}>
+              <ClubHeroButton action="open" ghost onClick={() => void navigate(paths.agenda)}>
                 {t("hero.agenda")}
               </ClubHeroButton>
             ) : null}
@@ -209,12 +217,33 @@ export function ClubHome() {
         }
       />
 
+      {restricted ? (
+        scopeEmpty ? (
+          <Alert kind="warning" title={t("scope.emptyTitle")}>
+            {t("scope.emptyBody")}
+          </Alert>
+        ) : (
+          <Alert kind="info">
+            {t("scope.restricted", {
+              sections: restricted.sections,
+              teams: restricted.teams,
+              players: restricted.players,
+            })}
+          </Alert>
+        )
+      ) : null}
+
       {onboarding ? (
         <Alert
           kind="info"
           title={t("onboarding.title")}
           actions={
-            <ButtonLink to={`${paths.settings}?tab=setup`} variant="secondary" size="sm">
+            <ButtonLink
+              action="open"
+              to={`${paths.settings}?tab=setup`}
+              variant="secondary"
+              size="sm"
+            >
               {t("onboarding.action")}
             </ButtonLink>
           }
@@ -241,7 +270,7 @@ export function ClubHome() {
             </span>
           }
           actions={
-            <ButtonLink to={paths.agenda} variant="tertiary" size="sm">
+            <ButtonLink action="open" to={paths.agenda} variant="tertiary" size="sm">
               {t("today.week")}
             </ButtonLink>
           }
@@ -342,8 +371,8 @@ export function ClubHome() {
         </div>
       ) : null}
 
-      {/* 4. Secciones */}
-      {canStructure && data ? (
+      {/* 4. Secciones (con ámbito restringido sin secciones, no hay nada que enseñar) */}
+      {canStructure && data && (!restricted || restricted.sections > 0) ? (
         <section className="flex flex-col gap-3" aria-labelledby="home-sections">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div className="flex flex-col gap-0.5">
@@ -354,7 +383,7 @@ export function ClubHome() {
                 {t("sections.title")}
               </h2>
             </div>
-            <ButtonLink to={paths.sections} variant="tertiary" size="sm">
+            <ButtonLink action="open" to={paths.sections} variant="tertiary" size="sm">
               {t("sections.all")}
             </ButtonLink>
           </div>
@@ -366,7 +395,12 @@ export function ClubHome() {
                 description={t("sections.emptyHint")}
                 action={
                   canStructureWrite ? (
-                    <ButtonLink to={`${paths.sections}?new=1`} variant="secondary" size="sm">
+                    <ButtonLink
+                      action="add"
+                      to={`${paths.sections}?new=1`}
+                      variant="secondary"
+                      size="sm"
+                    >
                       {t("sections.new")}
                     </ButtonLink>
                   ) : null
@@ -437,12 +471,7 @@ export function ClubHome() {
                         {t(`operations.${alert.key}Hint`)}
                       </span>
                     </span>
-                    <ButtonLink
-                      to={alert.to}
-                      variant="tertiary"
-                      size="sm"
-                      icon={<Icon.ArrowRight size={16} aria-hidden="true" />}
-                    >
+                    <ButtonLink action="open" to={alert.to} variant="tertiary" size="sm">
                       {t("operations.go")}
                     </ButtonLink>
                   </li>
@@ -503,7 +532,7 @@ export function ClubHome() {
           title={t("family.title")}
           description={t("family.description")}
           actions={
-            <ButtonLink to={paths.family} variant="secondary" size="sm">
+            <ButtonLink action="open" to={paths.family} variant="secondary" size="sm">
               {t("family.open")}
             </ButtonLink>
           }

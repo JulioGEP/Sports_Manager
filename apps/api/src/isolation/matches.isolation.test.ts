@@ -14,7 +14,7 @@ import { createDataLayer, createMemoryBlobStore, type DataLayer } from "../data/
 import { createSeeder } from "../data/testing/seed.ts";
 
 /**
- * Partido en directo (Bloque 19, ADR 0032) contra una base real: catálogo por sección sembrado
+ * Partido en directo (Bloque 20, ADR 0034) contra una base real: catálogo por sección sembrado
  * desde el deporte, partido con convocatoria y eventos, estadísticas calculadas, permisos por
  * equipo del cuerpo técnico, vista de la familia y aislamiento entre clubes.
  */

@@ -14,7 +14,7 @@ import {
   MatchSettingsSchema,
 } from "../matches.ts";
 
-/** Contratos del partido en directo (Bloque 19, ADR 0032). Todo bajo el club de la petición. */
+/** Contratos del partido en directo (Bloque 20, ADR 0034). Todo bajo el club de la petición. */
 
 export const MatchActionTypeSchema = z.object({
   id: z.string(),

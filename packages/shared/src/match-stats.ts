@@ -10,7 +10,7 @@ import type {
 import { MATCH_ZONES } from "./matches.ts";
 
 /**
- * Motor de estadísticas de partido (Bloque 19, ADR 0032). Es una función pura sobre la lista de
+ * Motor de estadísticas de partido (Bloque 20, ADR 0034). Es una función pura sobre la lista de
  * eventos: la API y la web calculan lo mismo con el mismo código. No sabe de deportes: cuenta lo
  * que el catálogo de acciones dice que hay que contar.
  *

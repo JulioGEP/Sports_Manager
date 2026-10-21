@@ -66,7 +66,7 @@ function useElapsed(clock: MatchDetail["clock"]): number {
 }
 
 /**
- * Consola del partido en directo (Bloque 19, ADR 0032): registro de todo lo que pasa, de un
+ * Consola del partido en directo (Bloque 20, ADR 0034): registro de todo lo que pasa, de un
  * toque, en la banda. Cada evento viaja a la API al momento; el cronómetro se guarda al
  * arrancar, parar y cambiar de periodo, así que recargar la página no pierde nada.
  */

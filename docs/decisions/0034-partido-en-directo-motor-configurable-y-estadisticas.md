@@ -1,6 +1,6 @@
-# 0032. Partido en directo: motor de registro configurable por deporte, estadísticas e histórico
+# 0034. Partido en directo: motor de registro configurable por deporte, estadísticas e histórico
 
-Estado: aceptada. Fecha: 2026-10-21. Fase 1, Bloque 19.
+Estado: aceptada. Fecha: 2026-10-21. Fase 1, Bloque 20.
 
 ## Contexto
 

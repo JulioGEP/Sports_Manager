@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { Button } from "./Button";
+import type { ActionKind } from "../icons/actions";
 
 /**
  * Confirmación de acciones delicadas. Ver DESIGN.md, sección 9.12.
@@ -11,6 +12,8 @@ import { Button } from "./Button";
  * - title: la pregunta con el nombre. "¿Dar de baja a Nil Soler?"
  * - body: qué pasará y si se puede deshacer.
  * - confirmLabel: repite el verbo. "Dar de baja", nunca "Aceptar".
+ * - confirmAction: la acción del catálogo (DESIGN.md 8.1), para que el botón repita también el icono.
+ *   "Cancelar" no lleva icono: es la salida del diálogo, no una acción.
  */
 
 export interface ConfirmDialogProps {
@@ -18,6 +21,7 @@ export interface ConfirmDialogProps {
   title: string;
   body: string;
   confirmLabel: string;
+  confirmAction?: ActionKind | undefined;
   cancelLabel?: string;
   tone?: "danger" | "default";
   onConfirm: () => void;
@@ -29,6 +33,7 @@ export function ConfirmDialog({
   title,
   body,
   confirmLabel,
+  confirmAction,
   cancelLabel = "Cancelar",
   tone = "danger",
   onConfirm,
@@ -73,6 +78,7 @@ export function ConfirmDialog({
         <div className="flex flex-col gap-2 precisa:flex-row-reverse">
           <Button
             variant={tone === "danger" ? "danger-solid" : "primary"}
+            action={confirmAction}
             cta
             onClick={onConfirm}
             className="precisa:h-11 precisa:w-auto"

@@ -265,6 +265,11 @@
         "title": "Observación",
         "description": "Jugadores sin valoración deportiva y los que están por debajo del umbral."
       }
+    },
+    "scope": {
+      "restricted": "Ves tu parte del club: {sections, plural, =0 {ninguna sección} one {# sección} other {# secciones}}, {teams, plural, =0 {ningún equipo} one {# equipo} other {# equipos}} y {players, plural, =0 {ningún deportista suelto} one {# deportista suelto} other {# deportistas sueltos}}.",
+      "emptyTitle": "Todavía no tienes nada asignado",
+      "emptyBody": "Pide a quien administra el club que te asigne una sección, un equipo o deportistas. Hasta entonces el club se ve vacío."
     }
   },
   "members": {
@@ -273,7 +278,8 @@
     "invite": "Invitar",
     "tabs": {
       "members": "Personal",
-      "invitations": "Invitaciones"
+      "invitations": "Invitaciones",
+      "access": "Acceso"
     },
     "search": "Buscar por nombre o email",
     "empty": "Todavía no hay personal en el club.",
@@ -282,7 +288,8 @@
       "name": "Persona",
       "roles": "Roles",
       "since": "Desde",
-      "teams": "Equipos"
+      "teams": "Equipos",
+      "sections": "Secciones"
     },
     "roles": {
       "manage": "Roles",
@@ -292,12 +299,21 @@
       "lastAdmin": "No se puede quitar al último administrador del club.",
       "hint": {
         "org_admin": "Gestiona miembros, invitaciones y ajustes.",
-        "coach": "Verá a su gente y, en la Fase 1, equipos y jugadores.",
+        "coach": "Ve solo sus equipos: plantilla, deportistas, agenda e instalaciones que usa.",
         "guardian": "Familia: en la Fase 1 verá la información de sus hijos.",
         "staff": "Personal del club con un cargo: dirección, coordinación, delegación, fisio, preparación física, psicología o scout."
       },
       "position": "Cargo",
-      "positionSaved": "Cargo guardado: {position}."
+      "positionSaved": "Cargo guardado: {position}.",
+      "sections": "Secciones a su cargo",
+      "sectionsHint": "Dirección y coordinación ven solo las secciones marcadas. Las que ya coordina cuentan aunque no se marquen.",
+      "sectionsEmpty": "Todavía no hay secciones en el club.",
+      "sectionsSaved": "Secciones de {name} guardadas.",
+      "coordinates": "Coordina",
+      "exclusions": "Exclusiones especiales",
+      "exclusionsHint": "Áreas que esta persona no ve aunque su rol sí. La administración no se excluye.",
+      "exclusionsSaved": "Exclusiones de {name} guardadas.",
+      "exclude": "No ve {area}"
     },
     "inviteDrawer": {
       "title": "Invitar a alguien",
@@ -335,7 +351,41 @@
       "confirmRevokeBody": "El enlace dejará de funcionar. Podrás invitar de nuevo cuando quieras.",
       "player": "Familia de {name}"
     },
-    "noTeams": "Sin equipo"
+    "noTeams": "Sin equipo",
+    "noSections": "Sin sección",
+    "access": {
+      "title": "Qué ve cada rol",
+      "description": "Marca lo que ve cada rol o cargo. Lo que no está marcado no aparece en su navegación ni en la API. El alcance (todo el club, sus secciones, sus equipos o los deportistas que atiende) va con el cargo y no se cambia aquí.",
+      "profile": "Rol o cargo",
+      "scopeLabel": "Alcance",
+      "scope": {
+        "club": "Todo el club",
+        "sections": "Sus secciones",
+        "teams": "Sus equipos",
+        "attended": "Deportistas que atiende"
+      },
+      "areas": {
+        "sections": "Secciones",
+        "players": "Deportistas",
+        "club_members": "Socios",
+        "staff": "Personal",
+        "agenda": "Agenda",
+        "facilities": "Instalaciones",
+        "challenges": "Reto",
+        "fees": "Cuotas",
+        "activity": "Movimientos"
+      },
+      "toggle": "{area} para {profile}",
+      "changed": "Cambiado respecto a lo de por defecto",
+      "reset": "Volver a lo de por defecto",
+      "saved": "Acceso de {profile} guardado.",
+      "adminNote": "La administración del club lo ve todo y no se puede excluir. Las familias ven solo lo de sus deportistas: agenda, reto y cuotas.",
+      "exclusionsTitle": "Exclusiones por persona",
+      "exclusionsDescription": "Personas que no ven algún área aunque su rol sí. Se cambian desde los roles de cada persona.",
+      "exclusionsEmpty": "Nadie tiene exclusiones.",
+      "excluded": "No ve: {areas}",
+      "error": "No se ha podido cargar el acceso por rol."
+    }
   },
   "settings": {
     "title": "Ajustes del club",
@@ -706,7 +756,9 @@
     },
     "membership": {
       "role_assigned": "Rol asignado",
-      "role_removed": "Rol retirado"
+      "role_removed": "Rol retirado",
+      "sections_updated": "Secciones a cargo cambiadas",
+      "access_updated": "Exclusiones de acceso cambiadas"
     },
     "platform": {
       "admin_created": "Administrador de plataforma creado"
@@ -740,7 +792,9 @@
       "objective_removed": "Objetivo individual quitado",
       "indicators_updated": "Indicadores de jugador valorados",
       "plan_updated": "Plan de desarrollo guardado",
-      "note_added": "Registro añadido al jugador"
+      "note_added": "Registro añadido al jugador",
+      "staff_assigned": "Personal asignado al deportista",
+      "staff_unassigned": "Personal retirado del deportista"
     },
     "challenge": {
       "created": "Reto creado",
@@ -792,6 +846,9 @@
     },
     "view_as": {
       "started": "Vio el club como otra persona"
+    },
+    "access": {
+      "rule_updated": "Acceso por rol cambiado"
     }
   },
   "team": {
@@ -1211,6 +1268,22 @@
       "memberNumber": "Socio nº {number}",
       "makeMember": "Dar de alta como socio",
       "notMember": "No es socio"
+    },
+    "staff": {
+      "title": "Personal asignado",
+      "description": "Quien atiende a este deportista sin llevar su equipo: fisioterapia, preparación física, psicología. Asignarle a alguien le abre la ficha.",
+      "empty": "Nadie asignado.",
+      "assign": "Asignar personal",
+      "remove": "Quitar",
+      "assigned": "{member} atiende ahora a {name}.",
+      "removed": "{member} ya no atiende a {name}.",
+      "sheet": {
+        "title": "Asignar personal a {name}",
+        "description": "Personal, cuerpo técnico o administración del club. Verá la ficha aunque no lleve su equipo.",
+        "member": "Persona",
+        "submit": "Asignar",
+        "empty": "No hay nadie más del personal disponible."
+      }
     }
   },
   "family": {
@@ -1253,10 +1326,10 @@
     "psychologist": "Psicología",
     "scout": "Scout",
     "hint": {
-      "director": "Ve todo el club: estructura, jugadores, valoraciones y reto. No gestiona miembros ni ajustes.",
-      "coordinator": "Como la dirección deportiva: estructura, jugadores, valoraciones y reto.",
+      "director": "Ve sus secciones: estructura, deportistas, agenda, instalaciones y reto. Ni socios, ni personal, ni cuotas.",
+      "coordinator": "Como la dirección deportiva, en sus secciones: estructura, deportistas, agenda y reto.",
       "delegate": "Consulta equipos, jugadores y reto. No cambia nada.",
-      "physio": "Valora el cuerpo de cualquier jugador y deja anotaciones.",
+      "physio": "Valora el cuerpo y deja anotaciones de los deportistas que atiende: los de sus equipos y los que le asignan.",
       "fitness": "Valora la preparación física y deja anotaciones.",
       "psychologist": "Valora el bienestar y deja anotaciones.",
       "scout": "Valora el deporte y deja anotaciones de observación."
@@ -1291,7 +1364,7 @@
     "title": "Retos",
     "description": "Retos por puntos: pruebas, registros de las familias y validación del club.",
     "new": "Nuevo reto",
-    "familiesNote": "Las familias registran la actividad de sus jugadores y ven solo sus puntos. La participación por jugador es solo para el personal.",
+    "familiesNote": "Cada reto es de una sección o de un equipo. Las familias registran la actividad de sus jugadores y ven solo sus puntos. La participación por jugador es solo para el personal.",
     "empty": "Todavía no hay retos.",
     "emptyHint": "Crea el primero con el catálogo de ejemplo y actívalo cuando esté listo.",
     "from": "desde el {date}",
@@ -1330,7 +1403,7 @@
     "maxPoints": "tope {points}",
     "sheet": {
       "title": "Nuevo reto",
-      "description": "Un periodo con un catálogo de pruebas. Las familias registran, el club valida.",
+      "description": "Un periodo con un catálogo de pruebas, para toda una sección o para un solo equipo. Las familias registran, el club valida.",
       "submit": "Crear reto",
       "name": "Nombre",
       "nameHint": "Por ejemplo, Reto de verano 2027.",
@@ -1350,7 +1423,23 @@
       "pointsOrder": "El objetivo no puede ser menor que el mínimo.",
       "created": "Reto {name} creado.",
       "editTitle": "Editar {name}",
-      "saved": "Reto guardado."
+      "saved": "Reto guardado.",
+      "scopeFixed": "La sección y el equipo del reto ya no cambian: el reto está en marcha."
+    },
+    "scope": {
+      "section": "Sección",
+      "kind": "Alcance",
+      "kindHint": "Toda la sección, o un solo equipo con su propio reto.",
+      "wholeSection": "Toda la sección",
+      "wholeSectionShort": "toda la sección",
+      "oneTeam": "Un equipo",
+      "team": "Equipo",
+      "noTeams": "Esta sección no tiene equipos esta temporada.",
+      "ownHint": "Solo puedes crear retos para tus equipos.",
+      "noOwnTeams": "No llevas ningún equipo esta temporada, así que no puedes crear retos.",
+      "noSections": "Crea antes una sección: los retos son de una sección o de un equipo.",
+      "filter": "Sección",
+      "filterAll": "Todas las secciones"
     }
   },
   "familyChallenge": {
@@ -1360,7 +1449,7 @@
     "noPlayersHint": "Pide a quien administra el club que te vincule desde la ficha del jugador.",
     "playerTabs": "Jugadores de la familia",
     "noChallenge": "Ahora mismo no hay ningún reto activo.",
-    "noChallengeHint": "Cuando el club lo active, lo verás aquí.",
+    "noChallengeHint": "Cuando el club active uno para su sección o su equipo, lo verás aquí.",
     "register": "Registrar actividad",
     "target": "objetivo {target}",
     "progressLabel": "{points} de {target} puntos del reto",
@@ -1392,7 +1481,8 @@
       "noteHint": "Opcional: un vídeo, una foto o un comentario.",
       "capHint": "Esta prueba tiene un tope de {points} puntos en todo el reto.",
       "saved": "Actividad registrada. El club la validará."
-    }
+    },
+    "challengeTabs": "Retos de {name}"
   },
   "challenge": {
     "back": "Retos",
@@ -1608,7 +1698,6 @@
     "competition": {
       "newTeam": "Nuevo equipo",
       "tabTeams": "Equipos",
-      "addTeam": "Añadir equipo",
       "emptyTeams": "Sin equipos en esta categoría.",
       "table": {
         "team": "Equipo",
@@ -1629,7 +1718,6 @@
     "activity": {
       "newTeam": "Nuevo grupo",
       "tabTeams": "Grupos",
-      "addTeam": "Añadir grupo",
       "emptyTeams": "Sin grupos en este nivel.",
       "table": {
         "team": "Grupo",

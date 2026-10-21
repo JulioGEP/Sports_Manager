@@ -5,13 +5,14 @@ import {
   CHALLENGE_NOTE_MAX,
   ChallengeResponseSchema,
   ChallengesResponseSchema,
-  FamilyChallengeResponseSchema,
+  FamilyChallengesResponseSchema,
   FamilyResponseSchema,
   RATING_MAX,
   SeasonsResponseSchema,
   SUBMISSION_MAX_QUANTITY,
   playerDisplayName,
   pointsFor,
+  type ChallengeManageScope,
   type ChallengeStatus,
   type ChallengeSubmission,
   type ChallengeSummary,
@@ -45,6 +46,14 @@ import {
   useToast,
   type StatusKind,
 } from "@/ui";
+import {
+  ScopeFields,
+  resolveScope,
+  scopeIsComplete,
+  useScopeLabel,
+  useScopeOptions,
+  type ScopeState,
+} from "./challenge-scope";
 
 export const challengeKind: Record<ChallengeStatus, StatusKind> = {
   draft: "warning",
@@ -59,8 +68,10 @@ export const submissionKind: Record<SubmissionStatus, StatusKind> = {
 };
 
 /**
- * Retos por puntos (Bloque 13, ADR 0030). El personal ve la lista de retos del club; una familia,
- * el reto activo de cada uno de los suyos, con sus puntos y sus registros. Nunca una clasificación.
+ * Retos por puntos (Bloque 13, ADR 0030; ámbito por sección o equipo, ADR 0032). El personal ve
+ * la lista de retos del club agrupados por sección; una familia, los retos activos de cada uno de
+ * los suyos (los de su sección y los de su equipo), con sus puntos y sus registros. Nunca una
+ * clasificación.
  */
 export function ChallengesPage() {
   const { org } = useReadyClub();
@@ -81,15 +92,38 @@ function StaffChallengesPage() {
   const [params, setParams] = useSearchParams();
   const { org, slug } = useReadyClub();
   const paths = clubPaths(slug);
-  const canManage = org.actor.permissions.includes("org.challenges.manage");
+  const scopeLabel = useScopeLabel();
   const creating = params.get("new") === "1";
+  const sectionFilter = params.get("section") ?? "";
 
   const challenges = useQuery({
     queryKey: ["org", slug, "challenges"],
     queryFn: () => apiFetch("/api/org/challenges", { schema: ChallengesResponseSchema }),
   });
+  // Hasta que la API conteste, el permiso decide si se enseña el botón; después manda la API.
+  const manage: ChallengeManageScope = challenges.data?.manage ?? {
+    scope: org.actor.permissions.includes("org.challenges.manage") ? "club" : "none",
+    ownTeamIds: [],
+  };
+  const canManage = manage.scope !== "none";
   const reload = () => client.invalidateQueries({ queryKey: ["org", slug] });
-  const setCreating = (open: boolean) => setParams(open ? { new: "1" } : {}, { replace: true });
+  const updateParams = (patch: Record<string, string | null>) => {
+    const next = new URLSearchParams(params);
+    for (const [key, value] of Object.entries(patch)) {
+      if (value) next.set(key, value);
+      else next.delete(key);
+    }
+    setParams(next, { replace: true });
+  };
+  const setCreating = (open: boolean) => updateParams({ new: open ? "1" : null });
+
+  const all = challenges.data?.challenges ?? [];
+  const sections = useMemo(() => {
+    const seen = new Map<string, string>();
+    for (const ch of all) seen.set(ch.section.id, ch.section.name);
+    return [...seen].map(([id, name]) => ({ id, name }));
+  }, [all]);
+  const rows = sectionFilter ? all.filter((ch) => ch.section.id === sectionFilter) : all;
 
   const period = (ch: ChallengeSummary) =>
     ch.startsOn && ch.endsOn
@@ -107,10 +141,7 @@ function StaffChallengesPage() {
         description={t("description")}
         actions={
           canManage ? (
-            <Button
-              icon={<Icon.Plus size={20} aria-hidden="true" />}
-              onClick={() => setCreating(true)}
-            >
+            <Button action="add" onClick={() => setCreating(true)}>
               {t("new")}
             </Button>
           ) : null
@@ -118,10 +149,26 @@ function StaffChallengesPage() {
       />
       {challenges.isError ? <Alert kind="error">{errors(errorKey(challenges.error))}</Alert> : null}
       <Alert kind="info">{t("familiesNote")}</Alert>
+      {sections.length > 1 ? (
+        <div className="w-full max-w-xs">
+          <Select
+            aria-label={t("scope.filter")}
+            value={sectionFilter}
+            onChange={(e) => updateParams({ section: e.target.value || null })}
+          >
+            <option value="">{t("scope.filterAll")}</option>
+            {sections.map((section) => (
+              <option key={section.id} value={section.id}>
+                {section.name}
+              </option>
+            ))}
+          </Select>
+        </div>
+      ) : null}
       <Card padded={false}>
         <DataList<ChallengeSummary>
           caption={t("title")}
-          rows={challenges.data?.challenges ?? []}
+          rows={rows}
           getKey={(ch) => ch.id}
           empty={
             <EmptyState
@@ -130,7 +177,12 @@ function StaffChallengesPage() {
               description={challenges.data ? t("emptyHint") : undefined}
               action={
                 canManage && challenges.data ? (
-                  <Button variant="secondary" size="sm" onClick={() => setCreating(true)}>
+                  <Button
+                    action="add"
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setCreating(true)}
+                  >
                     {t("new")}
                   </Button>
                 ) : null
@@ -151,6 +203,7 @@ function StaffChallengesPage() {
                   >
                     {ch.name}
                   </ButtonLink>
+                  <span className="text-secondary text-ink">{scopeLabel(ch)}</span>
                   <span className="text-secondary text-muted">
                     {ch.season ? `${ch.season.name} · ` : ""}
                     {period(ch)}
@@ -193,7 +246,7 @@ function StaffChallengesPage() {
           ]}
           mobileRow={(ch) => ({
             title: ch.name,
-            subtitle: `${period(ch)} · ${t("table.points")}: ${ch.minPoints} / ${ch.targetPoints}`,
+            subtitle: `${scopeLabel(ch)} · ${period(ch)} · ${t("table.points")}: ${ch.minPoints} / ${ch.targetPoints}`,
             trailing: (
               <StatusChip kind={ch.pendingCount > 0 ? "warning" : challengeKind[ch.status]}>
                 {ch.pendingCount > 0
@@ -203,7 +256,7 @@ function StaffChallengesPage() {
             ),
           })}
           actions={(ch) => (
-            <ButtonLink to={paths.challenge(ch.id)} variant="secondary" size="sm">
+            <ButtonLink action="open" to={paths.challenge(ch.id)} variant="secondary" size="sm">
               {c("open")}
             </ButtonLink>
           )}
@@ -212,6 +265,7 @@ function StaffChallengesPage() {
       {canManage ? (
         <NewChallengeSheet
           open={creating}
+          manage={manage}
           onClose={() => setCreating(false)}
           onCreated={(id) => {
             void reload();
@@ -225,10 +279,12 @@ function StaffChallengesPage() {
 
 function NewChallengeSheet({
   open,
+  manage,
   onClose,
   onCreated,
 }: {
   open: boolean;
+  manage: ChallengeManageScope;
   onClose: () => void;
   onCreated: (id: string) => void;
 }) {
@@ -243,6 +299,8 @@ function NewChallengeSheet({
     enabled: open,
   });
   const currentSeason = seasons.data?.seasons.find((s) => s.isCurrent) ?? null;
+  const scopeOptions = useScopeOptions(manage, open);
+  const [scope, setScope] = useState<ScopeState>({ sectionId: "", kind: "section", teamId: "" });
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [seasonId, setSeasonId] = useState<string | null>(null);
@@ -263,6 +321,8 @@ function NewChallengeSheet({
       setError(t("pointsOrder"));
       return;
     }
+    const resolved = resolveScope(scopeOptions, scope);
+    if (!scopeIsComplete(scopeOptions, scope)) return;
     setBusy(true);
     try {
       const created = await apiFetch("/api/org/challenges", {
@@ -270,6 +330,8 @@ function NewChallengeSheet({
         body: {
           name,
           description: description.trim() || null,
+          sectionId: resolved.sectionId,
+          teamId: resolved.teamId,
           seasonId: season || null,
           startsOn: startsOn || null,
           endsOn: endsOn || null,
@@ -304,13 +366,20 @@ function NewChallengeSheet({
           <Button variant="secondary" onClick={onClose}>
             {c("cancel")}
           </Button>
-          <Button type="submit" form="challenge-form" loading={busy}>
+          <Button
+            action="add"
+            type="submit"
+            form="challenge-form"
+            loading={busy}
+            disabled={!scopeIsComplete(scopeOptions, scope)}
+          >
             {t("submit")}
           </Button>
         </>
       }
     >
       <form id="challenge-form" className="flex flex-col gap-4" onSubmit={(e) => void submit(e)}>
+        <ScopeFields options={scopeOptions} state={scope} onChange={setScope} />
         <Field label={t("name")} hint={t("nameHint")}>
           {(id) => (
             <Input
@@ -440,6 +509,7 @@ function FamilyChallengesPage() {
   const client = useQueryClient();
   const [params, setParams] = useSearchParams();
   const { org, slug } = useReadyClub();
+  const scopeLabel = useScopeLabel();
   const canWrite = org.actor.permissions.includes("org.family.write");
 
   const family = useQuery({
@@ -452,15 +522,21 @@ function FamilyChallengesPage() {
   const player = players.find((p) => p.id === playerId) ?? null;
 
   const view = useQuery({
-    queryKey: ["org", slug, "family", "challenge", playerId],
+    queryKey: ["org", slug, "family", "challenges", playerId],
     queryFn: () =>
-      apiFetch(`/api/org/family/players/${playerId}/challenge`, {
-        schema: FamilyChallengeResponseSchema,
+      apiFetch(`/api/org/family/players/${playerId}/challenges`, {
+        schema: FamilyChallengesResponseSchema,
       }),
     enabled: playerId !== "",
   });
   const reload = () =>
-    client.invalidateQueries({ queryKey: ["org", slug, "family", "challenge", playerId] });
+    client.invalidateQueries({ queryKey: ["org", slug, "family", "challenges", playerId] });
+
+  // Un jugador puede tener varios retos a la vez (su sección y su equipo): el de la URL o el primero.
+  const views = view.data?.challenges ?? [];
+  const requestedChallenge = params.get("challenge");
+  const familyData = views.find((v) => v.challenge.id === requestedChallenge) ?? views[0] ?? null;
+  const challengeId = familyData?.challenge.id ?? "";
 
   const [registering, setRegistering] = useState(false);
   const [removing, setRemoving] = useState<ChallengeSubmission | null>(null);
@@ -468,9 +544,10 @@ function FamilyChallengesPage() {
   async function remove(s: ChallengeSubmission) {
     setRemoving(null);
     try {
-      await apiFetch(`/api/org/family/players/${playerId}/challenge/submissions/${s.id}`, {
-        method: "DELETE",
-      });
+      await apiFetch(
+        `/api/org/family/players/${playerId}/challenges/${challengeId}/submissions/${s.id}`,
+        { method: "DELETE" },
+      );
       toast("success", t("removed"));
       void reload();
     } catch (err) {
@@ -478,7 +555,6 @@ function FamilyChallengesPage() {
     }
   }
 
-  const familyData = view.data;
   const challenge = familyData?.challenge ?? null;
   const totals = familyData?.totals;
   const progress = challenge
@@ -507,7 +583,7 @@ function FamilyChallengesPage() {
         />
       ) : null}
       {view.isError ? <Alert kind="error">{errors(errorKey(view.error))}</Alert> : null}
-      {player && familyData && !challenge ? (
+      {player && view.data && !challenge ? (
         <Card>
           <EmptyState
             icon={<Icon.Trophy weight="duotone" />}
@@ -515,6 +591,17 @@ function FamilyChallengesPage() {
             description={t("noChallengeHint")}
           />
         </Card>
+      ) : null}
+      {player && views.length > 1 ? (
+        <Tabs<string>
+          label={t("challengeTabs", { name: playerDisplayName(player) })}
+          selected={challengeId}
+          onChange={(id) => setParams({ player: playerId, challenge: id }, { replace: true })}
+          items={views.map((v) => ({
+            key: v.challenge.id,
+            label: v.challenge.team ? v.challenge.team.name : v.challenge.section.name,
+          }))}
+        />
       ) : null}
       {player && challenge && totals && familyData ? (
         <>
@@ -524,7 +611,7 @@ function FamilyChallengesPage() {
                 <Avatar name={playerDisplayName(player)} src={player.photoUrl} />
                 <span className="flex flex-col gap-0.5">
                   <span className="text-label uppercase tracking-wide text-muted">
-                    {playerDisplayName(player)}
+                    {playerDisplayName(player)} · {scopeLabel(challenge)}
                   </span>
                   {challenge.name}
                 </span>
@@ -538,10 +625,7 @@ function FamilyChallengesPage() {
             }
             actions={
               canWrite ? (
-                <Button
-                  icon={<Icon.Plus size={20} aria-hidden="true" />}
-                  onClick={() => setRegistering(true)}
-                >
+                <Button action="add" onClick={() => setRegistering(true)}>
                   {t("register")}
                 </Button>
               ) : null
@@ -609,7 +693,12 @@ function FamilyChallengesPage() {
                   title={t("noSubmissions")}
                   action={
                     canWrite ? (
-                      <Button variant="secondary" size="sm" onClick={() => setRegistering(true)}>
+                      <Button
+                        action="add"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => setRegistering(true)}
+                      >
                         {t("register")}
                       </Button>
                     ) : null
@@ -634,7 +723,12 @@ function FamilyChallengesPage() {
                         {tc(`submissionStatus.${s.status}`)}
                       </StatusChip>
                       {canWrite && s.status === "submitted" ? (
-                        <Button variant="tertiary" size="sm" onClick={() => setRemoving(s)}>
+                        <Button
+                          action="delete"
+                          variant="danger"
+                          size="sm"
+                          onClick={() => setRemoving(s)}
+                        >
                           {t("withdraw")}
                         </Button>
                       ) : null}
@@ -672,6 +766,7 @@ function FamilyChallengesPage() {
             <RegisterSheet
               open={registering}
               playerId={playerId}
+              challengeId={challengeId}
               playerName={playerDisplayName(player)}
               tasks={familyData.tasks}
               onClose={() => setRegistering(false)}
@@ -683,6 +778,7 @@ function FamilyChallengesPage() {
             title={t("confirmWithdrawTitle", { task: removing?.task.name ?? "" })}
             body={t("confirmWithdrawBody")}
             confirmLabel={t("withdraw")}
+            confirmAction="delete"
             cancelLabel={c("cancel")}
             onConfirm={() => removing && void remove(removing)}
             onCancel={() => setRemoving(null)}
@@ -696,6 +792,7 @@ function FamilyChallengesPage() {
 function RegisterSheet({
   open,
   playerId,
+  challengeId,
   playerName,
   tasks,
   onClose,
@@ -703,6 +800,7 @@ function RegisterSheet({
 }: {
   open: boolean;
   playerId: string;
+  challengeId: string;
   playerName: string;
   tasks: ChallengeTask[];
   onClose: () => void;
@@ -732,7 +830,7 @@ function RegisterSheet({
     setError(null);
     setBusy(true);
     try {
-      await apiFetch(`/api/org/family/players/${playerId}/challenge/submissions`, {
+      await apiFetch(`/api/org/family/players/${playerId}/challenges/${challengeId}/submissions`, {
         method: "POST",
         body: {
           taskId: task.id,
@@ -740,7 +838,7 @@ function RegisterSheet({
           note: note.trim() || null,
           ...(happenedOn ? { happenedOn } : {}),
         },
-        schema: FamilyChallengeResponseSchema,
+        schema: FamilyChallengesResponseSchema,
       });
       toast("success", t("saved"));
       setQuantity("1");
@@ -767,7 +865,7 @@ function RegisterSheet({
           <Button variant="secondary" onClick={onClose}>
             {c("cancel")}
           </Button>
-          <Button type="submit" form="register-form" loading={busy} disabled={!task}>
+          <Button action="add" type="submit" form="register-form" loading={busy} disabled={!task}>
             {t("submit", { points: preview })}
           </Button>
         </>

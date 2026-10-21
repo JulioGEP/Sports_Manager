@@ -225,7 +225,7 @@ export function StaffPanel({ kind }: { kind: PanelKind }) {
             </StatusChip>
           ) : null}
           {canSeeChallenges ? (
-            <ButtonLink to={paths.challenges} variant="secondary" size="sm">
+            <ButtonLink action="open" to={paths.challenges} variant="secondary" size="sm">
               {t("openChallenges")}
             </ButtonLink>
           ) : null}
@@ -286,12 +286,7 @@ export function StaffPanel({ kind }: { kind: PanelKind }) {
                       : `${names(focus.dimension)} ${String(score).padStart(2, " ")}`}
                   </StatusChip>
                 ) : null}
-                <ButtonLink
-                  to={paths.player(player.id)}
-                  variant="tertiary"
-                  size="sm"
-                  icon={<Icon.ArrowRight size={16} aria-hidden="true" />}
-                >
+                <ButtonLink action="open" to={paths.player(player.id)} variant="tertiary" size="sm">
                   {t("open")}
                 </ButtonLink>
               </li>

@@ -79,7 +79,7 @@ export const PERMISSIONS = [
   /** Ver el club como otra persona del club sin cambiar de cuenta (solo administración). */
   "org.view_as",
   /**
-   * Partido en directo (Bloque 19): consultar partidos y estadísticas; registrarlos en cualquier
+   * Partido en directo (Bloque 20): consultar partidos y estadísticas; registrarlos en cualquier
    * equipo (`write`) o solo en los propios (`write_own`); configurar el motor por sección.
    */
   "org.matches.read",
@@ -89,8 +89,8 @@ export const PERMISSIONS = [
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
 
-/** Lo que todo el personal del club puede ver, sea cual sea su cargo. */
-const STAFF_READ: readonly Permission[] = [
+/** Lo que la administración lee en todo el club. */
+const CLUB_READ: readonly Permission[] = [
   "org.settings.read",
   "org.members.read",
   "org.structure.read",
@@ -104,10 +104,26 @@ const STAFF_READ: readonly Permission[] = [
   "org.matches.read",
 ];
 
+/**
+ * Lo que el cuerpo técnico y el personal leen por defecto (Bloque 19, ADR 0033): lo deportivo.
+ * Ni los socios, ni el personal del club, ni los últimos movimientos: eso lo incluye la
+ * administración por rol desde "Personal" si quiere (`access.ts`). Además, lo que leen va
+ * acotado a su ámbito: los equipos propios, las secciones propias o los deportistas atendidos.
+ */
+const STAFF_READ: readonly Permission[] = [
+  "org.settings.read",
+  "org.structure.read",
+  "org.players.read",
+  "org.challenges.read",
+  "org.facilities.read",
+  "org.events.read",
+  "org.attendance.read",
+];
+
 /** Permisos que otorga cada rol de club. */
 export const ROLE_PERMISSIONS: Record<RoleCode, readonly Permission[]> = {
   org_admin: [
-    ...STAFF_READ,
+    ...CLUB_READ,
     "org.settings.write",
     "org.members.invite",
     "org.members.manage",
@@ -140,10 +156,11 @@ export const ROLE_PERMISSIONS: Record<RoleCode, readonly Permission[]> = {
 };
 
 /**
- * Permisos que añade cada cargo del personal (ADR 0030). Dirección y coordinación gestionan
- * la estructura, los jugadores y el reto como la administración, sin tocar miembros ni ajustes;
- * dirección además lleva socios, instalaciones y lee las cuotas; coordinación lleva la agenda.
- * El resto valora a cualquier jugador en lo suyo; la delegación pasa lista en sus equipos.
+ * Permisos que añade cada cargo del personal (ADR 0030 y 0032). Dirección y coordinación
+ * gestionan la estructura, los jugadores, la agenda y el reto de sus secciones, e invitan;
+ * dirección además lleva las instalaciones. Ni socios ni cuotas ni personal: eso es de la
+ * administración, que puede incluirlo por rol. El resto valora a cualquier jugador en lo suyo;
+ * la delegación pasa lista en sus equipos.
  */
 export const STAFF_POSITION_PERMISSIONS: Record<StaffPosition, readonly Permission[]> = {
   director: [
@@ -153,10 +170,8 @@ export const STAFF_POSITION_PERMISSIONS: Record<StaffPosition, readonly Permissi
     "org.players.assess",
     "org.challenges.manage",
     "org.challenges.review",
-    "org.club_members.write",
     "org.facilities.write",
     "org.events.write",
-    "org.fees.read",
     "org.matches.write",
     "org.matches.configure",
   ],

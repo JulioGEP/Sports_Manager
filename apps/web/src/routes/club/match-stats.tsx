@@ -57,7 +57,7 @@ export function playerRowsOf(stats: MatchStats): PlayerRow[] {
   }));
 }
 
-/** Resumen de un partido (Bloque 19): comparativa, trabajo por periodos, zonas, jugadores y porteros. */
+/** Resumen de un partido (Bloque 20): comparativa, trabajo por periodos, zonas, jugadores y porteros. */
 export function MatchStatsPage() {
   const t = useT("matchStats");
   const tm = useT("match");

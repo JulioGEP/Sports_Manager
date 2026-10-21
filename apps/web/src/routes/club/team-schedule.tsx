@@ -9,7 +9,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { apiFetch, errorKey } from "@/lib/api";
 import { useReadyClub } from "@/lib/club";
 import { useT } from "@/lib/intl";
-import { Alert, Button, Icon, Input, Select, Sheet, useToast } from "@/ui";
+import { Alert, Button, Input, Select, Sheet, useToast } from "@/ui";
 
 type Slot = { weekday: number; startsAt: string; endsAt: string; facilityId: string };
 
@@ -98,7 +98,7 @@ export function ScheduleSheet({
           <Button variant="secondary" onClick={onClose}>
             {c("cancel")}
           </Button>
-          <Button type="submit" form="schedule-form" loading={busy}>
+          <Button action="save" type="submit" form="schedule-form" loading={busy}>
             {t("submit")}
           </Button>
         </>
@@ -123,8 +123,9 @@ export function ScheduleSheet({
                 ))}
               </Select>
               <Button
+                action="delete"
                 type="button"
-                variant="tertiary"
+                variant="danger"
                 size="sm"
                 className="sm:order-last"
                 onClick={() => setRows((prev) => prev.filter((_, j) => j !== i))}
@@ -162,10 +163,10 @@ export function ScheduleSheet({
           ))}
         </ul>
         <Button
+          action="add"
           type="button"
           variant="secondary"
           size="sm"
-          icon={<Icon.Plus size={16} aria-hidden="true" />}
           onClick={() =>
             setRows((prev) => [
               ...prev,

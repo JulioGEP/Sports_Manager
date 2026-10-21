@@ -1,6 +1,6 @@
 # Capturas de la interfaz (Bloques 14 a 19)
 
-Capturas que generan las pruebas de interfaz (`pnpm test:ui`) contra la API real con base embebida, con el front de Vite + React + Tailwind sobre el design system del producto (`packages/design`, ADR 0027). Escritorio a 1280x800; móvil, Pixel 7. La fuente viva es el artefacto `capturas-interfaz` de CI; esta carpeta es la foto de la revisión del partido en directo (ADR 0032) sobre el club completo (ADR 0031): secciones por deporte, socios, agenda e instalaciones, cuotas y "ver como", y lo que ya había de los bloques 11 a 13 (ADR 0028, 0029 y 0030).
+Capturas que generan las pruebas de interfaz (`pnpm test:ui`) contra la API real con base embebida, con el front de Vite + React + Tailwind sobre el design system del producto (`packages/design`, ADR 0027). Escritorio a 1280x800; móvil, Pixel 7. La fuente viva es el artefacto `capturas-interfaz` de CI; esta carpeta es la foto de la revisión del club completo (ADR 0031): secciones por deporte, socios, agenda e instalaciones, cuotas y "ver como", sobre lo que ya había de los bloques 11 a 13 (ADR 0028, 0029 y 0030), más el alcance por cargo y la gestión de acceso por rol del Bloque 20 (ADR 0033): el cuerpo técnico, la dirección y la fisio ven solo su parte del club, y "Personal" gana la pestaña "Acceso". Encima, el partido en directo del Bloque 20 (ADR 0034): configuración del motor por sección, partidos del equipo, consola, estadísticas e histórico.
 
 Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negocio en `/admin`. Cuentas de demostración, todas con contraseña `123456`: `admin@demo.test` (administra el club demo; en este entorno también la plataforma), `entrenador@demo.test` (entrenadora del Alevín A), `familia@demo.test` (madre de dos jugadores y socia), `director@demo.test` (dirección deportiva), `fisio@demo.test` (fisioterapia), `natacion@demo.test` (coordinación de natación) y `basquet@demo.test`, `basquetfem@demo.test` y `yoga@demo.test` (cuerpo técnico). El club demo llega con la temporada 2026-27, cuatro secciones (fútbol sala, baloncesto, natación y yoga) con categorías, once equipos y grupos, 83 deportistas, socios con tres tipos, cuatro instalaciones con horario, la agenda generada desde los horarios, partidos, planes de cuota con cargos y pagos, un reto activo y dos partidos jugados del Alevín A con su registro completo.
 
@@ -210,6 +210,10 @@ Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negoci
 
 ![Roles de una persona](escritorio-13-miembros-roles.png)
 
+### Acceso por rol (Bloque 19): un check por rol o cargo y área, con el alcance a la vista
+
+![Acceso por rol](escritorio-14-personal-acceso.png)
+
 ### Ajustes del club: datos generales y zona horaria
 
 ![Ajustes del club: datos generales](escritorio-20-ajustes-general.png)
@@ -272,11 +276,15 @@ Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negoci
 
 ![Inicio de la entrenadora](escritorio-48b-entrenadora-inicio.png)
 
-## Reto por puntos (`/demo/challenges`, Bloque 13)
+## Reto por puntos (`/demo/challenges`, Bloque 13; ámbito por sección o equipo, ADR 0032)
 
-### Retos del club
+### Retos del club: cada uno de una sección entera o de un solo equipo
 
 ![Retos](escritorio-70-retos.png)
+
+### Nuevo reto (hoja): sección y alcance, toda la sección o un solo equipo
+
+![Nuevo reto](escritorio-70b-reto-nuevo.png)
 
 ### Un reto: catálogo de pruebas
 
@@ -294,7 +302,7 @@ Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negoci
 
 ![Participación](escritorio-73-reto-participacion.png)
 
-### El reto visto por la familia: solo los puntos de los suyos
+### Los retos vistos por la familia: los de la sección y los del equipo de cada jugador, solo con sus puntos
 
 ![Reto de la familia](escritorio-74-familia-reto.png)
 
@@ -382,7 +390,7 @@ Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negoci
 
 ![Selector de clubes](escritorio-62-mis-clubes.png)
 
-## Partido en directo (Bloque 19)
+## Partido en directo (Bloque 20)
 
 ### Configuración del motor por sección: cómo se juega y el catálogo de acciones
 
@@ -493,6 +501,10 @@ Las mismas pantallas en un móvil, con la forma envolvente del design system: ca
 ### Personal del club
 
 ![Personal del club (móvil)](movil-10-miembros.png)
+
+### Acceso por rol
+
+![Acceso por rol (móvil)](movil-14-personal-acceso.png)
 
 ### Invitar a alguien (hoja)
 

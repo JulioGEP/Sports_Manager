@@ -7,6 +7,10 @@ import { DateOnlySchema } from "./structure.ts";
  * prototipo (docs/dominio.md 1.6 y 4.5). Un reto es un periodo con un catálogo de pruebas y
  * un registro de actividad por jugador. La familia registra, el club valida. Nunca hay ranking
  * para las familias: cada una ve solo los puntos de los suyos (DESIGN.md 0.10 y 10).
+ *
+ * Ámbito (ADR 0032): un reto no es del club entero. Es de una sección (toda la sección) o de un
+ * solo equipo de esa sección, de manera independiente. Un jugador participa en los retos activos
+ * de las secciones y equipos donde está esta temporada; puede tener varios a la vez.
  */
 
 export const CHALLENGE_STATUSES = ["draft", "active", "closed"] as const;
@@ -44,6 +48,10 @@ export const ChallengeCreateSchema = z
   .object({
     name: z.string().trim().min(1).max(CHALLENGE_NAME_MAX),
     description: z.string().trim().max(CHALLENGE_DESCRIPTION_MAX).nullable().optional(),
+    /** Sección del reto. Obligatoria: no hay retos de todo el club. */
+    sectionId: z.string().uuid(),
+    /** Un equipo concreto de esa sección. Nulo: el reto es de toda la sección. */
+    teamId: z.string().uuid().nullable().optional(),
     seasonId: z.string().uuid().nullable().optional(),
     startsOn: DateOnlySchema.nullable().optional(),
     endsOn: DateOnlySchema.nullable().optional(),
@@ -68,6 +76,9 @@ export type ChallengeCreate = z.infer<typeof ChallengeCreateSchema>;
 export const ChallengeUpdateSchema = z.object({
   name: z.string().trim().min(1).max(CHALLENGE_NAME_MAX).optional(),
   description: z.string().trim().max(CHALLENGE_DESCRIPTION_MAX).nullable().optional(),
+  /** El ámbito solo cambia mientras el reto es un borrador: después ya tiene participantes. */
+  sectionId: z.string().uuid().optional(),
+  teamId: z.string().uuid().nullable().optional(),
   seasonId: z.string().uuid().nullable().optional(),
   startsOn: DateOnlySchema.nullable().optional(),
   endsOn: DateOnlySchema.nullable().optional(),
