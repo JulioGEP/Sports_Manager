@@ -120,7 +120,7 @@ Lista: la misma tarjeta de sección del inicio, en rejilla, con el selector de t
 Ficha de sección (`/:club/sections/:id`):
 
 - Cabecera: nombre, chip del deporte, coordinación, temporada. Acciones: "Nueva categoría", "Nuevo equipo", "Editar".
-- Pestaña Equipos (por defecto): las categorías en orden, cada una con su tabla de equipos (equipo, jugadores, cuerpo técnico, siguiente evento, estado) y "Añadir equipo".
+- Pestaña Equipos (por defecto): las categorías en orden, cada una con su tabla de equipos (equipo, jugadores, cuerpo técnico, siguiente evento, estado). Los equipos se crean desde "Nuevo equipo" en la cabecera, eligiendo la categoría en el formulario.
 - Pestaña Deportistas: la lista de deportistas filtrada por la sección.
 - Pestaña Cuerpo técnico: quién entrena qué, y quién falta.
 - Pestaña Agenda (b16): la semana de la sección.

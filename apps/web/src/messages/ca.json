@@ -1599,7 +1599,6 @@
     "competition": {
       "newTeam": "Nou equip",
       "tabTeams": "Equips",
-      "addTeam": "Afegir equip",
       "emptyTeams": "Sense equips en aquesta categoria.",
       "table": {
         "team": "Equip",
@@ -1620,7 +1619,6 @@
     "activity": {
       "newTeam": "Nou grup",
       "tabTeams": "Grups",
-      "addTeam": "Afegir grup",
       "emptyTeams": "Sense grups en aquest nivell.",
       "table": {
         "team": "Grup",

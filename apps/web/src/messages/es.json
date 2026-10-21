@@ -1599,7 +1599,6 @@
     "competition": {
       "newTeam": "Nuevo equipo",
       "tabTeams": "Equipos",
-      "addTeam": "Añadir equipo",
       "emptyTeams": "Sin equipos en esta categoría.",
       "table": {
         "team": "Equipo",
@@ -1620,7 +1619,6 @@
     "activity": {
       "newTeam": "Nuevo grupo",
       "tabTeams": "Grupos",
-      "addTeam": "Añadir grupo",
       "emptyTeams": "Sin grupos en este nivel.",
       "table": {
         "team": "Grupo",
