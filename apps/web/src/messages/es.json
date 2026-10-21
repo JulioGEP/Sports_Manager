@@ -1177,7 +1177,7 @@
       "approved": "Aprobado",
       "rejected": "Rechazado"
     },
-    "pointsPerUnit": "{points} pts por unidad",
+    "pointsPerUnit": "{points, plural, one {# pt por unidad} other {# pts por unidad}}",
     "maxPoints": "tope {points}",
     "sheet": {
       "title": "Nuevo reto",

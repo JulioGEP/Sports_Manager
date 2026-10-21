@@ -1177,7 +1177,7 @@
       "approved": "Approved",
       "rejected": "Rejected"
     },
-    "pointsPerUnit": "{points} pts per unit",
+    "pointsPerUnit": "{points, plural, one {# pt per unit} other {# pts per unit}}",
     "maxPoints": "cap {points}",
     "sheet": {
       "title": "New challenge",

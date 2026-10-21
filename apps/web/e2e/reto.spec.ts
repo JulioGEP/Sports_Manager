@@ -132,7 +132,8 @@ test.describe("reto por puntos y paneles del personal", () => {
     await page.goto(`${CLUB}/members`);
     await expect(page.getByText("Director deportivo").first()).toBeVisible();
     await expect(page.getByText("Fisioterapia").first()).toBeVisible();
-    await expect(page.getByRole("link", { name: "Alevín A" }).first()).toBeVisible();
+    // En escritorio el equipo es un enlace; en móvil, texto en la fila cápsula.
+    await expect(page.getByText("Alevín A").first()).toBeVisible();
     await shot(page, "10b-miembros-cargos", info.project.name);
 
     await page.getByRole("button", { name: "Invitar" }).first().click();

@@ -653,11 +653,15 @@ function FamilyChallengesPage() {
                         {tc(`areas.${task.area}`)} · {tc(`kinds.${task.kind}`)}
                       </span>
                     </span>
-                    <span className="font-mono text-secondary text-ink">
-                      {tc("pointsPerUnit", { points: task.pointsPerUnit })}
-                      {task.maxPoints !== null
-                        ? ` · ${tc("maxPoints", { points: task.maxPoints })}`
-                        : ""}
+                    <span className="flex shrink-0 flex-col items-end text-right text-secondary tabular-nums">
+                      <span className="text-ink">
+                        {tc("pointsPerUnit", { points: task.pointsPerUnit })}
+                      </span>
+                      {task.maxPoints !== null ? (
+                        <span className="text-muted">
+                          {tc("maxPoints", { points: task.maxPoints })}
+                        </span>
+                      ) : null}
                     </span>
                   </li>
                 ))}

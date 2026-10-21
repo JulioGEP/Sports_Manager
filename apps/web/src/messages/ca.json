@@ -1177,7 +1177,7 @@
       "approved": "Aprovat",
       "rejected": "Rebutjat"
     },
-    "pointsPerUnit": "{points} pts per unitat",
+    "pointsPerUnit": "{points, plural, one {# pt per unitat} other {# pts per unitat}}",
     "maxPoints": "topall {points}",
     "sheet": {
       "title": "Nou repte",
