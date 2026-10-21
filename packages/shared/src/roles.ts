@@ -118,6 +118,7 @@ const STAFF_READ: readonly Permission[] = [
   "org.facilities.read",
   "org.events.read",
   "org.attendance.read",
+  "org.matches.read",
 ];
 
 /** Permisos que otorga cada rol de club. */
