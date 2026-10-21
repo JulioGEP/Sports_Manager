@@ -509,11 +509,32 @@ export function challengesRepo(db: () => Database) {
     /**
      * Retos del club: activos primero, después borradores, después cerrados. Dentro de cada
      * estado, agrupados por sección (en su orden), los de toda la sección antes que los de un
-     * equipo, y los más nuevos antes.
+     * equipo, y los más nuevos antes. Con `sectionId`, solo los de esa sección (los de toda la
+     * sección y los de cada uno de sus equipos); con `team`, los de ese equipo y los de toda su
+     * sección: lo que ve la ficha del equipo, con su histórico.
      */
-    async list(scope: OrgScope): Promise<ChallengeRecord[]> {
+    async list(
+      scope: OrgScope,
+      filter: { sectionId?: string | undefined; team?: { id: string; sectionId: string } } = {},
+    ): Promise<ChallengeRecord[]> {
       const rows = await challengeQuery()
-        .where(eq(schema.challenges.organizationId, scope.organizationId))
+        .where(
+          and(
+            eq(schema.challenges.organizationId, scope.organizationId),
+            ...(filter.sectionId ? [eq(schema.challenges.sectionId, filter.sectionId)] : []),
+            ...(filter.team
+              ? [
+                  or(
+                    eq(schema.challenges.teamId, filter.team.id),
+                    and(
+                      isNull(schema.challenges.teamId),
+                      eq(schema.challenges.sectionId, filter.team.sectionId),
+                    ),
+                  ),
+                ]
+              : []),
+          ),
+        )
         .orderBy(
           sql`case ${schema.challenges.status} when 'active' then 0 when 'draft' then 1 else 2 end`,
           asc(schema.sections.sortOrder),
