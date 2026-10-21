@@ -22,9 +22,10 @@ export function ViewAsSheet({ open, onClose }: { open: boolean; onClose: () => v
   const navigate = useNavigate();
   const { slug, setViewAs, me } = useReadyClub();
   const [query, setQuery] = useState("");
+  // Siempre con los ojos propios: la persona observada puede no leer el personal (Bloque 19).
   const members = useQuery({
-    queryKey: ["org", slug, "members"],
-    queryFn: () => apiFetch("/api/org/members", { schema: MembersResponseSchema }),
+    queryKey: ["org", slug, "members", "view-as"],
+    queryFn: () => apiFetch("/api/org/members", { schema: MembersResponseSchema, viewAs: false }),
     enabled: open,
   });
   const q = query.trim().toLowerCase();
@@ -112,6 +113,7 @@ export function ViewAsBanner() {
         <span>{t("banner", { name, role: viewedRoles.map((r) => roles(r)).join(", ") })}</span>
       </span>
       <Button
+        action="back"
         variant="secondary"
         size="sm"
         onClick={() => {

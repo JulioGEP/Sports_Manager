@@ -1,6 +1,7 @@
 export * from "./locales.ts";
 export * from "./tenancy.ts";
 export * from "./roles.ts";
+export * from "./access.ts";
 export * from "./organizations.ts";
 export * from "./branding.ts";
 export * from "./audit.ts";
@@ -20,6 +21,7 @@ export * from "./api/health.ts";
 export * from "./api/errors.ts";
 export * from "./api/me.ts";
 export * from "./api/organization.ts";
+export * from "./api/access.ts";
 export * from "./api/auth.ts";
 export * from "./api/invitations.ts";
 export * from "./api/platform.ts";

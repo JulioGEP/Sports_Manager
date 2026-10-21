@@ -10,12 +10,15 @@ import { check, date, index, integer, pgTable, text, timestamp, uuid } from "dri
 import { id, inList, timestamps } from "./_shared.ts";
 import { users } from "./auth.ts";
 import { organizations } from "./organizations.ts";
-import { players, seasons } from "./structure.ts";
+import { players, seasons, sections, teams } from "./structure.ts";
 
 /**
  * Retos por puntos (Fase 1, Bloque 13, ADR 0030): un periodo con un catálogo de pruebas y los
  * registros de actividad de cada jugador, que la familia envía y el club valida. Todo lleva
  * `organization_id` (ADR 0015); borrar el club o el jugador lo arrastra.
+ *
+ * Ámbito (ADR 0032): un reto es siempre de una sección y, si se quiere, de un solo equipo de
+ * esa sección. Sin equipo, vale para toda la sección. Borrar la sección o el equipo lo arrastra.
  */
 
 export const challenges = pgTable(
@@ -27,6 +30,12 @@ export const challenges = pgTable(
       .references(() => organizations.id, { onDelete: "cascade" }),
     /** Temporada a la que pertenece, si el club quiere agruparlo así. */
     seasonId: uuid("season_id").references(() => seasons.id, { onDelete: "set null" }),
+    /** Sección del reto: obligatoria. Sus jugadores son los que pueden participar. */
+    sectionId: uuid("section_id")
+      .notNull()
+      .references(() => sections.id, { onDelete: "cascade" }),
+    /** Equipo concreto de esa sección. Nulo: el reto es de toda la sección. */
+    teamId: uuid("team_id").references(() => teams.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
     description: text("description"),
     startsOn: date("starts_on"),
@@ -40,6 +49,8 @@ export const challenges = pgTable(
   },
   (t) => [
     index("challenges_organization_id_idx").on(t.organizationId),
+    index("challenges_section_id_idx").on(t.sectionId),
+    index("challenges_team_id_idx").on(t.teamId),
     check("challenges_status_check", inList(t.status, CHALLENGE_STATUSES)),
     check("challenges_points_check", sql`${t.targetPoints} >= ${t.minPoints}`),
     check(

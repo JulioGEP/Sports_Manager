@@ -152,20 +152,20 @@ export function SectionPage() {
           access.write ? (
             <>
               {!activity && org.actor.permissions.includes("org.matches.read") ? (
-                <ButtonLink to={paths.sectionMatchConfig(id)} variant="secondary">
+                <ButtonLink to={paths.sectionMatchConfig(id)} variant="secondary" action="open">
                   {t("matchConfig")}
                 </ButtonLink>
               ) : null}
-              <Button variant="secondary" onClick={() => setEditing(true)}>
+              <Button action="edit" variant="secondary" onClick={() => setEditing(true)}>
                 {t("edit")}
               </Button>
-              <Button variant="secondary" onClick={() => setNewCategory(true)}>
+              <Button action="add" variant="secondary" onClick={() => setNewCategory(true)}>
                 {t("newCategory")}
               </Button>
               {season && categories.length > 0 ? (
                 <Button
-                  icon={<Icon.Plus size={20} aria-hidden="true" />}
-                  onClick={() => setNewTeamIn(categories[0]!.id)}
+                  action="add"
+                  onClick={() => setNewTeamIn(categories.length === 1 ? categories[0]!.id : "")}
                 >
                   {w("newTeam")}
                 </Button>
@@ -211,7 +211,12 @@ export function SectionPage() {
                   description={t("emptyCategoriesHint")}
                   action={
                     access.write ? (
-                      <Button variant="secondary" size="sm" onClick={() => setNewCategory(true)}>
+                      <Button
+                        action="add"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => setNewCategory(true)}
+                      >
                         {t("newCategory")}
                       </Button>
                     ) : null
@@ -227,20 +232,14 @@ export function SectionPage() {
                   description={categoryMeta(cat, t)}
                   actions={
                     access.write ? (
-                      <>
-                        <Button variant="tertiary" size="sm" onClick={() => setEditCategory(cat)}>
-                          {c("edit")}
-                        </Button>
-                        {season ? (
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            onClick={() => setNewTeamIn(cat.id)}
-                          >
-                            {w("addTeam")}
-                          </Button>
-                        ) : null}
-                      </>
+                      <Button
+                        action="edit"
+                        variant="tertiary"
+                        size="sm"
+                        onClick={() => setEditCategory(cat)}
+                      >
+                        {c("edit")}
+                      </Button>
                     ) : null
                   }
                 >
@@ -319,7 +318,12 @@ export function SectionPage() {
                       }`,
                     })}
                     actions={(team) => (
-                      <ButtonLink to={paths.team(team.id)} variant="secondary" size="sm">
+                      <ButtonLink
+                        action="open"
+                        to={paths.team(team.id)}
+                        variant="secondary"
+                        size="sm"
+                      >
                         {c("open")}
                       </ButtonLink>
                     )}
@@ -564,7 +568,12 @@ export function CategorySheet({
           <Button variant="secondary" onClick={onClose}>
             {c("cancel")}
           </Button>
-          <Button type="submit" form="category-form" loading={busy}>
+          <Button
+            action={category ? "save" : "add"}
+            type="submit"
+            form="category-form"
+            loading={busy}
+          >
             {category ? t("save") : t("submit")}
           </Button>
         </>
@@ -758,7 +767,13 @@ export function TeamSheet({
           <Button variant="secondary" onClick={onClose}>
             {c("cancel")}
           </Button>
-          <Button type="submit" form="team-form" loading={busy} disabled={!categoryId}>
+          <Button
+            action={team ? "save" : "add"}
+            type="submit"
+            form="team-form"
+            loading={busy}
+            disabled={!categoryId}
+          >
             {team ? t("save") : label("submit")}
           </Button>
         </>

@@ -14,7 +14,7 @@ import { createDataLayer, createMemoryBlobStore, type DataLayer } from "../data/
 import { createSeeder } from "../data/testing/seed.ts";
 
 /**
- * Partido en directo (Bloque 19, ADR 0032) contra una base real: catálogo por sección sembrado
+ * Partido en directo (Bloque 20, ADR 0034) contra una base real: catálogo por sección sembrado
  * desde el deporte, partido con convocatoria y eventos, estadísticas calculadas, permisos por
  * equipo del cuerpo técnico, vista de la familia y aislamiento entre clubes.
  */
@@ -34,6 +34,7 @@ describe("partido en directo", () => {
   let adminA: Seeded;
   let coachA: Seeded;
   let coachOtherA: Seeded;
+  let staffA: Seeded;
   let guardianA: Seeded;
   let adminB: Seeded;
   const cookies = new Map<string, string>();
@@ -107,14 +108,16 @@ describe("partido en directo", () => {
     adminA = await user("Ana Admin", "ana@club-a.test");
     coachA = await user("Caro Coach", "caro@club-a.test");
     coachOtherA = await user("Oti Otra", "oti@club-a.test");
+    staffA = await user("Sara Staff", "sara@club-a.test");
     guardianA = await user("Fam Familia", "fam@club-a.test");
     adminB = await user("Bruno Admin", "bruno@club-b.test");
     await seeder.membership(clubA.id, adminA.id, "org_admin");
     await seeder.membership(clubA.id, coachA.id, "coach");
     await seeder.membership(clubA.id, coachOtherA.id, "coach");
+    await seeder.membership(clubA.id, staffA.id, "staff");
     await seeder.membership(clubA.id, guardianA.id, "guardian");
     await seeder.membership(clubB.id, adminB.id, "org_admin");
-    for (const u of [adminA, coachA, coachOtherA, guardianA])
+    for (const u of [adminA, coachA, coachOtherA, staffA, guardianA])
       cookies.set(u.email, await signIn(u.email, A));
     cookies.set(adminB.email, await signIn(adminB.email, B));
 
@@ -309,10 +312,20 @@ describe("partido en directo", () => {
   });
 
   it("el cuerpo técnico crea un partido de su equipo, no de otro", async () => {
+    // El otro equipo queda fuera de su ámbito (ADR 0033): para ella no existe.
     expect(
       (
         await request("POST", `/api/org/teams/${otherTeamId}/matches`, A, {
           cookie: as(coachA),
+          body: { opponent: "FS Gràcia", homeAway: "home", playedOn: "2026-10-17" },
+        })
+      ).status,
+    ).toBe(404);
+    // El personal sin permiso de escritura lo ve, pero no lo registra.
+    expect(
+      (
+        await request("POST", `/api/org/teams/${otherTeamId}/matches`, A, {
+          cookie: as(staffA),
           body: { opponent: "FS Gràcia", homeAway: "home", playedOn: "2026-10-17" },
         })
       ).status,
@@ -338,11 +351,16 @@ describe("partido en directo", () => {
     expect(created.roster).toHaveLength(0);
     expect(created.access.write).toBe(true);
     const list = await json<MatchesResponse>(
-      await request("GET", `/api/org/teams/${teamId}/matches`, A, { cookie: as(coachOtherA) }),
+      await request("GET", `/api/org/teams/${teamId}/matches`, A, { cookie: as(staffA) }),
       200,
     );
     expect(list.matches).toHaveLength(1);
     expect(list.access.write).toBe(false);
+    // Otra entrenadora sin este equipo no lo ve (ADR 0033): fuera de su ámbito no existe.
+    expect(
+      (await request("GET", `/api/org/teams/${teamId}/matches`, A, { cookie: as(coachOtherA) }))
+        .status,
+    ).toBe(404);
   });
 
   it("convocatoria, quinteto inicial y eventos con el marcador calculado", async () => {
@@ -496,11 +514,11 @@ describe("partido en directo", () => {
     );
     expect(undone.events).toHaveLength(6);
 
-    // Otra entrenadora del club no registra en este equipo; la administración sí.
+    // El personal sin equipo lo ve pero no registra; otra entrenadora ni lo ve; la administración sí.
     expect(
       (
         await request("POST", `/api/org/matches/${matchId}/events`, A, {
-          cookie: as(coachOtherA),
+          cookie: as(staffA),
           body: {
             events: [
               {
@@ -556,7 +574,7 @@ describe("partido en directo", () => {
 
     const history = await json<TeamMatchHistoryResponse>(
       await request("GET", `/api/org/teams/${teamId}/matches/history`, A, {
-        cookie: as(coachOtherA),
+        cookie: as(staffA),
       }),
       200,
     );
@@ -655,9 +673,13 @@ describe("partido en directo", () => {
   });
 
   it("borrar el partido arrastra convocatoria y eventos", async () => {
+    // Otra entrenadora no ve el partido (ADR 0033); el personal sin permiso de escritura, 403.
     expect(
       (await request("DELETE", `/api/org/matches/${matchId}`, A, { cookie: as(coachOtherA) }))
         .status,
+    ).toBe(404);
+    expect(
+      (await request("DELETE", `/api/org/matches/${matchId}`, A, { cookie: as(staffA) })).status,
     ).toBe(403);
     expect(
       (await request("DELETE", `/api/org/matches/${matchId}`, A, { cookie: as(coachA) })).status,

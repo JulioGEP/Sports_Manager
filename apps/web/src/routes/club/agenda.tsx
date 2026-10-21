@@ -176,8 +176,9 @@ export function AgendaPage() {
       onClick={() => setSelected(e)}
       className="flex w-full flex-col gap-1 rounded-field border border-border bg-surface px-3 py-2 text-left transition-colors hover:bg-raised"
     >
-      <span className="flex items-center justify-between gap-2">
-        <span className="font-mono text-secondary text-ink">
+      {/* La hora nunca se parte; si no cabe al lado, la etiqueta baja a su propia línea. */}
+      <span className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+        <span className="font-mono text-secondary whitespace-nowrap text-ink">
           {fmt.time(e.startsAt)}–{fmt.time(e.endsAt)}
         </span>
         <StatusChip kind={eventKindStatus[e.kind]}>{ek(e.kind)}</StatusChip>
@@ -207,10 +208,7 @@ export function AgendaPage() {
         description={familyOnly ? t("familyDescription") : t("description")}
         actions={
           canWrite || canWriteOwn ? (
-            <Button
-              icon={<Icon.Plus size={20} aria-hidden="true" />}
-              onClick={() => setCreating(true)}
-            >
+            <Button action="add" onClick={() => setCreating(true)}>
               {t("new")}
             </Button>
           ) : null
@@ -304,7 +302,12 @@ export function AgendaPage() {
             description={familyOnly ? t("emptyFamily") : t("emptyHint")}
             action={
               canWrite || canWriteOwn ? (
-                <Button variant="secondary" size="sm" onClick={() => setCreating(true)}>
+                <Button
+                  action="add"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setCreating(true)}
+                >
                   {t("new")}
                 </Button>
               ) : null
@@ -312,28 +315,35 @@ export function AgendaPage() {
           />
         </Card>
       ) : desktop ? (
-        <div className="grid grid-cols-7 gap-2">
-          {days.map((day) => {
-            const key = dayKey(timezone, day);
-            const list = byDay.get(key) ?? [];
-            const isToday = key === todayKey;
-            return (
-              <section key={key} className="flex min-w-0 flex-col gap-2">
-                <h2
-                  className={`rounded-chip px-2 py-1 text-center text-label uppercase tracking-wide ${
-                    isToday ? "bg-club-soft text-club-soft-text" : "text-muted"
-                  }`}
-                >
-                  {fmt.dayShort(day)}
-                </h2>
-                {list.length === 0 ? (
-                  <span className="px-2 text-center text-secondary text-muted">{t("free")}</span>
-                ) : (
-                  list.map(eventCard)
-                )}
-              </section>
-            );
-          })}
+        /*
+         * Siete columnas con un ancho mínimo (9 rem: caben la franja horaria y la etiqueta más larga).
+         * Si la pantalla no da para las siete, la semana se desplaza en horizontal dentro de su caja,
+         * como las tablas anchas (DESIGN.md 9.8), en vez de aplastar las tarjetas.
+         */
+        <div className="overflow-x-auto">
+          <div className="grid grid-cols-[repeat(7,minmax(9rem,1fr))] gap-2">
+            {days.map((day) => {
+              const key = dayKey(timezone, day);
+              const list = byDay.get(key) ?? [];
+              const isToday = key === todayKey;
+              return (
+                <section key={key} className="flex min-w-0 flex-col gap-2">
+                  <h2
+                    className={`rounded-chip px-2 py-1 text-center text-label uppercase tracking-wide ${
+                      isToday ? "bg-club-soft text-club-soft-text" : "text-muted"
+                    }`}
+                  >
+                    {fmt.dayShort(day)}
+                  </h2>
+                  {list.length === 0 ? (
+                    <span className="px-2 text-center text-secondary text-muted">{t("free")}</span>
+                  ) : (
+                    list.map(eventCard)
+                  )}
+                </section>
+              );
+            })}
+          </div>
         </div>
       ) : (
         <div className="flex flex-col gap-4">
@@ -409,6 +419,7 @@ export function AgendaPage() {
             : t("confirmDeleteBody")
         }
         confirmLabel={t("delete")}
+        confirmAction="delete"
         cancelLabel={c("cancel")}
         onConfirm={() => deleting && void remove(deleting)}
         onCancel={() => {
@@ -468,14 +479,16 @@ function EventDetailSheet({
           {canEdit ? (
             <>
               {event.seriesId ? (
-                <Button variant="danger" onClick={() => onDelete(true)}>
+                <Button action="delete" variant="danger" onClick={() => onDelete(true)}>
                   {t("deleteSeries")}
                 </Button>
               ) : null}
-              <Button variant="danger" onClick={() => onDelete(false)}>
+              <Button action="delete" variant="danger" onClick={() => onDelete(false)}>
                 {event.seriesId ? t("deleteOne") : t("delete")}
               </Button>
-              <Button onClick={onEdit}>{t("edit")}</Button>
+              <Button action="edit" onClick={onEdit}>
+                {t("edit")}
+              </Button>
             </>
           ) : null}
         </>
@@ -650,7 +663,7 @@ export function EventSheet({
           <Button variant="secondary" onClick={onClose}>
             {c("cancel")}
           </Button>
-          <Button type="submit" form="event-form" loading={busy}>
+          <Button action="save" type="submit" form="event-form" loading={busy}>
             {event ? c("save") : t("submit")}
           </Button>
         </>
@@ -896,7 +909,7 @@ export function AttendanceSheet({
             {c("cancel")}
           </Button>
           {canWrite ? (
-            <Button loading={busy} onClick={() => void save()}>
+            <Button action="save" loading={busy} onClick={() => void save()}>
               {c("save")}
             </Button>
           ) : null}

@@ -1,11 +1,16 @@
 import {
+  ACCESS_AREAS,
   InvitationSentResponseSchema,
   InvitationsResponseSchema,
   LOCALES,
+  MemberExclusionsResponseSchema,
+  MemberSectionsResponseSchema,
   MembersResponseSchema,
   ROLE_CODES,
+  SectionsResponseSchema,
   STAFF_POSITIONS,
   TeamsResponseSchema,
+  type AccessArea,
   type Invitation,
   type InvitationSentResponse,
   type Locale,
@@ -21,6 +26,7 @@ import { Link } from "react-router";
 import { apiFetch, errorKey } from "@/lib/api";
 import { clubPaths, useReadyClub } from "@/lib/club";
 import { useT } from "@/lib/intl";
+import { AccessMatrix } from "./staff-access";
 import {
   Alert,
   Avatar,
@@ -43,7 +49,7 @@ import {
 } from "@/ui";
 
 type Member = MembersResponse["members"][number];
-type Tab = "members" | "invitations";
+type Tab = "members" | "invitations" | "access";
 
 const stateKind: Record<Invitation["state"], StatusKind> = {
   pending: "info",
@@ -75,7 +81,12 @@ export function StaffPage() {
   const canManage = permissions.includes("org.members.manage");
   const defaultLocale = org.organization.view === "full" ? org.organization.defaultLocale : "es";
 
-  const tab: Tab = params.get("tab") === "invitations" ? "invitations" : "members";
+  const tab: Tab =
+    params.get("tab") === "invitations"
+      ? "invitations"
+      : params.get("tab") === "access" && canManage
+        ? "access"
+        : "members";
   const inviteOpen = params.get("invite") === "1";
   const [query, setQuery] = useState("");
   const [rolesFor, setRolesFor] = useState<Member | null>(null);
@@ -122,7 +133,7 @@ export function StaffPage() {
     invitations.data?.invitations.filter((i) => i.state === "pending").length ?? 0;
 
   function setTab(next: Tab) {
-    setParams(next === "invitations" ? { tab: "invitations" } : {}, { replace: true });
+    setParams(next === "members" ? {} : { tab: next }, { replace: true });
   }
   function setInviteOpen(open: boolean) {
     const next = new URLSearchParams(params);
@@ -179,10 +190,7 @@ export function StaffPage() {
         description={t("description")}
         actions={
           canInvite ? (
-            <Button
-              icon={<Icon.Plus size={20} aria-hidden="true" />}
-              onClick={() => setInviteOpen(true)}
-            >
+            <Button action="invite" onClick={() => setInviteOpen(true)}>
               {t("invite")}
             </Button>
           ) : null
@@ -202,11 +210,14 @@ export function StaffPage() {
               count: members.data ? staffOnly.length : undefined,
             },
             { key: "invitations", label: t("tabs.invitations"), count: pendingCount },
+            ...(canManage ? [{ key: "access" as const, label: t("tabs.access") }] : []),
           ]}
         />
       ) : null}
 
-      {tab === "members" ? (
+      {tab === "access" ? (
+        <AccessMatrix />
+      ) : tab === "members" ? (
         <div className="flex flex-col gap-4">
           <div className="relative max-w-sm">
             <Icon.MagnifyingGlass
@@ -277,6 +288,22 @@ export function StaffPage() {
                       <span className="text-muted">{t("noTeams")}</span>
                     ),
                 },
+                {
+                  key: "sections",
+                  header: t("table.sections"),
+                  cell: (m) =>
+                    m.sections.length > 0 ? (
+                      <span className="flex flex-wrap gap-x-2 gap-y-1">
+                        {m.sections.map((section) => (
+                          <Link key={section.sectionId} to={paths.section(section.sectionId)}>
+                            {section.sectionName}
+                          </Link>
+                        ))}
+                      </span>
+                    ) : (
+                      <span className="text-muted">{t("noSections")}</span>
+                    ),
+                },
                 { key: "since", header: t("table.since"), cell: (m) => date(m.memberSince) },
               ]}
               mobileRow={(m) => ({
@@ -285,6 +312,7 @@ export function StaffPage() {
                 subtitle: [
                   m.roles.map((r) => roleLabel(m, r)).join(" · "),
                   m.teams.map((x) => x.teamName).join(", "),
+                  m.sections.map((x) => x.sectionName).join(", "),
                 ]
                   .filter(Boolean)
                   .join(" · "),
@@ -292,7 +320,12 @@ export function StaffPage() {
               actions={
                 canManage
                   ? (m) => (
-                      <Button variant="secondary" size="sm" onClick={() => setRolesFor(m)}>
+                      <Button
+                        action="edit"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => setRolesFor(m)}
+                      >
                         {t("roles.manage")}
                       </Button>
                     )
@@ -323,9 +356,9 @@ export function StaffPage() {
                   action={
                     invitations.data ? (
                       <Button
+                        action="invite"
                         variant="secondary"
                         size="sm"
-                        icon={<Icon.Plus size={16} aria-hidden="true" />}
                         onClick={() => setInviteOpen(true)}
                       >
                         {t("invite")}
@@ -378,10 +411,20 @@ export function StaffPage() {
               actions={(i) =>
                 i.state === "pending" || i.state === "expired" ? (
                   <>
-                    <Button variant="secondary" size="sm" onClick={() => void resend(i.id)}>
+                    <Button
+                      action="send"
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => void resend(i.id)}
+                    >
                       {t("invitations.resend")}
                     </Button>
-                    <Button variant="danger" size="sm" onClick={() => setRevoking(i)}>
+                    <Button
+                      action="delete"
+                      variant="danger"
+                      size="sm"
+                      onClick={() => setRevoking(i)}
+                    >
                       {t("invitations.revoke")}
                     </Button>
                   </>
@@ -411,6 +454,7 @@ export function StaffPage() {
         title={t("invitations.confirmRevokeTitle", { email: revoking?.email ?? "" })}
         body={t("invitations.confirmRevokeBody")}
         confirmLabel={t("invitations.revoke")}
+        confirmAction="delete"
         cancelLabel={c("cancel")}
         onConfirm={() => revoking && void revoke(revoking)}
         onCancel={() => setRevoking(null)}
@@ -487,7 +531,7 @@ function InviteSheet({
           <Button variant="secondary" onClick={onClose}>
             {c("cancel")}
           </Button>
-          <Button type="submit" form="invite-form" loading={busy}>
+          <Button action="send" type="submit" form="invite-form" loading={busy}>
             {t("submit")}
           </Button>
         </>
@@ -581,14 +625,73 @@ function RolesSheet({
   onChanged: () => void;
 }) {
   const t = useT("members.roles");
+  const areas = useT("members.access.areas");
   const c = useT("common");
   const roles = useT("roles");
   const positions = useT("positions");
   const errors = useT("errors");
   const toast = useToast();
+  const { slug } = useReadyClub();
   const [current, setCurrent] = useState<RoleCode[]>(member.roles);
   const [position, setPosition] = useState<StaffPosition>(member.position ?? "director");
   const [busy, setBusy] = useState<RoleCode | null>(null);
+
+  /**
+   * Alcance y exclusiones (Bloque 19): dirección y coordinación llevan secciones; cualquiera que no
+   * administre puede tener áreas excluidas. Las secciones que ya coordina cuentan solas.
+   */
+  const withSections =
+    current.includes("staff") && (position === "director" || position === "coordinator");
+  const sections = useQuery({
+    queryKey: ["org", slug, "sections", null],
+    queryFn: () => apiFetch("/api/org/sections", { schema: SectionsResponseSchema }),
+    enabled: withSections,
+  });
+  const coordinated = new Set(
+    (sections.data?.sections ?? [])
+      .filter((s) => s.coordinator?.userId === member.userId)
+      .map((s) => s.id),
+  );
+  const [chosenSections, setChosenSections] = useState<Set<string>>(
+    () => new Set(member.sections.map((s) => s.sectionId)),
+  );
+  const [excluded, setExcluded] = useState<Set<AccessArea>>(() => new Set(member.excludedAreas));
+  const [savingSections, setSavingSections] = useState(false);
+  const [savingExclusions, setSavingExclusions] = useState(false);
+  const isAdmin = current.includes("org_admin");
+
+  async function saveSections() {
+    setSavingSections(true);
+    try {
+      await apiFetch(`/api/org/members/${member.userId}/sections`, {
+        method: "PUT",
+        body: { sectionIds: [...chosenSections].filter((id) => !coordinated.has(id)) },
+        schema: MemberSectionsResponseSchema,
+      });
+      toast("success", t("sectionsSaved", { name: member.name }));
+      onChanged();
+    } catch (err) {
+      toast("error", errors(errorKey(err)));
+    } finally {
+      setSavingSections(false);
+    }
+  }
+  async function saveExclusions() {
+    setSavingExclusions(true);
+    try {
+      await apiFetch(`/api/org/access/members/${member.userId}`, {
+        method: "PUT",
+        body: { areas: [...excluded] },
+        schema: MemberExclusionsResponseSchema,
+      });
+      toast("success", t("exclusionsSaved", { name: member.name }));
+      onChanged();
+    } catch (err) {
+      toast("error", errors(errorKey(err)));
+    } finally {
+      setSavingExclusions(false);
+    }
+  }
 
   type RolesResult = { roles: RoleCode[]; position: StaffPosition | null };
   async function toggle(role: RoleCode) {
@@ -678,6 +781,7 @@ function RolesSheet({
                 ) : null}
               </span>
               <Button
+                action={has ? "delete" : "add"}
                 variant={has ? "danger" : "secondary"}
                 size="sm"
                 loading={busy === role}
@@ -689,6 +793,102 @@ function RolesSheet({
           );
         })}
       </ul>
+
+      {withSections ? (
+        <section className="mt-6 flex flex-col gap-3" aria-labelledby="roles-sections">
+          <div className="flex flex-col gap-0.5">
+            <h3 id="roles-sections" className="text-body font-medium text-ink">
+              {t("sections")}
+            </h3>
+            <p className="text-secondary text-muted">{t("sectionsHint")}</p>
+          </div>
+          {sections.data && sections.data.sections.length === 0 ? (
+            <p className="text-secondary text-muted">{t("sectionsEmpty")}</p>
+          ) : (
+            <ul className="flex flex-col gap-1">
+              {(sections.data?.sections ?? []).map((section) => {
+                const fixed = coordinated.has(section.id);
+                return (
+                  <li key={section.id}>
+                    <label className="flex min-h-11 items-center gap-3 rounded-field px-2 hover:bg-raised">
+                      <input
+                        type="checkbox"
+                        className="size-5 accent-club"
+                        checked={fixed || chosenSections.has(section.id)}
+                        disabled={fixed || savingSections}
+                        onChange={(e) =>
+                          setChosenSections((prev) => {
+                            const next = new Set(prev);
+                            if (e.target.checked) next.add(section.id);
+                            else next.delete(section.id);
+                            return next;
+                          })
+                        }
+                      />
+                      <span className="flex-1 text-body text-ink">{section.name}</span>
+                      {fixed ? <StatusChip kind="club">{t("coordinates")}</StatusChip> : null}
+                    </label>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+          <div>
+            <Button
+              variant="secondary"
+              size="sm"
+              loading={savingSections}
+              onClick={() => void saveSections()}
+            >
+              {c("save")}
+            </Button>
+          </div>
+        </section>
+      ) : null}
+
+      {!isAdmin ? (
+        <section className="mt-6 flex flex-col gap-3" aria-labelledby="roles-exclusions">
+          <div className="flex flex-col gap-0.5">
+            <h3 id="roles-exclusions" className="text-body font-medium text-ink">
+              {t("exclusions")}
+            </h3>
+            <p className="text-secondary text-muted">{t("exclusionsHint")}</p>
+          </div>
+          <ul className="grid gap-1 sm:grid-cols-2">
+            {ACCESS_AREAS.map((area) => (
+              <li key={area}>
+                <label className="flex min-h-11 items-center gap-3 rounded-field px-2 hover:bg-raised">
+                  <input
+                    type="checkbox"
+                    className="size-5 accent-club"
+                    checked={excluded.has(area)}
+                    disabled={savingExclusions}
+                    onChange={(e) =>
+                      setExcluded((prev) => {
+                        const next = new Set(prev);
+                        if (e.target.checked) next.add(area);
+                        else next.delete(area);
+                        return next;
+                      })
+                    }
+                  />
+                  <span className="text-body text-ink">{t("exclude", { area: areas(area) })}</span>
+                </label>
+              </li>
+            ))}
+          </ul>
+          <div>
+            <Button
+              variant="secondary"
+              size="sm"
+              loading={savingExclusions}
+              onClick={() => void saveExclusions()}
+            >
+              {c("save")}
+            </Button>
+          </div>
+        </section>
+      ) : null}
     </Sheet>
   );
 }

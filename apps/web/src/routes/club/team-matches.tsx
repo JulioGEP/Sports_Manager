@@ -38,7 +38,7 @@ const statusKind: Record<MatchSummary["status"], StatusKind> = {
   finished: "neutral",
 };
 
-/** Partidos de un equipo (Bloque 19): la lista, el alta y la entrada al partido en directo. */
+/** Partidos de un equipo (Bloque 20): la lista, el alta y la entrada al partido en directo. */
 export function TeamMatchesPage() {
   const t = useT("matches");
   const c = useT("common");
@@ -98,12 +98,7 @@ export function TeamMatchesPage() {
   return (
     <div className="flex flex-col gap-5">
       <div>
-        <ButtonLink
-          to={paths.team(id)}
-          variant="tertiary"
-          size="sm"
-          icon={<Icon.ArrowLeft size={16} aria-hidden="true" />}
-        >
+        <ButtonLink to={paths.team(id)} variant="tertiary" size="sm" action="back">
           {t("backToTeam")}
         </ButtonLink>
       </div>
@@ -123,10 +118,7 @@ export function TeamMatchesPage() {
               </ButtonLink>
             ) : null}
             {access.write ? (
-              <Button
-                icon={<Icon.Plus size={20} aria-hidden="true" />}
-                onClick={() => setCreating(true)}
-              >
+              <Button action="add" onClick={() => setCreating(true)}>
                 {t("new")}
               </Button>
             ) : null}
@@ -162,7 +154,12 @@ export function TeamMatchesPage() {
               description={t("emptyHint")}
               action={
                 access.write ? (
-                  <Button variant="secondary" size="sm" onClick={() => setCreating(true)}>
+                  <Button
+                    action="add"
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setCreating(true)}
+                  >
                     {t("new")}
                   </Button>
                 ) : null
@@ -239,6 +236,7 @@ export function TeamMatchesPage() {
                 <ButtonLink
                   to={paths.match(m.id)}
                   size="sm"
+                  action="open"
                   variant={m.status === "live" ? "primary" : "secondary"}
                 >
                   {m.status === "live" ? t("continue") : t("open")}
@@ -250,7 +248,7 @@ export function TeamMatchesPage() {
                 </ButtonLink>
               ) : null}
               {access.write ? (
-                <Button variant="danger" size="sm" onClick={() => setRemoving(m)}>
+                <Button action="delete" variant="danger" size="sm" onClick={() => setRemoving(m)}>
                   {t("remove")}
                 </Button>
               ) : null}
@@ -274,6 +272,7 @@ export function TeamMatchesPage() {
         title={t("confirmRemoveTitle", { opponent: removing?.opponent ?? "" })}
         body={t("confirmRemoveBody")}
         confirmLabel={t("remove")}
+        confirmAction="delete"
         cancelLabel={c("cancel")}
         onConfirm={() => removing && void remove(removing)}
         onCancel={() => setRemoving(null)}
@@ -354,7 +353,13 @@ export function NewMatchSheet({
           <Button variant="secondary" onClick={onClose}>
             {c("cancel")}
           </Button>
-          <Button type="submit" form="new-match-form" loading={busy} disabled={!opponent.trim()}>
+          <Button
+            action="add"
+            type="submit"
+            form="new-match-form"
+            loading={busy}
+            disabled={!opponent.trim()}
+          >
             {t("submit")}
           </Button>
         </>

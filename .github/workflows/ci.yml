@@ -27,6 +27,19 @@ jobs:
       - run: pnpm build
       - run: pnpm test
 
+  migrations:
+    name: migraciones al día con main
+    # Solo tiene sentido en PR: compara la rama con main. En main no hay nada que comparar.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # La cabeza de la rama, no el merge que prepara GitHub: Netlify despliega la cabeza.
+          ref: ${{ github.event.pull_request.head.sha }}
+      - run: git fetch --no-tags --depth=1 origin +refs/heads/main:refs/remotes/origin/main
+      - run: bash scripts/check-migrations.sh origin/main
+
   isolation:
     name: aislamiento
     runs-on: ubuntu-latest

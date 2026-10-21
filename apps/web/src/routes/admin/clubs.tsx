@@ -62,10 +62,7 @@ export function PlatformClubsPage() {
         title={t("title")}
         description={t("description")}
         actions={
-          <Button
-            icon={<Icon.Plus size={20} aria-hidden="true" />}
-            onClick={() => setCreateOpen(true)}
-          >
+          <Button action="add" onClick={() => setCreateOpen(true)}>
             {t("create")}
           </Button>
         }
@@ -140,7 +137,7 @@ export function PlatformClubsPage() {
             trailing: <StatusChip kind={statusKind[o.status]}>{statuses(o.status)}</StatusChip>,
           })}
           actions={(o) => (
-            <ButtonLink to={`/admin/clubs/${o.slug}`} variant="secondary" size="sm">
+            <ButtonLink action="open" to={`/admin/clubs/${o.slug}`} variant="secondary" size="sm">
               {t("manage")}
             </ButtonLink>
           )}
@@ -223,7 +220,13 @@ function CreateSheet({ open, onClose }: { open: boolean; onClose: () => void }) 
           <Button variant="secondary" onClick={onClose}>
             {c("cancel")}
           </Button>
-          <Button type="submit" form="create-club-form" loading={busy} disabled={!sportCode}>
+          <Button
+            action="add"
+            type="submit"
+            form="create-club-form"
+            loading={busy}
+            disabled={!sportCode}
+          >
             {t("submit")}
           </Button>
         </>

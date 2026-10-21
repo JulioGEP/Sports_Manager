@@ -13,7 +13,7 @@ import { formatRating, signed } from "@/lib/matches";
 import { Card, EmptyState, Icon, StatusChip } from "@/ui";
 
 /**
- * Partidos de un jugador (Bloque 19): sus totales y su línea en cada partido. Para el personal
+ * Partidos de un jugador (Bloque 20): sus totales y su línea en cada partido. Para el personal
  * (`/players/:id/matches`) y para su familia (`/family/players/:id/matches`), que solo ve lo
  * suyo: el resultado del equipo y lo que hizo su hijo o hija, nunca a los demás (DESIGN.md 0.10).
  */

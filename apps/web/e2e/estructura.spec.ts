@@ -61,16 +61,12 @@ test.describe("estructura del club", () => {
     await expect(page.getByText(`Categoría Cadete ${sfx} creada.`)).toBeVisible();
     await expect(page.getByRole("heading", { name: `Cadete ${sfx}` })).toBeVisible();
 
-    // Nuevo equipo en esa categoría, en la temporada actual.
-    // La tarjeta de la categoría es la sección más interna que contiene su título.
-    await page
-      .locator("section")
-      .filter({ has: page.getByRole("heading", { name: `Cadete ${sfx}` }) })
-      .last()
-      .getByRole("button", { name: "Añadir equipo" })
-      .click();
+    // Nuevo equipo en esa categoría, en la temporada actual. Se crea desde la cabecera de la
+    // sección y la categoría se elige en el formulario.
+    await page.getByRole("button", { name: "Nuevo equipo" }).click();
     const teamSheet = page.getByRole("dialog");
     await teamSheet.getByLabel("Nombre del equipo").fill(`Cadete A ${sfx}`);
+    await teamSheet.getByLabel("Categoría").selectOption({ label: `Cadete ${sfx}` });
     await expect(teamSheet.getByLabel("Categoría")).toHaveValue(/.+/);
     await shot(page, "34-equipo-nuevo", info.project.name);
     await teamSheet.getByRole("button", { name: "Crear equipo" }).click();

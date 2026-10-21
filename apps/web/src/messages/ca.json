@@ -265,6 +265,11 @@
         "title": "Observació",
         "description": "Jugadors sense valoració esportiva i els que estan per sota del llindar."
       }
+    },
+    "scope": {
+      "restricted": "Veus la teva part del club: {sections, plural, =0 {cap secció} one {# secció} other {# seccions}}, {teams, plural, =0 {cap equip} one {# equip} other {# equips}} i {players, plural, =0 {cap esportista solt} one {# esportista solt} other {# esportistes solts}}.",
+      "emptyTitle": "Encara no tens res assignat",
+      "emptyBody": "Demana a qui administra el club que t'assigni una secció, un equip o esportistes. Fins llavors el club es veu buit."
     }
   },
   "members": {
@@ -273,7 +278,8 @@
     "invite": "Convidar",
     "tabs": {
       "members": "Personal",
-      "invitations": "Invitacions"
+      "invitations": "Invitacions",
+      "access": "Accés"
     },
     "search": "Cercar per nom o correu",
     "empty": "Encara no hi ha personal al club.",
@@ -282,7 +288,8 @@
       "name": "Persona",
       "roles": "Rols",
       "since": "Des de",
-      "teams": "Equips"
+      "teams": "Equips",
+      "sections": "Seccions"
     },
     "roles": {
       "manage": "Rols",
@@ -292,12 +299,21 @@
       "lastAdmin": "No es pot treure l'últim administrador del club.",
       "hint": {
         "org_admin": "Gestiona membres, invitacions i configuració.",
-        "coach": "Veurà la seva gent i, a la Fase 1, equips i jugadors.",
+        "coach": "Veu només els seus equips: plantilla, esportistes, agenda i instal·lacions que fa servir.",
         "guardian": "Família: a la Fase 1 veurà la informació dels seus fills.",
         "staff": "Personal del club amb un càrrec: direcció, coordinació, delegació, fisio, preparació física, psicologia o scout."
       },
       "position": "Càrrec",
-      "positionSaved": "Càrrec desat: {position}."
+      "positionSaved": "Càrrec desat: {position}.",
+      "sections": "Seccions al seu càrrec",
+      "sectionsHint": "Direcció i coordinació veuen només les seccions marcades. Les que ja coordina compten encara que no es marquin.",
+      "sectionsEmpty": "Encara no hi ha seccions al club.",
+      "sectionsSaved": "Seccions de {name} desades.",
+      "coordinates": "Coordina",
+      "exclusions": "Exclusions especials",
+      "exclusionsHint": "Àrees que aquesta persona no veu encara que el seu rol sí. L'administració no s'exclou.",
+      "exclusionsSaved": "Exclusions de {name} desades.",
+      "exclude": "No veu {area}"
     },
     "inviteDrawer": {
       "title": "Convidar algú",
@@ -335,7 +351,41 @@
       "confirmRevokeBody": "L’enllaç deixarà de funcionar. Podràs convidar de nou quan vulguis.",
       "player": "Família de {name}"
     },
-    "noTeams": "Sense equip"
+    "noTeams": "Sense equip",
+    "noSections": "Sense secció",
+    "access": {
+      "title": "Què veu cada rol",
+      "description": "Marca el que veu cada rol o càrrec. El que no està marcat no apareix a la seva navegació ni a l'API. L'abast (tot el club, les seves seccions, els seus equips o els esportistes que atén) va amb el càrrec i no es canvia aquí.",
+      "profile": "Rol o càrrec",
+      "scopeLabel": "Abast",
+      "scope": {
+        "club": "Tot el club",
+        "sections": "Les seves seccions",
+        "teams": "Els seus equips",
+        "attended": "Esportistes que atén"
+      },
+      "areas": {
+        "sections": "Seccions",
+        "players": "Esportistes",
+        "club_members": "Socis",
+        "staff": "Personal",
+        "agenda": "Agenda",
+        "facilities": "Instal·lacions",
+        "challenges": "Repte",
+        "fees": "Quotes",
+        "activity": "Moviments"
+      },
+      "toggle": "{area} per a {profile}",
+      "changed": "Canviat respecte al que hi ha per defecte",
+      "reset": "Tornar al que hi ha per defecte",
+      "saved": "Accés de {profile} desat.",
+      "adminNote": "L'administració del club ho veu tot i no es pot excloure. Les famílies veuen només el dels seus esportistes: agenda, repte i quotes.",
+      "exclusionsTitle": "Exclusions per persona",
+      "exclusionsDescription": "Persones que no veuen alguna àrea encara que el seu rol sí. Es canvien des dels rols de cada persona.",
+      "exclusionsEmpty": "Ningú té exclusions.",
+      "excluded": "No veu: {areas}",
+      "error": "No s'ha pogut carregar l'accés per rol."
+    }
   },
   "settings": {
     "title": "Configuració del club",
@@ -706,7 +756,9 @@
     },
     "membership": {
       "role_assigned": "Rol assignat",
-      "role_removed": "Rol retirat"
+      "role_removed": "Rol retirat",
+      "sections_updated": "Seccions a càrrec canviades",
+      "access_updated": "Exclusions d'accés canviades"
     },
     "platform": {
       "admin_created": "Administrador de plataforma creat"
@@ -740,7 +792,9 @@
       "objective_removed": "Objectiu individual tret",
       "indicators_updated": "Indicadors de jugador valorats",
       "plan_updated": "Pla de desenvolupament desat",
-      "note_added": "Registre afegit al jugador"
+      "note_added": "Registre afegit al jugador",
+      "staff_assigned": "Personal assignat a l'esportista",
+      "staff_unassigned": "Personal retirat de l'esportista"
     },
     "challenge": {
       "created": "Repte creat",
@@ -792,6 +846,9 @@
     },
     "view_as": {
       "started": "Va veure el club com una altra persona"
+    },
+    "access": {
+      "rule_updated": "Accés per rol canviat"
     }
   },
   "team": {
@@ -1211,6 +1268,22 @@
       "memberNumber": "Soci núm. {number}",
       "makeMember": "Donar d'alta com a soci",
       "notMember": "No és soci"
+    },
+    "staff": {
+      "title": "Personal assignat",
+      "description": "Qui atén aquest esportista sense portar el seu equip: fisioteràpia, preparació física, psicologia. Assignar-li algú li obre la fitxa.",
+      "empty": "Ningú assignat.",
+      "assign": "Assignar personal",
+      "remove": "Treure",
+      "assigned": "{member} atén ara {name}.",
+      "removed": "{member} ja no atén {name}.",
+      "sheet": {
+        "title": "Assignar personal a {name}",
+        "description": "Personal, cos tècnic o administració del club. Veurà la fitxa encara que no porti el seu equip.",
+        "member": "Persona",
+        "submit": "Assignar",
+        "empty": "No hi ha ningú més del personal disponible."
+      }
     }
   },
   "family": {
@@ -1253,10 +1326,10 @@
     "psychologist": "Psicologia",
     "scout": "Scout",
     "hint": {
-      "director": "Veu tot el club: estructura, jugadors, valoracions i repte. No gestiona membres ni configuració.",
-      "coordinator": "Com la direcció esportiva: estructura, jugadors, valoracions i repte.",
+      "director": "Veu les seves seccions: estructura, esportistes, agenda, instal·lacions i repte. Ni socis, ni personal, ni quotes.",
+      "coordinator": "Com la direcció esportiva, a les seves seccions: estructura, esportistes, agenda i repte.",
       "delegate": "Consulta equips, jugadors i repte. No canvia res.",
-      "physio": "Valora el cos de qualsevol jugador i deixa anotacions.",
+      "physio": "Valora el cos i deixa anotacions dels esportistes que atén: els dels seus equips i els que li assignen.",
       "fitness": "Valora la preparació física i deixa anotacions.",
       "psychologist": "Valora el benestar i deixa anotacions.",
       "scout": "Valora l'esport i deixa anotacions d'observació."
@@ -1291,7 +1364,7 @@
     "title": "Reptes",
     "description": "Reptes per punts: proves, registres de les famílies i validació del club.",
     "new": "Nou repte",
-    "familiesNote": "Les famílies registren l'activitat dels seus jugadors i veuen només els seus punts. La participació per jugador és només per al personal.",
+    "familiesNote": "Cada repte és d'una secció o d'un equip. Les famílies registren l'activitat dels seus jugadors i veuen només els seus punts. La participació per jugador és només per al personal.",
     "empty": "Encara no hi ha reptes.",
     "emptyHint": "Crea el primer amb el catàleg d'exemple i activa'l quan estigui a punt.",
     "from": "des del {date}",
@@ -1330,7 +1403,7 @@
     "maxPoints": "topall {points}",
     "sheet": {
       "title": "Nou repte",
-      "description": "Un període amb un catàleg de proves. Les famílies registren, el club valida.",
+      "description": "Un període amb un catàleg de proves, per a tota una secció o per a un sol equip. Les famílies registren, el club valida.",
       "submit": "Crear repte",
       "name": "Nom",
       "nameHint": "Per exemple, Repte d'estiu 2027.",
@@ -1350,7 +1423,23 @@
       "pointsOrder": "L'objectiu no pot ser menor que el mínim.",
       "created": "Repte {name} creat.",
       "editTitle": "Editar {name}",
-      "saved": "Repte desat."
+      "saved": "Repte desat.",
+      "scopeFixed": "La secció i l'equip del repte ja no canvien: el repte està en marxa."
+    },
+    "scope": {
+      "section": "Secció",
+      "kind": "Abast",
+      "kindHint": "Tota la secció, o un sol equip amb el seu propi repte.",
+      "wholeSection": "Tota la secció",
+      "wholeSectionShort": "tota la secció",
+      "oneTeam": "Un equip",
+      "team": "Equip",
+      "noTeams": "Aquesta secció no té equips aquesta temporada.",
+      "ownHint": "Només pots crear reptes per als teus equips.",
+      "noOwnTeams": "No portes cap equip aquesta temporada, així que no pots crear reptes.",
+      "noSections": "Crea abans una secció: els reptes són d'una secció o d'un equip.",
+      "filter": "Secció",
+      "filterAll": "Totes les seccions"
     }
   },
   "familyChallenge": {
@@ -1360,7 +1449,7 @@
     "noPlayersHint": "Demana a qui administra el club que et vinculi des de la fitxa del jugador.",
     "playerTabs": "Jugadors de la família",
     "noChallenge": "Ara mateix no hi ha cap repte actiu.",
-    "noChallengeHint": "Quan el club l'activi, el veuràs aquí.",
+    "noChallengeHint": "Quan el club n'activi un per a la seva secció o el seu equip, el veuràs aquí.",
     "register": "Registrar activitat",
     "target": "objectiu {target}",
     "progressLabel": "{points} de {target} punts del repte",
@@ -1392,7 +1481,8 @@
       "noteHint": "Opcional: un vídeo, una foto o un comentari.",
       "capHint": "Aquesta prova té un topall de {points} punts en tot el repte.",
       "saved": "Activitat registrada. El club la validarà."
-    }
+    },
+    "challengeTabs": "Reptes de {name}"
   },
   "challenge": {
     "back": "Reptes",
@@ -1608,7 +1698,6 @@
     "competition": {
       "newTeam": "Nou equip",
       "tabTeams": "Equips",
-      "addTeam": "Afegir equip",
       "emptyTeams": "Sense equips en aquesta categoria.",
       "table": {
         "team": "Equip",
@@ -1629,7 +1718,6 @@
     "activity": {
       "newTeam": "Nou grup",
       "tabTeams": "Grups",
-      "addTeam": "Afegir grup",
       "emptyTeams": "Sense grups en aquest nivell.",
       "table": {
         "team": "Grup",

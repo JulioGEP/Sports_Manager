@@ -11,7 +11,7 @@ import {
 } from "@sportsmanager/shared";
 
 /**
- * Puente entre lo que devuelve la API y el motor de estadísticas compartido (Bloque 19).
+ * Puente entre lo que devuelve la API y el motor de estadísticas compartido (Bloque 20).
  * La web calcula las estadísticas en el navegador con el mismo motor que la API.
  */
 

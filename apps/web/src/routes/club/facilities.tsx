@@ -82,10 +82,7 @@ export function FacilitiesPage() {
         description={t("description")}
         actions={
           canWrite ? (
-            <Button
-              icon={<Icon.Plus size={18} aria-hidden="true" />}
-              onClick={() => setCreating(true)}
-            >
+            <Button action="add" onClick={() => setCreating(true)}>
               {t("new")}
             </Button>
           ) : null
@@ -98,7 +95,11 @@ export function FacilitiesPage() {
           title={t("empty")}
           description={t("emptyHint")}
           action={
-            canWrite ? <Button onClick={() => setCreating(true)}>{t("new")}</Button> : undefined
+            canWrite ? (
+              <Button action="add" onClick={() => setCreating(true)}>
+                {t("new")}
+              </Button>
+            ) : undefined
           }
         />
       ) : null}
@@ -113,7 +114,12 @@ export function FacilitiesPage() {
       ) : null}
       {archived > 0 ? (
         <div>
-          <Button variant="tertiary" size="sm" onClick={() => setShowArchived((v) => !v)}>
+          <Button
+            action={showArchived ? "hide" : "show"}
+            variant="tertiary"
+            size="sm"
+            onClick={() => setShowArchived((v) => !v)}
+          >
             {showArchived ? t("hideArchived") : t("showArchived", { count: archived })}
           </Button>
         </div>
@@ -259,7 +265,12 @@ export function FacilitySheet({
           <Button variant="secondary" onClick={onClose}>
             {c("cancel")}
           </Button>
-          <Button type="submit" form="facility-form" loading={busy}>
+          <Button
+            action={facility ? "save" : "add"}
+            type="submit"
+            form="facility-form"
+            loading={busy}
+          >
             {facility ? c("save") : t("submit")}
           </Button>
         </>

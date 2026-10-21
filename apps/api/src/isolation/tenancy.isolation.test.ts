@@ -204,9 +204,9 @@ describe("aislamiento entre clubes", () => {
     expect((await get("/api/org/members", hostOf("club-b"), cookies.get(both.id))).status).toBe(
       403,
     );
-    // coach en A: sí ve miembros (datos personales) pero no gestiona
+    // coach en A: tampoco ve al personal del club (Bloque 19); solo lo suyo
     expect((await get("/api/org/members", hostOf("club-a"), cookies.get(both.id))).status).toBe(
-      200,
+      403,
     );
     expect(
       (

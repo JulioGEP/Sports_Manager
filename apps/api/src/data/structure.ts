@@ -20,7 +20,8 @@ import {
   type TeamStatus,
   type TeamUpdate,
 } from "@sportsmanager/shared";
-import { and, asc, count, countDistinct, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, count, countDistinct, desc, eq, inArray, or, sql } from "drizzle-orm";
+import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import { isUniqueViolation } from "./db.ts";
 import type { OrgScope } from "./scope.ts";
 
@@ -260,8 +261,16 @@ export function sectionsRepo(db: () => Database) {
     return rows.length > 0;
   }
 
-  /** Secciones con sus cifras en una temporada (la actual si no se indica otra). */
-  async function list(scope: OrgScope, seasonId: string | null): Promise<SectionRecord[]> {
+  /**
+   * Secciones con sus cifras en una temporada (la actual si no se indica otra). Con
+   * `sectionIds` (Bloque 19), solo esas: el ámbito de quien pregunta.
+   */
+  async function list(
+    scope: OrgScope,
+    seasonId: string | null,
+    filter: { sectionIds?: string[] | undefined } = {},
+  ): Promise<SectionRecord[]> {
+    if (filter.sectionIds && filter.sectionIds.length === 0) return [];
     const rows = await db()
       .select({
         id: schema.sections.id,
@@ -278,7 +287,12 @@ export function sectionsRepo(db: () => Database) {
       .from(schema.sections)
       .innerJoin(schema.sports, eq(schema.sports.id, schema.sections.sportId))
       .leftJoin(schema.users, eq(schema.users.id, schema.sections.coordinatorUserId))
-      .where(eq(schema.sections.organizationId, scope.organizationId))
+      .where(
+        and(
+          eq(schema.sections.organizationId, scope.organizationId),
+          ...(filter.sectionIds ? [inArray(schema.sections.id, filter.sectionIds)] : []),
+        ),
+      )
       .orderBy(asc(schema.sections.sortOrder), asc(schema.sections.name));
     const categories = await db()
       .select({ sectionId: schema.categories.sectionId, total: count() })
@@ -536,8 +550,14 @@ export function sectionsRepo(db: () => Database) {
 export function categoriesRepo(db: () => Database) {
   async function list(
     scope: OrgScope,
-    filter: { sectionId?: string | undefined; seasonId?: string | null | undefined } = {},
+    filter: {
+      sectionId?: string | undefined;
+      seasonId?: string | null | undefined;
+      /** Ámbito restringido (Bloque 19): solo las categorías de estas secciones. */
+      sectionIds?: string[] | undefined;
+    } = {},
   ): Promise<CategoryRecord[]> {
+    if (filter.sectionIds && filter.sectionIds.length === 0) return [];
     const rows = await db()
       .select({
         id: schema.categories.id,
@@ -554,6 +574,7 @@ export function categoriesRepo(db: () => Database) {
         and(
           eq(schema.categories.organizationId, scope.organizationId),
           ...(filter.sectionId ? [eq(schema.categories.sectionId, filter.sectionId)] : []),
+          ...(filter.sectionIds ? [inArray(schema.categories.sectionId, filter.sectionIds)] : []),
         ),
       )
       .orderBy(asc(schema.categories.sortOrder), asc(schema.categories.name));
@@ -752,14 +773,24 @@ export function teamsRepo(db: () => Database) {
   return {
     byId,
 
-    /** Equipos de una temporada (y, si se pide, de una sección), por sección, categoría y nombre. */
-    async list(scope: OrgScope, seasonId: string, sectionId?: string): Promise<TeamRecord[]> {
+    /**
+     * Equipos de una temporada (y, si se pide, de una sección), por sección, categoría y nombre.
+     * Con `teamIds` (Bloque 19), solo esos: el ámbito de quien pregunta.
+     */
+    async list(
+      scope: OrgScope,
+      seasonId: string,
+      sectionId?: string,
+      teamIds?: string[],
+    ): Promise<TeamRecord[]> {
+      if (teamIds && teamIds.length === 0) return [];
       const rows = await query()
         .where(
           and(
             eq(schema.teams.organizationId, scope.organizationId),
             eq(schema.teams.seasonId, seasonId),
             ...(sectionId ? [eq(schema.teams.sectionId, sectionId)] : []),
+            ...(teamIds ? [inArray(schema.teams.id, teamIds)] : []),
           ),
         )
         .orderBy(
@@ -1101,8 +1132,16 @@ export function teamsRepo(db: () => Database) {
       return rows;
     },
 
-    /** Cifras de la portada y de la vista de soporte. Sin datos personales. */
-    async counts(scope: OrgScope): Promise<StructureCounts> {
+    /**
+     * Cifras de la portada y de la vista de soporte. Sin datos personales. Con `visible`
+     * (Bloque 19), solo las secciones, equipos y deportistas del ámbito de quien pregunta.
+     */
+    async counts(
+      scope: OrgScope,
+      visible?: { sectionIds: string[]; teamIds: string[]; playerIds: string[] },
+    ): Promise<StructureCounts> {
+      const idsOrNone = (column: AnyPgColumn, ids: string[]) =>
+        ids.length > 0 ? inArray(column, ids) : sql`false`;
       const current = await db()
         .select({ id: schema.seasons.id, name: schema.seasons.name })
         .from(schema.seasons)
@@ -1121,6 +1160,7 @@ export function teamsRepo(db: () => Database) {
           and(
             eq(schema.sections.organizationId, scope.organizationId),
             eq(schema.sections.status, "active"),
+            ...(visible ? [idsOrNone(schema.sections.id, visible.sectionIds)] : []),
           ),
         );
       const teams = currentSeason
@@ -1132,9 +1172,33 @@ export function teamsRepo(db: () => Database) {
                 eq(schema.teams.organizationId, scope.organizationId),
                 eq(schema.teams.seasonId, currentSeason.id),
                 eq(schema.teams.status, "active"),
+                ...(visible ? [idsOrNone(schema.teams.id, visible.teamIds)] : []),
               ),
             )
         : [];
+      /** Deportistas visibles: en plantilla de un equipo del ámbito esta temporada, o en la lista. */
+      const visiblePlayers = visible
+        ? or(
+            visible.teamIds.length > 0
+              ? inArray(
+                  schema.players.id,
+                  db()
+                    .select({ id: schema.teamPlayers.playerId })
+                    .from(schema.teamPlayers)
+                    .innerJoin(schema.teams, eq(schema.teams.id, schema.teamPlayers.teamId))
+                    .innerJoin(schema.seasons, eq(schema.seasons.id, schema.teams.seasonId))
+                    .where(
+                      and(
+                        eq(schema.teamPlayers.organizationId, scope.organizationId),
+                        inArray(schema.teamPlayers.teamId, visible.teamIds),
+                        eq(schema.seasons.isCurrent, true),
+                      ),
+                    ),
+                )
+              : sql`false`,
+            idsOrNone(schema.players.id, visible.playerIds),
+          )!
+        : undefined;
       const players = await db()
         .select({ total: count() })
         .from(schema.players)
@@ -1142,12 +1206,33 @@ export function teamsRepo(db: () => Database) {
           and(
             eq(schema.players.organizationId, scope.organizationId),
             eq(schema.players.status, "active"),
+            visiblePlayers,
           ),
         );
       const guardians = await db()
         .select({ total: countDistinct(schema.playerGuardians.userId) })
         .from(schema.playerGuardians)
-        .where(eq(schema.playerGuardians.organizationId, scope.organizationId));
+        .where(
+          and(
+            eq(schema.playerGuardians.organizationId, scope.organizationId),
+            ...(visiblePlayers
+              ? [
+                  inArray(
+                    schema.playerGuardians.playerId,
+                    db()
+                      .select({ id: schema.players.id })
+                      .from(schema.players)
+                      .where(
+                        and(
+                          eq(schema.players.organizationId, scope.organizationId),
+                          visiblePlayers,
+                        ),
+                      ),
+                  ),
+                ]
+              : []),
+          ),
+        );
       return {
         currentSeason,
         sections: sections[0]?.total ?? 0,

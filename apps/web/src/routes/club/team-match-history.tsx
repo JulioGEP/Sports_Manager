@@ -23,7 +23,7 @@ import { zoneCells } from "./match-stats";
 type Metric = { key: string; label: string; of: (r: PlayerRow) => number };
 
 /**
- * Histórico del equipo (Bloque 19): se eligen los partidos y los acumulados se recalculan al
+ * Histórico del equipo (Bloque 20): se eligen los partidos y los acumulados se recalculan al
  * momento con el motor compartido. Comparativa, evolución por partido, zonas, jugadores y el
  * cruce de dos métricas cualesquiera. Todo se baja a Excel.
  */
@@ -318,12 +318,7 @@ function HistoryView({
   return (
     <div className="flex flex-col gap-5">
       <div>
-        <ButtonLink
-          to={back}
-          variant="tertiary"
-          size="sm"
-          icon={<Icon.ArrowLeft size={16} aria-hidden="true" />}
-        >
+        <ButtonLink to={back} variant="tertiary" size="sm" action="back">
           {t("back")}
         </ButtonLink>
       </div>

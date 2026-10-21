@@ -69,6 +69,10 @@ Hazlo nada más desplegar: mientras la cuenta no exista, cualquiera que conozca 
 | Deploy preview | Rama de base de datos por preview, creada por Netlify a partir de una copia de producción | Netlify, antes de publicar la preview. Si fallan, la preview falla        |
 | Producción     | Base de producción                                                                        | Netlify, justo antes de publicar. Solo los deploys de producción la tocan |
 
+La rama de preview nace de producción con sus migraciones ya aplicadas. Por eso la rama de git tiene que llevar todas las migraciones que `main` ya tiene: si le falta alguna (porque otra PR con migraciones se mezcló después de abrir la rama), Netlify la da por borrada y la preview falla con `Database migration failed: N migrations have been removed after being applied`. Pasó el 21 de octubre de 2026 con las PR 23 y 24, abiertas en paralelo y cada una sin las migraciones de la otra. Arreglo: mezclar `main` en la rama y volver a subirla; la siguiente preview pasa. Nunca se borra ni se renombra una migración para quitar el error. Producción no se ve afectada: solo la despliega `main`, que siempre las lleva todas.
+
+El job `migraciones al día con main` de CI (`pnpm db:check` en local, tras `git fetch origin main`) compara la rama con `main` y lo avisa con el mensaje claro antes de que lo haga Netlify. También falla si la rama cambia una migración que `main` ya tiene.
+
 Aprovisionamiento: `@netlify/database` está declarado en el `package.json` de la raíz (además de en `packages/db` y `apps/api`) porque Netlify decide si aprovisiona la base mirando las dependencias del proyecto. Si tras un deploy la base no aparece en Data & Storage → Database, se crea desde ahí con el botón de crear base de datos; a partir de entonces el deploy aplica las migraciones. La cadena de conexión llega a las funciones en `NETLIFY_DB_URL`.
 
 Comprobado en el primer deploy de producción (20 de octubre de 2026): función `api` desplegada en `/api/*` con región `eu-central-1`, Blobs en `eu-central-1`, base aprovisionada y las dos migraciones aplicadas con snapshot al publicar.
@@ -81,11 +85,13 @@ Reglas de migraciones (ADR 0003):
 4. Se commitean esquema y migración juntos. Nadie aplica migraciones a mano contra una base alojada.
 5. Una migración aplicada en cualquier sitio es inmutable. Corregir es escribir otra.
 6. Cambios que rompen (renombrar o borrar columnas) en tres deploys: expandir, migrar, contraer.
+7. Antes de subir una rama, y cada vez que `main` reciba migraciones nuevas, se mezcla `main` en la rama. Una rama sin alguna migración de `main` no despliega en preview.
 
 Para que ningún cambio de esquema llegue a producción sin pasar por preview, en GitHub (Settings → Branches → `main`) hay que exigir estos checks antes de mezclar:
 
 - `lint, typecheck y tests`
 - `aislamiento`
+- `migraciones al día con main`
 - el check de deploy preview de Netlify (`netlify/hubsports/deploy-preview`)
 
 Aviso: las ramas de preview nacen con una copia de los datos de producción y las URLs de preview son públicas. En la Fase 0 no hay datos reales. Antes de la Fase 1 hay que proteger las previews.

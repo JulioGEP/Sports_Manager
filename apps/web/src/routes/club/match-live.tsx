@@ -66,7 +66,7 @@ function useElapsed(clock: MatchDetail["clock"]): number {
 }
 
 /**
- * Consola del partido en directo (Bloque 19, ADR 0032): registro de todo lo que pasa, de un
+ * Consola del partido en directo (Bloque 20, ADR 0034): registro de todo lo que pasa, de un
  * toque, en la banda. Cada evento viaja a la API al momento; el cronómetro se guarda al
  * arrancar, parar y cambiar de periodo, así que recargar la página no pierde nada.
  */
@@ -503,7 +503,7 @@ function Console({
           to={paths.teamMatches(match.team.id)}
           variant="tertiary"
           size="sm"
-          icon={<Icon.ArrowLeft size={16} aria-hidden="true" />}
+          action="back"
         >
           {t("back", { team: match.team.name })}
         </ButtonLink>
@@ -615,11 +615,7 @@ function Console({
       {access.write ? (
         <div className="flex flex-wrap items-center gap-2">
           {match.status === "scheduled" ? (
-            <Button
-              icon={<Icon.Play size={18} weight="fill" aria-hidden="true" />}
-              loading={busy}
-              onClick={() => void startMatch()}
-            >
+            <Button action="activate" loading={busy} onClick={() => void startMatch()}>
               {t("start")}
             </Button>
           ) : null}
@@ -641,18 +637,14 @@ function Console({
             </Button>
           ) : null}
           {match.status === "live" ? (
-            <Button
-              variant="danger"
-              icon={<Icon.CheckCircle size={18} aria-hidden="true" />}
-              onClick={() => setFinishing(true)}
-            >
+            <Button action="finish" variant="danger" onClick={() => setFinishing(true)}>
               {t("finish")}
             </Button>
           ) : null}
           {match.status === "finished" ? (
             <>
               <StatusChip kind="neutral">{t("status.finished")}</StatusChip>
-              <Button variant="secondary" size="sm" onClick={() => void reopen()}>
+              <Button action="restore" variant="secondary" size="sm" onClick={() => void reopen()}>
                 {t("reopen")}
               </Button>
             </>
@@ -1020,6 +1012,7 @@ function Console({
         title={t("confirmFinishTitle", { score: `${match.ownScore}–${match.opponentScore}` })}
         body={t("confirmFinishBody")}
         confirmLabel={t("finish")}
+        confirmAction="finish"
         cancelLabel={c("cancel")}
         tone="default"
         onConfirm={() => void finishMatch()}
@@ -1328,7 +1321,7 @@ function LineupSheet({
           <Button variant="secondary" onClick={onClose}>
             {c("cancel")}
           </Button>
-          <Button disabled={!valid} onClick={() => onSave(draft)}>
+          <Button action="save" disabled={!valid} onClick={() => onSave(draft)}>
             {t("submit")}
           </Button>
         </>
@@ -1370,7 +1363,12 @@ function LineupSheet({
                   {t("keeper")}
                 </Button>
               ) : null}
-              <Button variant="tertiary" size="sm" onClick={() => remove(p.playerId)}>
+              <Button
+                action="delete"
+                variant="tertiary"
+                size="sm"
+                onClick={() => remove(p.playerId)}
+              >
                 {c("remove")}
               </Button>
             </li>
@@ -1383,9 +1381,9 @@ function LineupSheet({
               {extra.map((r) => (
                 <li key={r.playerId}>
                   <Button
+                    action="add"
                     variant="secondary"
                     size="sm"
-                    icon={<Icon.Plus size={14} aria-hidden="true" />}
                     onClick={() => add(r.playerId)}
                   >
                     {r.shirtNumber !== null ? `${r.shirtNumber} · ` : ""}
@@ -1445,6 +1443,7 @@ function MatchSettingsSheet({
             {c("cancel")}
           </Button>
           <Button
+            action="save"
             disabled={!opponent.trim()}
             onClick={() =>
               onSave({

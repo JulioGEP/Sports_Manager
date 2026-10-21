@@ -1,4 +1,11 @@
-import type { Locale, Permission, RoleCode, StaffPosition } from "@sportsmanager/shared";
+import type {
+  AccessScope,
+  Locale,
+  MembershipRole,
+  Permission,
+  RoleCode,
+  StaffPosition,
+} from "@sportsmanager/shared";
 import type { OrganizationRow, OrgScope } from "../data/index.ts";
 
 /** Contexto que Netlify pasa a la función. En tests puede no existir. */
@@ -36,6 +43,8 @@ export type Actor =
       roles: RoleCode[];
       /** Cargo del personal (Bloque 13), si tiene el rol `staff`. */
       position: StaffPosition | null;
+      /** Las pertenencias con su cargo (Bloque 19): de ellas sale el ámbito. */
+      memberships: MembershipRole[];
       permissions: ReadonlySet<Permission>;
       viewingAs: { userId: string; name: string; roles: RoleCode[] } | null;
       canViewAs: boolean;
@@ -53,6 +62,8 @@ export interface AppVariables {
   /** Sesión si la hay, en rutas que funcionan con y sin ella (aceptar invitación). */
   optionalSessionUser: SessionUser | null;
   actor: Actor;
+  /** Ámbito del actor (Bloque 19), resuelto una vez por petición cuando una ruta lo pide. */
+  accessScope: AccessScope | undefined;
 }
 
 export type AppEnv = { Bindings: NetlifyEnv; Variables: AppVariables };

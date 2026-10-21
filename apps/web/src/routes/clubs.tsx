@@ -7,7 +7,7 @@ import { apiFetch, errorKey } from "@/lib/api";
 import { useT } from "@/lib/intl";
 import { useRequiredSession, useSignOut } from "@/lib/session";
 import { applyProductColors, setShape } from "@/lib/theme";
-import { Alert, Button, ButtonLink, Crest, Icon, StatusChip } from "@/ui";
+import { Alert, Button, ButtonLink, Crest, StatusChip } from "@/ui";
 
 /** Selector de club: con uno solo va directo; con varios, tarjetas con el escudo y el color de cada club. */
 export function ClubsPage() {
@@ -52,12 +52,7 @@ export function ClubsPage() {
             </p>
           ) : null}
         </div>
-        <Button
-          variant="tertiary"
-          size="sm"
-          icon={<Icon.SignOut size={18} aria-hidden="true" />}
-          onClick={() => void onSignOut()}
-        >
+        <Button action="signOut" variant="tertiary" size="sm" onClick={() => void onSignOut()}>
           {t("signOut")}
         </Button>
       </header>
@@ -92,10 +87,7 @@ export function ClubsPage() {
                 </div>
               </div>
             </div>
-            <ButtonLink
-              to={`/${m.organization.slug}`}
-              icon={<Icon.ArrowRight size={18} aria-hidden="true" />}
-            >
+            <ButtonLink action="open" to={`/${m.organization.slug}`}>
               {t("open")}
             </ButtonLink>
           </li>

@@ -562,7 +562,7 @@ describe("estructura del club y familias", () => {
     ).toBe(400);
 
     // Objetivo: el responsable tiene que ser miembro del club. La entrenadora del equipo valora
-    // (Bloque 13, ADR 0030); una entrenadora sin ese equipo, no.
+    // (Bloque 13, ADR 0030); para una entrenadora sin ese equipo el jugador no existe (Bloque 19).
     expect(
       (
         await request("PUT", `${base}/objective`, A, {
@@ -578,7 +578,7 @@ describe("estructura del club y familias", () => {
           body: { title: "Conducción", progress: 45 },
         })
       ).status,
-    ).toBe(403);
+    ).toBe(404);
     const byCoach = await json<Detail & { access: { assess: boolean; photo: boolean } }>(
       await request("PUT", `${base}/objective`, A, {
         cookie: as(coachA),
@@ -587,12 +587,8 @@ describe("estructura del club y familias", () => {
       200,
     );
     expect(byCoach.objective?.title).toBe("Conducción");
-    expect(byCoach.access).toEqual({ assess: true, photo: true });
-    const seenByFree = await json<{ access: { assess: boolean; photo: boolean } }>(
-      await request("GET", base, A, { cookie: as(coachFreeA) }),
-      200,
-    );
-    expect(seenByFree.access).toEqual({ assess: false, photo: false });
+    expect(byCoach.access).toEqual({ assess: true, photo: true, staff: true });
+    expect((await request("GET", base, A, { cookie: as(coachFreeA) })).status).toBe(404);
     const withObjective = await json<Detail>(
       await request("PUT", `${base}/objective`, A, {
         cookie: as(adminA),

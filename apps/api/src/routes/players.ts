@@ -20,6 +20,7 @@ import {
   PlayerResponseSchema,
   PlayersOverviewResponseSchema,
   PlayersResponseSchema,
+  PlayerStaffAssignSchema,
   PlayerUpdateSchema,
   playerDisplayName,
   type Locale,
@@ -35,7 +36,7 @@ import {
   type DataLayer,
   type PlayerRow,
 } from "../data/index.ts";
-import { requireActor, requirePermission } from "../http/actor.ts";
+import { accessScopeOf, requireActor, requirePermission } from "../http/actor.ts";
 import type { Actor, AppEnv } from "../http/context.ts";
 import {
   badRequest,
@@ -64,6 +65,7 @@ const json = <T extends z.ZodTypeAny>(description: string, schema: T) => ({
   content: { "application/json": { schema } },
 });
 const idParam = z.object({ id: z.string().uuid() });
+type OrgScopeOf = Parameters<DataLayer["players"]["byId"]>[0];
 
 const playerDto = (p: PlayerRow, slug: string) => ({
   id: p.id,
@@ -121,6 +123,8 @@ const FAMILY_EVENT_KINDS: readonly PlayerEventKind[] = [
  * Datos de menores: lectura con `org.players.read`, cambios con `org.players.write`; valoraciones
  * con `org.players.assess` o, sobre los jugadores de los equipos propios, `org.players.assess_own`;
  * una familia solo ve lo suyo (`org.family.read`) y cambia la foto de los suyos (`org.family.write`).
+ * Con un ámbito restringido (Bloque 19, ADR 0033), solo salen los deportistas de los equipos y
+ * secciones de quien pregunta, o los que atiende; el resto no existe para esa persona.
  */
 export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
   const app = new OpenAPIHono<AppEnv>();
@@ -166,6 +170,21 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
       ((key: "tenant") => AppEnv["Variables"]["tenant"]);
   };
   const actorId = (c: Ctx) => c.get("actor").userId;
+  type RouteCtx = Parameters<typeof accessScopeOf>[1];
+
+  /** Filtro de ámbito para las listas (Bloque 19): nulo cuando se ve el club entero. */
+  async function visibleOf(c: RouteCtx) {
+    const access = await accessScopeOf(data, c);
+    return access.kind === "club"
+      ? undefined
+      : { teamIds: access.teamIds, playerIds: access.playerIds };
+  }
+  /** Un deportista fuera del ámbito de quien pregunta no existe para esa persona. */
+  async function requireVisible(c: RouteCtx, tenant: { scope: OrgScopeOf }, playerId: string) {
+    const access = await accessScopeOf(data, c);
+    if (!(await data.access.isPlayerVisible(tenant.scope, access, playerId)))
+      throw notFound("Ese jugador no existe.");
+  }
 
   /**
    * Valorar a un jugador (objetivo, indicadores, PDI, anotaciones): con permiso de club, o con el
@@ -199,7 +218,7 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
     throw forbidden();
   }
 
-  /** Qué puede hacer quien pregunta en la ficha: valorar y cambiar la foto. */
+  /** Qué puede hacer quien pregunta en la ficha: valorar, cambiar la foto y asignar personal. */
   async function accessOf(c: Ctx, tenant: Tenant, playerId: string) {
     const actor = c.get("actor");
     const own =
@@ -207,26 +226,42 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
       (await data.players.isStaffOf(tenant.scope, actorId(c), playerId));
     const assess = actor.permissions.has("org.players.assess") || own;
     const photo = actor.permissions.has("org.players.write") || own;
-    return { assess, photo };
+    return { assess, photo, staff: photo };
+  }
+
+  /** Asignar personal a un deportista (Bloque 19): quien escribe jugadores o su cuerpo técnico. */
+  async function requireStaffAssign(c: Ctx, tenant: Tenant, playerId: string) {
+    if (!(await accessOf(c, tenant, playerId)).staff) throw forbidden();
   }
 
   async function detail(c: Ctx, tenant: Tenant, player: PlayerRow) {
     const scope = tenant.scope;
     const profile = data.playerProfile;
     const clubMember = await data.clubMembers.byPerson(scope, player.personId);
-    const [teams, guardians, invitations, objective, indicators, developmentPlan, events, access] =
-      await Promise.all([
-        data.players.teamsOf(scope, player.id),
-        data.players.guardiansOf(scope, player.id),
-        data.invitations.listForPlayer(scope, player.id),
-        profile.objectiveOf(scope, player.id),
-        profile.indicatorsOf(scope, player.id),
-        profile.planOf(scope, player.id),
-        profile.eventsOf(scope, player.id),
-        accessOf(c, tenant, player.id),
-      ]);
+    const [
+      teams,
+      guardians,
+      invitations,
+      objective,
+      indicators,
+      developmentPlan,
+      events,
+      access,
+      staff,
+    ] = await Promise.all([
+      data.players.teamsOf(scope, player.id),
+      data.players.guardiansOf(scope, player.id),
+      data.invitations.listForPlayer(scope, player.id),
+      profile.objectiveOf(scope, player.id),
+      profile.indicatorsOf(scope, player.id),
+      profile.planOf(scope, player.id),
+      profile.eventsOf(scope, player.id),
+      accessOf(c, tenant, player.id),
+      data.access.staffOfPlayer(scope, player.id),
+    ]);
     return {
       access,
+      staff,
       player: playerFullDto(
         player,
         tenant.organization.slug,
@@ -264,10 +299,11 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
     };
   }
 
-  /** Jugador del club o 404. */
-  async function playerOr404(tenant: Tenant, id: string): Promise<PlayerRow> {
+  /** Jugador del club, dentro del ámbito de quien pregunta, o 404. */
+  async function playerOr404(c: RouteCtx, tenant: Tenant, id: string): Promise<PlayerRow> {
     const player = await data.players.byId(tenant.scope, id);
     if (!player) throw notFound("Ese jugador no existe.");
+    await requireVisible(c, tenant, id);
     return player;
   }
 
@@ -328,13 +364,15 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
       const player = await data.players.familyPlayer(tenant.scope, actorId(c), id);
       if (!player) throw notFound("Ese jugador no está vinculado a tu cuenta.");
       const scope = tenant.scope;
-      const [objective, plan, events, challenge] = await Promise.all([
+      const [objective, plan, events, challenges] = await Promise.all([
         data.playerProfile.objectiveOf(scope, id),
         data.playerProfile.planOf(scope, id),
         data.playerProfile.eventsOf(scope, id, { kinds: FAMILY_EVENT_KINDS }),
-        data.challenges.active(scope),
+        data.challenges.activeFor(scope, id),
       ]);
-      const totals = challenge ? await data.challenges.totalsFor(scope, challenge.id, id) : null;
+      const totals = await Promise.all(
+        challenges.map((ch) => data.challenges.totalsFor(scope, ch.id, id)),
+      );
       return c.json(
         {
           player: {
@@ -359,17 +397,16 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
               actorName: null,
             },
           ],
-          challenge:
-            challenge && totals
-              ? {
-                  id: challenge.id,
-                  name: challenge.name,
-                  minPoints: challenge.minPoints,
-                  targetPoints: challenge.targetPoints,
-                  approvedPoints: totals.approved,
-                  pendingPoints: totals.pending,
-                }
-              : null,
+          challenges: challenges.map((challenge, index) => ({
+            id: challenge.id,
+            name: challenge.name,
+            section: challenge.section,
+            team: challenge.team,
+            minPoints: challenge.minPoints,
+            targetPoints: challenge.targetPoints,
+            approvedPoints: totals[index]!.approved,
+            pendingPoints: totals[index]!.pending,
+          })),
         },
         200,
       );
@@ -406,6 +443,7 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
         sectionId: section,
         categoryId: category,
         missing,
+        visible: await visibleOf(c),
       });
       return c.json(
         {
@@ -445,7 +483,10 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
       const { scope: requested } = c.req.valid("query");
       const own = requested === "own";
       const teamIds = own ? await data.memberships.ownTeamIds(tenant.scope, actorId(c)) : undefined;
-      const players = await data.players.overview(tenant.scope, { teamIds });
+      const players = await data.players.overview(tenant.scope, {
+        teamIds,
+        visible: await visibleOf(c),
+      });
       return c.json(
         {
           scope: own ? ("own" as const) : ("club" as const),
@@ -534,7 +575,7 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
     async (c) => {
       const tenant = scopeOf(c);
       const { id } = c.req.valid("param");
-      const player = await playerOr404(tenant, id);
+      const player = await playerOr404(c, tenant, id);
       return c.json(await detail(c, tenant, player), 200);
     },
   );
@@ -557,7 +598,7 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
       const tenant = scopeOf(c);
       const { id } = c.req.valid("param");
       const body = c.req.valid("json");
-      const before = await playerOr404(tenant, id);
+      const before = await playerOr404(c, tenant, id);
       const player = await data.players.update(tenant.scope, id, body);
       if (!player) throw notFound("Ese jugador no existe.");
       if (body.status !== undefined && body.status !== before.status) {
@@ -614,8 +655,7 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
       const tenant = scopeOf(c);
       const { id } = c.req.valid("param");
       const { userId, relationship } = c.req.valid("json");
-      const player = await data.players.byId(tenant.scope, id);
-      if (!player) throw notFound("Ese jugador no existe.");
+      const player = await playerOr404(c, tenant, id);
       const roles = await data.memberships.rolesFor(tenant.scope, userId);
       if (roles.length === 0) throw badRequest("Esa persona no es miembro del club.");
       if (!roles.includes("guardian")) {
@@ -644,8 +684,7 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
     async (c) => {
       const tenant = scopeOf(c);
       const { id, userId } = c.req.valid("param");
-      const player = await data.players.byId(tenant.scope, id);
-      if (!player) throw notFound("Ese jugador no existe.");
+      const player = await playerOr404(c, tenant, id);
       const ok = await data.players.unlinkGuardian(tenant.scope, id, userId);
       if (!ok) throw notFound("Esa persona no está vinculada a este jugador.");
       await audit(c, tenant, "player.guardian_unlinked", playerDisplayName(player), { userId });
@@ -677,8 +716,7 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
       const user = c.get("sessionUser");
       const { id } = c.req.valid("param");
       const body = c.req.valid("json");
-      const player = await data.players.byId(tenant.scope, id);
-      if (!player) throw notFound("Ese jugador no existe.");
+      const player = await playerOr404(c, tenant, id);
       const locale = body.locale ?? (tenant.organization.defaultLocale as Locale);
 
       // Quien ya tiene cuenta y es miembro se vincula directamente, sin email.
@@ -776,7 +814,7 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
       const tenant = scopeOf(c);
       const { id } = c.req.valid("param");
       const body = c.req.valid("json");
-      const player = await playerOr404(tenant, id);
+      const player = await playerOr404(c, tenant, id);
       await requireAssess(c, tenant, id);
       await requireMember(tenant, body.ownerUserId);
       const objective = await data.playerProfile.setObjective(tenant.scope, id, body);
@@ -808,7 +846,7 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
     async (c) => {
       const tenant = scopeOf(c);
       const { id } = c.req.valid("param");
-      const player = await playerOr404(tenant, id);
+      const player = await playerOr404(c, tenant, id);
       await requireAssess(c, tenant, id);
       const removed = await data.playerProfile.clearObjective(tenant.scope, id);
       if (removed) {
@@ -840,7 +878,7 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
       const tenant = scopeOf(c);
       const { id } = c.req.valid("param");
       const body = c.req.valid("json");
-      const player = await playerOr404(tenant, id);
+      const player = await playerOr404(c, tenant, id);
       await requireAssess(c, tenant, id);
       await data.playerProfile.setIndicators(tenant.scope, id, body, actorId(c));
       await data.playerProfile.recordEvent(tenant.scope, {
@@ -879,7 +917,7 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
       const tenant = scopeOf(c);
       const { id } = c.req.valid("param");
       const body = c.req.valid("json");
-      const player = await playerOr404(tenant, id);
+      const player = await playerOr404(c, tenant, id);
       await requireAssess(c, tenant, id);
       await requireMember(tenant, body.coordinatorUserId);
       const plan = await data.playerProfile.setPlan(tenant.scope, id, body);
@@ -917,7 +955,7 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
       const tenant = scopeOf(c);
       const { id } = c.req.valid("param");
       const body = c.req.valid("json");
-      const player = await playerOr404(tenant, id);
+      const player = await playerOr404(c, tenant, id);
       await requireAssess(c, tenant, id);
       await data.playerProfile.recordEvent(tenant.scope, {
         playerId: id,
@@ -928,6 +966,70 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
       });
       await audit(c, tenant, "player.note_added", playerDisplayName(player));
       return c.json(await detail(c, tenant, player), 201);
+    },
+  );
+
+  // --- Personal asignado (Bloque 19) ---
+
+  app.openapi(
+    createRoute({
+      method: "post",
+      path: "/api/org/players/{id}/staff",
+      tags: ["Jugadores"],
+      summary:
+        "Asigna a alguien del personal al deportista: le abre la ficha a quien solo ve a los que atiende (fisioterapia). Quien escribe jugadores o su cuerpo técnico",
+      security: [{ sessionCookie: [] }],
+      middleware: [read],
+      request: {
+        params: idParam,
+        body: {
+          content: { "application/json": { schema: PlayerStaffAssignSchema } },
+          required: true,
+        },
+      },
+      responses: {
+        200: json("Jugador", PlayerDetailResponseSchema),
+        400: error("No es personal del club"),
+        ...errors,
+      },
+    }),
+    async (c) => {
+      const tenant = scopeOf(c);
+      const { id } = c.req.valid("param");
+      const { userId } = c.req.valid("json");
+      const player = await playerOr404(c, tenant, id);
+      await requireStaffAssign(c, tenant, id);
+      const outcome = await data.access.assignPlayerStaff(tenant.scope, id, userId, actorId(c));
+      if (outcome === "unknown_player") throw notFound("Ese jugador no existe.");
+      if (outcome === "not_staff")
+        throw badRequest("Esa persona no es personal, cuerpo técnico ni administración del club.");
+      if (outcome === "assigned") {
+        await audit(c, tenant, "player.staff_assigned", playerDisplayName(player), { userId });
+      }
+      return c.json(await detail(c, tenant, player), 200);
+    },
+  );
+
+  app.openapi(
+    createRoute({
+      method: "delete",
+      path: "/api/org/players/{id}/staff/{userId}",
+      tags: ["Jugadores"],
+      summary: "Quita a alguien del personal asignado al deportista",
+      security: [{ sessionCookie: [] }],
+      middleware: [read],
+      request: { params: z.object({ id: z.string().uuid(), userId: z.string().uuid() }) },
+      responses: { 200: json("Jugador", PlayerDetailResponseSchema), ...errors },
+    }),
+    async (c) => {
+      const tenant = scopeOf(c);
+      const { id, userId } = c.req.valid("param");
+      const player = await playerOr404(c, tenant, id);
+      await requireStaffAssign(c, tenant, id);
+      const removed = await data.access.unassignPlayerStaff(tenant.scope, id, userId);
+      if (!removed) throw notFound("Esa persona no está asignada a este jugador.");
+      await audit(c, tenant, "player.staff_unassigned", playerDisplayName(player), { userId });
+      return c.json(await detail(c, tenant, player), 200);
     },
   );
 
@@ -945,6 +1047,8 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
     if (!actor.permissions.has("org.players.read")) {
       if (!actor.permissions.has("org.family.read")) throw forbidden();
       if (!(await data.players.isGuardianOf(tenant.scope, actorId(c), id))) throw forbidden();
+    } else {
+      await requireVisible(c, tenant, id);
     }
     const photo = await data.playerProfile.readPhoto(tenant.scope, id);
     if (!photo) throw notFound("Este jugador no tiene foto.");
@@ -982,7 +1086,7 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
       const tenant = scopeOf(c);
       const { id } = c.req.valid("param");
       await requirePhotoWrite(c, tenant, id);
-      const player = await playerOr404(tenant, id);
+      const player = await playerOr404(c, tenant, id);
       const declared =
         (c.req.header("content-type") ?? "").split(";")[0]?.trim().toLowerCase() ?? "";
       if (!isLogoContentType(declared)) throw unsupportedMediaType();
@@ -1024,7 +1128,7 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
       const tenant = scopeOf(c);
       const { id } = c.req.valid("param");
       await requirePhotoWrite(c, tenant, id);
-      const player = await playerOr404(tenant, id);
+      const player = await playerOr404(c, tenant, id);
       const removed = await data.playerProfile.removePhoto(tenant.scope, id, {
         cleanup: c.env?.context?.deploy?.context === "production",
       });

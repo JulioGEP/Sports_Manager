@@ -1,7 +1,8 @@
-import type { ButtonHTMLAttributes } from "react";
+import type { ButtonHTMLAttributes, ReactNode } from "react";
+import { ActionIcon, trailingActions, type ActionKind } from "../icons/actions";
 
 /**
- * Botón del sistema. Ver DESIGN.md, sección 9.1.
+ * Botón del sistema. Ver DESIGN.md, secciones 8.1 y 9.1.
  * - primary: la acción principal de la pantalla, en color del club. Una por pantalla.
  * - secondary: acciones alternativas.
  * - tertiary: acciones de bajo peso, como "Cancelar" en línea.
@@ -9,38 +10,101 @@ import type { ButtonHTMLAttributes } from "react";
  * - danger-solid: solo dentro del diálogo de confirmación.
  * La forma (píldora o radio 8) y la altura (48 o 44 px) las pone el contexto data-shape.
  * El texto del botón es siempre un verbo: "Pagar", "Guardar asistencia", nunca "Aceptar".
+ * Toda acción reconocible lleva su icono del catálogo (`action`), siempre el mismo en toda la app.
  */
 
 export type ButtonVariant = "primary" | "secondary" | "tertiary" | "danger" | "danger-solid";
+export type ButtonSize = "md" | "sm";
 
-export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: ButtonVariant;
+export interface ButtonStyleOptions {
+  variant?: ButtonVariant | undefined;
   /** Acción fija inferior a todo el ancho: 52 px. */
-  cta?: boolean;
+  cta?: boolean | undefined;
+  /** Compacto (40 px) para filas de tabla y cabeceras de tarjeta. */
+  size?: ButtonSize | undefined;
 }
 
+export interface ButtonContentProps {
+  /** Acción del catálogo (DESIGN.md 8.1): pone su icono junto al verbo. */
+  action?: ActionKind | undefined;
+  /** Icono propio para una acción que no está en el catálogo. Sustituye al de `action`. */
+  icon?: ReactNode;
+  size?: ButtonSize | undefined;
+  children?: ReactNode;
+}
+
+export interface ButtonProps
+  extends
+    ButtonHTMLAttributes<HTMLButtonElement>,
+    ButtonStyleOptions,
+    Omit<ButtonContentProps, "children"> {}
+
+// La altura es fija, así que el texto no puede partirse en dos líneas: si falta sitio, el contenedor
+// (pie de panel, barra de acciones) es quien tiene que pasar el botón a otra fila.
 const base =
-  "inline-flex items-center justify-center gap-2 rounded-control px-5 text-body font-medium " +
+  "inline-flex items-center justify-center gap-2 rounded-control font-medium whitespace-nowrap " +
   "transition-colors duration-150 " +
   "disabled:cursor-not-allowed disabled:border-transparent disabled:bg-raised disabled:text-muted";
 
 const variants: Record<ButtonVariant, string> = {
   primary: "border border-club-edge bg-club text-on-club",
   secondary: "border border-control bg-surface text-ink",
-  tertiary: "bg-transparent px-3 text-club-text",
+  tertiary: "bg-transparent text-club-text",
   danger: "border border-danger-border bg-surface text-danger",
   "danger-solid": "bg-danger-solid text-white",
 };
 
+/** Clases del botón, también para enlaces con aspecto de botón. */
+export function buttonClassName({
+  variant = "primary",
+  cta = false,
+  size = "md",
+}: ButtonStyleOptions = {}): string {
+  const padding =
+    variant === "tertiary" ? (size === "sm" ? "px-2" : "px-3") : size === "sm" ? "px-4" : "px-5";
+  const measure = cta
+    ? "h-13 w-full text-body font-semibold envolvente:shadow-float"
+    : size === "sm"
+      ? "h-10 text-secondary"
+      : "h-(--h-control) text-body";
+  return `${base} ${variants[variant]} ${padding} ${measure}`;
+}
+
+/** Icono de la acción y verbo, en el orden que marca el catálogo. */
+export function ButtonContent({ action, icon, size = "md", children }: ButtonContentProps) {
+  const iconSize = size === "sm" ? 16 : 18;
+  const own = icon !== undefined && icon !== null;
+  const node = own ? icon : action ? <ActionIcon action={action} size={iconSize} /> : null;
+  const trailing = !own && action !== undefined && trailingActions.has(action);
+  return (
+    <>
+      {trailing ? null : node}
+      <span>{children}</span>
+      {trailing ? node : null}
+    </>
+  );
+}
+
 export function Button({
   variant = "primary",
   cta = false,
+  size = "md",
+  action,
+  icon,
   className = "",
   type = "button",
+  children,
   ...rest
 }: ButtonProps) {
-  const size = cta ? "h-13 w-full font-semibold envolvente:shadow-float" : "h-(--h-control)";
   return (
-    <button type={type} className={`${base} ${variants[variant]} ${size} ${className}`} {...rest} />
+    <button
+      type={type}
+      className={`${buttonClassName({ variant, cta, size })} ${className}`}
+      {...rest}
+    >
+      <ButtonContent action={action} icon={icon} size={size}>
+        {children}
+      </ButtonContent>
+    </button>
   );
 }

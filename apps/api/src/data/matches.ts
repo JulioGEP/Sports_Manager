@@ -29,7 +29,7 @@ import { isUniqueViolation } from "./db.ts";
 import type { OrgScope } from "./scope.ts";
 
 /**
- * Partido en directo (Fase 1, Bloque 19, ADR 0032). Toda consulta lleva el ámbito del club
+ * Partido en directo (Fase 1, Bloque 20, ADR 0034). Toda consulta lleva el ámbito del club
  * (ADR 0015). El catálogo de acciones vive en la sección; el partido, en el equipo; y las
  * estadísticas se calculan fuera, con el motor compartido, a partir de los eventos.
  */

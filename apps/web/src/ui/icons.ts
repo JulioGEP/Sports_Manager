@@ -50,6 +50,7 @@ export {
   ShieldCheck,
   SignOut,
   Sliders,
+  SlidersHorizontal,
   SquaresFour,
   Stop,
   Target,

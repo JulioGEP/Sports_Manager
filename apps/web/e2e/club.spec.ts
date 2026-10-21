@@ -39,6 +39,15 @@ test.describe("espacio del club", () => {
     await expectLegibleButtons(page);
     await page.keyboard.press("Escape");
     await expect(page.getByRole("dialog")).toBeHidden();
+
+    // Acceso por rol (Bloque 19): un check por rol o cargo y área, con el alcance a la vista.
+    await page.getByRole("tab", { name: "Acceso" }).click();
+    await expect(page.getByRole("heading", { name: "Qué ve cada rol" })).toBeVisible();
+    await expect(page.getByText("Alcance: Sus equipos").first()).toBeVisible();
+    const coachMembers = page.getByRole("checkbox", { name: "Socios para Entrenador" });
+    await expect(coachMembers).not.toBeChecked();
+    await shot(page, "14-personal-acceso", info.project.name);
+    await expectLegibleButtons(page);
   });
 
   test("ajustes: general, marca y logo", async ({ page }, info) => {

@@ -18,8 +18,14 @@ import {
   type EventSummary,
 } from "@sportsmanager/shared";
 import type { ApiConfig } from "../config.ts";
-import { playerPhotoUrlFor, weekRange, type DataLayer, type EventRecord } from "../data/index.ts";
-import { requireActor, requirePermission } from "../http/actor.ts";
+import {
+  playerPhotoUrlFor,
+  weekRange,
+  type DataLayer,
+  type EventFilter,
+  type EventRecord,
+} from "../data/index.ts";
+import { accessScopeOf, requireActor, requirePermission } from "../http/actor.ts";
 import type { Actor, AppEnv } from "../http/context.ts";
 import { badRequest, conflict, forbidden, notFound } from "../http/errors.ts";
 import { requireSession } from "../http/session.ts";
@@ -74,7 +80,9 @@ export const eventDto = (e: EventRecord): EventSummary => ({
  * Instalaciones, agenda, horarios y pase de lista (Bloques 16 y 17). Lectura con
  * `org.facilities.read` y `org.events.read`; escritura con `org.events.write` o, en los equipos
  * propios del cuerpo técnico, `org.events.write_own`. El pase de lista lo hace el cuerpo técnico
- * de cada equipo (`org.attendance.write_own`). Las familias ven la agenda de los suyos.
+ * de cada equipo (`org.attendance.write_own`). Las familias ven la agenda de los suyos. Con un
+ * ámbito restringido (Bloque 19, ADR 0033), solo salen los eventos de los equipos y secciones de
+ * quien pregunta (y los del club entero) y las instalaciones que usan sus equipos.
  */
 export function createEventRoutes(config: ApiConfig, data: DataLayer) {
   const app = new OpenAPIHono<AppEnv>();
@@ -121,6 +129,31 @@ export function createEventRoutes(config: ApiConfig, data: DataLayer) {
   /** Equipos propios del cuerpo técnico que pregunta (ADR 0030): su ámbito "propio". */
   const ownTeams = (c: Ctx, scope: Parameters<DataLayer["events"]["byId"]>[0]) =>
     data.memberships.ownTeamIds(scope, c.get("actor").userId);
+  type RouteCtx = Parameters<typeof accessScopeOf>[1];
+  /** Filtro de ámbito (Bloque 19): vacío cuando se ve el club entero. */
+  async function visibleFilter(c: RouteCtx): Promise<Pick<EventFilter, "visible">> {
+    const access = await accessScopeOf(data, c);
+    return access.kind === "club"
+      ? {}
+      : { visible: { teamIds: access.teamIds, sectionIds: access.sectionIds } };
+  }
+  /** Un evento fuera del ámbito de quien pregunta no existe para esa persona. */
+  async function eventOr404(
+    c: RouteCtx,
+    scope: Parameters<DataLayer["events"]["byId"]>[0],
+    id: string,
+  ): Promise<EventRecord> {
+    const event = await data.events.byId(scope, id);
+    if (!event) throw notFound("Ese evento no existe.");
+    const { visible } = await visibleFilter(c);
+    if (!data.events.isVisible(event, visible)) throw notFound("Ese evento no existe.");
+    return event;
+  }
+  async function requireTeamVisible(c: RouteCtx, teamId: string) {
+    const access = await accessScopeOf(data, c);
+    if (access.kind === "restricted" && !access.teamIds.includes(teamId))
+      throw notFound("Ese equipo no existe.");
+  }
 
   async function canWriteEvent(
     c: Ctx,
@@ -203,7 +236,18 @@ export function createEventRoutes(config: ApiConfig, data: DataLayer) {
     }),
     async (c) => {
       const tenant = scopeOf(c);
-      const facilities = await data.facilities.list(tenant.scope, tenant.organization.timezone);
+      const access = await accessScopeOf(data, c);
+      const onlyIds =
+        access.kind === "restricted"
+          ? await data.access.facilityIdsForTeams(tenant.scope, access.teamIds)
+          : null;
+      const facilities = await data.facilities.list(
+        tenant.scope,
+        tenant.organization.timezone,
+        new Date(),
+        null,
+        onlyIds,
+      );
       return c.json({ facilities }, 200);
     },
   );
@@ -325,7 +369,12 @@ export function createEventRoutes(config: ApiConfig, data: DataLayer) {
           tenant.scope,
           from,
           to,
-          { sectionId: query.section, teamId: query.team, facilityId: query.facility },
+          {
+            sectionId: query.section,
+            teamId: query.team,
+            facilityId: query.facility,
+            ...(await visibleFilter(c)),
+          },
           true,
         ),
         200,
@@ -358,6 +407,7 @@ export function createEventRoutes(config: ApiConfig, data: DataLayer) {
       const tenant = scopeOf(c);
       const body = c.req.valid("json");
       if (!(await canWriteEvent(c, tenant.scope, [body.teamId ?? null]))) throw forbidden();
+      if (body.teamId) await requireTeamVisible(c, body.teamId);
       const result = await data.events.create(tenant.scope, body, {
         timezone: tenant.organization.timezone,
         createdBy: c.get("sessionUser").id,
@@ -396,8 +446,7 @@ export function createEventRoutes(config: ApiConfig, data: DataLayer) {
     async (c) => {
       const tenant = scopeOf(c);
       const { id } = c.req.valid("param");
-      const event = await data.events.byId(tenant.scope, id);
-      if (!event) throw notFound("Ese evento no existe.");
+      const event = await eventOr404(c, tenant.scope, id);
       return c.json({ event: eventDto(event) }, 200);
     },
   );
@@ -424,11 +473,11 @@ export function createEventRoutes(config: ApiConfig, data: DataLayer) {
       const tenant = scopeOf(c);
       const { id } = c.req.valid("param");
       const body = c.req.valid("json");
-      const current = await data.events.byId(tenant.scope, id);
-      if (!current) throw notFound("Ese evento no existe.");
+      const current = await eventOr404(c, tenant.scope, id);
       const teams = [current.team?.id ?? null];
       if (body.teamId !== undefined) teams.push(body.teamId ?? null);
       if (!(await canWriteEvent(c, tenant.scope, teams))) throw forbidden();
+      if (body.teamId) await requireTeamVisible(c, body.teamId);
       const result = await data.events.update(tenant.scope, id, body);
       if (result.outcome === "not_found") throw notFound("Ese evento no existe.");
       if (result.outcome === "unknown_section") throw badRequest("Esa sección no es de este club.");
@@ -461,8 +510,7 @@ export function createEventRoutes(config: ApiConfig, data: DataLayer) {
       const tenant = scopeOf(c);
       const { id } = c.req.valid("param");
       const { series } = c.req.valid("query");
-      const current = await data.events.byId(tenant.scope, id);
-      if (!current) throw notFound("Ese evento no existe.");
+      const current = await eventOr404(c, tenant.scope, id);
       if (!(await canWriteEvent(c, tenant.scope, [current.team?.id ?? null]))) throw forbidden();
       const removed = await data.events.remove(tenant.scope, id, { series: series === "1" });
       if (removed === 0) throw notFound("Ese evento no existe.");
@@ -502,8 +550,7 @@ export function createEventRoutes(config: ApiConfig, data: DataLayer) {
     async (c) => {
       const tenant = scopeOf(c);
       const { id } = c.req.valid("param");
-      const event = await data.events.byId(tenant.scope, id);
-      if (!event) throw notFound("Ese evento no existe.");
+      const event = await eventOr404(c, tenant.scope, id);
       if (!(await canReadAttendance(c, tenant.scope, event.team?.id ?? null))) throw forbidden();
       const write = await canWriteAttendance(c, tenant.scope, event.team?.id ?? null);
       return c.json(await attendanceOf(tenant, event, write), 200);
@@ -532,8 +579,7 @@ export function createEventRoutes(config: ApiConfig, data: DataLayer) {
       const tenant = scopeOf(c);
       const { id } = c.req.valid("param");
       const body = c.req.valid("json");
-      const event = await data.events.byId(tenant.scope, id);
-      if (!event) throw notFound("Ese evento no existe.");
+      const event = await eventOr404(c, tenant.scope, id);
       if (!(await canWriteAttendance(c, tenant.scope, event.team?.id ?? null))) throw forbidden();
       const result = await data.attendance.set(
         tenant.scope,
@@ -566,6 +612,7 @@ export function createEventRoutes(config: ApiConfig, data: DataLayer) {
       const { id } = c.req.valid("param");
       const team = await data.teams.byId(tenant.scope, id);
       if (!team) throw notFound("Ese equipo no existe.");
+      await requireTeamVisible(c, id);
       return c.json(
         { schedule: await data.schedules.listForTeam(tenant.scope, id), generated: 0 },
         200,
@@ -601,6 +648,7 @@ export function createEventRoutes(config: ApiConfig, data: DataLayer) {
       const body = c.req.valid("json");
       const team = await data.teams.byId(tenant.scope, id);
       if (!team) throw notFound("Ese equipo no existe.");
+      await requireTeamVisible(c, id);
       const actor = c.get("actor");
       const allowed =
         actor.permissions.has("org.structure.write") ||
@@ -663,7 +711,7 @@ export function createEventRoutes(config: ApiConfig, data: DataLayer) {
       const tenant = scopeOf(c);
       const { from, to } = rangeOf(c.req.valid("query"), tenant.organization.timezone);
       const own = await ownTeams(c, tenant.scope);
-      const filter = own.length > 0 ? { teamIds: own } : {};
+      const filter: EventFilter = own.length > 0 ? { teamIds: own } : await visibleFilter(c);
       return c.json(await eventsResponse(tenant.scope, from, to, filter, false), 200);
     },
   );
@@ -683,6 +731,8 @@ export function createEventRoutes(config: ApiConfig, data: DataLayer) {
       const tenant = scopeOf(c);
       const { id } = c.req.valid("param");
       if (!(await data.attendance.playerExists(tenant.scope, id)))
+        throw notFound("Ese deportista no existe.");
+      if (!(await data.access.isPlayerVisible(tenant.scope, await accessScopeOf(data, c), id)))
         throw notFound("Ese deportista no existe.");
       const season = await data.seasons.current(tenant.scope);
       return c.json(

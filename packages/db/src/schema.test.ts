@@ -441,6 +441,68 @@ describe("esquema del Bloque 2 (Postgres embebido con todas las migraciones)", (
     }
   });
 
+  it("alcance por rol (ADR 0033): una regla por perfil o por persona, nunca las dos, y solo áreas conocidas", async () => {
+    const rule =
+      "insert into access_rules (organization_id, profile, user_id, area, effect) values ($1, $2, $3, $4, $5)";
+    expect(
+      await errorCode(client, rule, [orgId, "coach", null, "club_members", "allow"]),
+    ).toBeNull();
+    expect(await errorCode(client, rule, [orgId, "coach", null, "club_members", "deny"])).toBe(
+      UNIQUE_VIOLATION,
+    );
+    expect(await errorCode(client, rule, [orgId, null, userId, "agenda", "deny"])).toBeNull();
+    expect(await errorCode(client, rule, [orgId, "coach", userId, "fees", "deny"])).toBe(
+      CHECK_VIOLATION,
+    );
+    expect(await errorCode(client, rule, [orgId, null, null, "fees", "deny"])).toBe(
+      CHECK_VIOLATION,
+    );
+    expect(await errorCode(client, rule, [orgId, "director", null, "tienda", "deny"])).toBe(
+      CHECK_VIOLATION,
+    );
+    expect(await errorCode(client, rule, [orgId, "portero", null, "fees", "deny"])).toBe(
+      CHECK_VIOLATION,
+    );
+    expect(await errorCode(client, rule, [orgId, "director", null, "fees", "maybe"])).toBe(
+      CHECK_VIOLATION,
+    );
+
+    const { rows: section } = await client.query<{ id: string }>(
+      "select id from sections where organization_id = $1 limit 1",
+      [orgId],
+    );
+    const sectionStaff =
+      "insert into section_staff (organization_id, section_id, user_id) values ($1, $2, $3)";
+    expect(await errorCode(client, sectionStaff, [orgId, section[0]!.id, userId])).toBeNull();
+    expect(await errorCode(client, sectionStaff, [orgId, section[0]!.id, userId])).toBe(
+      UNIQUE_VIOLATION,
+    );
+    const { rows: person } = await client.query<{ id: string }>(
+      "insert into people (organization_id, first_name, last_name) values ($1, 'Pau', 'Vila') returning id",
+      [orgId],
+    );
+    const { rows: player } = await client.query<{ id: string }>(
+      "insert into players (organization_id, person_id) values ($1, $2) returning id",
+      [orgId, person[0]!.id],
+    );
+    const playerStaff =
+      "insert into player_staff (organization_id, player_id, user_id) values ($1, $2, $3)";
+    expect(await errorCode(client, playerStaff, [orgId, player[0]!.id, userId])).toBeNull();
+    expect(await errorCode(client, playerStaff, [orgId, player[0]!.id, userId])).toBe(
+      UNIQUE_VIOLATION,
+    );
+  });
+
+  it("el club demo trae a la dirección con sus secciones y a la fisio con sus deportistas (ADR 0033)", async () => {
+    const { rows } = await client.query<{ sections: string; attended: string }>(
+      `select
+         (select count(*) from section_staff ss join users u on u.id = ss.user_id where u.email = 'director@demo.test') as sections,
+         (select count(*) from player_staff ps join users u on u.id = ps.user_id where u.email = 'fisio@demo.test') as attended`,
+    );
+    expect(Number(rows[0]!.sections)).toBeGreaterThanOrEqual(4);
+    expect(Number(rows[0]!.attended)).toBe(2);
+  });
+
   it("el club demo llega con temporada, secciones, equipos, plantilla y cuentas de prueba", async () => {
     const { rows } = await client.query<{
       teams: string;

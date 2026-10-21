@@ -33,7 +33,7 @@ import { organizations } from "./organizations.ts";
 import { players, seasons, sections, teams } from "./structure.ts";
 
 /**
- * Partido en directo (Fase 1, Bloque 19, ADR 0032). El catálogo de acciones es de la sección
+ * Partido en directo (Fase 1, Bloque 20, ADR 0034). El catálogo de acciones es de la sección
  * (deporte); el partido es del equipo y guarda su convocatoria y su lista ordenada de eventos.
  * Todo lleva `organization_id` (ADR 0015); borrar el club, la sección o el equipo lo arrastra.
  */

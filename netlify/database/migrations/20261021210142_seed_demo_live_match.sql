@@ -1,4 +1,4 @@
--- Partido en directo (Bloque 19, ADR 0032): el club demo llega con el catálogo de acciones de
+-- Partido en directo (Bloque 20, ADR 0034): el club demo llega con el catálogo de acciones de
 -- fútbol sala (el mismo que propone el deporte en castellano) y dos partidos jugados del Alevín A
 -- con su convocatoria y todos sus eventos, para que las estadísticas y el histórico tengan datos.
 -- Idempotente: cada inserción salta si ya existe.

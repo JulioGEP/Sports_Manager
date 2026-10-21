@@ -2,6 +2,7 @@ import { regionFromConnectionString, schema } from "@sportsmanager/db";
 import type { DatabaseStatus } from "@sportsmanager/shared";
 import { eq, sql } from "drizzle-orm";
 import type { ApiConfig } from "../config.ts";
+import { accessRepo } from "./access.ts";
 import { auditRepo } from "./audit.ts";
 import { challengesRepo } from "./challenges.ts";
 import { createAuth, type Auth } from "./auth/index.ts";
@@ -43,6 +44,7 @@ export type {
 } from "./organizations.ts";
 export type { ActivityRecord, AuditInput, AuditRecord } from "./audit.ts";
 export type { AssignRoleResult, Member, RemoveRoleResult, UserMembership } from "./memberships.ts";
+export type { PlayerStaffRecord, SectionRef } from "./access.ts";
 export type { InvitationByToken, InvitationRecord, IssuedInvitation } from "./invitations.ts";
 export type { UserRecord } from "./users.ts";
 export type {
@@ -74,6 +76,7 @@ export type {
   PlayersReadiness,
   PlayerSummaryRecord,
   PlayerTeamRecord,
+  VisiblePlayers,
 } from "./players.ts";
 export type {
   ChallengeRecord,
@@ -139,6 +142,7 @@ export function createDataLayer(options: DataLayerOptions) {
   let auth: Auth | null = null;
 
   const organizations = organizationsRepo(db);
+  const memberships = membershipsRepo(db);
   const email: EmailSender = createEmailSender({
     config: options.config.email,
     outbox: emailOutboxRepo(db),
@@ -160,7 +164,8 @@ export function createDataLayer(options: DataLayerOptions) {
       return getAuth();
     },
     organizations,
-    memberships: membershipsRepo(db),
+    memberships,
+    access: accessRepo(db, memberships),
     platform: platformRepo(db, options.config),
     audit: auditRepo(db),
     sports: sportsRepo(db),

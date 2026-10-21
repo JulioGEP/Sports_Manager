@@ -116,12 +116,7 @@ export function ClubMemberPage() {
   return (
     <div className="flex flex-col gap-5">
       <div>
-        <ButtonLink
-          to={paths.clubMembers}
-          variant="tertiary"
-          size="sm"
-          icon={<Icon.ArrowLeft size={16} aria-hidden="true" />}
-        >
+        <ButtonLink action="back" to={paths.clubMembers} variant="tertiary" size="sm">
           {t("back")}
         </ButtonLink>
       </div>
@@ -140,15 +135,11 @@ export function ClubMemberPage() {
         actions={
           canWrite ? (
             <>
-              <Button
-                variant="secondary"
-                icon={<Icon.PencilSimple size={18} aria-hidden="true" />}
-                onClick={() => setEditingMember(true)}
-              >
+              <Button action="edit" variant="secondary" onClick={() => setEditingMember(true)}>
                 {t("editMember")}
               </Button>
               {member.status !== "left" ? (
-                <Button variant="danger" onClick={() => setLeaving(true)}>
+                <Button action="deactivate" variant="danger" onClick={() => setLeaving(true)}>
                   {t("leave")}
                 </Button>
               ) : null}
@@ -162,7 +153,12 @@ export function ClubMemberPage() {
           title={t("person.title")}
           actions={
             canWrite ? (
-              <Button variant="secondary" size="sm" onClick={() => setEditingPerson(true)}>
+              <Button
+                action="edit"
+                variant="secondary"
+                size="sm"
+                onClick={() => setEditingPerson(true)}
+              >
                 {t("person.edit")}
               </Button>
             ) : null
@@ -271,9 +267,9 @@ export function ClubMemberPage() {
             actions={
               canFeesWrite ? (
                 <Button
+                  action="add"
                   variant="secondary"
                   size="sm"
-                  icon={<Icon.Plus size={16} aria-hidden="true" />}
                   onClick={() => setCharging(true)}
                 >
                   {t("fees.newCharge")}
@@ -333,7 +329,12 @@ export function ClubMemberPage() {
                 canFeesWrite
                   ? (ch) =>
                       ch.status === "pending" || ch.status === "overdue" ? (
-                        <Button variant="secondary" size="sm" onClick={() => setPaying(ch)}>
+                        <Button
+                          action="pay"
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => setPaying(ch)}
+                        >
                           {t("fees.pay")}
                         </Button>
                       ) : null
@@ -363,6 +364,7 @@ export function ClubMemberPage() {
             title={t("confirmLeaveTitle", { name })}
             body={t("confirmLeaveBody")}
             confirmLabel={t("leave")}
+            confirmAction="deactivate"
             cancelLabel={c("cancel")}
             onConfirm={() => void leave()}
             onCancel={() => setLeaving(false)}
@@ -456,7 +458,7 @@ export function PersonSheet({
           <Button variant="secondary" onClick={onClose}>
             {c("cancel")}
           </Button>
-          <Button type="submit" form="person-form" loading={busy}>
+          <Button action="save" type="submit" form="person-form" loading={busy}>
             {c("save")}
           </Button>
         </>
@@ -631,7 +633,7 @@ function MemberSheet({
           <Button variant="secondary" onClick={onClose}>
             {c("cancel")}
           </Button>
-          <Button type="submit" form="member-form" loading={busy}>
+          <Button action="save" type="submit" form="member-form" loading={busy}>
             {c("save")}
           </Button>
         </>

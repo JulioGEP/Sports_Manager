@@ -4,7 +4,7 @@ import { DateOnlySchema } from "./structure.ts";
 import { HOME_AWAY } from "./events.ts";
 
 /**
- * Partido en directo (Fase 1, Bloque 19, ADR 0032): un motor de registro de lo que pasa en un
+ * Partido en directo (Fase 1, Bloque 20, ADR 0034): un motor de registro de lo que pasa en un
  * partido, pensado para la banda con una tableta. Todo lo que se puede registrar es un
  * **catálogo de acciones** por sección (deporte): el club lo edita, añade lo que quiera
  * (saque de esquina, saque de banda, tiempo muerto...) o se queda con lo básico. El deporte
