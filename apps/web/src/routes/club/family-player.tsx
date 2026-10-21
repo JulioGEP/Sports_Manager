@@ -17,6 +17,7 @@ import { clubPaths, useReadyClub } from "@/lib/club";
 import { useDates } from "@/lib/dates";
 import { shrinkImage } from "@/lib/images";
 import { useT } from "@/lib/intl";
+import { PlayerMatchesCard } from "@/components/player-matches";
 import {
   Alert,
   Avatar,
@@ -270,6 +271,9 @@ export function FamilyPlayerPage() {
             <EmptyState icon={<Icon.UsersThree weight="duotone" />} title={tf("noTeam")} />
           )}
         </Card>
+
+        {/* Partidos (Bloque 19): el resultado del equipo y la línea de este jugador, nunca la de otros. */}
+        <PlayerMatchesCard playerId={id} family />
 
         {/* Reto: solo los puntos de este jugador, nunca los de otros. */}
         <Card

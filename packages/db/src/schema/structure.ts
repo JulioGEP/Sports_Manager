@@ -4,6 +4,7 @@ import {
   CLUB_VOICES,
   DOMINANT_FEET,
   GUARDIAN_RELATIONSHIPS,
+  type MatchSettingsPatch,
   PLAYER_HEIGHT_MAX_CM,
   PLAYER_HEIGHT_MIN_CM,
   PLAYER_STATUSES,
@@ -19,6 +20,7 @@ import {
   date,
   index,
   integer,
+  jsonb,
   pgTable,
   text,
   uniqueIndex,
@@ -84,6 +86,8 @@ export const sections = pgTable(
     description: text("description"),
     sortOrder: integer("sort_order").notNull().default(0),
     status: text("status").notNull().default("active"),
+    /** Ajustes del partido en directo (Bloque 19) sobre los del deporte. Nulo: los del deporte. */
+    matchSettings: jsonb("match_settings").$type<MatchSettingsPatch>(),
     ...timestamps,
   },
   (t) => [

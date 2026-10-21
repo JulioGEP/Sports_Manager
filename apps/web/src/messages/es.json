@@ -882,6 +882,15 @@
       "submit": "Guardar horario",
       "saved": "Horario guardado.",
       "savedGenerated": "Horario guardado. {count, plural, =0 {No hacía falta generar nada} one {# sesión generada} other {# sesiones generadas}}."
+    },
+    "matches": {
+      "title": "Partidos",
+      "description": "Registro en directo desde la banda y estadísticas de cada partido.",
+      "all": "Ver todos",
+      "new": "Nuevo partido",
+      "empty": "Todavía no hay partidos registrados.",
+      "live": "En directo",
+      "scheduled": "Sin empezar"
     }
   },
   "players": {
@@ -1687,7 +1696,8 @@
         "nameHint": "Por ejemplo, Lunes y miércoles 19:00.",
         "submit": "Crear grupo"
       }
-    }
+    },
+    "matchConfig": "Partido en directo"
   },
   "sectionKinds": {
     "competition": "Competición",
@@ -2194,5 +2204,402 @@
       "checkoutSuccess": "Pago recibido. Puede tardar unos segundos en aparecer como pagado.",
       "checkoutCancel": "Pago cancelado. Puedes volver a intentarlo cuando quieras."
     }
+  },
+  "matches": {
+    "backToTeam": "Equipo",
+    "title": "Partidos",
+    "description": "Cada partido se registra en directo desde la banda: acciones, cambios y cronómetro.",
+    "history": "Histórico y acumulados",
+    "new": "Nuevo partido",
+    "liveNow": "{count, plural, one {Hay un partido en juego} other {Hay # partidos en juego}}",
+    "openLive": "Seguir contra {opponent}",
+    "list": "Todos los partidos",
+    "listDescription": "{count, plural, =0 {Ninguno todavía} one {# partido} other {# partidos}}",
+    "empty": "Todavía no hay partidos.",
+    "emptyHint": "Crea uno y regístralo en directo desde la banda.",
+    "table": {
+      "date": "Fecha",
+      "opponent": "Partido",
+      "result": "Resultado",
+      "status": "Estado",
+      "events": "Registros"
+    },
+    "notPlayed": "–",
+    "won": "Victoria",
+    "lost": "Derrota",
+    "drawn": "Empate",
+    "home": "En casa",
+    "away": "Fuera",
+    "status": {
+      "scheduled": "Sin empezar",
+      "live": "En juego",
+      "finished": "Acabado"
+    },
+    "continue": "Continuar",
+    "open": "Abrir",
+    "stats": "Estadísticas",
+    "remove": "Borrar",
+    "removed": "Partido contra {opponent} borrado.",
+    "confirmRemoveTitle": "¿Borrar el partido contra {opponent}?",
+    "confirmRemoveBody": "Se borran la convocatoria y todos los registros del partido. No se puede deshacer.",
+    "newSheet": {
+      "title": "Nuevo partido de {team}",
+      "description": "Rival, fecha y si se juega en casa o fuera. El resto se decide en la banda.",
+      "created": "Partido contra {opponent} creado.",
+      "fromAgenda": "Partido de la agenda",
+      "fromAgendaHint": "Si el partido ya está en la agenda, elígelo y se rellena solo.",
+      "noEvent": "Sin enlazar con la agenda",
+      "opponent": "Rival",
+      "homeAway": "Casa o fuera",
+      "date": "Fecha",
+      "squadHint": "La plantilla del equipo entra como convocatoria. El quinteto inicial se elige al empezar.",
+      "submit": "Crear partido"
+    }
+  },
+  "match": {
+    "periods": {
+      "half1": "1ª parte",
+      "half2": "2ª parte",
+      "quarter": "{n}º cuarto",
+      "third": "{n}º tercio",
+      "generic": "Periodo {n}"
+    },
+    "back": "Partidos de {team}",
+    "undo": "Deshacer",
+    "squad": "Convocatoria",
+    "settings": "Ajustes",
+    "stats": "Estadísticas",
+    "scoreboard": "Marcador y cronómetro",
+    "fouls": "{count, plural, one {# falta} other {# faltas}}",
+    "pause": "Parar el cronómetro",
+    "play": "Poner en marcha el cronómetro",
+    "status": {
+      "scheduled": "Sin empezar",
+      "live": "En juego",
+      "finished": "Acabado"
+    },
+    "running": "En marcha",
+    "paused": "Parado",
+    "home": "En casa",
+    "away": "Fuera",
+    "start": "Empezar el partido",
+    "endPeriod": "Acabar {period}",
+    "startPeriod": "Empezar {period}",
+    "finish": "Acabar el partido",
+    "reopen": "Reabrir",
+    "lineupNeeded": "{count} de {total} en pista: elige el quinteto inicial en Convocatoria.",
+    "readOnly": "Ves el partido sin poder registrar: solo el cuerpo técnico del equipo o la administración.",
+    "court": "Pista",
+    "onCourt": "En pista · {count}/{total}",
+    "courtHint": "Toca un jugador para registrar; toca a otro de la pista para intercambiar posiciones; toca a uno del banquillo para hacer el cambio.",
+    "formation": "Sistema",
+    "attackDirection": "Cambiar la dirección de ataque",
+    "attacks": "ataca",
+    "emptySlot": "Hueco libre",
+    "keeper": "Portero",
+    "trayHint": "Un toque registra la acción",
+    "more": "Más acciones",
+    "benchSelected": "{name} está listo para entrar: toca a quien sale de la pista.",
+    "tapPlayer": "Toca un jugador",
+    "tapPlayerHint": "Registra una acción, intercambia posiciones o haz un cambio con el banquillo.",
+    "bench": "Banquillo",
+    "benchHint": "Dos toques = cambio",
+    "benchEmpty": "Nadie en el banquillo.",
+    "sentOff": "expulsado",
+    "opponentActions": "Rival",
+    "teamActions": "Equipo",
+    "feed": "Últimas acciones",
+    "feedEmpty": "Todavía no hay nada registrado.",
+    "feedSub": "Entra {in} por {out}",
+    "feedPeriodStart": "Empieza la {period}",
+    "feedPeriodEnd": "Acaba la {period}",
+    "feedLineup": "Quinteto inicial",
+    "zone": {
+      "description": "Toca la zona del medio campo de ataque desde la que se ha finalizado. La portería está arriba.",
+      "goal": "Portería",
+      "skip": "Registrar sin zona"
+    },
+    "moreDescription": "Todo el catálogo de la sección. Lo configura el club en la sección.",
+    "started": "Partido en marcha.",
+    "periodEnded": "{period} acabada.",
+    "finished": "Partido acabado. Las estadísticas ya están listas.",
+    "reopened": "Partido reabierto.",
+    "undone": "Última acción deshecha.",
+    "confirmFinishTitle": "¿Acabar el partido con {score}?",
+    "confirmFinishBody": "Se cierra el registro y se calculan las estadísticas. Podrás reabrirlo si falta algo.",
+    "lineup": {
+      "title": "Convocatoria y quinteto inicial",
+      "description": "Toca a quien sale de inicio ({count} en pista). Marca al portero y añade a quien falte.",
+      "counter": "{count} de {total} en pista",
+      "submit": "Guardar convocatoria",
+      "keeperNeeded": "Hace falta exactamente un portero en pista.",
+      "starter": "Sale de inicio",
+      "benchPlayer": "Banquillo",
+      "keeper": "Portero",
+      "notCalled": "Sin convocar",
+      "saved": "Convocatoria guardada."
+    },
+    "settingsSheet": {
+      "title": "Ajustes del partido",
+      "description": "{periods} periodos de {minutes} minutos, {players} en pista. Los periodos y minutos se cambian en la configuración de la sección.",
+      "opponent": "Rival",
+      "noFormation": "Sin sistema",
+      "toRight": "Hacia la derecha",
+      "toLeft": "Hacia la izquierda",
+      "notes": "Notas del partido",
+      "saved": "Ajustes guardados."
+    }
+  },
+  "matchStats": {
+    "back": "Partidos de {team}",
+    "backToLive": "Volver al partido",
+    "outcome": {
+      "won": "Victoria",
+      "lost": "Derrota",
+      "drawn": "Empate"
+    },
+    "scope": {
+      "label": "Periodo de las estadísticas",
+      "all": "Todo el partido"
+    },
+    "tiles": {
+      "played": "Tiempo jugado",
+      "fouls": "Faltas · propias y del rival",
+      "cards": "Tarjetas propias",
+      "events": "Registros"
+    },
+    "comparison": {
+      "title": "Comparativa con el rival",
+      "description": "Cada acción propia frente a su espejo del rival.",
+      "empty": "El catálogo no tiene acciones del rival enlazadas con las propias.",
+      "summary": "Comparativa con el rival: {rows}"
+    },
+    "zones": {
+      "title": "Mapa de finalización",
+      "description": "Desde qué zona del medio campo de ataque se ha finalizado. Formato: veces (goles).",
+      "allActions": "Todas",
+      "pick": "Acción del mapa",
+      "summary": "Nueve zonas del medio campo de ataque con las finalizaciones desde cada una",
+      "empty": "Sin finalizaciones con zona.",
+      "legend": "La portería queda arriba. Las zonas se guardan ya normalizadas por la dirección de ataque."
+    },
+    "work": {
+      "title": "Trabajo del equipo por periodos",
+      "description": "Cuántas veces se ha registrado cada acción propia en cada periodo.",
+      "positive": "Favorables",
+      "negative": "Pérdidas y sanciones",
+      "summary": "Acciones favorables y pérdidas por periodo"
+    },
+    "players": {
+      "title": "Jugadores de pista",
+      "description": "Minutos, marcador en pista y acciones. Toca una columna para ordenar; elige qué acciones ver."
+    },
+    "keepers": {
+      "title": "Porteros",
+      "description": "Paradas, goles encajados y porcentaje mientras estaban en pista."
+    },
+    "timeline": {
+      "title": "Todos los registros",
+      "description": "{count, plural, one {# registro} other {# registros}} en orden."
+    },
+    "note": "Los minutos, el marcador en pista y el +/- solo cuentan mientras el jugador participa. La valoración suma el peso de cada acción (la mejor de este partido: {rating}).",
+    "table": {
+      "columns": "Acciones visibles",
+      "player": "Jugador",
+      "matches": "PJ",
+      "starts": "Tit.",
+      "minutes": "Min",
+      "saves": "Paradas",
+      "scoreFor": "GF",
+      "conceded": "Enc.",
+      "scoreAgainst": "GC",
+      "savePct": "% par.",
+      "rating": "Valoración"
+    },
+    "export": {
+      "button": "Exportar a Excel",
+      "summary": "Resumen",
+      "match": "Partido",
+      "date": "Fecha",
+      "opponent": "Rival",
+      "metric": "Métrica",
+      "period": "Periodo",
+      "ownScore": "Marcador propio",
+      "opponentScore": "Marcador rival",
+      "ownFouls": "Faltas propias",
+      "opponentFouls": "Faltas rival",
+      "players": "Jugadores",
+      "zones": "Zonas",
+      "zone": "Zona",
+      "events": "Registros",
+      "clock": "Crono",
+      "kind": "Tipo",
+      "action": "Acción"
+    }
+  },
+  "matchHistory": {
+    "back": "Partidos",
+    "title": "Histórico y acumulados",
+    "description": "Elige los partidos y los acumulados se recalculan al momento.",
+    "record": "Balance",
+    "opponents": "Rivales",
+    "selection": {
+      "title": "Partidos en la consulta",
+      "description": "{count} de {total} seleccionados",
+      "finished": "Acabados",
+      "all": "Todos",
+      "status": "Estado de los partidos",
+      "pickAll": "Marcar todos",
+      "pickNone": "Quitar todos",
+      "empty": "No hay partidos que acumular.",
+      "open": "Ver"
+    },
+    "tiles": {
+      "matches": "Partidos",
+      "record": "Ganados · empatados · perdidos",
+      "score": "Puntos a favor · en contra"
+    },
+    "trend": {
+      "title": "Evolución por partido",
+      "description": "Marcador propio y del rival en cada partido elegido.",
+      "summary": "Marcador por partido"
+    },
+    "comparisonDescription": "Suma de todos los partidos elegidos.",
+    "zonesDescription": "Finalizaciones acumuladas por zona. Formato: veces (goles).",
+    "cross": {
+      "title": "Cruzar métricas",
+      "description": "Cada jugador es un punto: elige qué poner en cada eje.",
+      "x": "Eje horizontal",
+      "y": "Eje vertical",
+      "summary": "Jugadores situados por {x} y {y}"
+    },
+    "players": {
+      "title": "Jugadores acumulados",
+      "description": "Partidos, titularidades, minutos y acciones sumadas."
+    },
+    "keepersDescription": "Paradas y goles encajados sumados.",
+    "note": "La valoración acumulada suma el peso de cada acción en todos los partidos elegidos (la mejor: {best}).",
+    "export": {
+      "summary": "Resumen",
+      "team": "Equipo",
+      "season": "Temporada",
+      "matches": "Partidos",
+      "players": "Jugadores",
+      "zones": "Zonas",
+      "perMatch": "Por partido"
+    }
+  },
+  "matchConfig": {
+    "back": "Sección {section}",
+    "title": "Partido en directo",
+    "description": "Cómo se juega en esta sección y qué se puede registrar. El deporte propone; el club decide.",
+    "reset": "Volver a lo que propone el deporte",
+    "resetDone": "Configuración restablecida a la del deporte.",
+    "confirmResetTitle": "¿Volver a la configuración del deporte?",
+    "confirmResetBody": "Los ajustes vuelven a los del deporte y las acciones que no estén en su catálogo quedan archivadas. Los partidos ya registrados no cambian.",
+    "scopes": {
+      "player": "Jugador",
+      "team": "Equipo",
+      "opponent": "Rival"
+    },
+    "categories": {
+      "positive": "Favorable",
+      "negative": "Pérdida o sanción",
+      "neutral": "Neutra"
+    },
+    "flags": {
+      "ownScore": "+{n} al marcador",
+      "opponentScore": "+{n} al rival",
+      "foul": "cuenta falta",
+      "card": {
+        "yellow": "amarilla",
+        "red": "roja"
+      },
+      "zone": "pide zona",
+      "keeper": "solo portero",
+      "quick": "bandeja rápida"
+    },
+    "actions": {
+      "title": "Catálogo de acciones",
+      "description": "Lo que se puede registrar de un toque. Saques, tiempos muertos, lo que haga falta.",
+      "new": "Nueva acción",
+      "empty": "Todavía no hay acciones.",
+      "table": {
+        "name": "Acción",
+        "scope": "A quién",
+        "category": "Tipo",
+        "flags": "Efectos",
+        "weight": "Peso"
+      },
+      "noFlags": "sin efectos",
+      "archived": "Archivadas",
+      "restore": "Recuperar",
+      "removed": "Acción {name} quitada.",
+      "restored": "Acción {name} recuperada.",
+      "confirmRemoveTitle": "¿Quitar la acción {name}?",
+      "confirmRemoveBody": "Si ya se ha usado en algún partido, se archiva para conservar el historial; si no, se borra."
+    },
+    "settings": {
+      "title": "Cómo se juega",
+      "customized": "Ajustes propios de la sección sobre los del deporte.",
+      "fromSport": "Ajustes que propone el deporte. Cámbialos si en esta sección se juega distinto.",
+      "saved": "Ajustes guardados.",
+      "periods": "Periodos",
+      "periodMinutes": "Minutos por periodo",
+      "playersOnCourt": "Jugadores en pista",
+      "foulLimit": "Tope de faltas por periodo",
+      "foulLimitHint": "0 si no se cuentan.",
+      "goalkeeper": "Hay portero",
+      "yes": "Sí",
+      "no": "No",
+      "clock": "Cronómetro",
+      "clock_up": "Cuenta hacia arriba",
+      "clock_down": "Cuenta atrás",
+      "zones": "Mapa de zonas",
+      "zonesHint": "Pedir la zona en las acciones que la tengan.",
+      "formations": "Sistemas de juego",
+      "formationsHint": "Separados por comas, sin contar el portero: 1-2-1, 2-2."
+    },
+    "actionSheet": {
+      "editTitle": "Editar {name}",
+      "newTitle": "Nueva acción",
+      "description": "A quién se aplica, qué suma y cuánto pesa en la valoración.",
+      "submit": "Crear acción",
+      "name": "Nombre",
+      "nameHint": "La clave de las estadísticas se genera del nombre.",
+      "codeHint": "Clave: {code}. No cambia al renombrar.",
+      "scope": "A quién se aplica",
+      "category": "Tipo",
+      "opponentScore": "Puntos al marcador del rival",
+      "ownScore": "Puntos al marcador propio",
+      "scoreHint": "Gol: 1. Triple: 3. Sin marcador: 0.",
+      "weight": "Peso en la valoración",
+      "weightHint": "Positivo suma, negativo resta. De -20 a 20.",
+      "card": "Tarjeta",
+      "noCard": "Sin tarjeta",
+      "mirrorOf": "Espejo de la acción propia",
+      "mirrorHint": "Para la comparativa: gol del rival es espejo de gol.",
+      "noMirror": "Sin espejo",
+      "countsFoul": "Cuenta como falta de equipo",
+      "quick": "En la bandeja rápida",
+      "requiresZone": "Pide la zona de la pista",
+      "keeperOnly": "Solo la hace el portero",
+      "saved": "Acción guardada.",
+      "created": "Acción {name} creada.",
+      "codeTaken": "Ya hay una acción con esa clave en la sección."
+    }
+  },
+  "playerMatches": {
+    "title": "Partidos",
+    "description": "Sus totales y su línea en cada partido registrado.",
+    "familyDescription": "El resultado del equipo y lo que hizo en cada partido. Solo lo suyo.",
+    "error": "No se han podido cargar los partidos.",
+    "empty": "Todavía no hay partidos registrados.",
+    "matches": "Partidos",
+    "starts": "{count, plural, one {# de inicio} other {# de inicio}}",
+    "minutes": "Minutos",
+    "rating": "Valoración",
+    "starter": "titular",
+    "bench": "banquillo"
   }
 }

@@ -1,8 +1,8 @@
-# Capturas de la interfaz (Bloques 14 a 18)
+# Capturas de la interfaz (Bloques 14 a 19)
 
-Capturas que generan las pruebas de interfaz (`pnpm test:ui`) contra la API real con base embebida, con el front de Vite + React + Tailwind sobre el design system del producto (`packages/design`, ADR 0027). Escritorio a 1280x800; móvil, Pixel 7. La fuente viva es el artefacto `capturas-interfaz` de CI; esta carpeta es la foto de la revisión del club completo (ADR 0031): secciones por deporte, socios, agenda e instalaciones, cuotas y "ver como", sobre lo que ya había de los bloques 11 a 13 (ADR 0028, 0029 y 0030).
+Capturas que generan las pruebas de interfaz (`pnpm test:ui`) contra la API real con base embebida, con el front de Vite + React + Tailwind sobre el design system del producto (`packages/design`, ADR 0027). Escritorio a 1280x800; móvil, Pixel 7. La fuente viva es el artefacto `capturas-interfaz` de CI; esta carpeta es la foto de la revisión del partido en directo (ADR 0032) sobre el club completo (ADR 0031): secciones por deporte, socios, agenda e instalaciones, cuotas y "ver como", y lo que ya había de los bloques 11 a 13 (ADR 0028, 0029 y 0030).
 
-Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negocio en `/admin`. Cuentas de demostración, todas con contraseña `123456`: `admin@demo.test` (administra el club demo; en este entorno también la plataforma), `entrenador@demo.test` (entrenadora del Alevín A), `familia@demo.test` (madre de dos jugadores y socia), `director@demo.test` (dirección deportiva), `fisio@demo.test` (fisioterapia), `natacion@demo.test` (coordinación de natación) y `basquet@demo.test`, `basquetfem@demo.test` y `yoga@demo.test` (cuerpo técnico). El club demo llega con la temporada 2026-27, cuatro secciones (fútbol sala, baloncesto, natación y yoga) con categorías, once equipos y grupos, 83 deportistas, socios con tres tipos, cuatro instalaciones con horario, la agenda generada desde los horarios, partidos, planes de cuota con cargos y pagos, y un reto activo.
+Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negocio en `/admin`. Cuentas de demostración, todas con contraseña `123456`: `admin@demo.test` (administra el club demo; en este entorno también la plataforma), `entrenador@demo.test` (entrenadora del Alevín A), `familia@demo.test` (madre de dos jugadores y socia), `director@demo.test` (dirección deportiva), `fisio@demo.test` (fisioterapia), `natacion@demo.test` (coordinación de natación) y `basquet@demo.test`, `basquetfem@demo.test` y `yoga@demo.test` (cuerpo técnico). El club demo llega con la temporada 2026-27, cuatro secciones (fútbol sala, baloncesto, natación y yoga) con categorías, once equipos y grupos, 83 deportistas, socios con tres tipos, cuatro instalaciones con horario, la agenda generada desde los horarios, partidos, planes de cuota con cargos y pagos, un reto activo y dos partidos jugados del Alevín A con su registro completo.
 
 ## Acceso
 
@@ -382,6 +382,46 @@ Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negoci
 
 ![Selector de clubes](escritorio-62-mis-clubes.png)
 
+## Partido en directo (Bloque 19)
+
+### Configuración del motor por sección: cómo se juega y el catálogo de acciones
+
+![Configuración del partido en directo](escritorio-100-partido-configuracion.png)
+
+### Una acción nueva inventada por el club
+
+![Acción nueva](escritorio-100b-partido-accion-nueva.png)
+
+### Partidos del equipo
+
+![Partidos del equipo](escritorio-101-partidos.png)
+
+### Estadísticas de un partido: comparativa, mapa de finalización, trabajo por periodos, jugadores y porteros
+
+![Estadísticas del partido](escritorio-102-partido-estadisticas.png)
+
+### Histórico del equipo: selección de partidos, acumulados, evolución y cruce de métricas
+
+![Histórico del equipo](escritorio-103-partido-historico.png)
+
+### Partido nuevo y convocatoria con el quinteto inicial
+
+![Partido nuevo](escritorio-104-partido-nuevo.png)
+
+![Convocatoria](escritorio-104b-partido-convocatoria.png)
+
+### La consola en la banda: marcador, cronómetro, pista, bandeja de acciones, banquillo, rival y últimas acciones
+
+![Partido en directo](escritorio-105-partido-en-directo.png)
+
+### Mapa de zonas al registrar un gol
+
+![Zona del gol](escritorio-105b-partido-zona.png)
+
+### Lo que ve la familia: los partidos de su hija, solo su línea
+
+![Partidos para la familia](escritorio-106-familia-partidos.png)
+
 ## Móvil
 
 Las mismas pantallas en un móvil, con la forma envolvente del design system: cabecera con el escudo, barra de pestañas flotante abajo con cuatro destinos y "Más", listas en filas cápsula y hojas que ocupan todo el ancho.
@@ -529,3 +569,11 @@ Las mismas pantallas en un móvil, con la forma envolvente del design system: ca
 ### Selector de clubes con varias pertenencias
 
 ![Selector de clubes (móvil)](movil-62-mis-clubes.png)
+
+### Partido en directo (móvil): consola, estadísticas e histórico
+
+![Partido en directo (móvil)](movil-105-partido-en-directo.png)
+
+![Estadísticas del partido (móvil)](movil-102-partido-estadisticas.png)
+
+![Histórico (móvil)](movil-103-partido-historico.png)

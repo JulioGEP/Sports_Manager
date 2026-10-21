@@ -40,6 +40,7 @@ import { useDates } from "@/lib/dates";
 import { shrinkImage } from "@/lib/images";
 import { useT } from "@/lib/intl";
 import { useVoice } from "@/lib/voice";
+import { PlayerMatchesCard } from "@/components/player-matches";
 import {
   Alert,
   Avatar,
@@ -150,6 +151,7 @@ export function PlayerPage() {
   const { org, slug } = useReadyClub();
   const paths = clubPaths(slug);
   const permissions = org.actor.permissions;
+  const canSeeMatches = permissions.includes("org.matches.read");
   const canWrite = permissions.includes("org.players.write");
   const canInvite = permissions.includes("org.members.invite");
   const canChallenges = permissions.includes("org.challenges.read");
@@ -801,6 +803,8 @@ export function PlayerPage() {
             ]}
           />
         </Card>
+
+        {canSeeMatches ? <PlayerMatchesCard playerId={id} /> : null}
 
         <Card title={t("teams")} description={t("teamsDescription")} padded={false}>
           {teams.length === 0 ? (

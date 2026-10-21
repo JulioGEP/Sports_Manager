@@ -151,6 +151,11 @@ export function SectionPage() {
         actions={
           access.write ? (
             <>
+              {!activity && org.actor.permissions.includes("org.matches.read") ? (
+                <ButtonLink to={paths.sectionMatchConfig(id)} variant="secondary">
+                  {t("matchConfig")}
+                </ButtonLink>
+              ) : null}
               <Button variant="secondary" onClick={() => setEditing(true)}>
                 {t("edit")}
               </Button>

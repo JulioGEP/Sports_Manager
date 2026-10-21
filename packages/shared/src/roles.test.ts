@@ -40,6 +40,8 @@ describe("roles y permisos", () => {
       "org.facilities.read",
       "org.family.read",
       "org.family.write",
+      "org.matches.read",
+      "org.matches.write_own",
       "org.members.read",
       "org.players.assess_own",
       "org.players.read",
@@ -68,10 +70,15 @@ describe("roles y permisos", () => {
     expect(director.has("org.members.manage")).toBe(false);
     expect(director.has("org.settings.write")).toBe(false);
 
-    // La delegación solo añade la agenda y el pase de lista de sus equipos (Bloque 16 y 17).
+    // La delegación solo añade la agenda, el pase de lista y los partidos de sus equipos (Bloques 16, 17 y 19).
     const delegate = permissionsForMemberships([{ roleCode: "staff", position: "delegate" }]);
     expect([...delegate].sort()).toEqual(
-      [...ROLE_PERMISSIONS.staff, "org.events.write_own", "org.attendance.write_own"].sort(),
+      [
+        ...ROLE_PERMISSIONS.staff,
+        "org.events.write_own",
+        "org.attendance.write_own",
+        "org.matches.write_own",
+      ].sort(),
     );
     expect(delegate.has("org.players.write")).toBe(false);
 
