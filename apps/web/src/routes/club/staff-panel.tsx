@@ -286,7 +286,13 @@ export function StaffPanel({ kind }: { kind: PanelKind }) {
                       : `${names(focus.dimension)} ${String(score).padStart(2, " ")}`}
                   </StatusChip>
                 ) : null}
-                <ButtonLink action="open" to={paths.player(player.id)} variant="tertiary" size="sm">
+                <ButtonLink
+                  iconOnly
+                  action="open"
+                  to={paths.player(player.id)}
+                  variant="tertiary"
+                  size="sm"
+                >
                   {t("open")}
                 </ButtonLink>
               </li>

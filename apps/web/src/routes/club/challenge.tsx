@@ -323,6 +323,7 @@ export function ChallengePage() {
                 ? (task) => (
                     <>
                       <Button
+                        iconOnly
                         action="edit"
                         variant="secondary"
                         size="sm"
@@ -332,6 +333,7 @@ export function ChallengePage() {
                       </Button>
                       {task.status === "active" ? (
                         <Button
+                          iconOnly
                           action="delete"
                           variant="danger"
                           size="sm"
