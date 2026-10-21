@@ -271,9 +271,9 @@ export function challengesRepo(db: () => Database) {
         taskName: schema.challengeTasks.name,
         taskArea: schema.challengeTasks.area,
         playerId: schema.players.id,
-        firstName: schema.players.firstName,
-        lastName: schema.players.lastName,
-        photoBlobKey: schema.players.photoBlobKey,
+        firstName: schema.people.firstName,
+        lastName: schema.people.lastName,
+        photoBlobKey: schema.people.photoBlobKey,
         quantity: schema.challengeSubmissions.quantity,
         points: schema.challengeSubmissions.points,
         note: schema.challengeSubmissions.note,
@@ -293,6 +293,7 @@ export function challengesRepo(db: () => Database) {
         eq(schema.challengeTasks.id, schema.challengeSubmissions.taskId),
       )
       .innerJoin(schema.players, eq(schema.players.id, schema.challengeSubmissions.playerId))
+      .innerJoin(schema.people, eq(schema.people.id, schema.players.personId))
       .leftJoin(schema.users, eq(schema.users.id, schema.challengeSubmissions.submittedBy))
       .leftJoin(
         sql`${schema.users} as reviewer`,
@@ -835,9 +836,9 @@ export function challengesRepo(db: () => Database) {
       const rows = await db()
         .select({
           playerId: schema.players.id,
-          firstName: schema.players.firstName,
-          lastName: schema.players.lastName,
-          photoBlobKey: schema.players.photoBlobKey,
+          firstName: schema.people.firstName,
+          lastName: schema.people.lastName,
+          photoBlobKey: schema.people.photoBlobKey,
           status: schema.challengeSubmissions.status,
           area: schema.challengeTasks.area,
           points: sum(schema.challengeSubmissions.points),
@@ -845,6 +846,7 @@ export function challengesRepo(db: () => Database) {
         })
         .from(schema.challengeSubmissions)
         .innerJoin(schema.players, eq(schema.players.id, schema.challengeSubmissions.playerId))
+        .innerJoin(schema.people, eq(schema.people.id, schema.players.personId))
         .innerJoin(
           schema.challengeTasks,
           eq(schema.challengeTasks.id, schema.challengeSubmissions.taskId),
@@ -871,7 +873,14 @@ export function challengesRepo(db: () => Database) {
               : []),
           ),
         )
-        .groupBy(schema.players.id, schema.challengeSubmissions.status, schema.challengeTasks.area);
+        .groupBy(
+          schema.players.id,
+          schema.people.firstName,
+          schema.people.lastName,
+          schema.people.photoBlobKey,
+          schema.challengeSubmissions.status,
+          schema.challengeTasks.area,
+        );
       const byPlayer = new Map<string, StandingRecord>();
       for (const row of rows) {
         const entry = byPlayer.get(row.playerId) ?? {

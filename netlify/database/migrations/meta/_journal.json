@@ -57,6 +57,20 @@
       "when": 1792594560983,
       "tag": "20261021145600_staff_challenges",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792604494089,
+      "tag": "20261021174134_club_completo",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792604547072,
+      "tag": "20261021174227_club_completo_cleanup",
+      "breakpoints": true
     }
   ]
 }

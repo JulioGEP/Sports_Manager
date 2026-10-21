@@ -10,8 +10,8 @@ test.describe("familia y entrenadora", () => {
     await expect(page.getByRole("link", { name: "Marc Martí" })).toBeVisible();
     await shot(page, "46-familia-inicio", info.project.name);
     await expectLegibleButtons(page);
-    await expect(page.getByRole("link", { name: "Jugadores" })).toHaveCount(0);
-    await expect(page.getByRole("link", { name: "Equipos" })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Deportistas" })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Secciones" })).toHaveCount(0);
 
     await page.getByRole("link", { name: "Mi familia" }).first().click();
     await expect(page.getByRole("heading", { name: "Mi familia" })).toBeVisible();
@@ -48,7 +48,7 @@ test.describe("familia y entrenadora", () => {
 
     // Las rutas del personal no abren para una familia.
     await page.goto(`${CLUB}/players`);
-    await expect(page.getByRole("heading", { name: "Jugadores" })).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: "Deportistas" })).toHaveCount(0);
     await signOut(page);
   });
 
@@ -61,13 +61,9 @@ test.describe("familia y entrenadora", () => {
     await expect(page.getByRole("heading", { name: "Mis jugadores" })).toBeVisible();
     await expect(page.getByRole("link", { name: /Alevín A/ }).first()).toBeVisible();
     await shot(page, "48b-entrenadora-inicio", info.project.name);
-    await page.getByRole("link", { name: "Equipos" }).first().click();
-    await page
-      .locator("tr, li")
-      .filter({ hasText: "Alevín A" })
-      .getByRole("link", { name: "Abrir" })
-      .first()
-      .click();
+    await page.getByRole("link", { name: "Secciones" }).first().click();
+    await page.getByRole("link", { name: /Fútbol sala/ }).click();
+    await page.getByRole("link", { name: "Alevín A" }).click();
     await expect(page.getByRole("heading", { name: "Alevín A" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Clara Martí" })).toBeVisible();
     // Su equipo: edita la plantilla, pero no da de alta jugadores nuevos ni edita el equipo.
@@ -84,13 +80,9 @@ test.describe("familia y entrenadora", () => {
     // Su jugadora: valora el objetivo. Otro equipo: solo mira.
     await page.getByRole("link", { name: "Clara Martí" }).click();
     await expect(page.getByRole("button", { name: "Valorar" })).toBeVisible();
-    await page.goto(`${CLUB}/teams`);
-    await page
-      .locator("tr, li")
-      .filter({ hasText: "Infantil A" })
-      .getByRole("link", { name: "Abrir" })
-      .first()
-      .click();
+    await page.goto(`${CLUB}/sections`);
+    await page.getByRole("link", { name: /Fútbol sala/ }).click();
+    await page.getByRole("link", { name: "Infantil A" }).click();
     await expect(page.getByRole("heading", { name: "Infantil A" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Añadir jugador" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Quitar" })).toHaveCount(0);

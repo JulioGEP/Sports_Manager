@@ -7,7 +7,9 @@
     "copy": "Copiar enlace",
     "copied": "Copiado",
     "remove": "Quitar",
-    "open": "Abrir"
+    "open": "Abrir",
+    "current": "Actual",
+    "edit": "Editar"
   },
   "nav": {
     "home": "Inicio",
@@ -26,10 +28,22 @@
     "supportLimited": "Modo soporte de plataforma: ves el estado y los recuentos del club, sin datos personales.",
     "supportFull": "Modo soporte de plataforma con autorización del club: lectura completa, sin cambios.",
     "clubNotFound": "Este club no existe o no está activo.",
-    "teams": "Equipos",
-    "players": "Jugadores",
+    "players": "Deportistas",
     "family": "Mi familia",
-    "challenges": "Reto"
+    "challenges": "Reto",
+    "sections": "Secciones",
+    "clubMembers": "Socios",
+    "staff": "Personal",
+    "agenda": "Agenda",
+    "facilities": "Instalaciones",
+    "fees": "Cuotas",
+    "myFees": "Mis cuotas",
+    "more": "Más",
+    "close": "Cerrar",
+    "groupClub": "El club",
+    "groupActivity": "Actividad",
+    "groupManagement": "Gestión",
+    "viewAs": "Ver el club como…"
   },
   "auth": {
     "login": {
@@ -95,58 +109,42 @@
   },
   "home": {
     "greeting": "Hola, {name}",
-    "subtitle": "Panel de {club}.",
-    "stats": {
-      "members": "Miembros",
-      "pending": "Invitaciones pendientes",
-      "yourRole": "Tu rol en el club",
-      "teams": "Equipos",
-      "players": "Jugadores",
-      "guardians": "Familias",
-      "season": "Temporada actual",
-      "noSeason": "Sin temporada"
-    },
-    "support": {
-      "badge": "Soporte de plataforma"
-    },
-    "firstSteps": {
-      "title": "Primeros pasos",
-      "description": "Deja el club listo para su gente.",
-      "logo": "Sube el logo del club",
-      "logoAction": "Subir logo",
-      "colors": "Elige los colores de marca",
-      "colorsAction": "Elegir colores",
-      "invite": "Invita al primer entrenador",
-      "inviteAction": "Invitar",
-      "done": "Hecho",
-      "team": "Crea el primer equipo",
-      "teamAction": "Crear equipo"
-    },
     "hero": {
-      "sport": "Deporte principal: {sport}",
       "label": "Portada de {club}",
-      "members": "Ver miembros",
-      "teams": "Ver equipos"
+      "meta": "{season} · {sections, plural, one {# sección} other {# secciones}} · {teams, plural, one {# equipo} other {# equipos}}",
+      "noSeason": "Sin temporada",
+      "next": "Próximo: {title}, {when}",
+      "newPlayer": "Nuevo deportista",
+      "family": "Mi familia",
+      "agenda": "Ver agenda"
     },
-    "structure": {
-      "title": "Estructura del club",
-      "description": "Secciones, equipos y jugadores de la temporada actual.",
-      "sections": "{count, plural, one {# sección} other {# secciones}}",
-      "teams": "{count, plural, one {# equipo} other {# equipos}}",
-      "players": "{count, plural, one {# jugador} other {# jugadores}}",
-      "guardians": "{count, plural, one {# familia} other {# familias}}",
-      "openTeams": "Ver equipos",
-      "openPlayers": "Ver jugadores",
-      "noSeasonTitle": "Todavía no hay temporada",
-      "noSeasonBody": "Crea la primera temporada para empezar a montar equipos.",
-      "createSeason": "Crear temporada"
+    "onboarding": {
+      "title": "Deja el club con su imagen",
+      "body": "Sube el escudo y elige los colores de marca: la gente del club los verá en cada pantalla.",
+      "action": "Ir a ajustes"
     },
-    "family": {
-      "title": "Tu familia",
-      "description": "Los jugadores vinculados a tu cuenta.",
-      "open": "Ver mi familia",
-      "empty": "Todavía no hay ningún jugador vinculado a tu cuenta. Pide al club que te vincule.",
-      "challenge": "Reto"
+    "today": {
+      "eyebrow": "Hoy en el club",
+      "week": "Ver la semana",
+      "empty": "Hoy no hay nada en la agenda.",
+      "emptyHint": "Los entrenamientos salen aquí cuando cada equipo tiene horario."
+    },
+    "stats": {
+      "clubMembers": "Socios",
+      "clubMembersJoined": "Socios · {count, plural, one {# alta este mes} other {# altas este mes}}",
+      "players": "Deportistas",
+      "teams": "Equipos y grupos",
+      "staff": "Personal",
+      "feesPending": "Cuotas pendientes",
+      "feesOverdue": "Cuotas pendientes · {count, plural, one {# vencida} other {# vencidas}}"
+    },
+    "sections": {
+      "eyebrow": "Secciones",
+      "title": "El club por deporte",
+      "all": "Ver todas",
+      "empty": "Todavía no hay secciones.",
+      "emptyHint": "Una sección por deporte o actividad: fútbol, baloncesto, yoga, natación.",
+      "new": "Nueva sección"
     },
     "operations": {
       "eyebrow": "Qué hace falta hoy",
@@ -155,28 +153,36 @@
       "allClear": "Todo al día.",
       "allClearHint": "No hay nada pendiente en el club.",
       "go": "Ir",
+      "teamsWithoutStaff": "{count, plural, one {# equipo sin cuerpo técnico} other {# equipos sin cuerpo técnico}}",
+      "teamsWithoutStaffHint": "Asigna a alguien desde la ficha de cada equipo.",
       "pendingInvitations": "{count, plural, one {# invitación pendiente} other {# invitaciones pendientes}}",
       "pendingInvitationsHint": "Reenvía o revoca las que no se aceptan.",
+      "feesOverdue": "{count, plural, one {# cuota vencida} other {# cuotas vencidas}}",
+      "feesOverdueHint": "Cobros con la fecha pasada y sin pagar.",
       "challengeSubmissionsPending": "{count, plural, one {# registro del reto por validar} other {# registros del reto por validar}}",
       "challengeSubmissionsPendingHint": "Las familias esperan la validación del club.",
       "objectivesOverdue": "{count, plural, one {# objetivo con la revisión vencida} other {# objetivos con la revisión vencida}}",
       "objectivesOverdueHint": "Revisa el progreso y fija la siguiente fecha.",
       "plansOverdue": "{count, plural, one {# plan de desarrollo con la revisión vencida} other {# planes de desarrollo con la revisión vencida}}",
       "plansOverdueHint": "Actualiza el PDI y su próxima revisión.",
-      "playersWithoutTeam": "{count, plural, one {# jugador sin equipo esta temporada} other {# jugadores sin equipo esta temporada}}",
-      "playersWithoutTeamHint": "Mételos en una plantilla.",
-      "playersWithoutObjective": "{count, plural, one {# jugador sin objetivo individual} other {# jugadores sin objetivo individual}}",
+      "playersWithoutTeam": "{count, plural, one {# deportista sin equipo esta temporada} other {# deportistas sin equipo esta temporada}}",
+      "playersWithoutTeamHint": "Mételos en una plantilla o grupo.",
+      "playersWithoutMembership": "{count, plural, one {# deportista sin ficha de socio} other {# deportistas sin ficha de socio}}",
+      "playersWithoutMembershipHint": "Dales de alta como socios para cobrarles cuota.",
+      "playersWithoutObjective": "{count, plural, one {# deportista sin objetivo individual} other {# deportistas sin objetivo individual}}",
       "playersWithoutObjectiveHint": "Define una prioridad para cada ficha.",
-      "playersWithoutFamily": "{count, plural, one {# jugador sin acceso familiar} other {# jugadores sin acceso familiar}}",
+      "playersWithoutFamily": "{count, plural, one {# deportista sin acceso familiar} other {# deportistas sin acceso familiar}}",
       "playersWithoutFamilyHint": "Invita a su familia desde la ficha.",
       "playersWithoutPhoto": "{count, plural, one {# ficha sin fotografía} other {# fichas sin fotografía}}",
-      "playersWithoutPhotoHint": "La foto ayuda a identificar a cada jugador."
+      "playersWithoutPhotoHint": "La foto ayuda a identificar a cada deportista.",
+      "facilitiesWithoutHours": "{count, plural, one {# instalación sin horario} other {# instalaciones sin horario}}",
+      "facilitiesWithoutHoursHint": "Sin horario no se pueden detectar solapes."
     },
     "readiness": {
       "eyebrow": "Salud de los datos",
       "title": "Preparación de las fichas",
-      "description": "Siete comprobaciones por jugador activo: foto, nacimiento, equipo, familia, objetivo, indicadores y PDI.",
-      "total": "{count, plural, one {# jugador activo} other {# jugadores activos}}",
+      "description": "Siete comprobaciones por deportista activo: foto, nacimiento, equipo, familia, objetivo, indicadores y PDI.",
+      "total": "{count, plural, one {# deportista activo} other {# deportistas activos}}",
       "progressLabel": "Fichas preparadas al {percent} por ciento",
       "withPhoto": "Con foto",
       "withBirthDate": "Con nacimiento",
@@ -184,25 +190,22 @@
       "withFamily": "Con familia",
       "withObjective": "Con objetivo",
       "withIndicators": "Con indicadores",
-      "withPlan": "Con PDI"
+      "withPlan": "Con PDI",
+      "bySection": "Ver por sección"
     },
-    "quickActions": {
-      "title": "Accesos rápidos",
-      "description": "Lo que más se hace en el club, a un toque.",
-      "newPlayer": "Dar de alta un jugador",
-      "newPlayerHint": "Crear la ficha y asignarle equipo.",
-      "newTeam": "Crear un equipo",
-      "newTeamHint": "En una sección de la temporada actual.",
-      "inviteFamily": "Invitar a una familia",
-      "inviteFamilyHint": "Desde la ficha de su jugador.",
-      "challenge": "Abrir el reto",
-      "challengeHint": "Pruebas, validaciones y participación."
+    "family": {
+      "title": "Tu familia",
+      "description": "Los deportistas vinculados a tu cuenta.",
+      "open": "Ver mi familia",
+      "empty": "Todavía no hay ningún deportista vinculado a tu cuenta. Pide al club que te vincule.",
+      "noTeam": "Sin equipo"
     },
     "activity": {
       "title": "Últimos movimientos",
-      "description": "Qué ha pasado en el club estos días.",
+      "toggle": "Mostrar u ocultar",
       "empty": "Todavía no hay movimientos.",
-      "system": "Sistema"
+      "system": "Sistema",
+      "all": "Ver todo el registro"
     },
     "panel": {
       "rated": "{dimension}: {rated} de {total} valorados",
@@ -265,15 +268,15 @@
     }
   },
   "members": {
-    "title": "Miembros",
-    "description": "Quién forma parte del club y con qué rol.",
+    "title": "Personal del club",
+    "description": "Quién trabaja en el club y con qué rol: dirección, entrenadores y personal. Las familias y los socios tienen sus propias pantallas.",
     "invite": "Invitar",
     "tabs": {
-      "members": "Miembros",
+      "members": "Personal",
       "invitations": "Invitaciones"
     },
     "search": "Buscar por nombre o email",
-    "empty": "Todavía no hay miembros.",
+    "empty": "Todavía no hay personal en el club.",
     "emptyInvitations": "No hay invitaciones pendientes.",
     "table": {
       "name": "Persona",
@@ -336,12 +339,17 @@
   },
   "settings": {
     "title": "Ajustes del club",
-    "description": "Nombre, idioma, marca y logo. Lo que cambies aquí lo ve todo el club.",
+    "description": "Nombre, idioma, marca y logo; temporadas, tipos de socio y cobros. Lo que cambies aquí lo ve todo el club.",
     "forbidden": "No puedes editar los ajustes de este club.",
     "tabs": {
       "general": "General",
       "brand": "Marca",
-      "logo": "Logo"
+      "logo": "Logo",
+      "seasons": "Temporadas",
+      "memberTypes": "Tipos de socio",
+      "payments": "Cobros",
+      "setup": "Puesta en marcha",
+      "activity": "Actividad"
     },
     "general": {
       "title": "Datos del club",
@@ -350,7 +358,9 @@
       "defaultLocaleHint": "Idioma de los emails y de la interfaz para quien no haya elegido otro.",
       "saved": "Cambios guardados.",
       "voice": "Voz del club",
-      "voiceHint": "Cómo habla el club a su gente en los avisos y mensajes del día a día. Dinero, bajas y datos personales usan siempre un tono profesional."
+      "voiceHint": "Cómo habla el club a su gente en los avisos y mensajes del día a día. Dinero, bajas y datos personales usan siempre un tono profesional.",
+      "timezone": "Zona horaria",
+      "timezoneHint": "La agenda se pinta en esta zona, sea cual sea la del dispositivo."
     },
     "brand": {
       "title": "Colores de marca",
@@ -379,6 +389,119 @@
       "removed": "Logo quitado.",
       "confirmRemoveTitle": "¿Quitar el logo del club?",
       "confirmRemoveBody": "La cabecera, el login y el selector de clubes volverán a mostrar las iniciales. Puedes subir otro cuando quieras."
+    },
+    "seasons": {
+      "title": "Temporadas",
+      "description": "Los equipos y las plantillas van por temporada. La actual es la que ve todo el club.",
+      "caption": "Temporadas del club",
+      "new": "Nueva temporada",
+      "current": "Actual",
+      "edit": "Editar",
+      "makeCurrent": "Hacer actual",
+      "madeCurrent": "{name} ya es la temporada actual.",
+      "loadError": "No se han podido cargar las temporadas.",
+      "empty": "Todavía no hay temporadas.",
+      "emptyHint": "Crea la primera para poder crear secciones y equipos.",
+      "table": {
+        "name": "Temporada",
+        "range": "Fechas",
+        "teams": "Equipos"
+      },
+      "sheet": {
+        "title": "Nueva temporada",
+        "editTitle": "Editar temporada",
+        "description": "Fechas de calendario sin hora. Una temporada suele ir de septiembre a junio.",
+        "name": "Nombre",
+        "nameHint": "Por ejemplo, 2026-27.",
+        "startsOn": "Empieza",
+        "endsOn": "Acaba",
+        "isCurrent": "Hacerla la temporada actual",
+        "isCurrentHint": "La anterior deja de serlo. Los equipos nuevos se crean en la actual.",
+        "submit": "Crear temporada",
+        "created": "Temporada creada.",
+        "saved": "Temporada guardada.",
+        "invalid": "Revisa el nombre y las fechas: tiene que acabar después de empezar.",
+        "duplicate": "Ya hay una temporada con ese nombre."
+      }
+    },
+    "memberTypes": {
+      "title": "Tipos de socio",
+      "description": "Las clases de socio del club: numerario, familiar, juvenil, honorífico… Cada plan de cuota puede ir a un tipo.",
+      "caption": "Tipos de socio",
+      "newTitle": "Nuevo tipo",
+      "newDescription": "Un nombre corto. Lo verás al dar de alta socios y en los planes de cuota.",
+      "name": "Nombre",
+      "namePlaceholder": "Socio numerario",
+      "add": "Añadir tipo",
+      "created": "Tipo «{name}» creado.",
+      "duplicate": "Ya hay un tipo con ese nombre.",
+      "rename": "Renombrar",
+      "renameTitle": "Renombrar «{name}»",
+      "renamed": "Tipo renombrado.",
+      "archive": "Archivar",
+      "restore": "Recuperar",
+      "archived": "Tipo «{name}» archivado.",
+      "restored": "Tipo «{name}» recuperado.",
+      "loadError": "No se han podido cargar los tipos de socio.",
+      "empty": "Todavía no hay tipos de socio.",
+      "emptyHint": "Añade el primero con el formulario de al lado.",
+      "membersCount": "{count, plural, one {# socio} other {# socios}}",
+      "status": {
+        "active": "Activo",
+        "archived": "Archivado"
+      },
+      "table": {
+        "name": "Tipo",
+        "members": "Socios",
+        "status": "Estado"
+      }
+    },
+    "payments": {
+      "title": "Cómo cobra el club",
+      "description": "A mano, el club apunta cada pago. Con Stripe, las familias y los socios pagan desde la app y el pago se registra solo.",
+      "provider": "Proveedor de cobro",
+      "providerHint": {
+        "manual": "Las cuotas se cobran por transferencia o en secretaría y alguien las registra en la app.",
+        "stripe": "Cada cargo pendiente lleva un botón de pago. El dinero va a la cuenta de Stripe del club."
+      },
+      "stripeAccount": "Cuenta de Stripe del club",
+      "stripeAccountHint": "El identificador «acct_…» de la cuenta conectada. Lo da Stripe al conectar el club.",
+      "stripeNotConfigured": "Stripe todavía no está configurado en la plataforma. Puedes dejar la cuenta preparada, pero el cobro en línea no se activará hasta que haya claves.",
+      "conflictPlatform": "Stripe no está configurado en la plataforma todavía. Mientras tanto, el club cobra a mano.",
+      "conflictAccount": "Para cobrar por Stripe hace falta la cuenta conectada del club (acct_…).",
+      "invalidAccount": "Ese identificador de cuenta no tiene pinta de ser de Stripe (acct_…).",
+      "saved": "Ajustes de cobro guardados.",
+      "statusTitle": "Estado",
+      "currentProvider": "Proveedor actual",
+      "platformKeys": "Claves de Stripe en la plataforma",
+      "ready": "Listas",
+      "missing": "Sin configurar",
+      "connectedAccount": "Cuenta conectada",
+      "notConnected": "Sin conectar",
+      "currency": "Moneda",
+      "howItWorks": "Stripe queda preparado como Resend para el email: sin claves, el club sigue cobrando a mano; con claves y cuenta conectada, el pago en línea se activa al elegir Stripe."
+    },
+    "setup": {
+      "title": "Puesta en marcha",
+      "description": "{done} de {total} pasos hechos. Deja el club listo para su gente.",
+      "done": "Hecho",
+      "logo": "Sube el logo del club",
+      "logoAction": "Subir logo",
+      "colors": "Elige los colores de marca",
+      "colorsAction": "Elegir colores",
+      "season": "Crea la temporada actual",
+      "seasonAction": "Crear temporada",
+      "section": "Crea la primera sección",
+      "sectionAction": "Crear sección",
+      "invite": "Invita al primer entrenador o personal",
+      "inviteAction": "Invitar"
+    },
+    "activity": {
+      "title": "Actividad del club",
+      "description": "Los últimos cien movimientos: quién hizo qué.",
+      "empty": "Todavía no hay movimientos.",
+      "system": "Sistema",
+      "loadError": "No se ha podido cargar la actividad."
     }
   },
   "clubs": {
@@ -572,7 +695,8 @@
       "created": "Club creado",
       "updated": "Club editado",
       "logo_updated": "Logo cambiado",
-      "logo_removed": "Logo quitado"
+      "logo_removed": "Logo quitado",
+      "payments_updated": "Ajustes de cobro cambiados"
     },
     "invitation": {
       "created": "Invitación enviada",
@@ -602,7 +726,8 @@
       "roster_updated": "Plantilla editada",
       "roster_removed": "Jugador quitado de la plantilla",
       "staff_added": "Cuerpo técnico añadido",
-      "staff_removed": "Cuerpo técnico retirado"
+      "staff_removed": "Cuerpo técnico retirado",
+      "schedule_updated": "Horario del equipo cambiado"
     },
     "player": {
       "created": "Jugador dado de alta",
@@ -626,90 +751,47 @@
       "submission_created": "Registro del reto enviado",
       "submission_removed": "Registro del reto retirado",
       "submission_reviewed": "Registro del reto validado"
-    }
-  },
-  "teams": {
-    "title": "Equipos",
-    "description": "Secciones, temporadas y equipos con su plantilla.",
-    "tabs": {
-      "teams": "Equipos",
-      "sections": "Secciones",
-      "seasons": "Temporadas"
     },
-    "season": "Temporada",
-    "current": "Actual",
-    "newTeam": "Nuevo equipo",
-    "newSection": "Nueva sección",
-    "newSeason": "Nueva temporada",
-    "empty": "Todavía no hay equipos en esta temporada.",
-    "emptySeason": "Sin temporada no hay equipos. Crea la primera en la pestaña Temporadas.",
-    "emptySections": "Todavía no hay secciones.",
-    "emptySeasons": "Todavía no hay temporadas.",
-    "table": {
-      "team": "Equipo",
-      "category": "Categoría",
-      "players": "Jugadores",
-      "staff": "Cuerpo técnico",
-      "section": "Sección",
-      "status": "Estado",
-      "teams": "Equipos",
-      "dates": "Fechas",
-      "name": "Nombre"
+    "category": {
+      "created": "Categoría creada",
+      "updated": "Categoría editada"
     },
-    "noStaff": "Sin cuerpo técnico",
-    "noCategory": "Sin categoría",
-    "open": "Abrir",
-    "edit": "Editar",
-    "makeCurrent": "Hacer actual",
-    "madeCurrent": "{name} ya es la temporada actual.",
-    "archive": "Archivar",
-    "reactivate": "Reactivar",
-    "sectionStatus": {
-      "active": "Activa",
-      "archived": "Archivada"
+    "person": {
+      "updated": "Datos de persona editados"
     },
-    "teamSheet": {
-      "title": "Nuevo equipo",
-      "editTitle": "Editar {name}",
-      "description": "Un equipo vive en una sección y una temporada.",
-      "name": "Nombre del equipo",
-      "nameHint": "Por ejemplo, Alevín A.",
-      "category": "Categoría",
-      "categoryHint": "Texto libre: cada club y federación la llama a su manera.",
-      "section": "Sección",
-      "season": "Temporada",
-      "submit": "Crear equipo",
-      "save": "Guardar",
-      "created": "Equipo {name} creado.",
-      "saved": "Equipo guardado.",
-      "nameTaken": "Ya hay un equipo con ese nombre en esa sección y temporada."
+    "club_member": {
+      "created": "Socio dado de alta",
+      "updated": "Ficha de socio editada"
     },
-    "sectionSheet": {
-      "title": "Nueva sección",
-      "editTitle": "Editar sección",
-      "description": "La capa entre el club y sus equipos: por deporte, por género o como lo organice el club.",
-      "name": "Nombre de la sección",
-      "submit": "Crear sección",
-      "save": "Guardar",
-      "created": "Sección {name} creada.",
-      "saved": "Sección guardada.",
-      "nameTaken": "Ya hay una sección con ese nombre."
+    "member_type": {
+      "created": "Tipo de socio creado",
+      "updated": "Tipo de socio editado"
     },
-    "seasonSheet": {
-      "title": "Nueva temporada",
-      "editTitle": "Editar temporada",
-      "description": "Los equipos y las plantillas van por temporada, para conservar el historial.",
-      "name": "Nombre",
-      "nameHint": "Por ejemplo, 2026-27.",
-      "startsOn": "Empieza",
-      "endsOn": "Acaba",
-      "isCurrent": "Marcar como temporada actual",
-      "submit": "Crear temporada",
-      "save": "Guardar",
-      "created": "Temporada {name} creada.",
-      "saved": "Temporada guardada.",
-      "nameTaken": "Ya hay una temporada con ese nombre.",
-      "dates": "La temporada tiene que acabar después de empezar."
+    "facility": {
+      "created": "Instalación creada",
+      "updated": "Instalación editada"
+    },
+    "event": {
+      "created": "Evento creado",
+      "updated": "Evento editado",
+      "removed": "Evento eliminado"
+    },
+    "attendance": {
+      "recorded": "Lista pasada"
+    },
+    "fee_plan": {
+      "created": "Plan de cuota creado",
+      "updated": "Plan de cuota editado"
+    },
+    "fee_charge": {
+      "created": "Cargo creado",
+      "updated": "Cargo editado"
+    },
+    "payment": {
+      "recorded": "Pago registrado"
+    },
+    "view_as": {
+      "started": "Vio el club como otra persona"
     }
   },
   "team": {
@@ -751,7 +833,8 @@
       "description": "Miembros del club con rol de entrenador o administrador.",
       "member": "Persona",
       "empty": "No hay nadie disponible. Invita a un entrenador desde Miembros.",
-      "submit": "Añadir"
+      "submit": "Añadir",
+      "role": "Cargo en el equipo"
     },
     "addPlayerSheet": {
       "title": "Añadir jugador a {team}",
@@ -772,11 +855,38 @@
       "saved": "Cambios guardados."
     },
     "edit": "Editar equipo",
-    "archived": "Equipo archivado"
+    "archived": "Equipo archivado",
+    "srTitle": "Ficha del equipo",
+    "capacity": "{count} de {capacity} plazas",
+    "schedule": {
+      "title": "Horario semanal",
+      "description": "Entrenamientos fijos de la semana. Con ellos se genera la agenda de la temporada.",
+      "descriptionActivity": "Sesiones fijas de la semana. Con ellas se genera la agenda de la temporada.",
+      "set": "Fijar horario",
+      "edit": "Editar horario",
+      "empty": "Todavía no hay horario.",
+      "noFacility": "Sin instalación",
+      "openAgenda": "Ver en la agenda"
+    },
+    "scheduleSheet": {
+      "title": "Horario semanal",
+      "description": "Una fila por franja. Al guardar puedes regenerar la agenda desde hoy; las sesiones con lista pasada se respetan.",
+      "weekday": "Día",
+      "startsAt": "Empieza",
+      "endsAt": "Acaba",
+      "facility": "Instalación",
+      "noFacility": "Sin instalación",
+      "addSlot": "Añadir franja",
+      "generate": "Generar la agenda de la temporada desde hoy",
+      "generateHint": "Crea una sesión por franja y semana hasta que acabe la temporada. Las que ya existen no se duplican.",
+      "submit": "Guardar horario",
+      "saved": "Horario guardado.",
+      "savedGenerated": "Horario guardado. {count, plural, =0 {No hacía falta generar nada} one {# sesión generada} other {# sesiones generadas}}."
+    }
   },
   "players": {
-    "title": "Jugadores",
-    "description": "Todas las personas que juegan en el club, con su equipo y su familia.",
+    "title": "Deportistas",
+    "description": "Quien entrena en el club: ficha, equipo o grupo, familia y estado.",
     "new": "Nuevo jugador",
     "search": "Buscar por nombre",
     "teamFilter": "Equipo",
@@ -788,7 +898,8 @@
       "age": "Edad",
       "teams": "Equipos",
       "family": "Familia",
-      "status": "Estado"
+      "status": "Estado",
+      "member": "Socio"
     },
     "noTeam": "Sin equipo",
     "sheet": {
@@ -811,9 +922,26 @@
       "photo": "sin foto",
       "objective": "sin objetivo",
       "team": "sin equipo",
-      "family": "sin familia"
+      "family": "sin familia",
+      "member": "sin ficha de socio"
     },
-    "pendingCount": "{count, plural, one {# invitación pendiente} other {# invitaciones pendientes}}"
+    "pendingCount": "{count, plural, one {# invitación pendiente} other {# invitaciones pendientes}}",
+    "tabs": {
+      "players": "Deportistas",
+      "families": "Familias"
+    },
+    "families": {
+      "empty": "Todavía no hay familias.",
+      "emptyHint": "Se crean al invitar a la familia desde la ficha de un deportista.",
+      "person": "Persona",
+      "since": "Desde"
+    },
+    "sectionFilter": "Sección",
+    "allSections": "Todas las secciones",
+    "categoryFilter": "Categoría",
+    "allCategories": "Todas las categorías",
+    "memberNumber": "Nº {number}",
+    "notMember": "No socio"
   },
   "playerStatus": {
     "active": "Activo",
@@ -1062,6 +1190,18 @@
       "emotional": "Emocional",
       "habits": "Hábitos",
       "person": "Persona"
+    },
+    "person": {
+      "gender": "Género",
+      "genderNone": "Sin indicar",
+      "email": "Email",
+      "emailHint": "El de la persona, si lo tiene. La familia entra con el suyo.",
+      "phone": "Teléfono",
+      "nationalId": "Documento",
+      "member": "Socio",
+      "memberNumber": "Socio nº {number}",
+      "makeMember": "Dar de alta como socio",
+      "notMember": "No es socio"
     }
   },
   "family": {
@@ -1345,6 +1485,714 @@
         "pending": "Por validar",
         "goal": "Meta"
       }
+    }
+  },
+  "viewAs": {
+    "title": "Ver el club como…",
+    "description": "Mira el club con los ojos de otra persona: sus pantallas, sus equipos, su familia. Tu sesión no cambia y los cambios quedan a tu nombre.",
+    "search": "Buscar por nombre o email",
+    "empty": "No hay más personas en el club.",
+    "error": "No se ha podido cargar la lista de personas.",
+    "banner": "Estás viendo el club como {name} ({role}).",
+    "exit": "Volver a mi vista"
+  },
+  "sections": {
+    "title": "Secciones",
+    "description": "El club por deporte o actividad: categorías, equipos y grupos de la temporada.",
+    "new": "Nueva sección",
+    "season": "Temporada",
+    "current": "Actual",
+    "noSeasonTitle": "Todavía no hay temporada",
+    "noSeasonBody": "Los equipos y los grupos van por temporada. Crea la primera en Ajustes.",
+    "createSeason": "Crear temporada",
+    "empty": "Todavía no hay secciones.",
+    "emptyHint": "Una por deporte o actividad. Al crearla puedes dejar las categorías ya montadas.",
+    "archivedTitle": "Secciones archivadas",
+    "archivedDescription": "Se conservan con su historial. Puedes reactivarlas desde su ficha.",
+    "card": {
+      "competitionNums": "{categories, plural, one {# categoría} other {# categorías}} · {teams, plural, one {# equipo} other {# equipos}} · {players, plural, one {# deportista} other {# deportistas}}",
+      "activityNums": "{categories, plural, one {# nivel} other {# niveles}} · {teams, plural, one {# grupo} other {# grupos}} · {players, plural, one {# deportista} other {# deportistas}}",
+      "coordinator": "Coordina {name}",
+      "noCoordinator": "Sin coordinación",
+      "archived": "Archivada",
+      "withoutStaff": "{count, plural, one {# equipo sin cuerpo técnico} other {# equipos sin cuerpo técnico}}",
+      "noTeams": "Sin equipos",
+      "ok": "Al día"
+    },
+    "sheet": {
+      "title": "Nueva sección",
+      "editTitle": "Editar {name}",
+      "description": "Un deporte o actividad del club, con quien lo coordina.",
+      "sport": "Deporte",
+      "sportHint": "Decide el icono, las posiciones y las categorías sugeridas.",
+      "sportPlaceholder": "Elige un deporte",
+      "name": "Nombre",
+      "nameHint": "Por ejemplo, Fútbol o Yoga. Se rellena con el deporte.",
+      "kind": "Tipo",
+      "coordinator": "Coordinación",
+      "coordinatorHint": "Quien responde de la sección. Puede ser cualquier persona del club.",
+      "noCoordinator": "Sin asignar",
+      "descriptionLabel": "Descripción",
+      "categories": "Categorías de partida",
+      "categoriesHint": "Las sugeridas por el deporte. Desmarca las que no uses; luego se editan.",
+      "ages": "{from} a {to} años",
+      "agesFrom": "desde {from} años",
+      "agesTo": "hasta {to} años",
+      "submit": "Crear sección",
+      "save": "Guardar",
+      "created": "Sección {name} creada.",
+      "saved": "Sección guardada.",
+      "nameTaken": "Ya hay una sección con ese nombre."
+    }
+  },
+  "section": {
+    "back": "Secciones",
+    "seasonLabel": "Temporada {season}",
+    "archived": "Archivada",
+    "active": "Activo",
+    "coordinator": "Coordina {name}",
+    "noCoordinator": "Sin coordinación",
+    "noCoordinatorAssign": "Sin coordinación · asigna a alguien",
+    "edit": "Editar",
+    "newCategory": "Nueva categoría",
+    "season": "Temporada",
+    "noSeason": "Sin temporada no hay equipos.",
+    "tabStaff": "Personal",
+    "staffDescription": "Quien coordina la sección y el cuerpo técnico de sus equipos.",
+    "emptyStaff": "Todavía no hay nadie en esta sección.",
+    "emptyCategories": "Todavía no hay categorías",
+    "emptyCategoriesHint": "Las categorías agrupan los equipos por edad o nivel.",
+    "table": {
+      "staff": "Cuerpo técnico",
+      "next": "Próximo",
+      "status": "Estado"
+    },
+    "noStaff": "Sin cuerpo técnico",
+    "vs": "contra {opponent}",
+    "noNext": "Nada programado",
+    "summary": {
+      "title": "Resumen",
+      "guardians": "Familias",
+      "readiness": "Fichas preparadas",
+      "staff": "Personal",
+      "eventsThisWeek": "Eventos esta semana"
+    },
+    "alerts": {
+      "title": "Alertas",
+      "allClear": "Todo al día en esta sección.",
+      "noCoordinator": "Sin coordinación",
+      "noCoordinatorHint": "Asigna a alguien que responda de la sección.",
+      "withoutStaffHint": "Asigna el cuerpo técnico desde cada equipo."
+    },
+    "links": {
+      "title": "Accesos",
+      "agenda": "Agenda de la sección"
+    },
+    "bornBetween": "nacidos entre {from} y {to}",
+    "bornUntil": "nacidos hasta {to}",
+    "bornFrom": "nacidos desde {from}",
+    "genders": {
+      "male": "Masculino",
+      "female": "Femenino",
+      "mixed": "Mixto"
+    },
+    "competition": {
+      "newTeam": "Nuevo equipo",
+      "tabTeams": "Equipos",
+      "addTeam": "Añadir equipo",
+      "emptyTeams": "Sin equipos en esta categoría.",
+      "table": {
+        "team": "Equipo",
+        "players": "Jugadores"
+      },
+      "playersCount": "{count, plural, one {# jugador} other {# jugadores}}",
+      "summary": {
+        "players": "Jugadores"
+      },
+      "alerts": {
+        "withoutStaff": "{count, plural, one {# equipo sin cuerpo técnico} other {# equipos sin cuerpo técnico}}",
+        "noPlayers": "Todavía no hay jugadores en la sección."
+      },
+      "links": {
+        "players": "Jugadores de la sección"
+      }
+    },
+    "activity": {
+      "newTeam": "Nuevo grupo",
+      "tabTeams": "Grupos",
+      "addTeam": "Añadir grupo",
+      "emptyTeams": "Sin grupos en este nivel.",
+      "table": {
+        "team": "Grupo",
+        "players": "Inscritos"
+      },
+      "playersCount": "{count, plural, one {# inscrito} other {# inscritos}}",
+      "summary": {
+        "players": "Inscritos"
+      },
+      "alerts": {
+        "withoutStaff": "{count, plural, one {# grupo sin monitor} other {# grupos sin monitor}}",
+        "noPlayers": "Todavía no hay inscritos en la sección."
+      },
+      "links": {
+        "players": "Inscritos de la sección"
+      }
+    },
+    "categorySheet": {
+      "title": "Nueva categoría",
+      "editTitle": "Editar {name}",
+      "description": "Agrupa equipos o grupos por edad, género o nivel.",
+      "name": "Nombre",
+      "nameHint": "Por ejemplo, Alevín, Sénior o Iniciación.",
+      "gender": "Género",
+      "anyGender": "Indiferente",
+      "birthYearFrom": "Nacidos desde",
+      "birthYearTo": "Nacidos hasta",
+      "yearsHint": "Años de nacimiento. Opcional.",
+      "status": "Estado",
+      "statusActive": "Activa",
+      "statusArchived": "Archivada",
+      "submit": "Crear categoría",
+      "save": "Guardar",
+      "created": "Categoría {name} creada.",
+      "saved": "Categoría guardada.",
+      "nameTaken": "Ya hay una categoría con ese nombre en la sección."
+    },
+    "teamSheet": {
+      "editTitle": "Editar {name}",
+      "section": "Sección",
+      "category": "Categoría",
+      "categoryHint": "De la sección. Crea las categorías desde la ficha de la sección.",
+      "categoryPlaceholder": "Elige una categoría",
+      "capacity": "Plazas",
+      "capacityHint": "Máximo de inscritos. Vacío si no hay límite.",
+      "status": "Estado",
+      "statusActive": "Activo",
+      "statusArchived": "Archivado",
+      "save": "Guardar",
+      "created": "{name} creado.",
+      "saved": "Guardado.",
+      "nameTaken": "Ya hay uno con ese nombre en esa categoría y temporada.",
+      "competition": {
+        "title": "Nuevo equipo",
+        "description": "Un equipo vive en una categoría de la sección y en una temporada.",
+        "name": "Nombre del equipo",
+        "nameHint": "Por ejemplo, Alevín A.",
+        "submit": "Crear equipo"
+      },
+      "activity": {
+        "title": "Nuevo grupo",
+        "description": "Un grupo con horario y plazas dentro de la actividad.",
+        "name": "Nombre del grupo",
+        "nameHint": "Por ejemplo, Lunes y miércoles 19:00.",
+        "submit": "Crear grupo"
+      }
+    }
+  },
+  "sectionKinds": {
+    "competition": "Competición",
+    "activity": "Actividad",
+    "hint": {
+      "competition": "Equipos por categoría que compiten: partidos, convocatorias, rivales.",
+      "activity": "Grupos con horario y plazas: yoga, natación, escuela."
+    }
+  },
+  "teamStaffRoles": {
+    "head_coach": "Primer entrenador",
+    "assistant": "Segundo entrenador",
+    "delegate": "Delegado",
+    "physio": "Fisio",
+    "other": "Otro"
+  },
+  "weekdays": {
+    "1": "Lunes",
+    "2": "Martes",
+    "3": "Miércoles",
+    "4": "Jueves",
+    "5": "Viernes",
+    "6": "Sábado",
+    "7": "Domingo"
+  },
+  "genders": {
+    "female": "Mujer",
+    "male": "Hombre",
+    "other": "Otro"
+  },
+  "memberStatus": {
+    "active": "Al día",
+    "pending": "Pendiente de alta",
+    "suspended": "Suspendido",
+    "left": "Baja"
+  },
+  "feeStatus": {
+    "pending": "Pendiente",
+    "paid": "Pagado",
+    "overdue": "Vencido",
+    "cancelled": "Anulado"
+  },
+  "paymentMethods": {
+    "cash": "Efectivo",
+    "transfer": "Transferencia",
+    "card": "Tarjeta",
+    "stripe": "Stripe",
+    "other": "Otro"
+  },
+  "paymentProviders": {
+    "manual": "A mano (el club apunta los pagos)",
+    "stripe": "Stripe (pago en línea)"
+  },
+  "feePeriods": {
+    "monthly": "Mensual",
+    "quarterly": "Trimestral",
+    "yearly": "Anual",
+    "once": "Pago único"
+  },
+  "eventKinds": {
+    "training": "Entrenamiento",
+    "match": "Partido",
+    "activity": "Actividad",
+    "meeting": "Reunión",
+    "booking": "Reserva",
+    "other": "Otro"
+  },
+  "facilityKinds": {
+    "pool": "Piscina",
+    "court": "Pista",
+    "field": "Campo",
+    "room": "Sala",
+    "gym": "Gimnasio",
+    "other": "Otra"
+  },
+  "attendance": {
+    "title": "Pase de lista",
+    "marked": "{marked} de {total} marcados",
+    "present": "Presente",
+    "absent": "Ausente",
+    "excused": "Justificado",
+    "excuse": "Justificar",
+    "unmarked": "Sin marcar",
+    "group": "Asistencia de {name}",
+    "empty": "Este evento no tiene equipo o el equipo no tiene plantilla.",
+    "readOnly": "Solo el cuerpo técnico del equipo puede pasar lista.",
+    "saved": "Lista guardada: {present} de {total} presentes."
+  },
+  "clubMembers": {
+    "title": "Socios",
+    "description": "Quién es socio del club, de qué tipo y si está al día.",
+    "new": "Nuevo socio",
+    "search": "Buscar por nombre, email o número",
+    "statusFilter": "Estado",
+    "typeFilter": "Tipo",
+    "allStatuses": "Todos los estados",
+    "allTypes": "Todos los tipos",
+    "empty": "Todavía no hay socios. Da de alta al primero o crea los tipos de socio en Ajustes.",
+    "noResults": "Nadie coincide con los filtros.",
+    "noType": "Sin tipo",
+    "numberShort": "Nº {number}",
+    "upToDate": "Al día",
+    "table": {
+      "number": "Nº",
+      "person": "Persona",
+      "type": "Tipo",
+      "roles": "Papeles",
+      "status": "Estado",
+      "fees": "Cuotas",
+      "since": "Desde"
+    },
+    "roles": {
+      "player": "Deportista",
+      "staff": "Personal",
+      "guardianOf": "Familia de {names}",
+      "none": "Solo socio"
+    },
+    "sheet": {
+      "title": "Nuevo socio",
+      "description": "Una persona que ya está en el club (deportista, familia, personal) o alguien nuevo.",
+      "mode": "¿Quién?",
+      "modeNew": "Persona nueva",
+      "modeExisting": "Alguien que ya está en el club",
+      "person": "Persona",
+      "personHint": "Escribe al menos dos letras del nombre o del email.",
+      "choosePerson": "Elige a una persona de la lista.",
+      "noPeople": "Nadie coincide. Prueba con otro nombre o dala de alta como persona nueva.",
+      "isPlayer": "Deportista",
+      "isMember": "Ya es socio",
+      "firstName": "Nombre",
+      "lastName": "Apellidos",
+      "birthDate": "Fecha de nacimiento",
+      "gender": "Género",
+      "noGender": "Sin indicar",
+      "email": "Email",
+      "phone": "Teléfono",
+      "memberType": "Tipo de socio",
+      "noType": "Sin tipo",
+      "memberNumber": "Número de socio",
+      "memberNumberHint": "Si lo dejas vacío, el club asigna el siguiente.",
+      "joinedOn": "Alta",
+      "submit": "Dar de alta",
+      "created": "{name} ya es socio del club."
+    }
+  },
+  "clubMember": {
+    "back": "Socios",
+    "eyebrow": "Socio nº {number} · {type}",
+    "noType": "Sin tipo",
+    "editMember": "Editar ficha de socio",
+    "leave": "Dar de baja",
+    "left": "{name} ha causado baja. Su historial se conserva.",
+    "confirmLeaveTitle": "¿Dar de baja a {name}?",
+    "confirmLeaveBody": "Deja de contar como socio y no recibirá nuevos cargos. La ficha y el historial se conservan.",
+    "person": {
+      "title": "Persona",
+      "edit": "Editar datos",
+      "birthDate": "Nacimiento",
+      "age": "{age} años",
+      "gender": "Género",
+      "unknown": "Sin indicar",
+      "email": "Email",
+      "phone": "Teléfono",
+      "nationalId": "DNI / NIE",
+      "notes": "Notas",
+      "account": "Cuenta",
+      "hasAccount": "Tiene acceso a la app",
+      "noAccount": "Sin acceso a la app"
+    },
+    "member": {
+      "title": "Socio",
+      "number": "Número",
+      "type": "Tipo",
+      "status": "Estado",
+      "joinedOn": "Alta",
+      "leftOn": "Baja"
+    },
+    "roles": {
+      "title": "Papeles en el club",
+      "description": "Lo que esta persona es, además de socia.",
+      "player": "Deportista",
+      "staff": "Personal del club",
+      "guardianOf": "Familia de {names}",
+      "none": "Solo socio: no es deportista, familia ni personal."
+    },
+    "fees": {
+      "title": "Cuotas",
+      "summary": "Pendiente {pending} · pagado {paid}",
+      "newCharge": "Nuevo cargo",
+      "concept": "Concepto",
+      "dueOn": "Vence",
+      "amount": "Importe",
+      "status": "Estado",
+      "paid": "Pagado",
+      "pay": "Cobrar",
+      "empty": "Sin cargos todavía."
+    },
+    "personSheet": {
+      "title": "Datos de la persona",
+      "firstName": "Nombre",
+      "lastName": "Apellidos",
+      "birthDate": "Fecha de nacimiento",
+      "gender": "Género",
+      "noGender": "Sin indicar",
+      "email": "Email",
+      "phone": "Teléfono",
+      "nationalId": "DNI / NIE",
+      "notes": "Notas",
+      "saved": "Datos guardados."
+    },
+    "memberSheet": {
+      "title": "Ficha de socio",
+      "memberNumber": "Número de socio",
+      "memberType": "Tipo de socio",
+      "noType": "Sin tipo",
+      "status": "Estado",
+      "joinedOn": "Alta",
+      "leftOn": "Baja",
+      "saved": "Ficha guardada."
+    }
+  },
+  "agenda": {
+    "title": "Agenda",
+    "description": "Entrenamientos, partidos, actividades y reservas de la semana.",
+    "familyDescription": "Lo que tienen tus hijos esta semana.",
+    "new": "Nuevo evento",
+    "today": "Hoy",
+    "prevWeek": "Semana anterior",
+    "nextWeek": "Semana siguiente",
+    "sectionFilter": "Sección",
+    "teamFilter": "Equipo",
+    "facilityFilter": "Instalación",
+    "allSections": "Todas las secciones",
+    "allTeams": "Todos los equipos",
+    "allFacilities": "Todas las instalaciones",
+    "empty": "Esta semana no hay nada en la agenda.",
+    "emptyHint": "Crea un evento o genera los entrenamientos desde el horario de cada equipo.",
+    "emptyFamily": "Esta semana no hay nada para tu familia.",
+    "free": "Libre",
+    "conflict": "Solape",
+    "attendance": "Pasar lista",
+    "attendanceShort": "{present}/{total} presentes",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "deleteOne": "Eliminar solo este",
+    "deleteSeries": "Eliminar toda la serie",
+    "removed": "Evento eliminado.",
+    "confirmDeleteTitle": "¿Eliminar «{title}»?",
+    "confirmDeleteBody": "Desaparece de la agenda. Si ya se pasó lista, la asistencia se pierde.",
+    "confirmDeleteOneBody": "Solo este evento. Los demás de la serie semanal se quedan.",
+    "confirmDeleteSeriesBody": "Se eliminan este y todos los eventos de la misma serie semanal, incluidos los ya pasados.",
+    "homeAway": {
+      "home": "En casa",
+      "away": "Fuera"
+    },
+    "detail": {
+      "section": "Sección",
+      "team": "Equipo",
+      "facility": "Instalación",
+      "location": "Lugar",
+      "opponent": "Rival",
+      "attendance": "Asistencia",
+      "series": "Repetición",
+      "seriesHint": "Forma parte de una serie semanal."
+    },
+    "sheet": {
+      "title": "Nuevo evento",
+      "editTitle": "Editar evento",
+      "description": "La hora es la del club. Si eliges instalación, avisamos si ya está ocupada.",
+      "kind": "Tipo",
+      "eventTitle": "Título",
+      "section": "Sección",
+      "noSection": "Sin sección",
+      "team": "Equipo o grupo",
+      "noTeam": "Sin equipo",
+      "facility": "Instalación",
+      "noFacility": "Sin instalación",
+      "date": "Fecha",
+      "startTime": "Empieza",
+      "endTime": "Acaba",
+      "location": "Lugar",
+      "locationHint": "Para partidos fuera o sitios que no son del club.",
+      "opponent": "Rival",
+      "homeAwayLabel": "Casa o fuera",
+      "homeAwayUnknown": "Sin indicar",
+      "notes": "Notas",
+      "repeatUntil": "Repetir cada semana hasta",
+      "repeatUntilHint": "Opcional. Crea un evento por semana hasta esa fecha incluida.",
+      "submit": "Guardar evento",
+      "saved": "Evento guardado.",
+      "created": "{count, plural, one {Evento creado.} other {# eventos creados.}}",
+      "conflictWith": "Ojo: la instalación ya tiene «{title}» a esa hora. Se ha guardado igual."
+    }
+  },
+  "facilities": {
+    "title": "Instalaciones",
+    "description": "Piscina, pistas y salas del club, con sus horas de apertura y lo que las ocupa.",
+    "new": "Nueva instalación",
+    "empty": "Todavía no hay instalaciones.",
+    "emptyHint": "Da de alta la piscina, las pistas o las salas para asignarlas a los eventos y ver los solapes.",
+    "loadError": "No se han podido cargar las instalaciones.",
+    "notFound": "Esa instalación no existe o ya no está.",
+    "backToList": "Volver a instalaciones",
+    "archived": "Archivada",
+    "capacityShort": "{count, plural, one {# plaza} other {# plazas}}",
+    "showArchived": "Ver {count, plural, one {# archivada} other {# archivadas}}",
+    "hideArchived": "Ocultar archivadas",
+    "card": {
+      "hours": "Apertura",
+      "noHours": "Sin franjas",
+      "openDays": "{count, plural, one {# día a la semana} other {# días a la semana}}",
+      "thisWeek": "Esta semana",
+      "events": "{count, plural, =0 {Libre} one {# evento} other {# eventos}}"
+    },
+    "detail": {
+      "edit": "Editar",
+      "archive": "Archivar",
+      "restore": "Recuperar",
+      "archivedHint": "Instalación archivada: no se puede elegir en nuevos eventos. Puedes recuperarla cuando quieras.",
+      "archivedToast": "Instalación archivada.",
+      "restoredToast": "Instalación recuperada.",
+      "confirmArchiveTitle": "¿Archivar {name}?",
+      "confirmArchiveBody": "Deja de aparecer al crear eventos. Los eventos que ya la usan se mantienen."
+    },
+    "sheet": {
+      "title": "Nueva instalación",
+      "editTitle": "Editar instalación",
+      "description": "Después podrás ponerle las horas de apertura.",
+      "name": "Nombre",
+      "namePlaceholder": "Piscina grande, Pista 1, Sala de fisio…",
+      "kind": "Tipo",
+      "capacity": "Aforo",
+      "capacityHint": "Opcional. Personas a la vez.",
+      "descriptionField": "Descripción",
+      "submit": "Crear instalación",
+      "created": "Instalación creada.",
+      "saved": "Instalación guardada."
+    },
+    "hours": {
+      "title": "Horas de apertura",
+      "description": "Las franjas en las que la instalación está disponible. Se sombrean en la ocupación.",
+      "none": "Sin franjas de apertura.",
+      "weekday": "Día",
+      "opensAt": "Abre",
+      "closesAt": "Cierra",
+      "add": "Añadir franja",
+      "preset": "De lunes a viernes",
+      "remove": "Quitar franja",
+      "invalid": "Revisa las franjas: cada una tiene que cerrar después de abrir.",
+      "saved": "Horas de apertura guardadas."
+    },
+    "week": {
+      "title": "Ocupación de la semana",
+      "description": "De 8:00 a 23:00. Sombreado: horas de apertura. Naranja: solapes.",
+      "previous": "Semana anterior",
+      "next": "Semana siguiente",
+      "today": "Hoy",
+      "count": "{count, plural, =0 {Sin eventos} one {# evento} other {# eventos}}",
+      "conflicts": "{count, plural, one {# solape} other {# solapes}}",
+      "openAgenda": "Ver en la agenda",
+      "loadError": "No se ha podido cargar la ocupación."
+    }
+  },
+  "fees": {
+    "title": "Cuotas",
+    "description": "Planes, cargos y cobros del club.",
+    "newCharge": "Nuevo cargo",
+    "tabs": {
+      "charges": "Cargos",
+      "plans": "Planes"
+    },
+    "charges": {
+      "caption": "Cargos del club",
+      "search": "Buscar",
+      "searchPlaceholder": "Persona, concepto o periodo",
+      "status": "Estado",
+      "allStatuses": "Todos los estados",
+      "loadError": "No se han podido cargar los cargos.",
+      "empty": "Todavía no hay cargos.",
+      "emptyHint": "Crea un plan y genera los cargos del periodo, o crea un cargo suelto.",
+      "emptyFiltered": "Ningún cargo coincide con los filtros.",
+      "paidPart": "Pagado {paid}",
+      "recordPayment": "Cobrar",
+      "cancel": "Anular",
+      "reactivate": "Reactivar",
+      "cancelled": "Cargo anulado.",
+      "reactivated": "Cargo reactivado.",
+      "confirmCancelTitle": "¿Anular el cargo?",
+      "confirmCancelBody": "«{concept}» de {name} deja de contar como pendiente. Podrás reactivarlo.",
+      "stats": {
+        "pending": "{count, plural, one {Pendiente (# cargo)} other {Pendiente (# cargos)}}",
+        "overdue": "{count, plural, one {Vencido (# cargo)} other {Vencido (# cargos)}}",
+        "paid": "Cobrado"
+      },
+      "table": {
+        "person": "Persona",
+        "concept": "Concepto",
+        "dueOn": "Vence",
+        "amount": "Importe",
+        "status": "Estado"
+      }
+    },
+    "generate": {
+      "action": "Generar cargos",
+      "title": "Generar cargos de un periodo",
+      "description": "Crea el cargo del periodo para todas las personas a las que aplica el plan. Quien ya lo tenga, se salta.",
+      "plan": "Plan",
+      "choosePlan": "Elige un plan",
+      "planHint": "{count, plural, one {Aplica a # persona} other {Aplica a # personas}} · {amount} cada una.",
+      "periodLabel": "Periodo",
+      "periodLabelHint": "Cómo se llama el periodo en el cargo.",
+      "periodLabelPlaceholder": "Octubre 2026",
+      "dueOn": "Vence el",
+      "noPlans": "No hay planes activos. Crea uno en la pestaña Planes.",
+      "submit": "Generar",
+      "done": "{created, plural, =0 {Ningún cargo nuevo} one {# cargo creado} other {# cargos creados}}{skipped, plural, =0 {.} one { · # ya existía.} other { · # ya existían.}}"
+    },
+    "plans": {
+      "caption": "Planes de cuota",
+      "new": "Nuevo plan",
+      "edit": "Editar",
+      "archive": "Archivar",
+      "restore": "Recuperar",
+      "archived": "Plan archivado.",
+      "restored": "Plan recuperado.",
+      "loadError": "No se han podido cargar los planes.",
+      "empty": "Todavía no hay planes de cuota.",
+      "emptyHint": "Un plan dice cuánto y cada cuánto: la cuota de socio, la de una sección…",
+      "targetAll": "Todo el club",
+      "targetType": "Socios: {name}",
+      "targetSection": "Sección: {name}",
+      "appliesToShort": "{count, plural, one {# persona} other {# personas}}",
+      "status": {
+        "active": "Activo",
+        "archived": "Archivado"
+      },
+      "table": {
+        "name": "Plan",
+        "amount": "Importe",
+        "target": "A quién",
+        "appliesTo": "Personas",
+        "status": "Estado"
+      }
+    },
+    "planSheet": {
+      "title": "Nuevo plan de cuota",
+      "editTitle": "Editar plan",
+      "description": "Cuánto, cada cuánto y a quién. Los cargos se generan desde la pestaña Cargos.",
+      "name": "Nombre",
+      "namePlaceholder": "Cuota de socio, Natación infantil…",
+      "amount": "Importe",
+      "amountHint": "En euros, con decimales si hace falta.",
+      "period": "Periodicidad",
+      "target": "A quién aplica",
+      "targetHint": "A todo el club, a un tipo de socio o a los deportistas de una sección.",
+      "targetAll": "Todo el club",
+      "targetTypes": "Tipos de socio",
+      "targetSections": "Secciones",
+      "descriptionField": "Descripción",
+      "submit": "Crear plan",
+      "created": "Plan creado.",
+      "saved": "Plan guardado."
+    },
+    "payment": {
+      "title": "Registrar pago",
+      "description": "{name} · {concept} · pendiente {pending}",
+      "amount": "Importe",
+      "amountHint": "Si lo dejas vacío, se cobra todo lo pendiente ({pending}).",
+      "method": "Forma de pago",
+      "paidOn": "Fecha del pago",
+      "note": "Nota",
+      "submit": "Registrar",
+      "saved": "Pago registrado."
+    },
+    "charge": {
+      "title": "Nuevo cargo",
+      "description": "Un cargo suelto para una persona, con o sin plan.",
+      "descriptionFor": "Un cargo para {name}, con o sin plan.",
+      "person": "Persona",
+      "personHint": "Escribe al menos dos letras del nombre o del email.",
+      "plan": "Plan",
+      "planHint": "Opcional. Rellena el concepto y el importe.",
+      "noPlan": "Sin plan",
+      "concept": "Concepto",
+      "amount": "Importe",
+      "dueOn": "Vence el",
+      "periodLabel": "Periodo",
+      "submit": "Crear cargo",
+      "saved": "Cargo creado."
+    },
+    "mine": {
+      "title": "Mis cuotas",
+      "description": "Lo que tu familia o tú tenéis pendiente con el club y lo ya pagado.",
+      "owed": "{count, plural, =0 {Nada pendiente} one {Pendiente (# cargo)} other {Pendiente (# cargos)}}",
+      "overdue": "Vencidos",
+      "manualHint": "El club apunta los pagos a mano: paga por transferencia o en secretaría y aparecerá aquí como pagado.",
+      "loadError": "No se han podido cargar tus cuotas.",
+      "empty": "No tienes cuotas.",
+      "emptyHint": "Cuando el club te emita un cargo, lo verás aquí.",
+      "dueOn": "Vence el {date}",
+      "paymentLine": "{amount} · {method} · {date}",
+      "pay": "Pagar",
+      "dismiss": "Cerrar",
+      "checkoutSuccess": "Pago recibido. Puede tardar unos segundos en aparecer como pagado.",
+      "checkoutCancel": "Pago cancelado. Puedes volver a intentarlo cuando quieras."
     }
   }
 }

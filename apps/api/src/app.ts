@@ -6,10 +6,13 @@ import type { AppEnv } from "./http/context.ts";
 import { ApiError, badRequest, notFound } from "./http/errors.ts";
 import { createBrandingRoutes } from "./routes/branding.ts";
 import { createChallengeRoutes } from "./routes/challenges.ts";
+import { createEventRoutes } from "./routes/events.ts";
+import { createFeeRoutes } from "./routes/fees.ts";
 import { createHealthRoutes } from "./routes/health.ts";
 import { createInvitationRoutes } from "./routes/invitations.ts";
 import { createMeRoutes } from "./routes/me.ts";
 import { createOrgRoutes } from "./routes/org.ts";
+import { createPeopleRoutes } from "./routes/people.ts";
 import { createPlatformRoutes } from "./routes/platform.ts";
 import { createPlatformSetupRoutes } from "./routes/platform-setup.ts";
 import { createPlayerRoutes } from "./routes/players.ts";
@@ -23,7 +26,7 @@ export interface AppOptions {
   data?: DataLayer;
 }
 
-export const API_VERSION = "0.9.0";
+export const API_VERSION = "0.10.0";
 
 export function createApp(options: AppOptions = {}) {
   const config = options.config ?? loadConfig();
@@ -66,6 +69,9 @@ export function createApp(options: AppOptions = {}) {
   app.route("/", createInvitationRoutes(config, data));
   app.route("/", createStructureRoutes(config, data));
   app.route("/", createPlayerRoutes(config, data));
+  app.route("/", createPeopleRoutes(config, data));
+  app.route("/", createEventRoutes(config, data));
+  app.route("/", createFeeRoutes(config, data));
   app.route("/", createChallengeRoutes(config, data));
   app.route("/", createPlatformRoutes(config, data));
   app.route("/", createPlatformSetupRoutes(config, data));

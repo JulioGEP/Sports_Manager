@@ -1,6 +1,11 @@
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 import {
   ApiErrorSchema,
+  CategoriesResponseSchema,
+  CategoryCreateSchema,
+  CategoryResponseSchema,
+  CategoryUpdateSchema,
+  defaultSectionKind,
   EligibleMembersResponseSchema,
   RosterAddSchema,
   RosterUpdateSchema,
@@ -9,9 +14,12 @@ import {
   SeasonUpdateSchema,
   SeasonsResponseSchema,
   SectionCreateSchema,
+  SectionDetailResponseSchema,
   SectionResponseSchema,
   SectionUpdateSchema,
   SectionsResponseSchema,
+  SportCatalogResponseSchema,
+  SportConfigSchema,
   StaffAddSchema,
   StructureSummarySchema,
   TeamCreateSchema,
@@ -19,10 +27,17 @@ import {
   TeamResponseSchema,
   TeamUpdateSchema,
   TeamsResponseSchema,
+  type EventSummary,
   type TeamSummary,
 } from "@sportsmanager/shared";
 import type { ApiConfig } from "../config.ts";
-import { playerPhotoUrlFor, type DataLayer, type TeamRecord } from "../data/index.ts";
+import {
+  playerPhotoUrlFor,
+  weekRange,
+  type DataLayer,
+  type EventRecord,
+  type TeamRecord,
+} from "../data/index.ts";
 import { requireActor, requirePermission } from "../http/actor.ts";
 import type { Actor, AppEnv } from "../http/context.ts";
 import { badRequest, conflict, forbidden, notFound } from "../http/errors.ts";
@@ -47,10 +62,18 @@ type OrgScopeOf = Parameters<DataLayer["teams"]["roster"]>[0];
 
 export const teamDto = (team: TeamRecord): TeamSummary => team;
 
+/** Un evento tal como sale en la API: instantes en ISO. */
+export const eventDto = (e: EventRecord): EventSummary => ({
+  ...e,
+  startsAt: e.startsAt.toISOString(),
+  endsAt: e.endsAt.toISOString(),
+});
+
 /**
- * Estructura del club (Fase 1, Bloque 11, ADR 0028): temporadas, secciones, equipos, plantilla
- * y cuerpo técnico. Lectura con `org.structure.read`, cambios con `org.structure.write`. La
- * plantilla de un equipo también la cambia su cuerpo técnico con `org.roster.write_own` (Bloque 13).
+ * Estructura del club (Fase 1, Bloque 11, ADR 0028; Bloque 14, ADR 0031): temporadas, secciones
+ * con su deporte, categorías, equipos, plantilla y cuerpo técnico. Lectura con
+ * `org.structure.read`, cambios con `org.structure.write`. La plantilla de un equipo también la
+ * cambia su cuerpo técnico con `org.roster.write_own` (Bloque 13).
  */
 export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
   const app = new OpenAPIHono<AppEnv>();
@@ -60,7 +83,13 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
     requireSession(data),
     requireActor(data),
   ] as const;
-  for (const path of ["/api/org/seasons", "/api/org/sections", "/api/org/teams"]) {
+  for (const path of [
+    "/api/org/seasons",
+    "/api/org/sections",
+    "/api/org/categories",
+    "/api/org/teams",
+    "/api/org/sports",
+  ]) {
     app.use(path, ...chain);
     app.use(`${path}/*`, ...chain);
   }
@@ -74,11 +103,12 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
   type Ctx = {
     get: ((key: "sessionUser") => AppEnv["Variables"]["sessionUser"]) & ((key: "actor") => Actor);
   };
+  const actorId = (c: Ctx) => c.get("actor").userId;
   async function canWriteRoster(c: Ctx, scope: OrgScopeOf, teamId: string) {
     const actor = c.get("actor");
     if (actor.permissions.has("org.structure.write")) return true;
     if (actor.permissions.has("org.roster.write_own")) {
-      const own = await data.memberships.ownTeamIds(scope, c.get("sessionUser").id);
+      const own = await data.memberships.ownTeamIds(scope, actorId(c));
       if (own.includes(teamId)) return true;
     }
     return false;
@@ -86,9 +116,23 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
   async function requireRosterWrite(c: Ctx, scope: OrgScopeOf, teamId: string) {
     if (!(await canWriteRoster(c, scope, teamId))) throw forbidden();
   }
-  const accessOf = async (c: Ctx, scope: OrgScopeOf, teamId: string) => ({
-    roster: await canWriteRoster(c, scope, teamId),
-  });
+  const accessOf = async (c: Ctx, scope: OrgScopeOf, teamId: string) => {
+    const actor = c.get("actor");
+    const own =
+      actor.permissions.has("org.events.write_own") ||
+      actor.permissions.has("org.attendance.write_own")
+        ? (await data.memberships.ownTeamIds(scope, actorId(c))).includes(teamId)
+        : false;
+    return {
+      roster: await canWriteRoster(c, scope, teamId),
+      events:
+        actor.permissions.has("org.events.write") ||
+        (actor.permissions.has("org.events.write_own") && own),
+      attendance:
+        actor.permissions.has("org.events.write") ||
+        (actor.permissions.has("org.attendance.write_own") && own),
+    };
+  };
 
   const scopeOf = (c: { get: (key: "tenant") => AppEnv["Variables"]["tenant"] }) => {
     const tenant = c.get("tenant");
@@ -110,10 +154,9 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
       details,
     });
 
-  // --- Resumen (también para la vista de soporte: solo cifras) ---
   /** Plantilla para la respuesta: la clave de la foto se convierte en URL y no sale de la API. */
   const rosterOf = async (
-    tenant: { organization: { slug: string }; scope: Parameters<DataLayer["teams"]["roster"]>[0] },
+    tenant: { organization: { slug: string }; scope: OrgScopeOf },
     teamId: string,
   ) =>
     (await data.teams.roster(tenant.scope, teamId)).map(({ photoBlobKey, ...entry }) => ({
@@ -121,22 +164,91 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
       photoUrl: playerPhotoUrlFor(photoBlobKey, tenant.organization.slug, entry.playerId),
     }));
 
+  const teamDetail = async (c: Ctx, tenant: ReturnType<typeof scopeOf>, team: TeamRecord) => {
+    const canSeePlayers = c.get("actor").permissions.has("org.players.read");
+    const [roster, staff, schedule, access] = await Promise.all([
+      canSeePlayers ? rosterOf(tenant, team.id) : Promise.resolve([]),
+      data.teams.staff(tenant.scope, team.id),
+      data.schedules.listForTeam(tenant.scope, team.id),
+      accessOf(c, tenant.scope, team.id),
+    ]);
+    return { team: teamDto(team), roster, staff, schedule, access };
+  };
+
+  // --- Catálogo de deportes (para crear secciones) ---
+  app.openapi(
+    createRoute({
+      method: "get",
+      path: "/api/org/sports",
+      tags: ["Estructura"],
+      summary:
+        "Catálogo de deportes con sus posiciones y categorías sugeridas, para abrir una sección (Bloque 14)",
+      security: [{ sessionCookie: [] }],
+      middleware: [read],
+      responses: { 200: json("Deportes", SportCatalogResponseSchema), ...errors },
+    }),
+    async (c) => {
+      const sports = await data.sports.listWithConfig();
+      return c.json(
+        {
+          sports: sports.map((s) => ({
+            code: s.code,
+            name: s.name,
+            defaultKind: defaultSectionKind(s.code),
+            config: SportConfigSchema.parse(s.config ?? {}),
+          })),
+        },
+        200,
+      );
+    },
+  );
+
+  // --- Resumen (también para la vista de soporte: solo cifras) ---
   app.openapi(
     createRoute({
       method: "get",
       path: "/api/org/summary",
       tags: ["Estructura"],
       summary:
-        "Cifras del club: temporada actual, secciones, equipos, jugadores y familias. Con `org.players.read`, también las alertas de operación y la preparación de las fichas",
+        "Cifras del inicio: temporada, secciones con su tarjeta, socios, personal, instalaciones, agenda de hoy y, con `org.players.read`, alertas y preparación de las fichas",
       security: [{ sessionCookie: [] }],
       responses: { 200: json("Cifras", StructureSummarySchema), ...errors },
     }),
     async (c) => {
       const tenant = scopeOf(c);
-      const counts = await data.teams.counts(tenant.scope);
       const actor = c.get("actor");
+      const timezone = tenant.organization.timezone;
+      const [counts, clubMembers, staff, facilities] = await Promise.all([
+        data.teams.counts(tenant.scope),
+        data.clubMembers.counts(tenant.scope),
+        data.clubMembers.staffCount(tenant.scope),
+        data.facilities.counts(tenant.scope),
+      ]);
+      const canStructure = actor.permissions.has("org.structure.read");
+      const canEvents = actor.permissions.has("org.events.read");
+      const [sectionCards, today, nextEvent, fees] = await Promise.all([
+        canStructure
+          ? data.sections.list(tenant.scope, counts.currentSeason?.id ?? null)
+          : Promise.resolve([]),
+        canEvents ? data.events.today(tenant.scope, timezone) : Promise.resolve([]),
+        canEvents ? data.events.next(tenant.scope) : Promise.resolve(null),
+        actor.permissions.has("org.fees.read")
+          ? data.fees.summary(tenant.scope)
+          : Promise.resolve(null),
+      ]);
+      const base = {
+        ...counts,
+        clubMembers: clubMembers.active,
+        clubMembersJoinedThisMonth: clubMembers.joinedThisMonth,
+        staff,
+        facilities: facilities.total,
+        fees,
+        sectionCards,
+        today: today.map(eventDto),
+        nextEvent: nextEvent ? eventDto(nextEvent) : null,
+      };
       if (!actor.permissions.has("org.players.read")) {
-        return c.json({ ...counts, operations: null, readiness: null }, 200);
+        return c.json({ ...base, operations: null, readiness: null }, 200);
       }
       const [{ operations, readiness }, challengeSubmissionsPending] = await Promise.all([
         data.players.operations(tenant.scope),
@@ -145,12 +257,21 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
           : actor.permissions.has("org.challenges.review_own")
             ? data.challenges.pendingCount(
                 tenant.scope,
-                await data.memberships.ownTeamIds(tenant.scope, c.get("sessionUser").id),
+                await data.memberships.ownTeamIds(tenant.scope, actorId(c)),
               )
             : Promise.resolve(0),
       ]);
       return c.json(
-        { ...counts, operations: { ...operations, challengeSubmissionsPending }, readiness },
+        {
+          ...base,
+          operations: {
+            ...operations,
+            challengeSubmissionsPending,
+            facilitiesWithoutHours: facilities.withoutHours,
+            feesOverdue: fees?.overdueCount ?? 0,
+          },
+          readiness,
+        },
         200,
       );
     },
@@ -231,12 +352,19 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
   );
 
   // --- Secciones ---
+  const seasonOf = async (tenant: ReturnType<typeof scopeOf>, requested?: string) =>
+    requested
+      ? await data.seasons.byId(tenant.scope, requested)
+      : await data.seasons.current(tenant.scope);
+  const seasonDto = (s: { id: string; name: string; isCurrent: boolean } | null) =>
+    s ? { id: s.id, name: s.name, isCurrent: s.isCurrent } : null;
+
   app.openapi(
     createRoute({
       method: "get",
       path: "/api/org/sections",
       tags: ["Estructura"],
-      summary: "Secciones del club con sus equipos en la temporada actual",
+      summary: "Secciones del club con sus cifras en una temporada (la actual por defecto)",
       security: [{ sessionCookie: [] }],
       middleware: [read],
       request: { query: z.object({ season: z.string().uuid().optional() }) },
@@ -244,9 +372,15 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
     }),
     async (c) => {
       const tenant = scopeOf(c);
-      const { season } = c.req.valid("query");
-      const seasonId = season ?? (await data.seasons.current(tenant.scope))?.id ?? null;
-      return c.json({ sections: await data.sections.list(tenant.scope, seasonId) }, 200);
+      const { season: requested } = c.req.valid("query");
+      const season = await seasonOf(tenant, requested);
+      return c.json(
+        {
+          season: seasonDto(season),
+          sections: await data.sections.list(tenant.scope, season?.id ?? null),
+        },
+        200,
+      );
     },
   );
 
@@ -255,7 +389,7 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
       method: "post",
       path: "/api/org/sections",
       tags: ["Estructura"],
-      summary: "Crea una sección",
+      summary: "Crea una sección con su deporte, su tipo y, si quiere, sus primeras categorías",
       security: [{ sessionCookie: [] }],
       middleware: [write],
       request: {
@@ -263,6 +397,7 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
       },
       responses: {
         201: json("Sección creada", SectionResponseSchema),
+        400: error("Deporte o coordinación desconocidos"),
         409: error("Ya hay una sección con ese nombre"),
         ...errors,
       },
@@ -271,9 +406,84 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
       const tenant = scopeOf(c);
       const body = c.req.valid("json");
       const result = await data.sections.create(tenant.scope, body);
+      if (result.outcome === "unknown_sport")
+        throw badRequest("Ese deporte no está en el catálogo.");
+      if (result.outcome === "unknown_coordinator")
+        throw badRequest("Esa persona no es miembro del club.");
       if (result.outcome === "name_taken") throw conflict("Ya hay una sección con ese nombre.");
-      await audit(c, tenant, "section.created", result.section.name);
+      await audit(c, tenant, "section.created", result.section.name, {
+        sport: result.section.sport.code,
+        kind: result.section.kind,
+      });
       return c.json({ section: result.section }, 201);
+    },
+  );
+
+  app.openapi(
+    createRoute({
+      method: "get",
+      path: "/api/org/sections/{id}",
+      tags: ["Estructura"],
+      summary:
+        "Ficha de una sección: categorías con sus equipos (y el siguiente evento de cada uno), resumen y cuerpo técnico",
+      security: [{ sessionCookie: [] }],
+      middleware: [read],
+      request: { params: idParam, query: z.object({ season: z.string().uuid().optional() }) },
+      responses: { 200: json("Sección", SectionDetailResponseSchema), ...errors },
+    }),
+    async (c) => {
+      const tenant = scopeOf(c);
+      const { id } = c.req.valid("param");
+      const { season: requested } = c.req.valid("query");
+      const season = await seasonOf(tenant, requested);
+      const section = await data.sections.byId(tenant.scope, id, season?.id ?? null);
+      if (!section) throw notFound("Esa sección no existe.");
+      const seasonId = season?.id ?? null;
+      const [categories, teams] = await Promise.all([
+        data.categories.list(tenant.scope, { sectionId: id, seasonId }),
+        seasonId ? data.teams.list(tenant.scope, seasonId, id) : Promise.resolve([]),
+      ]);
+      const nextByTeam = await data.events.nextByTeam(
+        tenant.scope,
+        teams.map((t) => t.id),
+      );
+      const week = weekRange(tenant.organization.timezone);
+      const [counts, staff, eventsThisWeek] = await Promise.all([
+        seasonId
+          ? data.sections.counts(tenant.scope, id, seasonId)
+          : Promise.resolve({ players: 0, guardians: 0, playerIds: [] }),
+        seasonId ? data.sections.staff(tenant.scope, id, seasonId) : Promise.resolve([]),
+        data.events.countBetween(tenant.scope, week.from, week.to, { sectionId: id }),
+      ]);
+      const canSeePlayers = c.get("actor").permissions.has("org.players.read");
+      const readiness =
+        canSeePlayers && counts.playerIds.length > 0
+          ? await data.players.readinessFor(tenant.scope, counts.playerIds)
+          : null;
+      return c.json(
+        {
+          section,
+          season: seasonDto(season),
+          categories: categories.map((category) => ({
+            ...category,
+            teams: teams
+              .filter((t) => t.categoryId === category.id)
+              .map((t) => {
+                const next = nextByTeam.get(t.id);
+                return { ...teamDto(t), nextEvent: next ? eventDto(next) : null };
+              }),
+          })),
+          summary: {
+            players: canSeePlayers ? counts.players : 0,
+            guardians: canSeePlayers ? counts.guardians : 0,
+            readinessPercent: readiness,
+            staff,
+            eventsThisWeek,
+          },
+          access: { write: c.get("actor").permissions.has("org.structure.write") },
+        },
+        200,
+      );
     },
   );
 
@@ -282,7 +492,7 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
       method: "patch",
       path: "/api/org/sections/{id}",
       tags: ["Estructura"],
-      summary: "Renombra o archiva una sección",
+      summary: "Edita una sección: nombre, deporte, tipo, coordinación, descripción o estado",
       security: [{ sessionCookie: [] }],
       middleware: [write],
       request: {
@@ -291,6 +501,7 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
       },
       responses: {
         200: json("Sección", SectionResponseSchema),
+        400: error("Deporte o coordinación desconocidos"),
         409: error("Ya hay una sección con ese nombre"),
         ...errors,
       },
@@ -301,36 +512,38 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
       const body = c.req.valid("json");
       const result = await data.sections.update(tenant.scope, id, body);
       if (result.outcome === "not_found") throw notFound("Esa sección no existe.");
+      if (result.outcome === "unknown_sport")
+        throw badRequest("Ese deporte no está en el catálogo.");
+      if (result.outcome === "unknown_coordinator")
+        throw badRequest("Esa persona no es miembro del club.");
       if (result.outcome === "name_taken") throw conflict("Ya hay una sección con ese nombre.");
       await audit(c, tenant, "section.updated", result.section.name, body);
       return c.json({ section: result.section }, 200);
     },
   );
 
-  // --- Equipos ---
+  // --- Categorías ---
   app.openapi(
     createRoute({
       method: "get",
-      path: "/api/org/teams",
+      path: "/api/org/categories",
       tags: ["Estructura"],
-      summary: "Equipos de una temporada (la actual por defecto) con plantilla y cuerpo técnico",
+      summary: "Categorías del club (o de una sección) con sus equipos en la temporada actual",
       security: [{ sessionCookie: [] }],
       middleware: [read],
-      request: { query: z.object({ season: z.string().uuid().optional() }) },
-      responses: { 200: json("Equipos", TeamsResponseSchema), ...errors },
+      request: { query: z.object({ section: z.string().uuid().optional() }) },
+      responses: { 200: json("Categorías", CategoriesResponseSchema), ...errors },
     }),
     async (c) => {
       const tenant = scopeOf(c);
-      const { season: requested } = c.req.valid("query");
-      const season = requested
-        ? await data.seasons.byId(tenant.scope, requested)
-        : await data.seasons.current(tenant.scope);
-      if (!season) return c.json({ season: null, teams: [] }, 200);
-      const teams = await data.teams.list(tenant.scope, season.id);
+      const { section } = c.req.valid("query");
+      const season = await data.seasons.current(tenant.scope);
       return c.json(
         {
-          season: { id: season.id, name: season.name, isCurrent: season.isCurrent },
-          teams: teams.map(teamDto),
+          categories: await data.categories.list(tenant.scope, {
+            sectionId: section,
+            seasonId: season?.id ?? null,
+          }),
         },
         200,
       );
@@ -340,9 +553,100 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
   app.openapi(
     createRoute({
       method: "post",
+      path: "/api/org/categories",
+      tags: ["Estructura"],
+      summary: "Crea una categoría en una sección",
+      security: [{ sessionCookie: [] }],
+      middleware: [write],
+      request: {
+        body: { content: { "application/json": { schema: CategoryCreateSchema } }, required: true },
+      },
+      responses: {
+        201: json("Categoría creada", CategoryResponseSchema),
+        400: error("Sección desconocida"),
+        409: error("Ya hay una categoría con ese nombre en la sección"),
+        ...errors,
+      },
+    }),
+    async (c) => {
+      const tenant = scopeOf(c);
+      const body = c.req.valid("json");
+      const result = await data.categories.create(tenant.scope, body);
+      if (result.outcome === "unknown_section") throw badRequest("Esa sección no es de este club.");
+      if (result.outcome === "name_taken")
+        throw conflict("Ya hay una categoría con ese nombre en la sección.");
+      await audit(c, tenant, "category.created", result.category.name, {
+        sectionId: body.sectionId,
+      });
+      return c.json({ category: result.category }, 201);
+    },
+  );
+
+  app.openapi(
+    createRoute({
+      method: "patch",
+      path: "/api/org/categories/{id}",
+      tags: ["Estructura"],
+      summary: "Edita una categoría: nombre, género, años de nacimiento, orden o estado",
+      security: [{ sessionCookie: [] }],
+      middleware: [write],
+      request: {
+        params: idParam,
+        body: { content: { "application/json": { schema: CategoryUpdateSchema } }, required: true },
+      },
+      responses: {
+        200: json("Categoría", CategoryResponseSchema),
+        409: error("Ya hay una categoría con ese nombre en la sección"),
+        ...errors,
+      },
+    }),
+    async (c) => {
+      const tenant = scopeOf(c);
+      const { id } = c.req.valid("param");
+      const body = c.req.valid("json");
+      const result = await data.categories.update(tenant.scope, id, body);
+      if (result.outcome === "not_found") throw notFound("Esa categoría no existe.");
+      if (result.outcome === "name_taken")
+        throw conflict("Ya hay una categoría con ese nombre en la sección.");
+      await audit(c, tenant, "category.updated", result.category.name, body);
+      return c.json({ category: result.category }, 200);
+    },
+  );
+
+  // --- Equipos ---
+  app.openapi(
+    createRoute({
+      method: "get",
       path: "/api/org/teams",
       tags: ["Estructura"],
-      summary: "Crea un equipo en una sección y una temporada",
+      summary:
+        "Equipos de una temporada (la actual por defecto), opcionalmente de una sección, con plantilla y cuerpo técnico",
+      security: [{ sessionCookie: [] }],
+      middleware: [read],
+      request: {
+        query: z.object({
+          season: z.string().uuid().optional(),
+          section: z.string().uuid().optional(),
+        }),
+      },
+      responses: { 200: json("Equipos", TeamsResponseSchema), ...errors },
+    }),
+    async (c) => {
+      const tenant = scopeOf(c);
+      const { season: requested, section } = c.req.valid("query");
+      const season = await seasonOf(tenant, requested);
+      if (!season) return c.json({ season: null, teams: [] }, 200);
+      const teams = await data.teams.list(tenant.scope, season.id, section);
+      return c.json({ season: seasonDto(season), teams: teams.map(teamDto) }, 200);
+    },
+  );
+
+  app.openapi(
+    createRoute({
+      method: "post",
+      path: "/api/org/teams",
+      tags: ["Estructura"],
+      summary: "Crea un equipo o grupo en una sección, una categoría y una temporada",
       security: [{ sessionCookie: [] }],
       middleware: [write],
       request: {
@@ -350,7 +654,7 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
       },
       responses: {
         201: json("Equipo creado", TeamResponseSchema),
-        400: error("Sección o temporada desconocidas"),
+        400: error("Sección, categoría o temporada desconocidas"),
         409: error("Ya hay un equipo con ese nombre en esa sección y temporada"),
         ...errors,
       },
@@ -360,6 +664,8 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
       const body = c.req.valid("json");
       const result = await data.teams.create(tenant.scope, body);
       if (result.outcome === "unknown_section") throw badRequest("Esa sección no es de este club.");
+      if (result.outcome === "unknown_category")
+        throw badRequest("Esa categoría no es de esa sección.");
       if (result.outcome === "unknown_season")
         throw badRequest("Esa temporada no es de este club.");
       if (result.outcome === "name_taken")
@@ -367,6 +673,7 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
       await audit(c, tenant, "team.created", result.team.name, {
         season: result.team.season.name,
         section: result.team.section.name,
+        category: result.team.category,
       });
       return c.json({ team: teamDto(result.team) }, 201);
     },
@@ -377,7 +684,7 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
       method: "get",
       path: "/api/org/teams/{id}",
       tags: ["Estructura"],
-      summary: "Ficha de un equipo: plantilla y cuerpo técnico",
+      summary: "Ficha de un equipo: plantilla, cuerpo técnico y horario semanal",
       security: [{ sessionCookie: [] }],
       middleware: [read],
       request: { params: idParam },
@@ -388,14 +695,7 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
       const { id } = c.req.valid("param");
       const team = await data.teams.byId(tenant.scope, id);
       if (!team) throw notFound("Ese equipo no existe.");
-      // La plantilla lleva datos de jugadores: solo con permiso de jugadores. Sin él, la ficha va vacía.
-      const canSeePlayers = c.get("actor").permissions.has("org.players.read");
-      const roster = canSeePlayers ? await rosterOf(tenant, id) : [];
-      const staff = await data.teams.staff(tenant.scope, id);
-      return c.json(
-        { team: teamDto(team), roster, staff, access: await accessOf(c, tenant.scope, id) },
-        200,
-      );
+      return c.json(await teamDetail(c, tenant, team), 200);
     },
   );
 
@@ -404,7 +704,7 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
       method: "patch",
       path: "/api/org/teams/{id}",
       tags: ["Estructura"],
-      summary: "Edita un equipo: nombre, categoría, sección o estado",
+      summary: "Edita un equipo: nombre, categoría, aforo, sección o estado",
       security: [{ sessionCookie: [] }],
       middleware: [write],
       request: {
@@ -413,7 +713,7 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
       },
       responses: {
         200: json("Equipo", TeamResponseSchema),
-        400: error("Sección desconocida"),
+        400: error("Sección o categoría desconocidas"),
         409: error("Ya hay un equipo con ese nombre"),
         ...errors,
       },
@@ -425,6 +725,8 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
       const result = await data.teams.update(tenant.scope, id, body);
       if (result.outcome === "not_found") throw notFound("Ese equipo no existe.");
       if (result.outcome === "unknown_section") throw badRequest("Esa sección no es de este club.");
+      if (result.outcome === "unknown_category")
+        throw badRequest("Esa categoría no es de esa sección.");
       if (result.outcome === "name_taken")
         throw conflict("Ya hay un equipo con ese nombre en esa sección y temporada.");
       await audit(c, tenant, "team.updated", result.team.name, body);
@@ -449,7 +751,7 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
       responses: {
         200: json("Plantilla", TeamDetailResponseSchema),
         400: error("Jugador desconocido"),
-        409: error("Ya está en la plantilla"),
+        409: error("Ya está en la plantilla o el grupo está completo"),
         ...errors,
       },
     }),
@@ -458,6 +760,10 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
       const { id } = c.req.valid("param");
       const body = c.req.valid("json");
       await requireRosterWrite(c, tenant.scope, id);
+      const before = await data.teams.byId(tenant.scope, id);
+      if (!before) throw notFound("Ese equipo no existe.");
+      if (before.capacity !== null && before.playersCount >= before.capacity)
+        throw conflict("El grupo está completo.");
       const outcome = await data.teams.addPlayer(tenant.scope, id, body);
       if (outcome === "unknown_team") throw notFound("Ese equipo no existe.");
       if (outcome === "unknown_player") throw badRequest("Ese jugador no es de este club.");
@@ -470,15 +776,7 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
         actorUserId: c.get("sessionUser").id,
       });
       await audit(c, tenant, "team.roster_added", team.name, { playerId: body.playerId });
-      return c.json(
-        {
-          team: teamDto(team),
-          roster: await rosterOf(tenant, id),
-          staff: await data.teams.staff(tenant.scope, id),
-          access: await accessOf(c, tenant.scope, id),
-        },
-        200,
-      );
+      return c.json(await teamDetail(c, tenant, team), 200);
     },
   );
 
@@ -509,15 +807,7 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
       const ok = await data.teams.updatePlayer(tenant.scope, id, playerId, body);
       if (!ok) throw notFound("Ese jugador no está en la plantilla.");
       await audit(c, tenant, "team.roster_updated", team.name, { playerId, ...body });
-      return c.json(
-        {
-          team: teamDto((await data.teams.byId(tenant.scope, id))!),
-          roster: await rosterOf(tenant, id),
-          staff: await data.teams.staff(tenant.scope, id),
-          access: await accessOf(c, tenant.scope, id),
-        },
-        200,
-      );
+      return c.json(await teamDetail(c, tenant, (await data.teams.byId(tenant.scope, id))!), 200);
     },
   );
 
@@ -548,15 +838,7 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
         actorUserId: c.get("sessionUser").id,
       });
       await audit(c, tenant, "team.roster_removed", team.name, { playerId });
-      return c.json(
-        {
-          team: teamDto((await data.teams.byId(tenant.scope, id))!),
-          roster: await rosterOf(tenant, id),
-          staff: await data.teams.staff(tenant.scope, id),
-          access: await accessOf(c, tenant.scope, id),
-        },
-        200,
-      );
+      return c.json(await teamDetail(c, tenant, (await data.teams.byId(tenant.scope, id))!), 200);
     },
   );
 
@@ -583,7 +865,7 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
       method: "post",
       path: "/api/org/teams/{id}/staff",
       tags: ["Estructura"],
-      summary: "Añade a un miembro del club al cuerpo técnico del equipo",
+      summary: "Añade a un miembro del club al cuerpo técnico del equipo, con su papel",
       security: [{ sessionCookie: [] }],
       middleware: [write],
       request: {
@@ -600,23 +882,19 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
     async (c) => {
       const tenant = scopeOf(c);
       const { id } = c.req.valid("param");
-      const { userId } = c.req.valid("json");
-      const outcome = await data.teams.addStaff(tenant.scope, id, userId);
+      const { userId, roleInTeam } = c.req.valid("json");
+      const outcome = await data.teams.addStaff(
+        tenant.scope,
+        id,
+        userId,
+        roleInTeam ?? "head_coach",
+      );
       if (outcome === "unknown_team") throw notFound("Ese equipo no existe.");
       if (outcome === "not_member") throw badRequest("Esa persona no es miembro del club.");
       if (outcome === "already_staff") throw conflict("Esa persona ya está en el cuerpo técnico.");
       const team = (await data.teams.byId(tenant.scope, id))!;
-      await audit(c, tenant, "team.staff_added", team.name, { userId });
-      const canSeePlayers = c.get("actor").permissions.has("org.players.read");
-      return c.json(
-        {
-          team: teamDto(team),
-          roster: canSeePlayers ? await rosterOf(tenant, id) : [],
-          staff: await data.teams.staff(tenant.scope, id),
-          access: await accessOf(c, tenant.scope, id),
-        },
-        200,
-      );
+      await audit(c, tenant, "team.staff_added", team.name, { userId, roleInTeam });
+      return c.json(await teamDetail(c, tenant, team), 200);
     },
   );
 
@@ -639,16 +917,7 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
       const ok = await data.teams.removeStaff(tenant.scope, id, userId);
       if (!ok) throw notFound("Esa persona no está en el cuerpo técnico.");
       await audit(c, tenant, "team.staff_removed", team.name, { userId });
-      const canSeePlayers = c.get("actor").permissions.has("org.players.read");
-      return c.json(
-        {
-          team: teamDto((await data.teams.byId(tenant.scope, id))!),
-          roster: canSeePlayers ? await rosterOf(tenant, id) : [],
-          staff: await data.teams.staff(tenant.scope, id),
-          access: await accessOf(c, tenant.scope, id),
-        },
-        200,
-      );
+      return c.json(await teamDetail(c, tenant, (await data.teams.byId(tenant.scope, id))!), 200);
     },
   );
 

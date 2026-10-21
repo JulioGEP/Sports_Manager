@@ -47,6 +47,12 @@ export const OrganizationUpdateSchema = z.object({
   brandPrimaryColor: BrandColorSchema.optional(),
   brandSecondaryColor: BrandColorSchema.optional(),
   voice: ClubVoiceSchema.optional(),
+  /** Zona horaria IANA del club (Bloque 16), por ejemplo `Europe/Madrid`. */
+  timezone: z
+    .string()
+    .trim()
+    .regex(/^[A-Za-z_]+\/[A-Za-z_/+-]+$/, "Zona horaria inválida.")
+    .optional(),
 });
 export type OrganizationUpdate = z.infer<typeof OrganizationUpdateSchema>;
 

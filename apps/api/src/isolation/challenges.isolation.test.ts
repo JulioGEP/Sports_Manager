@@ -130,14 +130,21 @@ describe("personal con cargo, permisos por equipo, familia y reto", () => {
     const section = await json<{ section: { id: string } }>(
       await request("POST", "/api/org/sections", A, {
         cookie: as(adminA),
-        body: { name: "Fútbol sala" },
+        body: { name: "Fútbol sala", sportCode: "futsal", categories: [{ name: "Base" }] },
       }),
       201,
     );
+    const categories = await json<{ categories: { id: string }[] }>(
+      await request("GET", `/api/org/categories?section=${section.section.id}`, A, {
+        cookie: as(adminA),
+      }),
+      200,
+    );
+    const categoryId = categories.categories[0]!.id;
     const team = await json<{ team: { id: string } }>(
       await request("POST", "/api/org/teams", A, {
         cookie: as(adminA),
-        body: { sectionId: section.section.id, seasonId, name: "Alevín A" },
+        body: { sectionId: section.section.id, seasonId, categoryId, name: "Alevín A" },
       }),
       201,
     );
@@ -145,7 +152,7 @@ describe("personal con cargo, permisos por equipo, familia y reto", () => {
     const other = await json<{ team: { id: string } }>(
       await request("POST", "/api/org/teams", A, {
         cookie: as(adminA),
-        body: { sectionId: section.section.id, seasonId, name: "Infantil A" },
+        body: { sectionId: section.section.id, seasonId, categoryId, name: "Infantil A" },
       }),
       201,
     );

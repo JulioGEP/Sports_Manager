@@ -1,6 +1,7 @@
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { ViewAsBanner, ViewAsSheet } from "@/components/view-as";
 import { ClubProvider, clubPaths, useClub, type ClubState } from "@/lib/club";
 import { useT } from "@/lib/intl";
 import { useMediaQuery } from "@/lib/media";
@@ -16,6 +17,7 @@ import {
   MenuDivider,
   MenuItem,
   MenuSection,
+  Sheet,
 } from "@/ui";
 
 /** Espacio de un club (ADR 0027): `/<slug>/...`. Móvil envolvente con barra inferior; escritorio preciso con navegación lateral. */
@@ -56,54 +58,89 @@ function ClubFrame({ children }: { children: ReactNode }) {
     state.kind === "ready" || state.kind === "no_membership" ? state.memberships : [];
   const clubName = branding?.name ?? "";
 
-  const links = [
-    { to: paths.home, label: t("home"), icon: Icon.House, show: state.kind === "ready", end: true },
+  const canViewAs =
+    state.kind === "ready" && state.org.actor.kind === "member" && state.org.actor.canViewAs;
+  const [viewAsOpen, setViewAsOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
+
+  /**
+   * Navegación del club (Bloque 14): la sección es la unidad de gestión. En escritorio, barra lateral
+   * con tres grupos; en móvil, cinco destinos y el resto en "Más" (DESIGN.md 9.10).
+   */
+  type NavLinkItem = { to: string; label: string; icon: typeof Icon.House; end: boolean };
+  const has = (p: string) => permissions.includes(p as (typeof permissions)[number]);
+  const groups: { key: string; label: string | null; links: NavLinkItem[] }[] = [
     {
-      to: paths.teams,
-      label: t("teams"),
-      icon: Icon.UsersThree,
-      show: permissions.includes("org.structure.read"),
-      end: false,
+      key: "home",
+      label: null,
+      links:
+        state.kind === "ready"
+          ? [{ to: paths.home, label: t("home"), icon: Icon.House, end: true }]
+          : [],
     },
     {
-      to: paths.players,
-      label: t("players"),
-      icon: Icon.PersonSimpleRun,
-      show: permissions.includes("org.players.read"),
-      end: false,
+      key: "club",
+      label: t("groupClub"),
+      links: [
+        has("org.structure.read")
+          ? { to: paths.sections, label: t("sections"), icon: Icon.SquaresFour, end: false }
+          : null,
+        has("org.players.read")
+          ? { to: paths.players, label: t("players"), icon: Icon.PersonSimpleRun, end: false }
+          : null,
+        has("org.family.read")
+          ? { to: paths.family, label: t("family"), icon: Icon.HandHeart, end: false }
+          : null,
+        has("org.club_members.read")
+          ? {
+              to: paths.clubMembers,
+              label: t("clubMembers"),
+              icon: Icon.IdentificationCard,
+              end: false,
+            }
+          : null,
+        has("org.members.read")
+          ? { to: paths.staff, label: t("staff"), icon: Icon.Users, end: false }
+          : null,
+      ].filter((l): l is NavLinkItem => l !== null),
     },
     {
-      to: paths.family,
-      label: t("family"),
-      icon: Icon.HandHeart,
-      show: permissions.includes("org.family.read"),
-      end: false,
+      key: "activity",
+      label: t("groupActivity"),
+      links: [
+        has("org.events.read") || has("org.family.read")
+          ? { to: paths.agenda, label: t("agenda"), icon: Icon.CalendarBlank, end: false }
+          : null,
+        has("org.facilities.read")
+          ? { to: paths.facilities, label: t("facilities"), icon: Icon.Buildings, end: false }
+          : null,
+        has("org.challenges.read") || has("org.family.read")
+          ? { to: paths.challenges, label: t("challenges"), icon: Icon.Trophy, end: false }
+          : null,
+      ].filter((l): l is NavLinkItem => l !== null),
     },
     {
-      to: paths.challenges,
-      label: t("challenges"),
-      icon: Icon.Trophy,
-      show: permissions.includes("org.challenges.read") || permissions.includes("org.family.read"),
-      end: false,
+      key: "management",
+      label: t("groupManagement"),
+      links: [
+        has("org.fees.read") || has("org.family.read")
+          ? {
+              to: paths.fees,
+              label: has("org.fees.read") ? t("fees") : t("myFees"),
+              icon: Icon.Coins,
+              end: false,
+            }
+          : null,
+        has("org.settings.write")
+          ? { to: paths.settings, label: t("settings"), icon: Icon.Gear, end: false }
+          : null,
+      ].filter((l): l is NavLinkItem => l !== null),
     },
-    {
-      to: paths.members,
-      label: t("members"),
-      icon: Icon.Users,
-      show: permissions.includes("org.members.read"),
-      end: false,
-    },
-    {
-      to: paths.settings,
-      label: t("settings"),
-      icon: Icon.Gear,
-      show: permissions.includes("org.settings.write"),
-      end: false,
-    },
-  ].filter((l) => l.show);
-  /** La barra inferior admite cinco destinos (DESIGN.md 9.10): los ajustes pasan al menú de persona. */
-  const mobileLinks = links.length > 5 ? links.filter((l) => l.to !== paths.settings) : links;
-  const settingsInMenu = !desktop && mobileLinks.length !== links.length;
+  ].filter((g) => g.links.length > 0);
+  const links = groups.flatMap((g) => g.links);
+  /** La barra inferior admite cinco destinos (DESIGN.md 9.10): los cuatro primeros y "Más". */
+  const mobileLinks = links.length > 5 ? links.slice(0, 4) : links;
+  const moreLinks = links.length > 5 ? links.slice(4) : [];
 
   async function onSignOut() {
     await signOut();
@@ -133,9 +170,12 @@ function ClubFrame({ children }: { children: ReactNode }) {
           {t("myClubs")}
         </MenuItem>
       ) : null}
-      {settingsInMenu ? (
-        <MenuItem to={paths.settings} icon={<Icon.Gear size={20} aria-hidden="true" />}>
-          {t("settings")}
+      {canViewAs ? (
+        <MenuItem
+          icon={<Icon.Eye size={20} aria-hidden="true" />}
+          onClick={() => setViewAsOpen(true)}
+        >
+          {t("viewAs")}
         </MenuItem>
       ) : null}
       {me.platformAdmin ? (
@@ -169,32 +209,45 @@ function ClubFrame({ children }: { children: ReactNode }) {
             <Crest name={clubName || "SM"} logoUrl={branding?.logoUrl} />
             <span className="truncate text-body font-semibold text-ink">{clubName}</span>
           </Link>
-          <nav className="flex flex-col gap-1" aria-label={t("mainNav")}>
-            {links.map((l) => (
-              <NavLink
-                key={l.to}
-                to={l.to}
-                end={l.end}
-                className={({ isActive }) =>
-                  `flex h-(--h-control) items-center gap-3 rounded-control px-3 text-body font-medium no-underline transition-colors ${
-                    isActive
-                      ? "bg-club-soft text-club-soft-text"
-                      : "text-muted hover:bg-raised hover:text-ink"
-                  }`
-                }
-              >
-                <l.icon size={22} weight="duotone" aria-hidden="true" />
-                {l.label}
-              </NavLink>
+          <nav className="flex flex-col gap-4 overflow-y-auto" aria-label={t("mainNav")}>
+            {groups.map((g) => (
+              <div key={g.key} className="flex flex-col gap-1">
+                {g.label ? (
+                  <span className="px-3 pt-1 pb-1 text-label uppercase tracking-wide text-muted">
+                    {g.label}
+                  </span>
+                ) : null}
+                {g.links.map((l) => (
+                  <NavLink
+                    key={l.to}
+                    to={l.to}
+                    end={l.end}
+                    className={({ isActive }) =>
+                      `flex h-(--h-control) items-center gap-3 rounded-control px-3 text-body font-medium no-underline transition-colors ${
+                        isActive
+                          ? "bg-club-soft text-club-soft-text"
+                          : "text-muted hover:bg-raised hover:text-ink"
+                      }`
+                    }
+                  >
+                    <l.icon size={22} weight="duotone" aria-hidden="true" />
+                    {l.label}
+                  </NavLink>
+                ))}
+              </div>
             ))}
           </nav>
           <div className="mt-auto">{userMenu}</div>
         </aside>
         <main className="px-8 py-8">
           <div className="mx-auto flex max-w-6xl flex-col gap-6">
+            {state.kind === "ready" ? <ViewAsBanner /> : null}
             <ClubBody state={state}>{children}</ClubBody>
           </div>
         </main>
+        {state.kind === "ready" && canViewAs ? (
+          <ViewAsSheet open={viewAsOpen} onClose={() => setViewAsOpen(false)} />
+        ) : null}
       </div>
     );
   }
@@ -214,6 +267,7 @@ function ClubFrame({ children }: { children: ReactNode }) {
       </header>
       <main className="flex-1 px-5 py-5 pb-28">
         <div className="flex flex-col gap-5">
+          {state.kind === "ready" ? <ViewAsBanner /> : null}
           <ClubBody state={state}>{children}</ClubBody>
         </div>
       </main>
@@ -245,7 +299,55 @@ function ClubFrame({ children }: { children: ReactNode }) {
               )}
             </NavLink>
           ))}
+          {moreLinks.length > 0 ? (
+            <button
+              type="button"
+              onClick={() => setMoreOpen(true)}
+              aria-haspopup="dialog"
+              className={`flex h-full flex-col items-center justify-center gap-0.5 rounded-control text-label ${
+                moreLinks.some((l) => location.pathname.startsWith(l.to))
+                  ? "text-club-text"
+                  : "text-muted"
+              }`}
+            >
+              <span className="grid h-7 w-12 place-items-center rounded-chip">
+                <Icon.DotsThree size={22} weight="duotone" aria-hidden="true" />
+              </span>
+              {t("more")}
+            </button>
+          ) : null}
         </nav>
+      ) : null}
+      {moreLinks.length > 0 ? (
+        <Sheet
+          open={moreOpen}
+          onClose={() => setMoreOpen(false)}
+          closeLabel={t("close")}
+          title={t("more")}
+        >
+          <ul className="flex flex-col gap-1">
+            {moreLinks.map((l) => (
+              <li key={l.to}>
+                <NavLink
+                  to={l.to}
+                  end={l.end}
+                  onClick={() => setMoreOpen(false)}
+                  className={({ isActive }) =>
+                    `flex min-h-12 items-center gap-3 rounded-field px-3 text-body font-medium no-underline ${
+                      isActive ? "bg-club-soft text-club-soft-text" : "text-ink hover:bg-raised"
+                    }`
+                  }
+                >
+                  <l.icon size={22} weight="duotone" aria-hidden="true" />
+                  {l.label}
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+        </Sheet>
+      ) : null}
+      {state.kind === "ready" && canViewAs ? (
+        <ViewAsSheet open={viewAsOpen} onClose={() => setViewAsOpen(false)} />
       ) : null}
     </div>
   );

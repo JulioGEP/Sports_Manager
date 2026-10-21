@@ -3,6 +3,7 @@ import type {
   DevelopmentPlanStatus,
   DominantFoot,
   GuardianRelationship,
+  PersonGender,
   PlayerCreate,
   PlayerMissingFilter,
   PlayerStatus,
@@ -29,12 +30,15 @@ import { today } from "./player-profile.ts";
 import type { OrgScope } from "./scope.ts";
 
 /**
- * Jugadores y familias (Fase 1, Bloque 11, ADR 0028). Datos de menores: solo salen con
- * `org.players.read`, o a su propia familia con `org.family.read`. Siempre con ámbito de club.
+ * Deportistas y familias (Fase 1, Bloque 11, ADR 0028; Bloque 14, ADR 0031). Un deportista es
+ * la ficha deportiva de una persona del club: nombre, nacimiento, contacto y foto viven en
+ * `people`. Datos de menores: solo salen con `org.players.read`, o a su propia familia con
+ * `org.family.read`. Siempre con ámbito de club.
  */
 
 export interface PlayerRow {
   id: string;
+  personId: string;
   firstName: string;
   lastName: string;
   birthDate: string | null;
@@ -46,12 +50,19 @@ export interface PlayerRow {
   photoBlobKey: string | null;
   dominantFoot: DominantFoot | null;
   heightCm: number | null;
+  /** Datos de la persona (Bloque 14). */
+  gender: PersonGender | null;
+  email: string | null;
+  phone: string | null;
+  nationalId: string | null;
+  userId: string | null;
 }
 
 export interface PlayerSummaryRecord extends PlayerRow {
-  teams: { teamId: string; teamName: string }[];
+  teams: { teamId: string; teamName: string; sectionId: string; categoryId: string }[];
   guardiansCount: number;
   pendingInvitationsCount: number;
+  memberNumber: number | null;
 }
 
 export interface PlayerTeamRecord {
@@ -114,6 +125,8 @@ export interface PlayersOperations {
   playersWithoutFamily: number;
   objectivesOverdue: number;
   plansOverdue: number;
+  teamsWithoutStaff: number;
+  playersWithoutMembership: number;
 }
 
 export interface PlayersReadiness {
@@ -130,19 +143,26 @@ export interface PlayersReadiness {
 
 const playerSelection = {
   id: schema.players.id,
-  firstName: schema.players.firstName,
-  lastName: schema.players.lastName,
-  birthDate: schema.players.birthDate,
+  personId: schema.players.personId,
+  firstName: schema.people.firstName,
+  lastName: schema.people.lastName,
+  birthDate: schema.people.birthDate,
   joinedOn: schema.players.joinedOn,
   status: schema.players.status,
   createdAt: schema.players.createdAt,
-  photoBlobKey: schema.players.photoBlobKey,
+  photoBlobKey: schema.people.photoBlobKey,
   dominantFoot: schema.players.dominantFoot,
   heightCm: schema.players.heightCm,
+  gender: schema.people.gender,
+  email: schema.people.email,
+  phone: schema.people.phone,
+  nationalId: schema.people.nationalId,
+  userId: schema.people.userId,
 };
 
 const toRow = (row: {
   id: string;
+  personId: string;
   firstName: string;
   lastName: string;
   birthDate: string | null;
@@ -152,23 +172,46 @@ const toRow = (row: {
   photoBlobKey: string | null;
   dominantFoot: string | null;
   heightCm: number | null;
+  gender: string | null;
+  email: string | null;
+  phone: string | null;
+  nationalId: string | null;
+  userId: string | null;
 }): PlayerRow => ({
   ...row,
   status: row.status as PlayerStatus,
   dominantFoot: row.dominantFoot as DominantFoot | null,
+  gender: row.gender as PersonGender | null,
 });
 
 export function playersRepo(db: () => Database) {
-  async function byId(scope: OrgScope, id: string): Promise<PlayerRow | null> {
-    const rows = await db()
+  /** Jugadores con su persona: toda lectura de nombre o foto pasa por aquí. */
+  const playersQuery = () =>
+    db()
       .select(playerSelection)
       .from(schema.players)
+      .innerJoin(schema.people, eq(schema.people.id, schema.players.personId));
+
+  async function byId(scope: OrgScope, id: string): Promise<PlayerRow | null> {
+    const rows = await playersQuery()
       .where(
         and(eq(schema.players.organizationId, scope.organizationId), eq(schema.players.id, id)),
       )
       .limit(1);
     return rows[0] ? toRow(rows[0]) : null;
   }
+
+  /** Subconsulta: personas con ficha de socio viva (activa, pendiente o suspendida). */
+  const withMembershipQuery = (scope: OrgScope) =>
+    db()
+      .select({ id: schema.clubMembers.personId })
+      .from(schema.clubMembers)
+      .where(
+        and(
+          eq(schema.clubMembers.organizationId, scope.organizationId),
+          inArray(schema.clubMembers.status, ["active", "pending", "suspended"]),
+        ),
+      );
 
   /** Subconsulta: ids de los jugadores en plantilla de la temporada actual (y, si se pide, de unos equipos). */
   const inCurrentRoster = (scope: OrgScope, teamIds?: string[]) =>
@@ -199,14 +242,21 @@ export function playersRepo(db: () => Database) {
   async function currentTeamsFor(
     scope: OrgScope,
     playerIds: string[],
-  ): Promise<Map<string, { teamId: string; teamName: string }[]>> {
-    const map = new Map<string, { teamId: string; teamName: string }[]>();
+  ): Promise<
+    Map<string, { teamId: string; teamName: string; sectionId: string; categoryId: string }[]>
+  > {
+    const map = new Map<
+      string,
+      { teamId: string; teamName: string; sectionId: string; categoryId: string }[]
+    >();
     if (playerIds.length === 0) return map;
     const rows = await db()
       .select({
         playerId: schema.teamPlayers.playerId,
         teamId: schema.teams.id,
         teamName: schema.teams.name,
+        sectionId: schema.teams.sectionId,
+        categoryId: schema.teams.categoryId,
       })
       .from(schema.teamPlayers)
       .innerJoin(schema.teams, eq(schema.teams.id, schema.teamPlayers.teamId))
@@ -221,10 +271,35 @@ export function playersRepo(db: () => Database) {
       .orderBy(asc(schema.teams.name));
     for (const row of rows) {
       const list = map.get(row.playerId) ?? [];
-      list.push({ teamId: row.teamId, teamName: row.teamName });
+      list.push({
+        teamId: row.teamId,
+        teamName: row.teamName,
+        sectionId: row.sectionId,
+        categoryId: row.categoryId,
+      });
       map.set(row.playerId, list);
     }
     return map;
+  }
+
+  async function memberNumbersFor(
+    scope: OrgScope,
+    personIds: string[],
+  ): Promise<Map<string, number>> {
+    if (personIds.length === 0) return new Map();
+    const rows = await db()
+      .select({
+        personId: schema.clubMembers.personId,
+        memberNumber: schema.clubMembers.memberNumber,
+      })
+      .from(schema.clubMembers)
+      .where(
+        and(
+          eq(schema.clubMembers.organizationId, scope.organizationId),
+          inArray(schema.clubMembers.personId, personIds),
+        ),
+      );
+    return new Map(rows.map((r) => [r.personId, r.memberNumber]));
   }
 
   async function guardiansCountFor(
@@ -291,7 +366,7 @@ export function playersRepo(db: () => Database) {
       .select({
         teamId: schema.teams.id,
         teamName: schema.teams.name,
-        category: schema.teams.category,
+        category: schema.categories.name,
         sectionName: schema.sections.name,
         seasonId: schema.seasons.id,
         seasonName: schema.seasons.name,
@@ -301,6 +376,7 @@ export function playersRepo(db: () => Database) {
       })
       .from(schema.teamPlayers)
       .innerJoin(schema.teams, eq(schema.teams.id, schema.teamPlayers.teamId))
+      .innerJoin(schema.categories, eq(schema.categories.id, schema.teams.categoryId))
       .innerJoin(schema.sections, eq(schema.sections.id, schema.teams.sectionId))
       .innerJoin(schema.seasons, eq(schema.seasons.id, schema.teams.seasonId))
       .where(
@@ -355,6 +431,8 @@ export function playersRepo(db: () => Database) {
       filter: {
         query?: string | undefined;
         teamId?: string | undefined;
+        sectionId?: string | undefined;
+        categoryId?: string | undefined;
         missing?: PlayerMissingFilter | undefined;
         teamIds?: string[] | undefined;
       } = {},
@@ -365,10 +443,30 @@ export function playersRepo(db: () => Database) {
         const pattern = `%${q.replaceAll("%", "\\%").replaceAll("_", "\\_")}%`;
         conditions.push(
           or(
-            ilike(schema.players.firstName, pattern),
-            ilike(schema.players.lastName, pattern),
-            ilike(sql`${schema.players.firstName} || ' ' || ${schema.players.lastName}`, pattern),
+            ilike(schema.people.firstName, pattern),
+            ilike(schema.people.lastName, pattern),
+            ilike(sql`${schema.people.firstName} || ' ' || ${schema.people.lastName}`, pattern),
           )!,
+        );
+      }
+      if (filter.sectionId || filter.categoryId) {
+        conditions.push(
+          inArray(
+            schema.players.id,
+            db()
+              .select({ id: schema.teamPlayers.playerId })
+              .from(schema.teamPlayers)
+              .innerJoin(schema.teams, eq(schema.teams.id, schema.teamPlayers.teamId))
+              .innerJoin(schema.seasons, eq(schema.seasons.id, schema.teams.seasonId))
+              .where(
+                and(
+                  eq(schema.teamPlayers.organizationId, scope.organizationId),
+                  eq(schema.seasons.isCurrent, true),
+                  ...(filter.sectionId ? [eq(schema.teams.sectionId, filter.sectionId)] : []),
+                  ...(filter.categoryId ? [eq(schema.teams.categoryId, filter.categoryId)] : []),
+                ),
+              ),
+          ),
         );
       }
       if (filter.teamId) {
@@ -393,31 +491,36 @@ export function playersRepo(db: () => Database) {
       }
       if (filter.missing) {
         conditions.push(eq(schema.players.status, "active"));
-        if (filter.missing === "photo") conditions.push(isNull(schema.players.photoBlobKey));
+        if (filter.missing === "photo") conditions.push(isNull(schema.people.photoBlobKey));
         if (filter.missing === "objective")
           conditions.push(notInArray(schema.players.id, withObjectiveQuery(scope)));
         if (filter.missing === "team")
           conditions.push(notInArray(schema.players.id, inCurrentRoster(scope)));
         if (filter.missing === "family")
           conditions.push(notInArray(schema.players.id, withGuardianQuery(scope)));
+        if (filter.missing === "member")
+          conditions.push(notInArray(schema.players.personId, withMembershipQuery(scope)));
       }
-      const rows = await db()
-        .select(playerSelection)
-        .from(schema.players)
+      const rows = await playersQuery()
         .where(and(...conditions))
-        .orderBy(asc(schema.players.lastName), asc(schema.players.firstName))
+        .orderBy(asc(schema.people.lastName), asc(schema.people.firstName))
         .limit(500);
       const ids = rows.map((r) => r.id);
-      const [teams, guardians, pending] = await Promise.all([
+      const [teams, guardians, pending, numbers] = await Promise.all([
         currentTeamsFor(scope, ids),
         guardiansCountFor(scope, ids),
         pendingInvitationsFor(scope, ids),
+        memberNumbersFor(
+          scope,
+          rows.map((r) => r.personId),
+        ),
       ]);
       return rows.map((row) => ({
         ...toRow(row),
         teams: teams.get(row.id) ?? [],
         guardiansCount: guardians.get(row.id) ?? 0,
         pendingInvitationsCount: pending.get(row.id) ?? 0,
+        memberNumber: numbers.get(row.personId) ?? null,
       }));
     },
 
@@ -437,11 +540,9 @@ export function playersRepo(db: () => Database) {
         if (filter.teamIds.length === 0) return [];
         conditions.push(inArray(schema.players.id, inCurrentRoster(scope, filter.teamIds)));
       }
-      const rows = await db()
-        .select(playerSelection)
-        .from(schema.players)
+      const rows = await playersQuery()
         .where(and(...conditions))
-        .orderBy(asc(schema.players.lastName), asc(schema.players.firstName))
+        .orderBy(asc(schema.people.lastName), asc(schema.people.firstName))
         .limit(500);
       const ids = rows.map((r) => r.id);
       if (ids.length === 0) return [];
@@ -559,7 +660,30 @@ export function playersRepo(db: () => Database) {
         const rows = await db()
           .select({ total: count() })
           .from(schema.players)
+          .innerJoin(schema.people, eq(schema.people.id, schema.players.personId))
           .where(and(active, ...conditions));
+        return rows[0]?.total ?? 0;
+      };
+      /** Equipos activos de la temporada actual sin nadie en el cuerpo técnico (Bloque 14). */
+      const teamsWithoutStaffQuery = async () => {
+        const rows = await db()
+          .select({ total: count() })
+          .from(schema.teams)
+          .innerJoin(schema.seasons, eq(schema.seasons.id, schema.teams.seasonId))
+          .where(
+            and(
+              eq(schema.teams.organizationId, scope.organizationId),
+              eq(schema.teams.status, "active"),
+              eq(schema.seasons.isCurrent, true),
+              notInArray(
+                schema.teams.id,
+                db()
+                  .select({ id: schema.teamStaff.teamId })
+                  .from(schema.teamStaff)
+                  .where(eq(schema.teamStaff.organizationId, scope.organizationId)),
+              ),
+            ),
+          );
         return rows[0]?.total ?? 0;
       };
       const todayIso = today();
@@ -575,10 +699,12 @@ export function playersRepo(db: () => Database) {
         pendingInvitations,
         objectivesOverdue,
         plansOverdue,
+        teamsWithoutStaff,
+        withMembership,
       ] = await Promise.all([
         countWhere(),
-        countWhere(isNotNull(schema.players.photoBlobKey)),
-        countWhere(isNotNull(schema.players.birthDate)),
+        countWhere(isNotNull(schema.people.photoBlobKey)),
+        countWhere(isNotNull(schema.people.birthDate)),
         countWhere(inArray(schema.players.id, inCurrentRoster(scope))),
         countWhere(inArray(schema.players.id, withGuardianQuery(scope))),
         countWhere(inArray(schema.players.id, withObjectiveQuery(scope))),
@@ -641,6 +767,8 @@ export function playersRepo(db: () => Database) {
               ),
           ),
         ),
+        teamsWithoutStaffQuery(),
+        countWhere(inArray(schema.players.personId, withMembershipQuery(scope))),
       ]);
       const checks = [
         withPhoto,
@@ -664,6 +792,8 @@ export function playersRepo(db: () => Database) {
           playersWithoutFamily: total - withFamily,
           objectivesOverdue,
           plansOverdue,
+          teamsWithoutStaff,
+          playersWithoutMembership: total - withMembership,
         },
         readiness: {
           total,
@@ -677,6 +807,42 @@ export function playersRepo(db: () => Database) {
           withPlan,
         },
       };
+    },
+
+    /** Preparación de las fichas de un subconjunto (una sección): porcentaje de las siete comprobaciones. */
+    async readinessFor(scope: OrgScope, playerIds: string[]): Promise<number | null> {
+      if (playerIds.length === 0) return null;
+      const subset = and(
+        eq(schema.players.organizationId, scope.organizationId),
+        eq(schema.players.status, "active"),
+        inArray(schema.players.id, playerIds),
+      );
+      const rows = await db()
+        .select({
+          total: count(),
+          withPhoto: sql<number>`count(*) filter (where ${schema.people.photoBlobKey} is not null)`,
+          withBirthDate: sql<number>`count(*) filter (where ${schema.people.birthDate} is not null)`,
+          withFamily: sql<number>`count(*) filter (where exists (select 1 from ${schema.playerGuardians} g where g.player_id = ${schema.players.id}))`,
+          withObjective: sql<number>`count(*) filter (where exists (select 1 from ${schema.playerObjectives} o where o.player_id = ${schema.players.id}))`,
+          withIndicators: sql<number>`count(*) filter (where (select count(*) from ${schema.playerIndicators} i where i.player_id = ${schema.players.id}) >= 4)`,
+          withPlan: sql<number>`count(*) filter (where exists (select 1 from ${schema.playerDevelopmentPlans} d where d.player_id = ${schema.players.id}))`,
+        })
+        .from(schema.players)
+        .innerJoin(schema.people, eq(schema.people.id, schema.players.personId))
+        .where(subset);
+      const r = rows[0];
+      if (!r || r.total === 0) return null;
+      // En una sección todos tienen equipo: la comprobación "con equipo" cuenta entera.
+      const checks = [
+        Number(r.withPhoto),
+        Number(r.withBirthDate),
+        r.total,
+        Number(r.withFamily),
+        Number(r.withObjective),
+        Number(r.withIndicators),
+        Number(r.withPlan),
+      ];
+      return Math.round((checks.reduce((a, b) => a + b, 0) / (checks.length * r.total)) * 100);
     },
 
     /** Si una persona es cuerpo técnico, esta temporada, de algún equipo donde está el jugador. */
@@ -715,38 +881,101 @@ export function playersRepo(db: () => Database) {
       return rows.length > 0;
     },
 
-    async create(scope: OrgScope, input: PlayerCreate): Promise<PlayerRow> {
-      const rows = await db()
-        .insert(schema.players)
-        .values({
-          organizationId: scope.organizationId,
-          firstName: input.firstName,
-          lastName: input.lastName,
-          birthDate: input.birthDate ?? null,
-          joinedOn: input.joinedOn ?? null,
-        })
-        .returning(playerSelection);
-      return toRow(rows[0]!);
+    /**
+     * Alta de deportista (Bloque 14): sobre una persona que ya existe (un socio adulto) o creando
+     * la persona con sus datos. Una persona solo tiene una ficha deportiva.
+     */
+    async create(
+      scope: OrgScope,
+      input: PlayerCreate,
+    ): Promise<
+      | { outcome: "created"; player: PlayerRow }
+      | { outcome: "unknown_person" }
+      | { outcome: "already_player" }
+    > {
+      let personId = input.personId ?? null;
+      if (personId) {
+        const person = await db()
+          .select({ id: schema.people.id })
+          .from(schema.people)
+          .where(
+            and(
+              eq(schema.people.organizationId, scope.organizationId),
+              eq(schema.people.id, personId),
+            ),
+          )
+          .limit(1);
+        if (!person[0]) return { outcome: "unknown_person" };
+      } else {
+        const rows = await db()
+          .insert(schema.people)
+          .values({
+            organizationId: scope.organizationId,
+            firstName: input.firstName!,
+            lastName: input.lastName!,
+            birthDate: input.birthDate ?? null,
+            gender: input.gender ?? null,
+            email: input.email ?? null,
+            phone: input.phone?.trim() ? input.phone.trim() : null,
+          })
+          .returning({ id: schema.people.id });
+        personId = rows[0]!.id;
+      }
+      try {
+        const rows = await db()
+          .insert(schema.players)
+          .values({
+            organizationId: scope.organizationId,
+            personId,
+            joinedOn: input.joinedOn ?? null,
+          })
+          .returning({ id: schema.players.id });
+        return { outcome: "created", player: (await byId(scope, rows[0]!.id))! };
+      } catch (error) {
+        if (isUniqueViolation(error)) return { outcome: "already_player" };
+        throw error;
+      }
     },
 
+    /** Edita la ficha: lo deportivo en `players`, lo personal en `people`. */
     async update(scope: OrgScope, id: string, patch: PlayerUpdate): Promise<PlayerRow | null> {
-      const values: Partial<typeof schema.players.$inferInsert> = {};
-      if (patch.firstName !== undefined) values.firstName = patch.firstName;
-      if (patch.lastName !== undefined) values.lastName = patch.lastName;
-      if (patch.birthDate !== undefined) values.birthDate = patch.birthDate;
-      if (patch.joinedOn !== undefined) values.joinedOn = patch.joinedOn;
-      if (patch.status !== undefined) values.status = patch.status;
-      if (patch.dominantFoot !== undefined) values.dominantFoot = patch.dominantFoot;
-      if (patch.heightCm !== undefined) values.heightCm = patch.heightCm;
-      if (Object.keys(values).length === 0) return byId(scope, id);
-      const rows = await db()
-        .update(schema.players)
-        .set(values)
-        .where(
-          and(eq(schema.players.organizationId, scope.organizationId), eq(schema.players.id, id)),
-        )
-        .returning(playerSelection);
-      return rows[0] ? toRow(rows[0]) : null;
+      const current = await byId(scope, id);
+      if (!current) return null;
+      const playerValues: Partial<typeof schema.players.$inferInsert> = {};
+      if (patch.joinedOn !== undefined) playerValues.joinedOn = patch.joinedOn;
+      if (patch.status !== undefined) playerValues.status = patch.status;
+      if (patch.dominantFoot !== undefined) playerValues.dominantFoot = patch.dominantFoot;
+      if (patch.heightCm !== undefined) playerValues.heightCm = patch.heightCm;
+      const personValues: Partial<typeof schema.people.$inferInsert> = {};
+      if (patch.firstName !== undefined) personValues.firstName = patch.firstName;
+      if (patch.lastName !== undefined) personValues.lastName = patch.lastName;
+      if (patch.birthDate !== undefined) personValues.birthDate = patch.birthDate;
+      if (patch.gender !== undefined) personValues.gender = patch.gender;
+      if (patch.email !== undefined) personValues.email = patch.email;
+      if (patch.phone !== undefined)
+        personValues.phone = patch.phone?.trim() ? patch.phone.trim() : null;
+      if (patch.nationalId !== undefined)
+        personValues.nationalId = patch.nationalId?.trim() ? patch.nationalId.trim() : null;
+      if (Object.keys(playerValues).length > 0) {
+        await db()
+          .update(schema.players)
+          .set(playerValues)
+          .where(
+            and(eq(schema.players.organizationId, scope.organizationId), eq(schema.players.id, id)),
+          );
+      }
+      if (Object.keys(personValues).length > 0) {
+        await db()
+          .update(schema.people)
+          .set(personValues)
+          .where(
+            and(
+              eq(schema.people.organizationId, scope.organizationId),
+              eq(schema.people.id, current.personId),
+            ),
+          );
+      }
+      return byId(scope, id);
     },
 
     /** Vincula una cuenta al jugador. Si ya estaba, actualiza la relación. */
@@ -756,10 +985,26 @@ export function playersRepo(db: () => Database) {
       userId: string,
       relationship: GuardianRelationship,
     ): Promise<"linked" | "updated"> {
+      const person = await db()
+        .select({ id: schema.people.id })
+        .from(schema.people)
+        .where(
+          and(
+            eq(schema.people.organizationId, scope.organizationId),
+            eq(schema.people.userId, userId),
+          ),
+        )
+        .limit(1);
       try {
         await db()
           .insert(schema.playerGuardians)
-          .values({ organizationId: scope.organizationId, playerId, userId, relationship });
+          .values({
+            organizationId: scope.organizationId,
+            playerId,
+            userId,
+            relationship,
+            guardianPersonId: person[0]?.id ?? null,
+          });
         return "linked";
       } catch (error) {
         if (!isUniqueViolation(error)) throw error;
@@ -797,13 +1042,14 @@ export function playersRepo(db: () => Database) {
         .select({ ...playerSelection, relationship: schema.playerGuardians.relationship })
         .from(schema.playerGuardians)
         .innerJoin(schema.players, eq(schema.players.id, schema.playerGuardians.playerId))
+        .innerJoin(schema.people, eq(schema.people.id, schema.players.personId))
         .where(
           and(
             eq(schema.playerGuardians.organizationId, scope.organizationId),
             eq(schema.playerGuardians.userId, userId),
           ),
         )
-        .orderBy(asc(schema.players.firstName), asc(schema.players.lastName));
+        .orderBy(asc(schema.people.firstName), asc(schema.people.lastName));
       if (rows.length === 0) return [];
       const ids = rows.map((r) => r.id);
       const teams = await db()
@@ -864,6 +1110,7 @@ export function playersRepo(db: () => Database) {
         .select({ ...playerSelection, relationship: schema.playerGuardians.relationship })
         .from(schema.playerGuardians)
         .innerJoin(schema.players, eq(schema.players.id, schema.playerGuardians.playerId))
+        .innerJoin(schema.people, eq(schema.people.id, schema.players.personId))
         .where(
           and(
             eq(schema.playerGuardians.organizationId, scope.organizationId),
@@ -915,9 +1162,7 @@ export function playersRepo(db: () => Database) {
 
     /** Últimos jugadores dados de alta (para el inicio, sin datos de más). */
     async recent(scope: OrgScope, limit = 5): Promise<PlayerRow[]> {
-      const rows = await db()
-        .select(playerSelection)
-        .from(schema.players)
+      const rows = await playersQuery()
         .where(eq(schema.players.organizationId, scope.organizationId))
         .orderBy(desc(schema.players.createdAt))
         .limit(limit);

@@ -6,6 +6,7 @@ import {
   type OrganizationCreate,
   type OrganizationStatus as SharedOrganizationStatus,
   type OrganizationUpdate,
+  type PaymentProvider,
   type RoleCode,
 } from "@sportsmanager/shared";
 import { and, count, countDistinct, eq, sql } from "drizzle-orm";
@@ -153,10 +154,18 @@ export function organizationsRepo(db: () => Database) {
     /** Ajustes y marca del club del ámbito (Bloque 5). Devuelve la fila actualizada. */
     async update(
       scope: OrgScope,
-      patch: OrganizationUpdate & { status?: SharedOrganizationStatus | undefined },
+      patch: OrganizationUpdate & {
+        status?: SharedOrganizationStatus | undefined;
+        /** Cobros (Bloque 18): proveedor y cuenta conectada de Stripe. */
+        paymentsProvider?: PaymentProvider | undefined;
+        stripeAccountId?: string | null | undefined;
+      },
     ): Promise<OrganizationRow> {
       const values: Partial<typeof schema.organizations.$inferInsert> = {};
       if (patch.name !== undefined) values.name = patch.name;
+      if (patch.timezone !== undefined) values.timezone = patch.timezone;
+      if (patch.paymentsProvider !== undefined) values.paymentsProvider = patch.paymentsProvider;
+      if (patch.stripeAccountId !== undefined) values.stripeAccountId = patch.stripeAccountId;
       if (patch.status !== undefined) values.status = patch.status;
       if (patch.defaultLocale !== undefined) values.defaultLocale = patch.defaultLocale;
       if (patch.brandPrimaryColor !== undefined) values.brandPrimaryColor = patch.brandPrimaryColor;

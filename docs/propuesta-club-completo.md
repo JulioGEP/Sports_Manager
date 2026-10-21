@@ -1,6 +1,6 @@
 # Propuesta: el panel del administrador como gestión de un club completo
 
-Estado: propuesta, pendiente de aprobación. Fecha: 21 de octubre de 2026. Punto de partida: Bloque 13 (ADR 0030). No cambia código: es el plan de los bloques 14 a 18.
+Estado: aprobada y construida en una sola entrega (ADR 0031, bloques 14 a 18, con Stripe preparado y "ver como" añadidos a petición de producto). Fecha: 21 de octubre de 2026. Punto de partida: Bloque 13 (ADR 0030). Se conserva como registro del razonamiento; lo decidido está en la ADR y lo construido, en `docs/capturas/`.
 
 Resumen:
 

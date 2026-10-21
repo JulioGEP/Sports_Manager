@@ -84,7 +84,7 @@ export function createChallengeRoutes(config: ApiConfig, data: DataLayer) {
       ((key: "actor") => Actor) &
       ((key: "tenant") => AppEnv["Variables"]["tenant"]);
   };
-  const actorId = (c: Ctx) => c.get("sessionUser").id;
+  const actorId = (c: Ctx) => c.get("actor").userId;
   const audit = (
     c: Ctx,
     tenant: Tenant,

@@ -4,7 +4,7 @@ import {
   PLAYER_PHOTO_CONTENT_TYPES,
   PLAYER_PHOTO_MAX_BYTES,
   PLAYER_PHOTO_MAX_SIDE_PX,
-  PlayerResponseSchema,
+  PlayerBasicResponseSchema,
   playerDisplayName,
   yearsSince,
   type PlayerEvent,
@@ -134,7 +134,7 @@ export function FamilyPlayerPage() {
         toast("error", errors("payload_too_large"));
         return;
       }
-      await uploadFile(`/api/org/players/${id}/photo`, photo, PlayerResponseSchema);
+      await uploadFile(`/api/org/players/${id}/photo`, photo, PlayerBasicResponseSchema);
       toast("success", tp("photo.saved"));
       void reload();
     } catch (err) {

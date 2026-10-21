@@ -17,6 +17,16 @@ export interface UserRecord {
  */
 export function usersRepo(db: () => Database, auth: () => Auth) {
   return {
+    /** Una cuenta por su id (para "ver como"): nombre y email, nada más. */
+    async byId(id: string): Promise<{ id: string; name: string; email: string } | null> {
+      const rows = await db()
+        .select({ id: schema.users.id, name: schema.users.name, email: schema.users.email })
+        .from(schema.users)
+        .where(eq(schema.users.id, id))
+        .limit(1);
+      return rows[0] ?? null;
+    },
+
     async findByEmail(email: string): Promise<UserRecord | null> {
       const rows = await db()
         .select({

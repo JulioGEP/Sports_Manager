@@ -77,6 +77,7 @@ describe("estructura del club y familias", () => {
 
   let seasonId = "";
   let sectionId = "";
+  let categoryId = "";
   let teamId = "";
   let playerId = "";
   let familyCookie = "";
@@ -189,33 +190,85 @@ describe("estructura del club y familias", () => {
     expect(list.seasons.filter((s) => s.isCurrent).map((s) => s.name)).toEqual(["2026-27"]);
   });
 
-  it("la administradora crea sección, equipo y jugador; la entrenadora lee pero no escribe", async () => {
-    const section = await json<{ section: { id: string } }>(
-      await request("POST", "/api/org/sections", A, {
-        cookie: as(adminA),
-        body: { name: "Fútbol sala" },
-      }),
-      201,
-    );
-    sectionId = section.section.id;
+  it("la administradora crea sección con deporte, categoría, equipo y jugador; la entrenadora lee pero no escribe", async () => {
+    // Una sección exige un deporte del catálogo (Bloque 14); con él vienen las categorías sugeridas.
     expect(
       (
         await request("POST", "/api/org/sections", A, {
           cookie: as(adminA),
-          body: { name: "Fútbol sala" },
+          body: { name: "Fútbol sala", sportCode: "quidditch" },
+        })
+      ).status,
+    ).toBe(400);
+    const catalog = await json<{ sports: { code: string; config: { categories: unknown[] } }[] }>(
+      await request("GET", "/api/org/sports", A, { cookie: as(adminA) }),
+      200,
+    );
+    expect(
+      catalog.sports.find((s) => s.code === "futsal")?.config.categories.length,
+    ).toBeGreaterThan(3);
+    const section = await json<{
+      section: { id: string; sport: { code: string }; kind: string; categoriesCount: number };
+    }>(
+      await request("POST", "/api/org/sections", A, {
+        cookie: as(adminA),
+        body: {
+          name: "Fútbol sala",
+          sportCode: "futsal",
+          categories: [{ name: "Alevín", gender: "mixed", birthYearFrom: 2015, birthYearTo: 2016 }],
+        },
+      }),
+      201,
+    );
+    sectionId = section.section.id;
+    expect(section.section.sport.code).toBe("futsal");
+    expect(section.section.kind).toBe("competition");
+    expect(section.section.categoriesCount).toBe(1);
+    expect(
+      (
+        await request("POST", "/api/org/sections", A, {
+          cookie: as(adminA),
+          body: { name: "Fútbol sala", sportCode: "futsal" },
         })
       ).status,
     ).toBe(409);
+    const categories = await json<{ categories: { id: string; name: string }[] }>(
+      await request("GET", `/api/org/categories?section=${sectionId}`, A, { cookie: as(adminA) }),
+      200,
+    );
+    categoryId = categories.categories[0]!.id;
+    expect(categories.categories.map((c) => c.name)).toEqual(["Alevín"]);
 
-    const team = await json<{ team: { id: string; name: string; playersCount: number } }>(
+    // Un equipo exige una categoría de su sección.
+    expect(
+      (
+        await request("POST", "/api/org/teams", A, {
+          cookie: as(adminA),
+          body: { sectionId, seasonId, name: "Alevín A" },
+        })
+      ).status,
+    ).toBe(400);
+    const team = await json<{
+      team: { id: string; name: string; playersCount: number; category: string | null };
+    }>(
       await request("POST", "/api/org/teams", A, {
         cookie: as(adminA),
-        body: { sectionId, seasonId, name: "Alevín A", category: "Alevín" },
+        body: { sectionId, seasonId, categoryId, name: "Alevín A" },
       }),
       201,
     );
     teamId = team.team.id;
     expect(team.team.playersCount).toBe(0);
+    expect(team.team.category).toBe("Alevín");
+
+    // La ficha de la sección: la categoría con su equipo, resumen y acceso de escritura.
+    const sectionDetail = await json<{
+      categories: { name: string; teams: { id: string }[] }[];
+      summary: { players: number; staff: unknown[] };
+      access: { write: boolean };
+    }>(await request("GET", `/api/org/sections/${sectionId}`, A, { cookie: as(adminA) }), 200);
+    expect(sectionDetail.categories[0]!.teams.map((t) => t.id)).toEqual([teamId]);
+    expect(sectionDetail.access.write).toBe(true);
 
     const player = await json<{ player: { id: string }; teams: { teamId: string }[] }>(
       await request("POST", "/api/org/players", A, {
@@ -316,19 +369,47 @@ describe("estructura del club y familias", () => {
       (
         await request("POST", "/api/org/teams", B, {
           cookie: as(adminB),
-          body: { sectionId, seasonId: seasonB.season.id, name: "Intruso" },
+          body: { sectionId, seasonId: seasonB.season.id, categoryId, name: "Intruso" },
         })
       ).status,
     ).toBe(400);
     // Ni meter en su plantilla a un jugador del club A.
     const sectionB = await json<{ section: { id: string } }>(
-      await request("POST", "/api/org/sections", B, { cookie: as(adminB), body: { name: "Base" } }),
+      await request("POST", "/api/org/sections", B, {
+        cookie: as(adminB),
+        body: { name: "Base", sportCode: "futsal", categories: [{ name: "Benjamín" }] },
+      }),
       201,
+    );
+    // Ni usar una categoría del club A en un equipo del B.
+    expect(
+      (
+        await request("POST", "/api/org/teams", B, {
+          cookie: as(adminB),
+          body: {
+            sectionId: sectionB.section.id,
+            seasonId: seasonB.season.id,
+            categoryId,
+            name: "Benjamín",
+          },
+        })
+      ).status,
+    ).toBe(400);
+    const categoriesB = await json<{ categories: { id: string }[] }>(
+      await request("GET", `/api/org/categories?section=${sectionB.section.id}`, B, {
+        cookie: as(adminB),
+      }),
+      200,
     );
     const teamB = await json<{ team: { id: string } }>(
       await request("POST", "/api/org/teams", B, {
         cookie: as(adminB),
-        body: { sectionId: sectionB.section.id, seasonId: seasonB.season.id, name: "Benjamín" },
+        body: {
+          sectionId: sectionB.section.id,
+          seasonId: seasonB.season.id,
+          categoryId: categoriesB.categories[0]!.id,
+          name: "Benjamín",
+        },
       }),
       201,
     );

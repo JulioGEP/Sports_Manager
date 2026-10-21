@@ -6,10 +6,10 @@ test.describe("espacio del club", () => {
     await login(page);
   });
 
-  test("miembros, invitación y roles", async ({ page }, info) => {
+  test("personal, invitación y roles", async ({ page }, info) => {
     const email = `entrenador-${suffix(info.project.name)}@demo.test`;
-    await page.getByRole("link", { name: "Miembros" }).first().click();
-    await expect(page.getByRole("heading", { name: "Miembros" })).toBeVisible();
+    await page.getByRole("link", { name: "Personal" }).first().click();
+    await expect(page.getByRole("heading", { name: "Personal" })).toBeVisible();
     await expect(page.getByText("Admin Demo").first()).toBeVisible();
     await shot(page, "10-miembros", info.project.name);
     await expectLegibleButtons(page);
@@ -32,7 +32,7 @@ test.describe("espacio del club", () => {
     await shot(page, "12-invitaciones", info.project.name);
     await expectLegibleButtons(page);
 
-    await page.getByRole("tab", { name: /^Miembros/ }).click();
+    await page.getByRole("tab", { name: /^Personal/ }).click();
     await page.getByRole("button", { name: "Roles" }).first().click();
     await expect(page.getByRole("dialog").getByText("Roles de Admin Demo")).toBeVisible();
     await shot(page, "13-miembros-roles", info.project.name);
@@ -42,9 +42,9 @@ test.describe("espacio del club", () => {
   });
 
   test("ajustes: general, marca y logo", async ({ page }, info) => {
-    // En móvil la barra inferior admite cinco destinos: los ajustes viven en el menú de persona.
+    // En móvil la barra inferior lleva cuatro destinos y "Más": los ajustes viven en el menú de persona.
     // La navegación se pinta cuando llega la sesión: se espera a un destino presente en ambas barras.
-    await expect(page.getByRole("link", { name: "Miembros" }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: "Secciones" }).first()).toBeVisible();
     const settingsLink = page.getByRole("link", { name: "Ajustes" }).first();
     if (await settingsLink.isVisible()) {
       await settingsLink.click();

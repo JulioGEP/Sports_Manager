@@ -4,6 +4,7 @@ import {
   LOCALES,
   ORGANIZATION_SLUG_PATTERN,
   ORGANIZATION_STATUSES,
+  PAYMENT_PROVIDERS,
 } from "@sportsmanager/shared";
 import { sql } from "drizzle-orm";
 import { check, pgTable, text, uuid } from "drizzle-orm/pg-core";
@@ -28,6 +29,11 @@ export const organizations = pgTable(
     status: text("status").notNull().default("active"),
     /** Voz del club (DESIGN.md 11, Bloque 11): cercana, profesional o vestuario. */
     voice: text("voice").notNull().default("cercana"),
+    /** Zona horaria IANA (Bloque 16): la agenda se genera y se pinta en ella. */
+    timezone: text("timezone").notNull().default("Europe/Madrid"),
+    /** Cómo cobra el club (Bloque 18): a mano o por Stripe en su cuenta conectada. */
+    paymentsProvider: text("payments_provider").notNull().default("manual"),
+    stripeAccountId: text("stripe_account_id"),
     ...timestamps,
   },
   (t) => [
@@ -43,5 +49,6 @@ export const organizations = pgTable(
     ),
     check("organizations_status_check", inList(t.status, ORGANIZATION_STATUSES)),
     check("organizations_voice_check", inList(t.voice, CLUB_VOICES)),
+    check("organizations_payments_provider_check", inList(t.paymentsProvider, PAYMENT_PROVIDERS)),
   ],
 );

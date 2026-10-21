@@ -52,7 +52,11 @@ const stateKind: Record<Invitation["state"], StatusKind> = {
   expired: "warning",
 };
 
-export function MembersPage() {
+/**
+ * Personal del club (Bloque 14): quien trabaja en el club con su rol o cargo. Las cuentas de
+ * familia no salen aquí: se gestionan desde la ficha de cada deportista.
+ */
+export function StaffPage() {
   const t = useT("members");
   const c = useT("common");
   const roles = useT("roles");
@@ -97,14 +101,21 @@ export function MembersPage() {
   const roleLabel = (m: Member, r: RoleCode) =>
     r === "staff" && m.position ? positions(m.position) : roles(r);
 
+  /** Solo el personal: quien tiene únicamente el rol de familia no trabaja en el club. */
+  const staffOnly = useMemo(
+    () =>
+      (members.data?.members ?? []).filter(
+        (m) => !(m.roles.length === 1 && m.roles[0] === "guardian"),
+      ),
+    [members.data],
+  );
   const filtered = useMemo(() => {
-    const list = members.data?.members ?? [];
     const q = query.trim().toLowerCase();
-    if (!q) return list;
-    return list.filter(
+    if (!q) return staffOnly;
+    return staffOnly.filter(
       (m) => m.name.toLowerCase().includes(q) || m.email.toLowerCase().includes(q),
     );
-  }, [members.data, query]);
+  }, [staffOnly, query]);
   const visibleInvitations =
     invitations.data?.invitations.filter((i) => i.state !== "accepted") ?? [];
   const pendingCount =
@@ -185,7 +196,11 @@ export function MembersPage() {
           selected={tab}
           onChange={setTab}
           items={[
-            { key: "members", label: t("tabs.members"), count: members.data?.members.length },
+            {
+              key: "members",
+              label: t("tabs.members"),
+              count: members.data ? staffOnly.length : undefined,
+            },
             { key: "invitations", label: t("tabs.invitations"), count: pendingCount },
           ]}
         />

@@ -162,6 +162,168 @@ export function createSeeder(connectionString: string) {
         );
     },
 
+    // --- Estructura del club (Bloques 11 y 14), para montar escenarios sin pasar por la API ---
+
+    async season(
+      organizationId: string,
+      input: { name: string; startsOn: string; endsOn: string; isCurrent?: boolean },
+    ): Promise<{ id: string }> {
+      const rows = await db
+        .insert(schema.seasons)
+        .values({
+          organizationId,
+          name: input.name,
+          startsOn: input.startsOn,
+          endsOn: input.endsOn,
+          isCurrent: input.isCurrent ?? true,
+        })
+        .returning({ id: schema.seasons.id });
+      return rows[0]!;
+    },
+
+    async section(
+      organizationId: string,
+      name: string,
+      sportCode = "futsal",
+      kind: "competition" | "activity" = "competition",
+    ): Promise<{ id: string }> {
+      const sport = await db
+        .select({ id: schema.sports.id })
+        .from(schema.sports)
+        .where(eq(schema.sports.code, sportCode))
+        .limit(1);
+      if (!sport[0]) throw new Error(`Falta el deporte ${sportCode} en la semilla.`);
+      const rows = await db
+        .insert(schema.sections)
+        .values({ organizationId, name, sportId: sport[0].id, kind })
+        .returning({ id: schema.sections.id });
+      return rows[0]!;
+    },
+
+    async category(
+      organizationId: string,
+      sectionId: string,
+      name: string,
+    ): Promise<{ id: string }> {
+      const rows = await db
+        .insert(schema.categories)
+        .values({ organizationId, sectionId, name })
+        .returning({ id: schema.categories.id });
+      return rows[0]!;
+    },
+
+    async team(
+      organizationId: string,
+      input: { sectionId: string; categoryId: string; seasonId: string; name: string },
+    ): Promise<{ id: string }> {
+      const rows = await db
+        .insert(schema.teams)
+        .values({ organizationId, ...input })
+        .returning({ id: schema.teams.id });
+      return rows[0]!;
+    },
+
+    async person(
+      organizationId: string,
+      input: { firstName: string; lastName: string; birthDate?: string; userId?: string },
+    ): Promise<{ id: string }> {
+      const rows = await db
+        .insert(schema.people)
+        .values({
+          organizationId,
+          firstName: input.firstName,
+          lastName: input.lastName,
+          birthDate: input.birthDate ?? null,
+          userId: input.userId ?? null,
+        })
+        .returning({ id: schema.people.id });
+      return rows[0]!;
+    },
+
+    async player(organizationId: string, personId: string): Promise<{ id: string }> {
+      const rows = await db
+        .insert(schema.players)
+        .values({ organizationId, personId })
+        .returning({ id: schema.players.id });
+      return rows[0]!;
+    },
+
+    async rosterAdd(
+      organizationId: string,
+      teamId: string,
+      playerId: string,
+      shirtNumber: number | null = null,
+    ): Promise<void> {
+      await db
+        .insert(schema.teamPlayers)
+        .values({ organizationId, teamId, playerId, shirtNumber })
+        .onConflictDoNothing();
+    },
+
+    async teamStaff(
+      organizationId: string,
+      teamId: string,
+      userId: string,
+      roleInTeam = "head_coach",
+    ): Promise<void> {
+      await db
+        .insert(schema.teamStaff)
+        .values({ organizationId, teamId, userId, roleInTeam })
+        .onConflictDoNothing();
+    },
+
+    async guardian(
+      organizationId: string,
+      playerId: string,
+      userId: string,
+      relationship = "mother",
+    ): Promise<void> {
+      await db
+        .insert(schema.playerGuardians)
+        .values({ organizationId, playerId, userId, relationship })
+        .onConflictDoNothing();
+    },
+
+    // --- Socios (Bloque 14 y 18): tipos de socio y fichas de socio sembradas directas ---
+
+    async memberType(organizationId: string, name: string): Promise<{ id: string }> {
+      const rows = await db
+        .insert(schema.memberTypes)
+        .values({ organizationId, name })
+        .onConflictDoNothing()
+        .returning({ id: schema.memberTypes.id });
+      if (rows[0]) return rows[0];
+      const existing = await db
+        .select({ id: schema.memberTypes.id })
+        .from(schema.memberTypes)
+        .where(
+          and(
+            eq(schema.memberTypes.organizationId, organizationId),
+            eq(schema.memberTypes.name, name),
+          ),
+        )
+        .limit(1);
+      return existing[0]!;
+    },
+
+    async clubMember(
+      organizationId: string,
+      personId: string,
+      input: { memberNumber: number; memberTypeId?: string | null; status?: string },
+    ): Promise<{ id: string }> {
+      const rows = await db
+        .insert(schema.clubMembers)
+        .values({
+          organizationId,
+          personId,
+          memberNumber: input.memberNumber,
+          memberTypeId: input.memberTypeId ?? null,
+          status: input.status ?? "active",
+        })
+        .returning({ id: schema.clubMembers.id });
+      return rows[0]!;
+    },
+
     async close() {
       await handle.close();
     },

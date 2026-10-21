@@ -1,7 +1,10 @@
 import {
+  CategoriesResponseSchema,
+  MembersResponseSchema,
   PLAYER_MISSING_FILTERS,
   PlayerDetailResponseSchema,
   PlayersResponseSchema,
+  SectionsResponseSchema,
   TeamsResponseSchema,
   playerDisplayName,
   type PlayerMissingFilter,
@@ -29,10 +32,13 @@ import {
   Select,
   Sheet,
   StatusChip,
+  Tabs,
   useToast,
 } from "@/ui";
 
-/** Jugadores del club: búsqueda, filtro por equipo de la temporada actual y alta. */
+type Tab = "players" | "families";
+
+/** Deportistas del club: búsqueda, filtros por sección, categoría y equipo, lo que falta, y alta. */
 export function PlayersPage() {
   const t = useT("players");
   const tt = useT("team");
@@ -45,8 +51,12 @@ export function PlayersPage() {
   const { org, slug } = useReadyClub();
   const paths = clubPaths(slug);
   const canWrite = org.actor.permissions.includes("org.players.write");
+  const canMembers = org.actor.permissions.includes("org.members.read");
   const creating = params.get("new") === "1";
   const teamFilter = params.get("team") ?? "";
+  const sectionFilter = params.get("section") ?? "";
+  const categoryFilter = params.get("category") ?? "";
+  const tab: Tab = params.get("tab") === "families" && canMembers ? "families" : "players";
   const rawMissing = params.get("missing");
   /** Lo que falta en la ficha (Bloque 13): llega de las alertas del inicio y lo resuelve la API. */
   const missing: PlayerMissingFilter | "" = (PLAYER_MISSING_FILTERS as readonly string[]).includes(
@@ -67,14 +77,38 @@ export function PlayersPage() {
     queryKey: ["org", slug, "teams", null],
     queryFn: () => apiFetch("/api/org/teams", { schema: TeamsResponseSchema }),
   });
+  const sections = useQuery({
+    queryKey: ["org", slug, "sections", null],
+    queryFn: () => apiFetch("/api/org/sections", { schema: SectionsResponseSchema }),
+  });
+  const categories = useQuery({
+    queryKey: ["org", slug, "categories", sectionFilter || "all"],
+    queryFn: () =>
+      apiFetch(`/api/org/categories${sectionFilter ? `?section=${sectionFilter}` : ""}`, {
+        schema: CategoriesResponseSchema,
+      }),
+  });
+  const members = useQuery({
+    queryKey: ["org", slug, "members"],
+    queryFn: () => apiFetch("/api/org/members", { schema: MembersResponseSchema }),
+    enabled: tab === "families",
+  });
   const reload = () => client.invalidateQueries({ queryKey: ["org", slug] });
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return (players.data?.players ?? [])
+      .filter((p) => !sectionFilter || p.teams.some((x) => x.sectionId === sectionFilter))
+      .filter((p) => !categoryFilter || p.teams.some((x) => x.categoryId === categoryFilter))
       .filter((p) => !teamFilter || p.teams.some((x) => x.teamId === teamFilter))
       .filter((p) => !q || playerDisplayName(p).toLowerCase().includes(q));
-  }, [players.data, query, teamFilter]);
+  }, [players.data, query, sectionFilter, categoryFilter, teamFilter]);
+  const visibleTeams = (teams.data?.teams ?? []).filter(
+    (team) =>
+      (!sectionFilter || team.section.id === sectionFilter) &&
+      (!categoryFilter || team.categoryId === categoryFilter),
+  );
+  const families = (members.data?.members ?? []).filter((m) => m.roles.includes("guardian"));
 
   /**
    * Cambios acumulables sobre la URL. Dos llamadas seguidas en el mismo tick (cerrar la hoja y
@@ -114,7 +148,59 @@ export function PlayersPage() {
         }
       />
       {players.isError ? <Alert kind="error">{errors(errorKey(players.error))}</Alert> : null}
-      <div className="flex flex-wrap items-end gap-3">
+      {canMembers ? (
+        <Tabs<Tab>
+          label={t("title")}
+          selected={tab}
+          onChange={(key) => update({ tab: key === "players" ? null : key })}
+          items={[
+            { key: "players", label: t("tabs.players"), count: players.data?.players.length },
+            { key: "families", label: t("tabs.families"), count: families.length || undefined },
+          ]}
+        />
+      ) : null}
+      {tab === "families" ? (
+        <Card padded={false}>
+          <DataList<(typeof families)[number]>
+            caption={t("tabs.families")}
+            rows={families}
+            getKey={(m) => m.userId}
+            empty={
+              <EmptyState
+                icon={<Icon.HandHeart weight="duotone" />}
+                title={members.isPending ? c("loading") : t("families.empty")}
+                description={t("families.emptyHint")}
+              />
+            }
+            columns={[
+              {
+                key: "person",
+                header: t("families.person"),
+                cell: (m) => (
+                  <span className="flex items-center gap-3">
+                    <Avatar name={m.name} size="sm" />
+                    <span className="flex min-w-0 flex-col">
+                      <span className="font-medium text-ink">{m.name}</span>
+                      <span className="text-secondary text-muted">{m.email}</span>
+                    </span>
+                  </span>
+                ),
+              },
+              {
+                key: "since",
+                header: t("families.since"),
+                cell: (m) => dates.day(m.memberSince.slice(0, 10)),
+              },
+            ]}
+            mobileRow={(m) => ({
+              leading: <Avatar name={m.name} />,
+              title: m.name,
+              subtitle: m.email,
+            })}
+          />
+        </Card>
+      ) : null}
+      <div className={`flex flex-wrap items-end gap-3 ${tab === "families" ? "hidden" : ""}`}>
         <div className="relative w-full max-w-sm">
           <Icon.MagnifyingGlass
             size={20}
@@ -130,7 +216,41 @@ export function PlayersPage() {
             onChange={(e) => setQuery(e.target.value)}
           />
         </div>
-        {teams.data && teams.data.teams.length > 0 ? (
+        {sections.data && sections.data.sections.length > 1 ? (
+          <div className="w-full max-w-xs">
+            <Select
+              aria-label={t("sectionFilter")}
+              value={sectionFilter}
+              onChange={(e) =>
+                update({ section: e.target.value || null, category: null, team: null })
+              }
+            >
+              <option value="">{t("allSections")}</option>
+              {sections.data.sections.map((section) => (
+                <option key={section.id} value={section.id}>
+                  {t("sectionFilter")}: {section.name}
+                </option>
+              ))}
+            </Select>
+          </div>
+        ) : null}
+        {categories.data && categories.data.categories.length > 0 ? (
+          <div className="w-full max-w-xs">
+            <Select
+              aria-label={t("categoryFilter")}
+              value={categoryFilter}
+              onChange={(e) => update({ category: e.target.value || null, team: null })}
+            >
+              <option value="">{t("allCategories")}</option>
+              {categories.data.categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {t("categoryFilter")}: {cat.name}
+                </option>
+              ))}
+            </Select>
+          </div>
+        ) : null}
+        {visibleTeams.length > 0 ? (
           <div className="w-full max-w-xs">
             <Select
               aria-label={t("teamFilter")}
@@ -138,7 +258,7 @@ export function PlayersPage() {
               onChange={(e) => update({ team: e.target.value || null })}
             >
               <option value="">{t("allTeams")}</option>
-              {teams.data.teams.map((team) => (
+              {visibleTeams.map((team) => (
                 <option key={team.id} value={team.id}>
                   {t("teamFilter")}: {team.name}
                 </option>
@@ -161,7 +281,7 @@ export function PlayersPage() {
           </Select>
         </div>
       </div>
-      <Card padded={false}>
+      <Card padded={false} className={tab === "families" ? "hidden" : ""}>
         <DataList<PlayerSummary>
           caption={t("title")}
           rows={filtered}
@@ -216,6 +336,16 @@ export function PlayersPage() {
                   </span>
                 ) : (
                   <span className="text-muted">{t("noTeam")}</span>
+                ),
+            },
+            {
+              key: "member",
+              header: t("table.member"),
+              cell: (p) =>
+                p.memberNumber !== null ? (
+                  <span className="font-mono">{t("memberNumber", { number: p.memberNumber })}</span>
+                ) : (
+                  <span className="text-muted">{t("notMember")}</span>
                 ),
             },
             {

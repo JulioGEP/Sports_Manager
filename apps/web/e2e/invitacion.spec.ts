@@ -42,7 +42,7 @@ test.describe("invitación de punta a punta", () => {
     await expect(page.getByText("Tutor")).toBeVisible();
     await shot(page, "41-inicio-tutor", info.project.name);
     await expectLegibleButtons(page);
-    await expect(page.getByRole("link", { name: "Miembros" })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Personal" })).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Ajustes" })).toHaveCount(0);
 
     // Con un solo club, «Mis clubes» no pregunta: vuelve a la portada de ese club.

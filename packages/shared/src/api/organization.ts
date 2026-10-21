@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { LocaleSchema, LocalizedTextSchema } from "../locales.ts";
 import { ORGANIZATION_STATUSES } from "../organizations.ts";
+import { PAYMENT_PROVIDERS } from "../fees.ts";
 import { PERMISSIONS, ROLE_CODES, RoleCodeSchema, StaffPositionSchema } from "../roles.ts";
 import { ClubVoiceSchema } from "../structure.ts";
 
@@ -12,6 +13,15 @@ export const ActorSchema = z.discriminatedUnion("kind", [
     /** Cargo del personal (Bloque 13), si tiene el rol `staff`. */
     position: StaffPositionSchema.nullable(),
     permissions: z.array(z.enum(PERMISSIONS)),
+    /**
+     * "Ver como" (Bloque 14): si la administración está mirando el club como otra persona, quién
+     * es. Los roles, el cargo y los permisos de arriba son ya los de esa persona.
+     */
+    viewingAs: z
+      .object({ userId: z.string(), name: z.string(), roles: z.array(RoleCodeSchema) })
+      .nullable(),
+    /** Quien de verdad tiene la sesión puede elegir a quién mirar. */
+    canViewAs: z.boolean(),
   }),
   z.object({
     kind: z.literal("platform_support"),
@@ -34,6 +44,10 @@ export const OrganizationFullSchema = z.object({
   brandSecondaryColor: z.string(),
   logoUrl: z.string().nullable(),
   voice: ClubVoiceSchema,
+  /** Zona horaria del club (Bloque 16): la agenda se pinta en ella. */
+  timezone: z.string(),
+  /** Cómo cobra el club (Bloque 18). */
+  paymentsProvider: z.enum(PAYMENT_PROVIDERS),
   createdAt: z.string(),
 });
 

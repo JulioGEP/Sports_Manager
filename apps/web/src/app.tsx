@@ -11,18 +11,25 @@ import { PlatformSystemPage } from "@/routes/admin/system";
 import { ForgotPasswordPage } from "@/routes/auth/forgot";
 import { LoginPage } from "@/routes/auth/login";
 import { ResetPasswordPage } from "@/routes/auth/reset";
+import { AgendaPage } from "@/routes/club/agenda";
 import { ChallengePage } from "@/routes/club/challenge";
 import { ChallengesPage } from "@/routes/club/challenges";
+import { ClubMemberPage } from "@/routes/club/club-member";
+import { ClubMembersPage } from "@/routes/club/club-members";
+import { FacilitiesPage } from "@/routes/club/facilities";
+import { FacilityPage } from "@/routes/club/facility";
 import { FamilyPage } from "@/routes/club/family";
 import { FamilyPlayerPage } from "@/routes/club/family-player";
+import { FeesPage } from "@/routes/club/fees";
 import { ClubHome } from "@/routes/club/home";
 import { InvitationPage } from "@/routes/club/invitation";
-import { MembersPage } from "@/routes/club/members";
 import { PlayerPage } from "@/routes/club/player";
 import { PlayersPage } from "@/routes/club/players";
+import { SectionPage } from "@/routes/club/section";
+import { SectionsPage } from "@/routes/club/sections";
 import { SettingsPage } from "@/routes/club/settings";
+import { StaffPage } from "@/routes/club/staff";
 import { TeamPage } from "@/routes/club/team";
-import { TeamsPage } from "@/routes/club/teams";
 import { ClubsPage } from "@/routes/clubs";
 import { Landing } from "@/routes/landing";
 import { ToastProvider } from "@/ui";
@@ -35,6 +42,12 @@ const queryClient = new QueryClient({
 function LegacyRedirect({ to }: { to: string }) {
   const { club } = useParams();
   return <Navigate to={club ? `/${club}${to}` : "/clubs"} replace />;
+}
+
+/** Ruta del club que cambió de sitio (Bloque 14): misma consulta, destino nuevo. */
+function ClubRedirect({ to }: { to: string }) {
+  const { club } = useParams();
+  return <Navigate to={`/${club}${to}${window.location.search}`} replace />;
 }
 
 /**
@@ -67,15 +80,25 @@ export const router = createBrowserRouter([
     element: <ClubShell />,
     children: [
       { index: true, element: <ClubHome /> },
-      { path: "teams", element: <TeamsPage /> },
+      { path: "sections", element: <SectionsPage /> },
+      { path: "sections/:id", element: <SectionPage /> },
+      // Las secciones sustituyen a la lista de equipos (Bloque 14); la ficha de equipo sigue aquí.
+      { path: "teams", element: <ClubRedirect to="/sections" /> },
       { path: "teams/:id", element: <TeamPage /> },
       { path: "players", element: <PlayersPage /> },
       { path: "players/:id", element: <PlayerPage /> },
+      { path: "club-members", element: <ClubMembersPage /> },
+      { path: "club-members/:id", element: <ClubMemberPage /> },
+      { path: "staff", element: <StaffPage /> },
+      { path: "members", element: <ClubRedirect to="/staff" /> },
+      { path: "agenda", element: <AgendaPage /> },
+      { path: "facilities", element: <FacilitiesPage /> },
+      { path: "facilities/:id", element: <FacilityPage /> },
+      { path: "fees", element: <FeesPage /> },
       { path: "family", element: <FamilyPage /> },
       { path: "family/:id", element: <FamilyPlayerPage /> },
       { path: "challenges", element: <ChallengesPage /> },
       { path: "challenges/:id", element: <ChallengePage /> },
-      { path: "members", element: <MembersPage /> },
       { path: "settings", element: <SettingsPage /> },
     ],
   },
