@@ -1282,7 +1282,7 @@
     "title": "Retos",
     "description": "Retos por puntos: pruebas, registros de las familias y validación del club.",
     "new": "Nuevo reto",
-    "familiesNote": "Las familias registran la actividad de sus jugadores y ven solo sus puntos. La participación por jugador es solo para el personal.",
+    "familiesNote": "Cada reto es de una sección o de un equipo. Las familias registran la actividad de sus jugadores y ven solo sus puntos. La participación por jugador es solo para el personal.",
     "empty": "Todavía no hay retos.",
     "emptyHint": "Crea el primero con el catálogo de ejemplo y actívalo cuando esté listo.",
     "from": "desde el {date}",
@@ -1321,7 +1321,7 @@
     "maxPoints": "tope {points}",
     "sheet": {
       "title": "Nuevo reto",
-      "description": "Un periodo con un catálogo de pruebas. Las familias registran, el club valida.",
+      "description": "Un periodo con un catálogo de pruebas, para toda una sección o para un solo equipo. Las familias registran, el club valida.",
       "submit": "Crear reto",
       "name": "Nombre",
       "nameHint": "Por ejemplo, Reto de verano 2027.",
@@ -1341,7 +1341,23 @@
       "pointsOrder": "El objetivo no puede ser menor que el mínimo.",
       "created": "Reto {name} creado.",
       "editTitle": "Editar {name}",
-      "saved": "Reto guardado."
+      "saved": "Reto guardado.",
+      "scopeFixed": "La sección y el equipo del reto ya no cambian: el reto está en marcha."
+    },
+    "scope": {
+      "section": "Sección",
+      "kind": "Alcance",
+      "kindHint": "Toda la sección, o un solo equipo con su propio reto.",
+      "wholeSection": "Toda la sección",
+      "wholeSectionShort": "toda la sección",
+      "oneTeam": "Un equipo",
+      "team": "Equipo",
+      "noTeams": "Esta sección no tiene equipos esta temporada.",
+      "ownHint": "Solo puedes crear retos para tus equipos.",
+      "noOwnTeams": "No llevas ningún equipo esta temporada, así que no puedes crear retos.",
+      "noSections": "Crea antes una sección: los retos son de una sección o de un equipo.",
+      "filter": "Sección",
+      "filterAll": "Todas las secciones"
     }
   },
   "familyChallenge": {
@@ -1351,7 +1367,7 @@
     "noPlayersHint": "Pide a quien administra el club que te vincule desde la ficha del jugador.",
     "playerTabs": "Jugadores de la familia",
     "noChallenge": "Ahora mismo no hay ningún reto activo.",
-    "noChallengeHint": "Cuando el club lo active, lo verás aquí.",
+    "noChallengeHint": "Cuando el club active uno para su sección o su equipo, lo verás aquí.",
     "register": "Registrar actividad",
     "target": "objetivo {target}",
     "progressLabel": "{points} de {target} puntos del reto",
@@ -1383,7 +1399,8 @@
       "noteHint": "Opcional: un vídeo, una foto o un comentario.",
       "capHint": "Esta prueba tiene un tope de {points} puntos en todo el reto.",
       "saved": "Actividad registrada. El club la validará."
-    }
+    },
+    "challengeTabs": "Retos de {name}"
   },
   "challenge": {
     "back": "Retos",

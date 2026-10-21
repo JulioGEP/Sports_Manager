@@ -356,16 +356,19 @@ export const FamilyPlayerDetailResponseSchema = z.object({
   /** Solo cuando el estado del plan es `shared`. */
   developmentPlan: DevelopmentPlanSchema.nullable(),
   timeline: z.array(PlayerEventSchema),
-  challenge: z
-    .object({
+  /** Los retos activos en los que participa (su sección y su equipo, ADR 0032), con sus puntos. */
+  challenges: z.array(
+    z.object({
       id: z.string(),
       name: z.string(),
+      section: z.object({ id: z.string(), name: z.string() }),
+      team: z.object({ id: z.string(), name: z.string() }).nullable(),
       minPoints: z.number().int(),
       targetPoints: z.number().int(),
       approvedPoints: z.number().int().nonnegative(),
       pendingPoints: z.number().int().nonnegative(),
-    })
-    .nullable(),
+    }),
+  ),
 });
 export type FamilyPlayerDetailResponse = z.infer<typeof FamilyPlayerDetailResponseSchema>;
 

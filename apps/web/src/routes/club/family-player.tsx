@@ -61,7 +61,7 @@ function ProgressBar({ value, label }: { value: number; label: string }) {
 
 /**
  * Ficha de uno de los suyos, para la familia (Bloque 13, ADR 0030): foto (y cambiarla), equipo y
- * cuerpo técnico, objetivo, PDI si el club lo ha compartido, puntos del reto y movimientos. Sin
+ * cuerpo técnico, objetivo, PDI si el club lo ha compartido, puntos de sus retos y movimientos. Sin
  * indicadores, sin anotaciones del personal y sin comparar con nadie (DESIGN.md 0.10 y 10).
  */
 export function FamilyPlayerPage() {
@@ -104,7 +104,7 @@ export function FamilyPlayerPage() {
       </div>
     );
   }
-  const { player, teams, objective, developmentPlan, timeline, challenge } = detail.data;
+  const { player, teams, objective, developmentPlan, timeline, challenges } = detail.data;
   const name = playerDisplayName(player);
   const age = dates.age(player.birthDate);
   const current = teams.find((x) => x.seasonIsCurrent) ?? null;
@@ -155,9 +155,8 @@ export function FamilyPlayerPage() {
     }
   }
 
-  const challengeProgress = challenge
-    ? Math.round((challenge.approvedPoints / Math.max(1, challenge.targetPoints)) * 100)
-    : 0;
+  const challengeProgress = (challenge: (typeof challenges)[number]) =>
+    Math.round((challenge.approvedPoints / Math.max(1, challenge.targetPoints)) * 100);
 
   return (
     <div className="flex flex-col gap-5">
@@ -271,54 +270,72 @@ export function FamilyPlayerPage() {
           )}
         </Card>
 
-        {/* Reto: solo los puntos de este jugador, nunca los de otros. */}
-        <Card
-          title={
-            <span className="flex flex-col gap-0.5">
-              <Eyebrow>{t("challenge.eyebrow")}</Eyebrow>
-              {challenge ? challenge.name : t("challenge.title")}
-            </span>
-          }
-          actions={
-            challenge ? (
-              <ButtonLink to={`${paths.challenges}?player=${id}`} variant="secondary" size="sm">
-                {t("challenge.open")}
-              </ButtonLink>
-            ) : null
-          }
-        >
-          {challenge ? (
-            <div className="flex flex-col gap-3">
-              <div className="flex items-end justify-between gap-3">
-                <span className="font-mono text-display text-ink">{challenge.approvedPoints}</span>
-                <span className="text-secondary text-muted">
-                  {t("challenge.target", { target: challenge.targetPoints })}
-                </span>
-              </div>
-              <ProgressBar
-                value={challengeProgress}
-                label={t("challenge.progressLabel", {
-                  points: challenge.approvedPoints,
-                  target: challenge.targetPoints,
-                })}
-              />
-              <div className="flex flex-wrap gap-2">
-                <StatusChip
-                  kind={challenge.approvedPoints >= challenge.minPoints ? "success" : "neutral"}
-                >
-                  {t("challenge.min", { min: challenge.minPoints })}
-                </StatusChip>
-                {challenge.pendingPoints > 0 ? (
-                  <StatusChip kind="info">
-                    {t("challenge.pending", { points: challenge.pendingPoints })}
-                  </StatusChip>
-                ) : null}
-              </div>
-            </div>
-          ) : (
+        {/* Retos: los de su sección y los de su equipo (ADR 0032). Solo sus puntos, nunca los de otros. */}
+        {challenges.length === 0 ? (
+          <Card
+            title={
+              <span className="flex flex-col gap-0.5">
+                <Eyebrow>{t("challenge.eyebrow")}</Eyebrow>
+                {t("challenge.title")}
+              </span>
+            }
+          >
             <EmptyState icon={<Icon.Trophy weight="duotone" />} title={t("challenge.none")} />
-          )}
-        </Card>
+          </Card>
+        ) : (
+          challenges.map((challenge) => (
+            <Card
+              key={challenge.id}
+              title={
+                <span className="flex flex-col gap-0.5">
+                  <Eyebrow>
+                    {t("challenge.eyebrow")} · {challenge.team?.name ?? challenge.section.name}
+                  </Eyebrow>
+                  {challenge.name}
+                </span>
+              }
+              actions={
+                <ButtonLink
+                  to={`${paths.challenges}?player=${id}&challenge=${challenge.id}`}
+                  variant="secondary"
+                  size="sm"
+                >
+                  {t("challenge.open")}
+                </ButtonLink>
+              }
+            >
+              <div className="flex flex-col gap-3">
+                <div className="flex items-end justify-between gap-3">
+                  <span className="font-mono text-display text-ink">
+                    {challenge.approvedPoints}
+                  </span>
+                  <span className="text-secondary text-muted">
+                    {t("challenge.target", { target: challenge.targetPoints })}
+                  </span>
+                </div>
+                <ProgressBar
+                  value={challengeProgress(challenge)}
+                  label={t("challenge.progressLabel", {
+                    points: challenge.approvedPoints,
+                    target: challenge.targetPoints,
+                  })}
+                />
+                <div className="flex flex-wrap gap-2">
+                  <StatusChip
+                    kind={challenge.approvedPoints >= challenge.minPoints ? "success" : "neutral"}
+                  >
+                    {t("challenge.min", { min: challenge.minPoints })}
+                  </StatusChip>
+                  {challenge.pendingPoints > 0 ? (
+                    <StatusChip kind="info">
+                      {t("challenge.pending", { points: challenge.pendingPoints })}
+                    </StatusChip>
+                  ) : null}
+                </div>
+              </div>
+            </Card>
+          ))
+        )}
 
         {/* Objetivo individual: la prioridad del club con este jugador. */}
         <Card

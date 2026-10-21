@@ -1282,7 +1282,7 @@
     "title": "Challenges",
     "description": "Point challenges: tasks, family entries and club validation.",
     "new": "New challenge",
-    "familiesNote": "Families log their players' activity and see only their points. Participation by player is for staff only.",
+    "familiesNote": "Each challenge belongs to a section or a team. Families log their players' activity and see only their points. Participation by player is for staff only.",
     "empty": "No challenges yet.",
     "emptyHint": "Create the first one with the sample catalogue and activate it when ready.",
     "from": "from {date}",
@@ -1321,7 +1321,7 @@
     "maxPoints": "cap {points}",
     "sheet": {
       "title": "New challenge",
-      "description": "A period with a catalogue of tasks. Families log, the club validates.",
+      "description": "A period with a catalogue of tasks, for a whole section or for a single team. Families log, the club validates.",
       "submit": "Create challenge",
       "name": "Name",
       "nameHint": "For example, Summer challenge 2027.",
@@ -1341,7 +1341,23 @@
       "pointsOrder": "The target cannot be lower than the minimum.",
       "created": "Challenge {name} created.",
       "editTitle": "Edit {name}",
-      "saved": "Challenge saved."
+      "saved": "Challenge saved.",
+      "scopeFixed": "The challenge's section and team no longer change: the challenge is under way."
+    },
+    "scope": {
+      "section": "Section",
+      "kind": "Scope",
+      "kindHint": "The whole section, or a single team with its own challenge.",
+      "wholeSection": "Whole section",
+      "wholeSectionShort": "whole section",
+      "oneTeam": "One team",
+      "team": "Team",
+      "noTeams": "This section has no teams this season.",
+      "ownHint": "You can only create challenges for your teams.",
+      "noOwnTeams": "You are not coaching any team this season, so you cannot create challenges.",
+      "noSections": "Create a section first: challenges belong to a section or a team.",
+      "filter": "Section",
+      "filterAll": "All sections"
     }
   },
   "familyChallenge": {
@@ -1351,7 +1367,7 @@
     "noPlayersHint": "Ask the club admin to link you from the player's record.",
     "playerTabs": "Family players",
     "noChallenge": "There is no active challenge right now.",
-    "noChallengeHint": "When the club activates one, you will see it here.",
+    "noChallengeHint": "When the club activates one for their section or team, you will see it here.",
     "register": "Log activity",
     "target": "target {target}",
     "progressLabel": "{points} of {target} challenge points",
@@ -1383,7 +1399,8 @@
       "noteHint": "Optional: a video, a photo or a comment.",
       "capHint": "This task is capped at {points} points for the whole challenge.",
       "saved": "Activity logged. The club will validate it."
-    }
+    },
+    "challengeTabs": "Challenges of {name}"
   },
   "challenge": {
     "back": "Challenges",

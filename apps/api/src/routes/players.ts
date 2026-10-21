@@ -328,13 +328,15 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
       const player = await data.players.familyPlayer(tenant.scope, actorId(c), id);
       if (!player) throw notFound("Ese jugador no está vinculado a tu cuenta.");
       const scope = tenant.scope;
-      const [objective, plan, events, challenge] = await Promise.all([
+      const [objective, plan, events, challenges] = await Promise.all([
         data.playerProfile.objectiveOf(scope, id),
         data.playerProfile.planOf(scope, id),
         data.playerProfile.eventsOf(scope, id, { kinds: FAMILY_EVENT_KINDS }),
-        data.challenges.active(scope),
+        data.challenges.activeFor(scope, id),
       ]);
-      const totals = challenge ? await data.challenges.totalsFor(scope, challenge.id, id) : null;
+      const totals = await Promise.all(
+        challenges.map((ch) => data.challenges.totalsFor(scope, ch.id, id)),
+      );
       return c.json(
         {
           player: {
@@ -359,17 +361,16 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
               actorName: null,
             },
           ],
-          challenge:
-            challenge && totals
-              ? {
-                  id: challenge.id,
-                  name: challenge.name,
-                  minPoints: challenge.minPoints,
-                  targetPoints: challenge.targetPoints,
-                  approvedPoints: totals.approved,
-                  pendingPoints: totals.pending,
-                }
-              : null,
+          challenges: challenges.map((challenge, index) => ({
+            id: challenge.id,
+            name: challenge.name,
+            section: challenge.section,
+            team: challenge.team,
+            minPoints: challenge.minPoints,
+            targetPoints: challenge.targetPoints,
+            approvedPoints: totals[index]!.approved,
+            pendingPoints: totals[index]!.pending,
+          })),
         },
         200,
       );

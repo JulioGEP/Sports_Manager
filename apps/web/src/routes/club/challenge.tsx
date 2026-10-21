@@ -12,6 +12,7 @@ import {
   ChallengeSubmissionsResponseSchema,
   SUBMISSION_STATUSES,
   type ChallengeArea,
+  type ChallengeManageScope,
   type ChallengeStanding,
   type ChallengeSubmission,
   type ChallengeSummary,
@@ -45,6 +46,15 @@ import {
   Tabs,
   useToast,
 } from "@/ui";
+import {
+  ScopeFields,
+  resolveScope,
+  scopeIsComplete,
+  scopeStateOf,
+  useScopeLabel,
+  useScopeOptions,
+  type ScopeState,
+} from "./challenge-scope";
 import { challengeKind, submissionKind } from "./challenges";
 
 type Tab = "tasks" | "review" | "standings";
@@ -52,7 +62,8 @@ type Tab = "tasks" | "review" | "standings";
 /**
  * Un reto, para el personal (Bloque 13, ADR 0030): catálogo de pruebas, validación de registros
  * y participación por jugador. Quien gestiona edita el catálogo, activa y cierra; quien valida
- * aprueba o rechaza, de todo el club o solo de sus equipos.
+ * aprueba o rechaza, de todo el club o solo de sus equipos. Qué puede hacer cada uno con este
+ * reto lo dice la API (`access`): la entrenadora gestiona solo los retos de sus equipos (ADR 0032).
  */
 export function ChallengePage() {
   const t = useT("challenge");
@@ -64,13 +75,9 @@ export function ChallengePage() {
   const client = useQueryClient();
   const [params, setParams] = useSearchParams();
   const { id = "" } = useParams();
-  const { org, slug } = useReadyClub();
+  const { slug } = useReadyClub();
   const paths = clubPaths(slug);
-  const permissions = org.actor.permissions;
-  const canManage = permissions.includes("org.challenges.manage");
-  const canReview =
-    permissions.includes("org.challenges.review") ||
-    permissions.includes("org.challenges.review_own");
+  const scopeLabel = useScopeLabel();
 
   const rawTab = params.get("tab");
   const tab: Tab = rawTab === "review" || rawTab === "standings" ? rawTab : "tasks";
@@ -102,7 +109,9 @@ export function ChallengePage() {
       </div>
     );
   }
-  const { challenge, tasks } = detail.data;
+  const { challenge, tasks, access } = detail.data;
+  const canManage = access.manage;
+  const canReview = access.review;
   const editable = canManage && challenge.status !== "closed";
 
   async function setStatus(status: "active" | "closed") {
@@ -152,7 +161,7 @@ export function ChallengePage() {
         </ButtonLink>
       </div>
       <PageHeader
-        eyebrow={`${challenge.season ? `${challenge.season.name} · ` : ""}${period}`}
+        eyebrow={`${scopeLabel(challenge)} · ${challenge.season ? `${challenge.season.name} · ` : ""}${period}`}
         title={
           <>
             {challenge.name}
@@ -343,6 +352,7 @@ export function ChallengePage() {
       {editing ? (
         <EditChallengeSheet
           challenge={challenge}
+          manage={detail.data.manage}
           onClose={() => setEditing(false)}
           onSaved={() => void reload()}
         />
@@ -706,10 +716,12 @@ function StandingsTab({ challenge }: { challenge: ChallengeSummary }) {
 
 function EditChallengeSheet({
   challenge,
+  manage,
   onClose,
   onSaved,
 }: {
   challenge: ChallengeSummary;
+  manage: ChallengeManageScope;
   onClose: () => void;
   onSaved: () => void;
 }) {
@@ -717,6 +729,10 @@ function EditChallengeSheet({
   const c = useT("common");
   const errors = useT("errors");
   const toast = useToast();
+  // El ámbito solo cambia en borrador: después el reto ya tiene participantes.
+  const scopeEditable = challenge.status === "draft";
+  const scopeOptions = useScopeOptions(manage, scopeEditable);
+  const [scope, setScope] = useState<ScopeState>(() => scopeStateOf(challenge));
   const [name, setName] = useState(challenge.name);
   const [description, setDescription] = useState(challenge.description ?? "");
   const [startsOn, setStartsOn] = useState(challenge.startsOn ?? "");
@@ -733,6 +749,12 @@ function EditChallengeSheet({
       setError(t("pointsOrder"));
       return;
     }
+    if (scopeEditable && !scopeIsComplete(scopeOptions, scope)) return;
+    const resolved = resolveScope(scopeOptions, scope);
+    const scopeChanged =
+      scopeEditable &&
+      (resolved.sectionId !== challenge.section.id ||
+        resolved.teamId !== (challenge.team?.id ?? null));
     setBusy(true);
     try {
       await apiFetch(`/api/org/challenges/${challenge.id}`, {
@@ -740,6 +762,7 @@ function EditChallengeSheet({
         body: {
           name,
           description: description.trim() || null,
+          ...(scopeChanged ? { sectionId: resolved.sectionId, teamId: resolved.teamId } : {}),
           startsOn: startsOn || null,
           endsOn: endsOn || null,
           minPoints: Number(minPoints),
@@ -779,6 +802,11 @@ function EditChallengeSheet({
         className="flex flex-col gap-4"
         onSubmit={(e) => void submit(e)}
       >
+        {scopeEditable ? (
+          <ScopeFields options={scopeOptions} state={scope} onChange={setScope} />
+        ) : (
+          <p className="text-secondary text-muted">{t("scopeFixed")}</p>
+        )}
         <Field label={t("name")}>
           {(id) => (
             <Input

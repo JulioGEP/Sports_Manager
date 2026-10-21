@@ -7,16 +7,24 @@ import {
   SUBMISSION_STATUSES,
 } from "../challenges.ts";
 
-/** Contratos del reto por puntos (Bloque 13, ADR 0030). Todo bajo el club de la petición. */
+/**
+ * Contratos del reto por puntos (Bloque 13, ADR 0030; ámbito por sección o equipo, ADR 0032).
+ * Todo bajo el club de la petición.
+ */
 
 const PersonRef = z.object({ userId: z.string(), name: z.string() });
+const NamedRef = z.object({ id: z.string(), name: z.string() });
 
 export const ChallengeSummarySchema = z.object({
   id: z.string(),
   name: z.string(),
   description: z.string().nullable(),
   status: z.enum(CHALLENGE_STATUSES),
-  season: z.object({ id: z.string(), name: z.string() }).nullable(),
+  /** Sección del reto. Siempre hay una. */
+  section: NamedRef,
+  /** Equipo concreto, o nulo si el reto es de toda la sección. */
+  team: NamedRef.nullable(),
+  season: NamedRef.nullable(),
   startsOn: z.string().nullable(),
   endsOn: z.string().nullable(),
   minPoints: z.number().int(),
@@ -29,7 +37,21 @@ export const ChallengeSummarySchema = z.object({
   updatedAt: z.string(),
 });
 export type ChallengeSummary = z.infer<typeof ChallengeSummarySchema>;
-export const ChallengesResponseSchema = z.object({ challenges: z.array(ChallengeSummarySchema) });
+
+/**
+ * Hasta dónde llega quien pregunta al gestionar retos: `club`, cualquier sección o equipo;
+ * `own`, solo retos de equipo de los equipos que lleva (`ownTeamIds`); `none`, no gestiona.
+ */
+export const ChallengeManageScopeSchema = z.object({
+  scope: z.enum(["club", "own", "none"]),
+  ownTeamIds: z.array(z.string()),
+});
+export type ChallengeManageScope = z.infer<typeof ChallengeManageScopeSchema>;
+
+export const ChallengesResponseSchema = z.object({
+  challenges: z.array(ChallengeSummarySchema),
+  manage: ChallengeManageScopeSchema,
+});
 export type ChallengesResponse = z.infer<typeof ChallengesResponseSchema>;
 export const ChallengeResponseSchema = z.object({ challenge: ChallengeSummarySchema });
 
@@ -49,6 +71,9 @@ export type ChallengeTask = z.infer<typeof ChallengeTaskSchema>;
 export const ChallengeDetailResponseSchema = z.object({
   challenge: ChallengeSummarySchema,
   tasks: z.array(ChallengeTaskSchema),
+  /** Lo que quien pregunta puede hacer con este reto: la web enseña solo lo que se puede. */
+  access: z.object({ manage: z.boolean(), review: z.boolean() }),
+  manage: ChallengeManageScopeSchema,
 });
 export type ChallengeDetailResponse = z.infer<typeof ChallengeDetailResponseSchema>;
 
@@ -106,11 +131,20 @@ export const ChallengeStandingsResponseSchema = z.object({
 });
 export type ChallengeStandingsResponse = z.infer<typeof ChallengeStandingsResponseSchema>;
 
-/** Lo que ve una familia del reto de uno de sus jugadores: sus puntos y sus registros, nada más. */
-export const FamilyChallengeResponseSchema = z.object({
-  challenge: ChallengeSummarySchema.nullable(),
+/** Lo que ve una familia de un reto de uno de sus jugadores: sus puntos y sus registros, nada más. */
+export const FamilyChallengeViewSchema = z.object({
+  challenge: ChallengeSummarySchema,
   tasks: z.array(ChallengeTaskSchema),
   totals: ChallengeTotalsSchema,
   submissions: z.array(ChallengeSubmissionSchema),
 });
-export type FamilyChallengeResponse = z.infer<typeof FamilyChallengeResponseSchema>;
+export type FamilyChallengeView = z.infer<typeof FamilyChallengeViewSchema>;
+
+/**
+ * Los retos activos de un jugador para su familia: los de su sección y los de su equipo, los de
+ * toda la sección antes. Vacío si ahora mismo no participa en ninguno.
+ */
+export const FamilyChallengesResponseSchema = z.object({
+  challenges: z.array(FamilyChallengeViewSchema),
+});
+export type FamilyChallengesResponse = z.infer<typeof FamilyChallengesResponseSchema>;
