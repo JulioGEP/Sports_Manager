@@ -228,6 +228,7 @@ export function SectionPage() {
                   actions={
                     access.write ? (
                       <Button
+                        iconOnly
                         action="edit"
                         variant="tertiary"
                         size="sm"
@@ -314,6 +315,7 @@ export function SectionPage() {
                     })}
                     actions={(team) => (
                       <ButtonLink
+                        iconOnly
                         action="open"
                         to={paths.team(team.id)}
                         variant="secondary"

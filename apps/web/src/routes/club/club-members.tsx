@@ -270,7 +270,13 @@ export function ClubMembersPage() {
             trailing: <StatusChip kind={memberStatusKind[m.status]}>{ms(m.status)}</StatusChip>,
           })}
           actions={(m) => (
-            <ButtonLink action="open" to={paths.clubMember(m.id)} variant="secondary" size="sm">
+            <ButtonLink
+              iconOnly
+              action="open"
+              to={paths.clubMember(m.id)}
+              variant="secondary"
+              size="sm"
+            >
               {c("open")}
             </ButtonLink>
           )}

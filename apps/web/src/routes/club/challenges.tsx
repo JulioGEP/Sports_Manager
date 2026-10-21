@@ -256,7 +256,13 @@ function StaffChallengesPage() {
             ),
           })}
           actions={(ch) => (
-            <ButtonLink action="open" to={paths.challenge(ch.id)} variant="secondary" size="sm">
+            <ButtonLink
+              iconOnly
+              action="open"
+              to={paths.challenge(ch.id)}
+              variant="secondary"
+              size="sm"
+            >
               {c("open")}
             </ButtonLink>
           )}
@@ -724,6 +730,7 @@ function FamilyChallengesPage() {
                       </StatusChip>
                       {canWrite && s.status === "submitted" ? (
                         <Button
+                          iconOnly
                           action="delete"
                           variant="danger"
                           size="sm"

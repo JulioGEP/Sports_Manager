@@ -894,6 +894,7 @@ export function PlayerPage() {
                     <StatusChip kind="club">{rel(g.relationship)}</StatusChip>
                     {canWrite ? (
                       <Button
+                        iconOnly
                         action="unlink"
                         variant="tertiary"
                         size="sm"

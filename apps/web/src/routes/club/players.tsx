@@ -384,7 +384,13 @@ export function PlayersPage() {
               ) : undefined,
           })}
           actions={(p) => (
-            <ButtonLink action="open" to={paths.player(p.id)} variant="secondary" size="sm">
+            <ButtonLink
+              iconOnly
+              action="open"
+              to={paths.player(p.id)}
+              variant="secondary"
+              size="sm"
+            >
               {c("open")}
             </ButtonLink>
           )}

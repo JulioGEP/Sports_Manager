@@ -617,7 +617,13 @@ function SeasonsTab() {
           })}
           actions={(s) => (
             <span className="flex flex-wrap justify-end gap-2">
-              <Button action="edit" size="sm" variant="secondary" onClick={() => setEditing(s)}>
+              <Button
+                iconOnly
+                action="edit"
+                size="sm"
+                variant="secondary"
+                onClick={() => setEditing(s)}
+              >
                 {t("edit")}
               </Button>
               {!s.isCurrent ? (
@@ -894,11 +900,18 @@ function MemberTypesTab() {
           })}
           actions={(m) => (
             <span className="flex flex-wrap justify-end gap-2">
-              <Button action="edit" size="sm" variant="secondary" onClick={() => setRenaming(m)}>
+              <Button
+                iconOnly
+                action="edit"
+                size="sm"
+                variant="secondary"
+                onClick={() => setRenaming(m)}
+              >
                 {t("rename")}
               </Button>
               {m.status === "active" ? (
                 <Button
+                  iconOnly
                   action="archive"
                   size="sm"
                   variant="danger"
@@ -908,6 +921,7 @@ function MemberTypesTab() {
                 </Button>
               ) : (
                 <Button
+                  iconOnly
                   action="restore"
                   size="sm"
                   variant="secondary"

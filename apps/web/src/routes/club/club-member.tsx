@@ -330,6 +330,7 @@ export function ClubMemberPage() {
                   ? (ch) =>
                       ch.status === "pending" || ch.status === "overdue" ? (
                         <Button
+                          iconOnly
                           action="pay"
                           variant="secondary"
                           size="sm"

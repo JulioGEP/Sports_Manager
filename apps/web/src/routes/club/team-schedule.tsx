@@ -123,6 +123,7 @@ export function ScheduleSheet({
                 ))}
               </Select>
               <Button
+                iconOnly
                 action="delete"
                 type="button"
                 variant="danger"

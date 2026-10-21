@@ -2,6 +2,8 @@ import {
   Button as DsButton,
   ButtonContent,
   buttonClassName,
+  buttonTitle,
+  iconOnlyClassName,
   type ActionKind,
   type ButtonProps as DsButtonProps,
   type ButtonSize,
@@ -46,6 +48,8 @@ export interface ButtonLinkProps extends LinkProps {
   /** Acción del catálogo (DESIGN.md 8.1): `open` lleva la flecha detrás del verbo. */
   action?: ActionKind | undefined;
   icon?: ReactNode;
+  /** Solo el icono, para acciones de fila: el verbo queda como nombre accesible y tooltip. */
+  iconOnly?: boolean | undefined;
   /** Otro origen: `<a>` normal en vez del enrutador. */
   external?: boolean | undefined;
 }
@@ -56,27 +60,30 @@ export function ButtonLink({
   size = "md",
   action,
   icon,
+  iconOnly = false,
   external = false,
   className = "",
   children,
   to,
   ...rest
 }: ButtonLinkProps) {
-  const cls = `${buttonClassName({ variant, size })} no-underline ${className}`;
+  const square = iconOnly ? iconOnlyClassName(size) : "";
+  const cls = `${buttonClassName({ variant, size })} ${square} no-underline ${className}`;
+  const title = iconOnly ? buttonTitle(children) : undefined;
   const content = (
-    <ButtonContent action={action} icon={icon} size={size}>
+    <ButtonContent action={action} icon={icon} size={size} iconOnly={iconOnly}>
       {children}
     </ButtonContent>
   );
   if (external) {
     return (
-      <a className={cls} href={typeof to === "string" ? to : (to.pathname ?? "/")}>
+      <a className={cls} href={typeof to === "string" ? to : (to.pathname ?? "/")} title={title}>
         {content}
       </a>
     );
   }
   return (
-    <Link className={cls} to={to} {...rest}>
+    <Link className={cls} to={to} title={title} {...rest}>
       {content}
     </Link>
   );
