@@ -111,8 +111,7 @@ test.describe("club completo", () => {
     await shot(page, "98-cuotas-cargos", info.project.name);
     await expectLegibleButtons(page);
 
-    // Registrar un pago a mano sobre el primer cargo pendiente.
-    await page.getByLabel("Estado").selectOption("pending");
+    // Registrar un pago a mano sobre el primer cargo abierto (los de octubre ya están vencidos).
     await page.getByRole("button", { name: "Cobrar" }).first().click();
     const pay = page.getByRole("dialog");
     await expect(pay.getByRole("heading", { name: "Registrar pago" })).toBeVisible();
