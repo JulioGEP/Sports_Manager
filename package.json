@@ -18,6 +18,7 @@
     "db:generate": "pnpm --filter @sportsmanager/db generate",
     "db:migrate": "netlify database migrations apply",
     "db:status": "netlify database status",
+    "db:check": "bash scripts/check-migrations.sh",
     "dev:servers": "concurrently -k -n api,web -c cyan,magenta \"pnpm --filter @sportsmanager/api dev\" \"pnpm --filter @sportsmanager/web dev\"",
     "test:ui": "pnpm --filter @sportsmanager/web e2e"
   },

@@ -50,4 +50,4 @@ docs              Plan, dominio, decisiones (ADR) y despliegue.
 
 ## Cómo contribuir
 
-Una rama y una PR por bloque de trabajo. Nada directo a `main`. Cada decisión técnica relevante va a `docs/decisions/` como ADR corto. CI exige lint, typecheck, tests y tests de aislamiento en verde.
+Una rama y una PR por bloque de trabajo. Nada directo a `main`. Cada decisión técnica relevante va a `docs/decisions/` como ADR corto. CI exige lint, typecheck, tests y tests de aislamiento en verde. Si `main` recibe migraciones mientras tu rama está abierta, mezcla `main` antes de seguir: la preview de Netlify falla con cualquier migración que le falte (`pnpm db:check` lo comprueba; ver `docs/deploy.md`).
