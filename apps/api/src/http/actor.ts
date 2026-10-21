@@ -1,5 +1,5 @@
 import {
-  permissionsForRoles,
+  permissionsForMemberships,
   PLATFORM_SUPPORT_PERMISSIONS,
   SUPPORT_GRANT_PERMISSIONS,
   type Permission,
@@ -19,13 +19,14 @@ export function requireActor(data: DataLayer): MiddlewareHandler<AppEnv> {
     const tenant = c.get("tenant");
     if (tenant?.kind !== "organization") throw notFound();
     const user = c.get("sessionUser");
-    const roles = await data.memberships.rolesFor(tenant.scope, user.id);
-    if (roles.length > 0) {
+    const memberships = await data.memberships.membershipsFor(tenant.scope, user.id);
+    if (memberships.length > 0) {
       c.set("actor", {
         kind: "member",
         userId: user.id,
-        roles,
-        permissions: permissionsForRoles(roles),
+        roles: memberships.map((m) => m.roleCode),
+        position: memberships.find((m) => m.roleCode === "staff")?.position ?? null,
+        permissions: permissionsForMemberships(memberships),
       });
       return next();
     }

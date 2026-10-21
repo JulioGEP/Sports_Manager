@@ -5,6 +5,7 @@ import { createDataLayer, type DataLayer } from "./data/index.ts";
 import type { AppEnv } from "./http/context.ts";
 import { ApiError, badRequest, notFound } from "./http/errors.ts";
 import { createBrandingRoutes } from "./routes/branding.ts";
+import { createChallengeRoutes } from "./routes/challenges.ts";
 import { createHealthRoutes } from "./routes/health.ts";
 import { createInvitationRoutes } from "./routes/invitations.ts";
 import { createMeRoutes } from "./routes/me.ts";
@@ -22,7 +23,7 @@ export interface AppOptions {
   data?: DataLayer;
 }
 
-export const API_VERSION = "0.8.0";
+export const API_VERSION = "0.9.0";
 
 export function createApp(options: AppOptions = {}) {
   const config = options.config ?? loadConfig();
@@ -65,6 +66,7 @@ export function createApp(options: AppOptions = {}) {
   app.route("/", createInvitationRoutes(config, data));
   app.route("/", createStructureRoutes(config, data));
   app.route("/", createPlayerRoutes(config, data));
+  app.route("/", createChallengeRoutes(config, data));
   app.route("/", createPlatformRoutes(config, data));
   app.route("/", createPlatformSetupRoutes(config, data));
 

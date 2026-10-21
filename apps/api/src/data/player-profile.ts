@@ -9,7 +9,7 @@ import {
   type PlayerObjectiveUpdate,
   type PlayerPhotoContentType,
 } from "@sportsmanager/shared";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
 import type { BlobStore } from "./logos.ts";
 import type { OrgScope } from "./scope.ts";
@@ -326,8 +326,16 @@ export function playerProfileRepo(db: () => Database, photos: BlobStore) {
       return plan;
     },
 
-    /** Registros del jugador, del más reciente al más antiguo. */
-    async eventsOf(scope: OrgScope, playerId: string, limit = 50): Promise<PlayerEventRecord[]> {
+    /**
+     * Registros del jugador, del más reciente al más antiguo. Con `kinds`, solo esos tipos: la
+     * familia no ve anotaciones del personal ni cambios de indicadores (Bloque 13).
+     */
+    async eventsOf(
+      scope: OrgScope,
+      playerId: string,
+      options: { limit?: number; kinds?: readonly PlayerEventKind[] } = {},
+    ): Promise<PlayerEventRecord[]> {
+      const limit = options.limit ?? 50;
       const rows = await db()
         .select({
           id: schema.playerEvents.id,
@@ -342,6 +350,7 @@ export function playerProfileRepo(db: () => Database, photos: BlobStore) {
           and(
             eq(schema.playerEvents.organizationId, scope.organizationId),
             eq(schema.playerEvents.playerId, playerId),
+            ...(options.kinds ? [inArray(schema.playerEvents.kind, [...options.kinds])] : []),
           ),
         )
         .orderBy(desc(schema.playerEvents.happenedOn), desc(schema.playerEvents.createdAt))

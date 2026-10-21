@@ -80,6 +80,13 @@ function ClubFrame({ children }: { children: ReactNode }) {
       end: false,
     },
     {
+      to: paths.challenges,
+      label: t("challenges"),
+      icon: Icon.Trophy,
+      show: permissions.includes("org.challenges.read") || permissions.includes("org.family.read"),
+      end: false,
+    },
+    {
       to: paths.members,
       label: t("members"),
       icon: Icon.Users,
@@ -94,6 +101,9 @@ function ClubFrame({ children }: { children: ReactNode }) {
       end: false,
     },
   ].filter((l) => l.show);
+  /** La barra inferior admite cinco destinos (DESIGN.md 9.10): los ajustes pasan al menú de persona. */
+  const mobileLinks = links.length > 5 ? links.filter((l) => l.to !== paths.settings) : links;
+  const settingsInMenu = !desktop && mobileLinks.length !== links.length;
 
   async function onSignOut() {
     await signOut();
@@ -121,6 +131,11 @@ function ClubFrame({ children }: { children: ReactNode }) {
       {memberships.length > 1 ? (
         <MenuItem to="/clubs" icon={<Icon.SquaresFour size={20} aria-hidden="true" />}>
           {t("myClubs")}
+        </MenuItem>
+      ) : null}
+      {settingsInMenu ? (
+        <MenuItem to={paths.settings} icon={<Icon.Gear size={20} aria-hidden="true" />}>
+          {t("settings")}
         </MenuItem>
       ) : null}
       {me.platformAdmin ? (
@@ -202,12 +217,12 @@ function ClubFrame({ children }: { children: ReactNode }) {
           <ClubBody state={state}>{children}</ClubBody>
         </div>
       </main>
-      {links.length > 1 ? (
+      {mobileLinks.length > 1 ? (
         <nav
           aria-label={t("mainNav")}
           className="fixed inset-x-4 bottom-4 z-30 grid h-16 grid-flow-col auto-cols-fr items-center rounded-tabbar bg-surface px-2 shadow-float"
         >
-          {links.map((l) => (
+          {mobileLinks.map((l) => (
             <NavLink
               key={l.to}
               to={l.to}

@@ -111,6 +111,10 @@ export function createInvitationRoutes(config: ApiConfig, data: DataLayer) {
         if (roles.includes(body.roleCode))
           throw conflict("Esa persona ya es miembro del club con ese rol.");
       }
+      if (body.roleCode === "staff" && !body.position)
+        throw badRequest("El personal del club entra con un cargo.");
+      if (body.teamId && !(await data.teams.byId(tenant.scope, body.teamId)))
+        throw badRequest("Ese equipo no es de este club.");
 
       let result;
       try {
@@ -120,6 +124,8 @@ export function createInvitationRoutes(config: ApiConfig, data: DataLayer) {
           locale,
           invitedBy: user.id,
           ttlDays: config.invitationTtlDays,
+          position: body.position ?? null,
+          teamId: body.teamId ?? null,
         });
       } catch (err) {
         if (isUniqueViolation(err)) result = { outcome: "pending_exists" as const };
@@ -144,7 +150,12 @@ export function createInvitationRoutes(config: ApiConfig, data: DataLayer) {
         organizationId: tenant.organization.id,
         action: "invitation.created",
         target: body.email,
-        details: { roleCode: body.roleCode, locale },
+        details: {
+          roleCode: body.roleCode,
+          locale,
+          position: body.position ?? null,
+          teamId: body.teamId ?? null,
+        },
       });
       return c.json(sent, 201);
     },
@@ -329,6 +340,21 @@ export function createInvitationRoutes(config: ApiConfig, data: DataLayer) {
       const existing = await data.users.findByEmail(invitation.email);
       const organization = { slug: tenant.organization.slug, name: tenant.organization.name };
 
+      /** Cuerpo técnico (Bloque 13): quien entra con equipo queda en su cuerpo técnico. */
+      const joinTeam = async (userId: string) => {
+        if (!invitation.team) return;
+        const outcome = await data.teams.addStaff(tenant.scope, invitation.team.id, userId);
+        if (outcome === "added") {
+          await data.audit.record({
+            actorUserId: userId,
+            organizationId: tenant.organization.id,
+            action: "team.staff_added",
+            target: invitation.team.name,
+            details: { userId, via: "invitation" },
+          });
+        }
+      };
+
       /** Invitación de familia (Bloque 11): la cuenta queda vinculada al jugador al aceptar. */
       const linkFamily = async (userId: string) => {
         if (!invitation.player || !invitation.relationship) return;
@@ -353,9 +379,15 @@ export function createInvitationRoutes(config: ApiConfig, data: DataLayer) {
             "Ese email ya tiene cuenta. Inicia sesión para aceptar la invitación.",
           );
         if (session.id !== existing.id) throw invitationEmailMismatch();
-        const roles = await data.memberships.join(tenant.scope, existing.id, invitation.roleCode);
+        const roles = await data.memberships.join(
+          tenant.scope,
+          existing.id,
+          invitation.roleCode,
+          invitation.position,
+        );
         await data.invitations.markAccepted(tenant.scope, invitation.id, existing.id);
         await linkFamily(existing.id);
+        await joinTeam(existing.id);
         await data.audit.record({
           actorUserId: existing.id,
           organizationId: tenant.organization.id,
@@ -377,9 +409,15 @@ export function createInvitationRoutes(config: ApiConfig, data: DataLayer) {
         password: body.password,
         locale: invitation.locale,
       });
-      const roles = await data.memberships.join(tenant.scope, user.id, invitation.roleCode);
+      const roles = await data.memberships.join(
+        tenant.scope,
+        user.id,
+        invitation.roleCode,
+        invitation.position,
+      );
       await data.invitations.markAccepted(tenant.scope, invitation.id, user.id);
       await linkFamily(user.id);
+      await joinTeam(user.id);
       await data.audit.record({
         actorUserId: user.id,
         organizationId: tenant.organization.id,

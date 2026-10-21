@@ -1,8 +1,8 @@
-# Capturas de la interfaz (Bloque 12)
+# Capturas de la interfaz (Bloque 13)
 
-Capturas que generan las pruebas de interfaz (`pnpm test:ui`) contra la API real con base embebida, con el front nuevo (Vite + React + Tailwind) sobre el design system del producto (`packages/design`, ADR 0027). Escritorio a 1280x800; móvil, Pixel 7. La fuente viva es el artefacto `capturas-interfaz` de CI; esta carpeta es la foto de la revisión del Bloque 11, con la ficha de jugador actualizada en el Bloque 12 (ADR 0029).
+Capturas que generan las pruebas de interfaz (`pnpm test:ui`) contra la API real con base embebida, con el front nuevo (Vite + React + Tailwind) sobre el design system del producto (`packages/design`, ADR 0027). Escritorio a 1280x800; móvil, Pixel 7. La fuente viva es el artefacto `capturas-interfaz` de CI; esta carpeta es la foto de la revisión del Bloque 11, con la ficha de jugador del Bloque 12 (ADR 0029) y el inicio operativo, los paneles por cargo, la ficha para la familia y el reto del Bloque 13 (ADR 0030).
 
-Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negocio en `/admin`. Cuentas de demostración, todas con contraseña `123456`: `admin@demo.test` (administra el club demo; en este entorno también la plataforma), `entrenador@demo.test` (entrenadora del Alevín A) y `familia@demo.test` (madre de dos jugadores). El club demo llega con la temporada 2026-27, la sección "Fútbol sala" y cuatro equipos con plantilla (ADR 0028).
+Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negocio en `/admin`. Cuentas de demostración, todas con contraseña `123456`: `admin@demo.test` (administra el club demo; en este entorno también la plataforma), `entrenador@demo.test` (entrenadora del Alevín A), `familia@demo.test` (madre de dos jugadores), `director@demo.test` (dirección deportiva) y `fisio@demo.test` (fisioterapia). El club demo llega con la temporada 2026-27, la sección "Fútbol sala", cuatro equipos con plantilla (ADR 0028) y un reto activo con registros de la familia Martí (ADR 0030).
 
 ## Acceso
 
@@ -32,6 +32,10 @@ Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negoci
 
 ![Portada del club](escritorio-03-inicio.png)
 
+### Inicio operativo: alertas del club, preparación de las fichas, accesos rápidos y últimos movimientos (Bloque 13)
+
+![Inicio operativo](escritorio-03b-inicio-operativo.png)
+
 ### Menú de persona: clubes, administración del negocio, idioma y salir
 
 ![Menú de persona](escritorio-04-menu-persona.png)
@@ -51,6 +55,14 @@ Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negoci
 ### Roles de una persona (hoja)
 
 ![Roles de una persona](escritorio-13-miembros-roles.png)
+
+### Miembros con cargo y equipos (Bloque 13)
+
+![Miembros con cargo](escritorio-10b-miembros-cargos.png)
+
+### Invitar a personal del club con cargo y equipo (hoja)
+
+![Invitar personal](escritorio-11b-miembros-invitar-personal.png)
 
 ### Ajustes del club: datos generales
 
@@ -146,9 +158,57 @@ Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negoci
 
 ![Mi familia](escritorio-47-familia.png)
 
-### La entrenadora ve la plantilla de su equipo sin poder cambiarla
+### Ficha de uno de los suyos, vista por la familia: foto, equipo, objetivo, reto y movimientos; sin indicadores (Bloque 13)
+
+![Ficha para la familia](escritorio-47b-familia-ficha.png)
+
+### La entrenadora gestiona la plantilla de su equipo y valora a sus jugadores (Bloque 13)
 
 ![Entrenadora](escritorio-48-entrenadora-equipo.png)
+
+### Inicio de la entrenadora: su panel con sus equipos y qué hace falta en sus fichas
+
+![Inicio de la entrenadora](escritorio-48b-entrenadora-inicio.png)
+
+## Reto por puntos (`/demo/challenges`, Bloque 13)
+
+### Retos del club
+
+![Retos](escritorio-70-retos.png)
+
+### Un reto: catálogo de pruebas
+
+![Catálogo de pruebas](escritorio-71-reto-pruebas.png)
+
+### Nueva prueba (hoja)
+
+![Nueva prueba](escritorio-71b-reto-prueba-nueva.png)
+
+### Validación de los registros de las familias
+
+![Validación](escritorio-72-reto-validacion.png)
+
+### Participación por jugador, solo para el personal
+
+![Participación](escritorio-73-reto-participacion.png)
+
+### El reto visto por la familia: solo los puntos de los suyos
+
+![Reto de la familia](escritorio-74-familia-reto.png)
+
+### La familia registra actividad (hoja)
+
+![Registrar actividad](escritorio-74b-familia-reto-registrar.png)
+
+## Paneles por cargo (Bloque 13)
+
+### Dirección deportiva: seguimiento del club
+
+![Dirección deportiva](escritorio-75-director-inicio.png)
+
+### Fisioterapia: seguimiento físico
+
+![Fisioterapia](escritorio-76-fisio-inicio.png)
 
 ## Invitación de punta a punta
 
@@ -276,6 +336,10 @@ Las mismas pantallas en un móvil, con la forma envolvente del design system: ca
 
 ![Nuevo jugador (móvil)](movil-44-jugador-nuevo.png)
 
+### Inicio operativo
+
+![Inicio operativo (móvil)](movil-03b-inicio-operativo.png)
+
 ### Portada de una familia
 
 ![Portada de una familia (móvil)](movil-46-familia-inicio.png)
@@ -283,6 +347,26 @@ Las mismas pantallas en un móvil, con la forma envolvente del design system: ca
 ### Mi familia
 
 ![Mi familia (móvil)](movil-47-familia.png)
+
+### Ficha para la familia
+
+![Ficha para la familia (móvil)](movil-47b-familia-ficha.png)
+
+### Retos
+
+![Retos (móvil)](movil-70-retos.png)
+
+### Validación del reto
+
+![Validación (móvil)](movil-72-reto-validacion.png)
+
+### El reto visto por la familia
+
+![Reto de la familia (móvil)](movil-74-familia-reto.png)
+
+### Dirección deportiva
+
+![Dirección deportiva (móvil)](movil-75-director-inicio.png)
 
 ### Invitación: la persona crea su cuenta
 

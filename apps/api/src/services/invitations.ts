@@ -28,6 +28,8 @@ export function invitationDto(record: InvitationRecord): Invitation {
     acceptedAt: record.acceptedAt?.toISOString() ?? null,
     player: record.player ? { id: record.player.id, name: playerDisplayName(record.player) } : null,
     relationship: record.relationship,
+    position: record.position,
+    team: record.team,
   };
 }
 

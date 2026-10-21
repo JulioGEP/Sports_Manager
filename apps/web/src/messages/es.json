@@ -28,7 +28,8 @@
     "clubNotFound": "Este club no existe o no está activo.",
     "teams": "Equipos",
     "players": "Jugadores",
-    "family": "Mi familia"
+    "family": "Mi familia",
+    "challenges": "Reto"
   },
   "auth": {
     "login": {
@@ -144,7 +145,123 @@
       "title": "Tu familia",
       "description": "Los jugadores vinculados a tu cuenta.",
       "open": "Ver mi familia",
-      "empty": "Todavía no hay ningún jugador vinculado a tu cuenta. Pide al club que te vincule."
+      "empty": "Todavía no hay ningún jugador vinculado a tu cuenta. Pide al club que te vincule.",
+      "challenge": "Reto"
+    },
+    "operations": {
+      "eyebrow": "Qué hace falta hoy",
+      "title": "Alertas del club",
+      "count": "{count, plural, =0 {Todo al día} one {# alerta} other {# alertas}}",
+      "allClear": "Todo al día.",
+      "allClearHint": "No hay nada pendiente en el club.",
+      "go": "Ir",
+      "pendingInvitations": "{count, plural, one {# invitación pendiente} other {# invitaciones pendientes}}",
+      "pendingInvitationsHint": "Reenvía o revoca las que no se aceptan.",
+      "challengeSubmissionsPending": "{count, plural, one {# registro del reto por validar} other {# registros del reto por validar}}",
+      "challengeSubmissionsPendingHint": "Las familias esperan la validación del club.",
+      "objectivesOverdue": "{count, plural, one {# objetivo con la revisión vencida} other {# objetivos con la revisión vencida}}",
+      "objectivesOverdueHint": "Revisa el progreso y fija la siguiente fecha.",
+      "plansOverdue": "{count, plural, one {# plan de desarrollo con la revisión vencida} other {# planes de desarrollo con la revisión vencida}}",
+      "plansOverdueHint": "Actualiza el PDI y su próxima revisión.",
+      "playersWithoutTeam": "{count, plural, one {# jugador sin equipo esta temporada} other {# jugadores sin equipo esta temporada}}",
+      "playersWithoutTeamHint": "Mételos en una plantilla.",
+      "playersWithoutObjective": "{count, plural, one {# jugador sin objetivo individual} other {# jugadores sin objetivo individual}}",
+      "playersWithoutObjectiveHint": "Define una prioridad para cada ficha.",
+      "playersWithoutFamily": "{count, plural, one {# jugador sin acceso familiar} other {# jugadores sin acceso familiar}}",
+      "playersWithoutFamilyHint": "Invita a su familia desde la ficha.",
+      "playersWithoutPhoto": "{count, plural, one {# ficha sin fotografía} other {# fichas sin fotografía}}",
+      "playersWithoutPhotoHint": "La foto ayuda a identificar a cada jugador."
+    },
+    "readiness": {
+      "eyebrow": "Salud de los datos",
+      "title": "Preparación de las fichas",
+      "description": "Siete comprobaciones por jugador activo: foto, nacimiento, equipo, familia, objetivo, indicadores y PDI.",
+      "total": "{count, plural, one {# jugador activo} other {# jugadores activos}}",
+      "progressLabel": "Fichas preparadas al {percent} por ciento",
+      "withPhoto": "Con foto",
+      "withBirthDate": "Con nacimiento",
+      "withTeam": "Con equipo",
+      "withFamily": "Con familia",
+      "withObjective": "Con objetivo",
+      "withIndicators": "Con indicadores",
+      "withPlan": "Con PDI"
+    },
+    "quickActions": {
+      "title": "Accesos rápidos",
+      "description": "Lo que más se hace en el club, a un toque.",
+      "newPlayer": "Dar de alta un jugador",
+      "newPlayerHint": "Crear la ficha y asignarle equipo.",
+      "newTeam": "Crear un equipo",
+      "newTeamHint": "En una sección de la temporada actual.",
+      "inviteFamily": "Invitar a una familia",
+      "inviteFamilyHint": "Desde la ficha de su jugador.",
+      "challenge": "Abrir el reto",
+      "challengeHint": "Pruebas, validaciones y participación."
+    },
+    "activity": {
+      "title": "Últimos movimientos",
+      "description": "Qué ha pasado en el club estos días.",
+      "empty": "Todavía no hay movimientos.",
+      "system": "Sistema"
+    },
+    "panel": {
+      "rated": "{dimension}: {rated} de {total} valorados",
+      "players": "{total, plural, one {# jugador} other {# jugadores}}",
+      "openChallenges": "Abrir el reto",
+      "myTeams": "Mis equipos",
+      "noTeamsTitle": "Todavía no llevas ningún equipo",
+      "noTeamsBody": "Pide a quien administra el club que te añada al cuerpo técnico de tu equipo.",
+      "allClear": "Nadie reclama atención hoy.",
+      "noTeam": "Sin equipo",
+      "lastNote": "última anotación {date}",
+      "unrated": "Sin valorar",
+      "open": "Abrir",
+      "reasons": {
+        "lowScore": "cifra baja",
+        "unrated": "sin valorar",
+        "noObjective": "sin objetivo",
+        "objectiveOverdue": "revisión del objetivo vencida",
+        "noPlan": "sin PDI",
+        "planOverdue": "revisión del PDI vencida",
+        "noPhysicalGoal": "sin objetivo físico en el PDI",
+        "noEmotionalGoal": "sin objetivo emocional en el PDI",
+        "noHeight": "sin altura",
+        "noFamily": "sin acceso familiar",
+        "noTeam": "sin equipo",
+        "noPhoto": "sin foto"
+      },
+      "coach": {
+        "title": "Mis jugadores",
+        "description": "Qué hace falta en las fichas de tus equipos."
+      },
+      "director": {
+        "title": "Seguimiento del club",
+        "description": "Revisiones vencidas, fichas sin objetivo y plantillas incompletas."
+      },
+      "coordinator": {
+        "title": "Coordinación",
+        "description": "Objetivos, planes de desarrollo e indicadores que piden revisión."
+      },
+      "delegate": {
+        "title": "Mis equipos",
+        "description": "Familias sin acceso y fichas sin foto en tus equipos."
+      },
+      "physio": {
+        "title": "Seguimiento físico",
+        "description": "Jugadores con el cuerpo por debajo del umbral o sin valorar."
+      },
+      "fitness": {
+        "title": "Preparación física",
+        "description": "Cuerpo, altura y objetivo físico del PDI de cada jugador."
+      },
+      "psychologist": {
+        "title": "Bienestar",
+        "description": "Jugadores con el bienestar bajo o sin valorar, y PDI sin objetivo emocional."
+      },
+      "scout": {
+        "title": "Observación",
+        "description": "Jugadores sin valoración deportiva y los que están por debajo del umbral."
+      }
     }
   },
   "members": {
@@ -161,7 +278,8 @@
     "table": {
       "name": "Persona",
       "roles": "Roles",
-      "since": "Desde"
+      "since": "Desde",
+      "teams": "Equipos"
     },
     "roles": {
       "manage": "Roles",
@@ -172,8 +290,11 @@
       "hint": {
         "org_admin": "Gestiona miembros, invitaciones y ajustes.",
         "coach": "Verá a su gente y, en la Fase 1, equipos y jugadores.",
-        "guardian": "Familia: en la Fase 1 verá la información de sus hijos."
-      }
+        "guardian": "Familia: en la Fase 1 verá la información de sus hijos.",
+        "staff": "Personal del club con un cargo: dirección, coordinación, delegación, fisio, preparación física, psicología o scout."
+      },
+      "position": "Cargo",
+      "positionSaved": "Cargo guardado: {position}."
     },
     "inviteDrawer": {
       "title": "Invitar a alguien",
@@ -183,13 +304,18 @@
       "roleHint": {
         "org_admin": "Gestiona miembros, invitaciones y ajustes.",
         "coach": "Entrenador o entrenadora del club.",
-        "guardian": "Madre, padre o tutor de un jugador."
+        "guardian": "Madre, padre o tutor de un jugador.",
+        "staff": "Personal del club que no entrena: entra con un cargo."
       },
       "language": "Idioma del email",
       "submit": "Enviar invitación",
       "sent": "Invitación enviada a {email}.",
       "failed": "Invitación creada para {email}, pero el email no se pudo enviar. Reenvíala más tarde.",
-      "linkHint": "Entorno de pruebas sin envío de emails: comparte este enlace con {email}."
+      "linkHint": "Entorno de pruebas sin envío de emails: comparte este enlace con {email}.",
+      "position": "Cargo",
+      "team": "Equipo",
+      "teamHint": "Opcional. Al aceptar, entra en el cuerpo técnico de ese equipo.",
+      "noTeam": "Sin equipo por ahora"
     },
     "invitations": {
       "email": "Email",
@@ -205,7 +331,8 @@
       "confirmRevokeTitle": "¿Revocar la invitación a {email}?",
       "confirmRevokeBody": "El enlace dejará de funcionar. Podrás invitar de nuevo cuando quieras.",
       "player": "Familia de {name}"
-    }
+    },
+    "noTeams": "Sin equipo"
   },
   "settings": {
     "title": "Ajustes del club",
@@ -403,7 +530,8 @@
   "roles": {
     "org_admin": "Administrador del club",
     "coach": "Entrenador",
-    "guardian": "Tutor"
+    "guardian": "Tutor",
+    "staff": "Personal del club"
   },
   "locales": {
     "label": "Idioma",
@@ -488,6 +616,16 @@
       "indicators_updated": "Indicadores de jugador valorados",
       "plan_updated": "Plan de desarrollo guardado",
       "note_added": "Registro añadido al jugador"
+    },
+    "challenge": {
+      "created": "Reto creado",
+      "updated": "Reto editado",
+      "task_created": "Prueba del reto creada",
+      "task_updated": "Prueba del reto editada",
+      "task_removed": "Prueba del reto quitada",
+      "submission_created": "Registro del reto enviado",
+      "submission_removed": "Registro del reto retirado",
+      "submission_reviewed": "Registro del reto validado"
     }
   },
   "teams": {
@@ -663,8 +801,19 @@
       "team": "Equipo",
       "noTeam": "Sin equipo por ahora",
       "submit": "Dar de alta",
-      "created": "{name} dado de alta."
-    }
+      "created": "{name} dado de alta.",
+      "joinedOn": "Alta en el club",
+      "joinedOnHint": "Opcional. Si no se indica, cuenta desde hoy."
+    },
+    "missingFilter": {
+      "label": "Falta",
+      "all": "Todas las fichas",
+      "photo": "sin foto",
+      "objective": "sin objetivo",
+      "team": "sin equipo",
+      "family": "sin familia"
+    },
+    "pendingCount": "{count, plural, one {# invitación pendiente} other {# invitaciones pendientes}}"
   },
   "playerStatus": {
     "active": "Activo",
@@ -848,7 +997,8 @@
         "indicators_updated": "Indicadores actualizados",
         "plan_updated": "Plan de desarrollo {status, select, draft {en estructura inicial} active {en marcha} shared {compartido con la familia} other {actualizado}}",
         "photo_updated": "Foto actualizada",
-        "note": "{text}"
+        "note": "{text}",
+        "challenge_closed": "Reto {challenge} cerrado con {points} puntos"
       },
       "sheet": {
         "title": "Añadir registro a {name}",
@@ -874,7 +1024,8 @@
     "quickActions": {
       "title": "Acciones rápidas",
       "openTeam": "Abrir {team}",
-      "familyAccess": "Accesos familiares"
+      "familyAccess": "Accesos familiares",
+      "challenge": "Abrir el reto"
     },
     "plan": {
       "eyebrow": "Plan de desarrollo individual",
@@ -924,7 +1075,8 @@
     "coaches": "Cuerpo técnico",
     "noCoaches": "Sin cuerpo técnico asignado",
     "number": "Dorsal {number}",
-    "inactive": "Ficha de baja"
+    "inactive": "Ficha de baja",
+    "openProfile": "Ver ficha"
   },
   "relationships": {
     "mother": "Madre",
@@ -941,6 +1093,258 @@
       "cercana": "Una buena coordinadora de club: cálida, clara, explica el porqué.",
       "profesional": "El dato primero, cero adornos.",
       "vestuario": "Energía y jerga de juego. Nunca en los momentos sensibles."
+    }
+  },
+  "positions": {
+    "director": "Director deportivo",
+    "coordinator": "Coordinación",
+    "delegate": "Delegación",
+    "physio": "Fisioterapia",
+    "fitness": "Preparación física",
+    "psychologist": "Psicología",
+    "scout": "Scout",
+    "hint": {
+      "director": "Ve todo el club: estructura, jugadores, valoraciones y reto. No gestiona miembros ni ajustes.",
+      "coordinator": "Como la dirección deportiva: estructura, jugadores, valoraciones y reto.",
+      "delegate": "Consulta equipos, jugadores y reto. No cambia nada.",
+      "physio": "Valora el cuerpo de cualquier jugador y deja anotaciones.",
+      "fitness": "Valora la preparación física y deja anotaciones.",
+      "psychologist": "Valora el bienestar y deja anotaciones.",
+      "scout": "Valora el deporte y deja anotaciones de observación."
+    }
+  },
+  "familyPlayer": {
+    "back": "Mi familia",
+    "team": {
+      "title": "Equipo",
+      "description": "Equipo de esta temporada y quién lo entrena."
+    },
+    "challenge": {
+      "eyebrow": "Reto en curso",
+      "title": "Reto",
+      "open": "Ver el reto",
+      "target": "objetivo {target}",
+      "progressLabel": "{points} de {target} puntos del reto",
+      "min": "Mínimo {min}",
+      "pending": "{points} por validar",
+      "none": "Ahora mismo no hay ningún reto activo."
+    },
+    "objective": {
+      "empty": "El club todavía no ha definido un objetivo."
+    },
+    "plan": {
+      "description": "Seis áreas de trabajo. Lo ves cuando el club lo comparte contigo.",
+      "notShared": "El club todavía no ha compartido el plan de desarrollo.",
+      "notSharedHint": "Cuando lo comparta, lo verás aquí con sus seis áreas."
+    }
+  },
+  "challenges": {
+    "title": "Retos",
+    "description": "Retos por puntos: pruebas, registros de las familias y validación del club.",
+    "new": "Nuevo reto",
+    "familiesNote": "Las familias registran la actividad de sus jugadores y ven solo sus puntos. La participación por jugador es solo para el personal.",
+    "empty": "Todavía no hay retos.",
+    "emptyHint": "Crea el primero con el catálogo de ejemplo y actívalo cuando esté listo.",
+    "from": "desde el {date}",
+    "until": "hasta el {date}",
+    "noDates": "Sin fechas",
+    "table": {
+      "challenge": "Reto",
+      "status": "Estado",
+      "points": "Mínimo / objetivo",
+      "tasks": "Pruebas",
+      "participants": "Participantes",
+      "pending": "Por validar"
+    },
+    "status": {
+      "draft": "Borrador",
+      "active": "Activo",
+      "closed": "Cerrado"
+    },
+    "pendingCount": "{count, plural, one {# por validar} other {# por validar}}",
+    "noPending": "Nada por validar",
+    "areas": {
+      "training": "Entrenamiento",
+      "technique": "Técnica",
+      "habits": "Hábitos"
+    },
+    "kinds": {
+      "sessions": "Sesiones",
+      "rating": "Valoración"
+    },
+    "submissionStatus": {
+      "submitted": "Por validar",
+      "approved": "Aprobado",
+      "rejected": "Rechazado"
+    },
+    "pointsPerUnit": "{points} pts por unidad",
+    "maxPoints": "tope {points}",
+    "sheet": {
+      "title": "Nuevo reto",
+      "description": "Un periodo con un catálogo de pruebas. Las familias registran, el club valida.",
+      "submit": "Crear reto",
+      "name": "Nombre",
+      "nameHint": "Por ejemplo, Reto de verano 2027.",
+      "descriptionLabel": "Descripción",
+      "startsOn": "Empieza",
+      "endsOn": "Acaba",
+      "minPoints": "Puntos mínimos",
+      "minPointsHint": "Para dar el reto por cumplido.",
+      "targetPoints": "Puntos objetivo",
+      "targetPointsHint": "A los que aspirar.",
+      "season": "Temporada",
+      "noSeason": "Sin temporada",
+      "withDefaultTasks": "Empezar con el catálogo de ejemplo",
+      "withDefaultTasksHint": "Diez pruebas de entrenamiento, técnica y hábitos. Se pueden editar después.",
+      "activate": "Activar ya",
+      "activateHint": "Si no, queda en borrador y las familias no lo ven.",
+      "pointsOrder": "El objetivo no puede ser menor que el mínimo.",
+      "created": "Reto {name} creado.",
+      "editTitle": "Editar {name}",
+      "saved": "Reto guardado."
+    }
+  },
+  "familyChallenge": {
+    "title": "Reto",
+    "description": "Registra la actividad de tus jugadores y sigue sus puntos. Solo ves los tuyos.",
+    "noPlayers": "Todavía no hay ningún jugador vinculado a tu cuenta.",
+    "noPlayersHint": "Pide a quien administra el club que te vincule desde la ficha del jugador.",
+    "playerTabs": "Jugadores de la familia",
+    "noChallenge": "Ahora mismo no hay ningún reto activo.",
+    "noChallengeHint": "Cuando el club lo active, lo verás aquí.",
+    "register": "Registrar actividad",
+    "target": "objetivo {target}",
+    "progressLabel": "{points} de {target} puntos del reto",
+    "min": "Mínimo {min}",
+    "targetChip": "Objetivo {target}",
+    "pending": "{points} por validar",
+    "submissions": "Registros",
+    "submissionsDescription": "Lo que has registrado y qué ha validado el club.",
+    "noSubmissions": "Todavía no hay registros.",
+    "quantity": "{count, plural, one {# unidad} other {# unidades}}",
+    "withdraw": "Retirar",
+    "removed": "Registro retirado.",
+    "confirmWithdrawTitle": "¿Retirar el registro de {task}?",
+    "confirmWithdrawBody": "Desaparece de la lista. Puedes volver a registrarlo cuando quieras.",
+    "tasks": "Pruebas",
+    "tasksDescription": "El catálogo del reto y sus puntos.",
+    "sheet": {
+      "title": "Registrar actividad de {name}",
+      "description": "Elige la prueba, cuántas veces y, si quieres, una nota o un enlace.",
+      "submit": "Añadir {points} puntos",
+      "task": "Prueba",
+      "rating": "Valoración",
+      "sessions": "Veces",
+      "ratingHint": "De 1 a {max}: {points} puntos por cada punto.",
+      "sessionsHint": "{points} puntos por cada vez.",
+      "date": "Fecha",
+      "dateHint": "Por defecto, hoy.",
+      "note": "Nota o enlace",
+      "noteHint": "Opcional: un vídeo, una foto o un comentario.",
+      "capHint": "Esta prueba tiene un tope de {points} puntos en todo el reto.",
+      "saved": "Actividad registrada. El club la validará."
+    }
+  },
+  "challenge": {
+    "back": "Retos",
+    "points": "Mínimo {min} puntos · objetivo {target}",
+    "edit": "Editar",
+    "activate": "Activar",
+    "close": "Cerrar reto",
+    "closed": "Reto cerrado.",
+    "activated": "Reto activado.",
+    "stats": {
+      "points": "Mínimo / objetivo",
+      "participants": "Participantes",
+      "pending": "Por validar"
+    },
+    "tabs": {
+      "tasks": "Pruebas",
+      "review": "Validación",
+      "standings": "Participación"
+    },
+    "tasks": {
+      "title": "Catálogo de pruebas",
+      "description": "Cada prueba tiene un área, un tipo, puntos por unidad y un tope en todo el reto.",
+      "new": "Nueva prueba",
+      "empty": "Todavía no hay pruebas.",
+      "archived": "Archivada",
+      "noMax": "Sin tope",
+      "edit": "Editar",
+      "remove": "Quitar",
+      "removed": "Prueba {name} quitada.",
+      "confirmRemoveTitle": "¿Quitar la prueba {name}?",
+      "confirmRemoveBody": "Si ya tiene registros, se archiva y conservan sus puntos. Si no, se borra.",
+      "table": {
+        "task": "Prueba",
+        "area": "Área",
+        "kind": "Tipo",
+        "points": "Puntos",
+        "max": "Tope",
+        "submissions": "Registros"
+      },
+      "sheet": {
+        "title": "Nueva prueba",
+        "editTitle": "Editar {name}",
+        "description": "Nombre, área, tipo y puntos.",
+        "submit": "Crear prueba",
+        "name": "Nombre",
+        "area": "Área",
+        "kind": "Tipo",
+        "kindHint": {
+          "sessions": "Se cuentan veces.",
+          "rating": "Se valora de 1 a 5."
+        },
+        "pointsPerUnit": "Puntos por unidad",
+        "maxPoints": "Tope de puntos",
+        "maxPointsHint": "Opcional. En todo el reto.",
+        "saved": "Prueba guardada.",
+        "created": "Prueba {name} creada."
+      }
+    },
+    "confirmCloseTitle": "¿Cerrar {name}?",
+    "confirmCloseBody": "No admitirá más registros ni validaciones y no se vuelve a abrir. Cada jugador con puntos aprobados recibe un registro en su timeline.",
+    "review": {
+      "title": "Validación",
+      "ownScope": "Ves solo los registros de los jugadores de tus equipos.",
+      "filter": "Estado",
+      "all": "Todos",
+      "empty": "No hay registros con ese estado.",
+      "approve": "Aprobar",
+      "reject": "Rechazar",
+      "approved": "Registro de {name} aprobado: +{points}.",
+      "rejected": "Registro de {name} rechazado.",
+      "quantity": "{count, plural, one {# unidad} other {# unidades}}",
+      "by": "por {name}",
+      "table": {
+        "player": "Jugador",
+        "task": "Prueba",
+        "points": "Puntos",
+        "date": "Fecha",
+        "status": "Estado"
+      },
+      "rejectSheet": {
+        "title": "Rechazar el registro de {name}",
+        "description": "{task}. La familia verá el motivo.",
+        "submit": "Rechazar",
+        "note": "Motivo",
+        "noteHint": "Opcional, en lenguaje llano."
+      }
+    },
+    "standings": {
+      "title": "Participación",
+      "ownScope": "Ves solo a los jugadores de tus equipos. Las familias nunca ven esta lista.",
+      "staffOnly": "Solo para el personal del club. Las familias ven únicamente los puntos de los suyos.",
+      "empty": "Todavía nadie ha registrado actividad.",
+      "reachedTarget": "Objetivo logrado",
+      "reachedMin": "Mínimo cumplido",
+      "inProgress": "En marcha",
+      "table": {
+        "player": "Jugador",
+        "approved": "Aprobados",
+        "pending": "Por validar",
+        "goal": "Meta"
+      }
     }
   }
 }

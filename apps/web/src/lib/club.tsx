@@ -175,5 +175,8 @@ export const clubPaths = (slug: string) => ({
   players: `/${slug}/players`,
   player: (id: string) => `/${slug}/players/${id}`,
   family: `/${slug}/family`,
+  familyPlayer: (id: string) => `/${slug}/family/${id}`,
+  challenges: `/${slug}/challenges`,
+  challenge: (id: string) => `/${slug}/challenges/${id}`,
   invitation: (token: string) => `/${slug}/invitations/${token}`,
 });

@@ -50,6 +50,13 @@
       "when": 1792529119725,
       "tag": "20261020204519_player_profile",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1792594560983,
+      "tag": "20261021145600_staff_challenges",
+      "breakpoints": true
     }
   ]
 }

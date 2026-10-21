@@ -12,3 +12,4 @@ export * from "./email-outbox.ts";
 export * from "./audit-log.ts";
 export * from "./structure.ts";
 export * from "./player-profile.ts";
+export * from "./challenges.ts";

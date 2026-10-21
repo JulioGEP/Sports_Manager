@@ -1,8 +1,10 @@
 import {
+  PLAYER_MISSING_FILTERS,
   PlayerDetailResponseSchema,
   PlayersResponseSchema,
   TeamsResponseSchema,
   playerDisplayName,
+  type PlayerMissingFilter,
   type PlayerSummary,
 } from "@sportsmanager/shared";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -45,11 +47,21 @@ export function PlayersPage() {
   const canWrite = org.actor.permissions.includes("org.players.write");
   const creating = params.get("new") === "1";
   const teamFilter = params.get("team") ?? "";
+  const rawMissing = params.get("missing");
+  /** Lo que falta en la ficha (Bloque 13): llega de las alertas del inicio y lo resuelve la API. */
+  const missing: PlayerMissingFilter | "" = (PLAYER_MISSING_FILTERS as readonly string[]).includes(
+    rawMissing ?? "",
+  )
+    ? (rawMissing as PlayerMissingFilter)
+    : "";
   const [query, setQuery] = useState("");
 
   const players = useQuery({
-    queryKey: ["org", slug, "players", "all"],
-    queryFn: () => apiFetch("/api/org/players", { schema: PlayersResponseSchema }),
+    queryKey: ["org", slug, "players", missing || "all"],
+    queryFn: () =>
+      apiFetch(`/api/org/players${missing ? `?missing=${missing}` : ""}`, {
+        schema: PlayersResponseSchema,
+      }),
   });
   const teams = useQuery({
     queryKey: ["org", slug, "teams", null],
@@ -134,6 +146,20 @@ export function PlayersPage() {
             </Select>
           </div>
         ) : null}
+        <div className="w-full max-w-xs">
+          <Select
+            aria-label={t("missingFilter.label")}
+            value={missing}
+            onChange={(e) => update({ missing: e.target.value || null })}
+          >
+            <option value="">{t("missingFilter.all")}</option>
+            {PLAYER_MISSING_FILTERS.map((key) => (
+              <option key={key} value={key}>
+                {t("missingFilter.label")}: {t(`missingFilter.${key}`)}
+              </option>
+            ))}
+          </Select>
+        </div>
       </div>
       <Card padded={false}>
         <DataList<PlayerSummary>
@@ -195,7 +221,16 @@ export function PlayersPage() {
             {
               key: "family",
               header: t("table.family"),
-              cell: (p) => tt("familyCount", { count: p.guardiansCount }),
+              cell: (p) => (
+                <span className="flex flex-col">
+                  <span>{tt("familyCount", { count: p.guardiansCount })}</span>
+                  {p.pendingInvitationsCount > 0 ? (
+                    <span className="text-secondary text-warning">
+                      {t("pendingCount", { count: p.pendingInvitationsCount })}
+                    </span>
+                  ) : null}
+                </span>
+              ),
             },
             {
               key: "status",
@@ -260,6 +295,7 @@ function NewPlayerSheet({
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [birthDate, setBirthDate] = useState("");
+  const [joinedOn, setJoinedOn] = useState("");
   const [teamId, setTeamId] = useState(defaultTeamId ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -275,6 +311,7 @@ function NewPlayerSheet({
           firstName,
           lastName,
           birthDate: birthDate || null,
+          joinedOn: joinedOn || null,
           ...(teamId ? { teamId } : {}),
         },
         schema: PlayerDetailResponseSchema,
@@ -283,6 +320,7 @@ function NewPlayerSheet({
       setFirstName("");
       setLastName("");
       setBirthDate("");
+      setJoinedOn("");
       onClose();
       onCreated();
       void navigate(paths.player(created.player.id));
@@ -338,16 +376,28 @@ function NewPlayerSheet({
             )}
           </Field>
         </div>
-        <Field label={t("birthDate")} hint={t("birthDateHint")}>
-          {(id) => (
-            <Input
-              id={id}
-              type="date"
-              value={birthDate}
-              onChange={(e) => setBirthDate(e.target.value)}
-            />
-          )}
-        </Field>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label={t("birthDate")} hint={t("birthDateHint")}>
+            {(id) => (
+              <Input
+                id={id}
+                type="date"
+                value={birthDate}
+                onChange={(e) => setBirthDate(e.target.value)}
+              />
+            )}
+          </Field>
+          <Field label={t("joinedOn")} hint={t("joinedOnHint")}>
+            {(id) => (
+              <Input
+                id={id}
+                type="date"
+                value={joinedOn}
+                onChange={(e) => setJoinedOn(e.target.value)}
+              />
+            )}
+          </Field>
+        </div>
         {teams.length > 0 ? (
           <Field label={t("team")}>
             {(id) => (

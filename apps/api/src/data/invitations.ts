@@ -7,6 +7,7 @@ import {
   type Locale,
   type LocalizedText,
   type RoleCode,
+  type StaffPosition,
 } from "@sportsmanager/shared";
 import { and, desc, eq } from "drizzle-orm";
 import {
@@ -32,6 +33,9 @@ export interface InvitationRecord {
   /** Invitación de familia (Bloque 11): jugador al que vincula al aceptarse. */
   player: { id: string; firstName: string; lastName: string } | null;
   relationship: GuardianRelationship | null;
+  /** Bloque 13: cargo con el que entra el personal y equipo al que se une como cuerpo técnico. */
+  position: StaffPosition | null;
+  team: { id: string; name: string } | null;
 }
 
 export interface IssuedInvitation {
@@ -66,6 +70,9 @@ const selection = {
   playerFirstName: schema.players.firstName,
   playerLastName: schema.players.lastName,
   relationship: schema.invitations.relationship,
+  position: schema.invitations.position,
+  teamId: schema.teams.id,
+  teamName: schema.teams.name,
 };
 
 type Row = {
@@ -93,6 +100,8 @@ function toRecord(row: Row): InvitationRecord {
         ? { id: row.playerId, firstName: row.playerFirstName, lastName: row.playerLastName }
         : null,
     relationship: (row.relationship as GuardianRelationship | null) ?? null,
+    position: (row.position as StaffPosition | null) ?? null,
+    team: row.teamId && row.teamName !== null ? { id: row.teamId, name: row.teamName } : null,
   };
 }
 
@@ -111,7 +120,8 @@ export function invitationsRepo(db: () => Database) {
       .select(selection)
       .from(schema.invitations)
       .leftJoin(schema.users, eq(schema.users.id, schema.invitations.invitedBy))
-      .leftJoin(schema.players, eq(schema.players.id, schema.invitations.playerId));
+      .leftJoin(schema.players, eq(schema.players.id, schema.invitations.playerId))
+      .leftJoin(schema.teams, eq(schema.teams.id, schema.invitations.teamId));
 
   async function byId(scope: OrgScope, id: string): Promise<InvitationRecord | null> {
     const rows = await baseQuery()
@@ -165,6 +175,8 @@ export function invitationsRepo(db: () => Database) {
         ttlDays: number;
         playerId?: string | undefined;
         relationship?: GuardianRelationship | undefined;
+        position?: StaffPosition | null | undefined;
+        teamId?: string | null | undefined;
       },
     ): Promise<CreateInvitationResult> {
       const pending = await baseQuery()
@@ -191,6 +203,8 @@ export function invitationsRepo(db: () => Database) {
           invitedBy: input.invitedBy,
           playerId: input.playerId ?? null,
           relationship: input.relationship ?? null,
+          position: input.position ?? null,
+          teamId: input.teamId ?? null,
         })
         .returning({ id: schema.invitations.id });
       const invitation = await byId(scope, inserted[0]!.id);
@@ -254,6 +268,7 @@ export function invitationsRepo(db: () => Database) {
         .innerJoin(schema.roles, eq(schema.roles.code, schema.invitations.roleCode))
         .leftJoin(schema.users, eq(schema.users.id, schema.invitations.invitedBy))
         .leftJoin(schema.players, eq(schema.players.id, schema.invitations.playerId))
+        .leftJoin(schema.teams, eq(schema.teams.id, schema.invitations.teamId))
         .where(eq(schema.invitations.tokenHash, hashInvitationToken(token)))
         .limit(1);
       const row = rows[0];

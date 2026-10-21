@@ -2,7 +2,7 @@ import { z } from "zod";
 import { EMAIL_STATUSES } from "../email.ts";
 import { INVITATION_STATES } from "../invitations.ts";
 import { LocaleSchema, LocalizedTextSchema } from "../locales.ts";
-import { RoleCodeSchema } from "../roles.ts";
+import { RoleCodeSchema, StaffPositionSchema } from "../roles.ts";
 import { GuardianRelationshipSchema } from "../structure.ts";
 import { PasswordSchema, UserNameSchema } from "../users.ts";
 
@@ -20,6 +20,9 @@ export const InvitationSchema = z.object({
   /** Invitación de familia hecha desde la ficha de un jugador (Bloque 11): a quién vincula. */
   player: z.object({ id: z.string(), name: z.string() }).nullable(),
   relationship: GuardianRelationshipSchema.nullable(),
+  /** Cargo y equipo con los que entra (Bloque 13). */
+  position: StaffPositionSchema.nullable(),
+  team: z.object({ id: z.string(), name: z.string() }).nullable(),
 });
 export type Invitation = z.infer<typeof InvitationSchema>;
 

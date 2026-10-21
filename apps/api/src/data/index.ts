@@ -3,6 +3,7 @@ import type { DatabaseStatus } from "@sportsmanager/shared";
 import { eq, sql } from "drizzle-orm";
 import type { ApiConfig } from "../config.ts";
 import { auditRepo } from "./audit.ts";
+import { challengesRepo } from "./challenges.ts";
 import { createAuth, type Auth } from "./auth/index.ts";
 import { createResetPasswordSender } from "./auth/reset-password.ts";
 import { createLazyDb } from "./db.ts";
@@ -36,7 +37,7 @@ export type {
   OrganizationSport,
   SupportCounts,
 } from "./organizations.ts";
-export type { AuditInput, AuditRecord } from "./audit.ts";
+export type { ActivityRecord, AuditInput, AuditRecord } from "./audit.ts";
 export type { AssignRoleResult, Member, RemoveRoleResult, UserMembership } from "./memberships.ts";
 export type { InvitationByToken, InvitationRecord, IssuedInvitation } from "./invitations.ts";
 export type { UserRecord } from "./users.ts";
@@ -51,10 +52,20 @@ export type {
 export type {
   FamilyPlayerRecord,
   GuardianRecord,
+  PlayerOverviewRecord,
   PlayerRow,
+  PlayersOperations,
+  PlayersReadiness,
   PlayerSummaryRecord,
   PlayerTeamRecord,
 } from "./players.ts";
+export type {
+  ChallengeRecord,
+  ChallengeTaskRecord,
+  ChallengeTotals,
+  StandingRecord,
+  SubmissionRecord,
+} from "./challenges.ts";
 export type {
   DevelopmentPlanRecord,
   PlayerEventDetails,
@@ -137,6 +148,7 @@ export function createDataLayer(options: DataLayerOptions) {
     sections: sectionsRepo(db),
     teams: teamsRepo(db),
     players: playersRepo(db),
+    challenges: challengesRepo(db),
     logos: logosRepo(
       db,
       options.logoStore ??

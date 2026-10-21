@@ -36,5 +36,13 @@ export const AUDIT_ACTIONS = [
   "player.indicators_updated",
   "player.plan_updated",
   "player.note_added",
+  "challenge.created",
+  "challenge.updated",
+  "challenge.task_created",
+  "challenge.task_updated",
+  "challenge.task_removed",
+  "challenge.submission_created",
+  "challenge.submission_removed",
+  "challenge.submission_reviewed",
 ] as const;
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];

@@ -4,18 +4,22 @@ import {
   LOCALES,
   MembersResponseSchema,
   ROLE_CODES,
+  STAFF_POSITIONS,
+  TeamsResponseSchema,
   type Invitation,
   type InvitationSentResponse,
   type Locale,
   type MembersResponse,
   type RoleCode,
+  type StaffPosition,
 } from "@sportsmanager/shared";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState, type FormEvent } from "react";
 import { useIntl } from "react-intl";
 import { useSearchParams } from "react-router";
+import { Link } from "react-router";
 import { apiFetch, errorKey } from "@/lib/api";
-import { useReadyClub } from "@/lib/club";
+import { clubPaths, useReadyClub } from "@/lib/club";
 import { useT } from "@/lib/intl";
 import {
   Alert,
@@ -52,6 +56,7 @@ export function MembersPage() {
   const t = useT("members");
   const c = useT("common");
   const roles = useT("roles");
+  const positions = useT("positions");
   const locales = useT("locales");
   const states = useT("invitationState");
   const errors = useT("errors");
@@ -60,6 +65,7 @@ export function MembersPage() {
   const client = useQueryClient();
   const [params, setParams] = useSearchParams();
   const { org, slug } = useReadyClub();
+  const paths = clubPaths(slug);
   const permissions = org.actor.permissions;
   const canInvite = permissions.includes("org.members.invite");
   const canManage = permissions.includes("org.members.manage");
@@ -81,7 +87,15 @@ export function MembersPage() {
     queryFn: () => apiFetch("/api/org/invitations", { schema: InvitationsResponseSchema }),
     enabled: canInvite,
   });
+  const teams = useQuery({
+    queryKey: ["org", slug, "teams", null],
+    queryFn: () => apiFetch("/api/org/teams", { schema: TeamsResponseSchema }),
+    enabled: canInvite,
+  });
   const reload = () => client.invalidateQueries({ queryKey: ["org", slug] });
+  /** Rol o cargo, para enseñar: el personal se identifica por su cargo. */
+  const roleLabel = (m: Member, r: RoleCode) =>
+    r === "staff" && m.position ? positions(m.position) : roles(r);
 
   const filtered = useMemo(() => {
     const list = members.data?.members ?? [];
@@ -226,18 +240,39 @@ export function MembersPage() {
                     <span className="flex flex-wrap gap-1">
                       {m.roles.map((r) => (
                         <StatusChip key={r} kind="club">
-                          {roles(r)}
+                          {roleLabel(m, r)}
                         </StatusChip>
                       ))}
                     </span>
                   ),
+                },
+                {
+                  key: "teams",
+                  header: t("table.teams"),
+                  cell: (m) =>
+                    m.teams.length > 0 ? (
+                      <span className="flex flex-wrap gap-x-2 gap-y-1">
+                        {m.teams.map((team) => (
+                          <Link key={team.teamId} to={paths.team(team.teamId)}>
+                            {team.teamName}
+                          </Link>
+                        ))}
+                      </span>
+                    ) : (
+                      <span className="text-muted">{t("noTeams")}</span>
+                    ),
                 },
                 { key: "since", header: t("table.since"), cell: (m) => date(m.memberSince) },
               ]}
               mobileRow={(m) => ({
                 leading: <Avatar name={m.name} />,
                 title: m.name,
-                subtitle: m.roles.map((r) => roles(r)).join(" · "),
+                subtitle: [
+                  m.roles.map((r) => roleLabel(m, r)).join(" · "),
+                  m.teams.map((x) => x.teamName).join(", "),
+                ]
+                  .filter(Boolean)
+                  .join(" · "),
               })}
               actions={
                 canManage
@@ -295,11 +330,14 @@ export function MembersPage() {
                   header: t("invitations.role"),
                   cell: (i) => (
                     <span className="flex flex-col">
-                      <span>{roles(i.roleCode)}</span>
+                      <span>{i.position ? positions(i.position) : roles(i.roleCode)}</span>
                       {i.player ? (
                         <span className="text-secondary text-muted">
                           {t("invitations.player", { name: i.player.name })}
                         </span>
+                      ) : null}
+                      {i.team ? (
+                        <span className="text-secondary text-muted">{i.team.name}</span>
                       ) : null}
                     </span>
                   ),
@@ -318,7 +356,7 @@ export function MembersPage() {
               ]}
               mobileRow={(i) => ({
                 title: i.email,
-                subtitle: `${i.player ? t("invitations.player", { name: i.player.name }) : roles(i.roleCode)} · ${date(i.expiresAt)}`,
+                subtitle: `${i.player ? t("invitations.player", { name: i.player.name }) : i.position ? positions(i.position) : roles(i.roleCode)}${i.team ? ` · ${i.team.name}` : ""} · ${date(i.expiresAt)}`,
                 trailing: <StatusChip kind={stateKind[i.state]}>{states(i.state)}</StatusChip>,
               })}
               mobileActionsBelow
@@ -343,6 +381,7 @@ export function MembersPage() {
         open={inviteOpen}
         onClose={() => setInviteOpen(false)}
         defaultLocale={defaultLocale}
+        teams={teams.data?.teams.map((x) => ({ id: x.id, name: x.name })) ?? []}
         onInvited={onInvited}
       />
       {rolesFor ? (
@@ -369,23 +408,29 @@ function InviteSheet({
   open,
   onClose,
   defaultLocale,
+  teams,
   onInvited,
 }: {
   open: boolean;
   onClose: () => void;
   defaultLocale: Locale;
+  teams: { id: string; name: string }[];
   onInvited: (sent: InvitationSentResponse) => void;
 }) {
   const t = useT("members.inviteDrawer");
   const c = useT("common");
   const roles = useT("roles");
+  const positions = useT("positions");
   const locales = useT("locales");
   const errors = useT("errors");
   const [email, setEmail] = useState("");
   const [roleCode, setRoleCode] = useState<RoleCode>("coach");
+  const [position, setPosition] = useState<StaffPosition>("director");
+  const [teamId, setTeamId] = useState("");
   const [locale, setLocale] = useState<Locale>(defaultLocale);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const withTeam = roleCode === "coach" || roleCode === "staff";
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -394,10 +439,17 @@ function InviteSheet({
     try {
       const sent = await apiFetch("/api/org/invitations", {
         method: "POST",
-        body: { email, roleCode, locale },
+        body: {
+          email,
+          roleCode,
+          locale,
+          position: roleCode === "staff" ? position : null,
+          teamId: withTeam && teamId ? teamId : null,
+        },
         schema: InvitationSentResponseSchema,
       });
       setEmail("");
+      setTeamId("");
       // Primero cierra (quita `invite` de la URL) y después cambia a la pestaña de invitaciones.
       onClose();
       onInvited(sent);
@@ -467,6 +519,37 @@ function InviteSheet({
             )}
           </Field>
         </div>
+        {roleCode === "staff" ? (
+          <Field label={t("position")} hint={positions(`hint.${position}`)}>
+            {(id) => (
+              <Select
+                id={id}
+                value={position}
+                onChange={(e) => setPosition(e.target.value as StaffPosition)}
+              >
+                {STAFF_POSITIONS.map((code) => (
+                  <option key={code} value={code}>
+                    {positions(code)}
+                  </option>
+                ))}
+              </Select>
+            )}
+          </Field>
+        ) : null}
+        {withTeam && teams.length > 0 ? (
+          <Field label={t("team")} hint={t("teamHint")}>
+            {(id) => (
+              <Select id={id} value={teamId} onChange={(e) => setTeamId(e.target.value)}>
+                <option value="">{t("noTeam")}</option>
+                {teams.map((team) => (
+                  <option key={team.id} value={team.id}>
+                    {team.name}
+                  </option>
+                ))}
+              </Select>
+            )}
+          </Field>
+        ) : null}
         {error ? <Alert kind="error">{error}</Alert> : null}
       </form>
     </Sheet>
@@ -485,27 +568,48 @@ function RolesSheet({
   const t = useT("members.roles");
   const c = useT("common");
   const roles = useT("roles");
+  const positions = useT("positions");
   const errors = useT("errors");
   const toast = useToast();
   const [current, setCurrent] = useState<RoleCode[]>(member.roles);
+  const [position, setPosition] = useState<StaffPosition>(member.position ?? "director");
   const [busy, setBusy] = useState<RoleCode | null>(null);
 
+  type RolesResult = { roles: RoleCode[]; position: StaffPosition | null };
   async function toggle(role: RoleCode) {
     setBusy(role);
     try {
       const res = current.includes(role)
-        ? await apiFetch<{ roles: RoleCode[] }>(`/api/org/members/${member.userId}/roles/${role}`, {
+        ? await apiFetch<RolesResult>(`/api/org/members/${member.userId}/roles/${role}`, {
             method: "DELETE",
           })
-        : await apiFetch<{ roles: RoleCode[] }>(`/api/org/members/${member.userId}/roles`, {
+        : await apiFetch<RolesResult>(`/api/org/members/${member.userId}/roles`, {
             method: "POST",
-            body: { roleCode: role },
+            body: { roleCode: role, position: role === "staff" ? position : null },
           });
       setCurrent(res.roles);
       onChanged();
     } catch (err) {
       const key = errorKey(err);
       toast("error", key === "conflict" ? t("lastAdmin") : errors(key));
+    } finally {
+      setBusy(null);
+    }
+  }
+  /** Cambiar el cargo de quien ya es personal: la misma llamada, el rol se queda. */
+  async function changePosition(next: StaffPosition) {
+    setPosition(next);
+    if (!current.includes("staff")) return;
+    setBusy("staff");
+    try {
+      await apiFetch<RolesResult>(`/api/org/members/${member.userId}/roles`, {
+        method: "POST",
+        body: { roleCode: "staff", position: next },
+      });
+      toast("success", t("positionSaved", { position: positions(next) }));
+      onChanged();
+    } catch (err) {
+      toast("error", errors(errorKey(err)));
     } finally {
       setBusy(null);
     }
@@ -541,6 +645,22 @@ function RolesSheet({
               <span className="flex min-w-0 flex-1 flex-col">
                 <strong className="text-body font-medium text-ink">{roles(role)}</strong>
                 <span className="text-secondary text-muted">{t(`hint.${role}`)}</span>
+                {role === "staff" ? (
+                  <span className="pt-2">
+                    <Select
+                      aria-label={t("position")}
+                      value={position}
+                      disabled={busy === "staff"}
+                      onChange={(e) => void changePosition(e.target.value as StaffPosition)}
+                    >
+                      {STAFF_POSITIONS.map((code) => (
+                        <option key={code} value={code}>
+                          {positions(code)}
+                        </option>
+                      ))}
+                    </Select>
+                  </span>
+                ) : null}
               </span>
               <Button
                 variant={has ? "danger" : "secondary"}

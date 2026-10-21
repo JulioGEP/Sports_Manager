@@ -1,5 +1,6 @@
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 import {
+  ActivityResponseSchema,
   ApiErrorSchema,
   AssignRoleBodySchema,
   AssignRoleResponseSchema,
@@ -63,7 +64,12 @@ export function brandingDto(org: OrganizationRow) {
 
 function actorDto(actor: Actor): ActorDto {
   return actor.kind === "member"
-    ? { kind: "member", roles: actor.roles, permissions: [...actor.permissions] }
+    ? {
+        kind: "member",
+        roles: actor.roles,
+        position: actor.position,
+        permissions: [...actor.permissions],
+      }
     : { kind: "platform_support", hasGrant: actor.hasGrant, permissions: [...actor.permissions] };
 }
 
@@ -171,7 +177,8 @@ export function createOrgRoutes(config: ApiConfig, data: DataLayer) {
       method: "post",
       path: "/api/org/members/{userId}/roles",
       tags: ["Club"],
-      summary: "Añade un rol a un miembro. Solo `org_admin` del club",
+      summary:
+        "Añade un rol a un miembro. Con el rol `staff`, fija o cambia su cargo. Solo `org_admin` del club",
       security: [{ sessionCookie: [] }],
       middleware: [requirePermission("org.members.manage")],
       request: {
@@ -190,20 +197,25 @@ export function createOrgRoutes(config: ApiConfig, data: DataLayer) {
       const tenant = c.get("tenant");
       if (tenant.kind !== "organization") throw notFound();
       const { userId } = c.req.valid("param");
-      const { roleCode } = c.req.valid("json");
-      const result = await data.memberships.assignRole(tenant.scope, userId, roleCode);
+      const { roleCode, position } = c.req.valid("json");
+      const result = await data.memberships.assignRole(
+        tenant.scope,
+        userId,
+        roleCode,
+        position ?? null,
+      );
       if (result.outcome === "not_member")
         throw notFound("Esa persona no es miembro de este club.");
-      if (result.outcome === "assigned") {
+      if (result.outcome === "assigned" || (roleCode === "staff" && position)) {
         await data.audit.record({
           actorUserId: c.get("sessionUser").id,
           organizationId: tenant.organization.id,
           action: "membership.role_assigned",
           target: userId,
-          details: { roleCode },
+          details: { roleCode, position: position ?? null },
         });
       }
-      return c.json({ userId, roleCode, roles: result.roles }, 200);
+      return c.json({ userId, roleCode, roles: result.roles, position: result.position }, 200);
     },
   );
 
@@ -244,7 +256,41 @@ export function createOrgRoutes(config: ApiConfig, data: DataLayer) {
         target: userId,
         details: { roleCode },
       });
-      return c.json({ userId, roleCode, roles: result.roles }, 200);
+      const position = result.roles.includes("staff")
+        ? ((await data.memberships.membershipsFor(tenant.scope, userId)).find(
+            (m) => m.roleCode === "staff",
+          )?.position ?? null)
+        : null;
+      return c.json({ userId, roleCode, roles: result.roles, position }, 200);
+    },
+  );
+
+  app.openapi(
+    createRoute({
+      method: "get",
+      path: "/api/org/activity",
+      tags: ["Club"],
+      summary: "Últimos movimientos del club (Bloque 13). Permiso `org.activity.read`",
+      security: [{ sessionCookie: [] }],
+      middleware: [requirePermission("org.activity.read")],
+      request: { query: z.object({ limit: z.coerce.number().int().min(1).max(100).optional() }) },
+      responses: {
+        200: {
+          description: "Movimientos",
+          content: { "application/json": { schema: ActivityResponseSchema } },
+        },
+        ...errorResponses,
+      },
+    }),
+    async (c) => {
+      const tenant = c.get("tenant");
+      if (tenant.kind !== "organization") throw notFound();
+      const { limit } = c.req.valid("query");
+      const entries = await data.audit.listForOrganization(tenant.scope, limit ?? 20);
+      return c.json(
+        { entries: entries.map((e) => ({ ...e, createdAt: e.createdAt.toISOString() })) },
+        200,
+      );
     },
   );
 

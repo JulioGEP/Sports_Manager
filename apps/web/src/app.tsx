@@ -11,7 +11,10 @@ import { PlatformSystemPage } from "@/routes/admin/system";
 import { ForgotPasswordPage } from "@/routes/auth/forgot";
 import { LoginPage } from "@/routes/auth/login";
 import { ResetPasswordPage } from "@/routes/auth/reset";
+import { ChallengePage } from "@/routes/club/challenge";
+import { ChallengesPage } from "@/routes/club/challenges";
 import { FamilyPage } from "@/routes/club/family";
+import { FamilyPlayerPage } from "@/routes/club/family-player";
 import { ClubHome } from "@/routes/club/home";
 import { InvitationPage } from "@/routes/club/invitation";
 import { MembersPage } from "@/routes/club/members";
@@ -69,6 +72,9 @@ export const router = createBrowserRouter([
       { path: "players", element: <PlayersPage /> },
       { path: "players/:id", element: <PlayerPage /> },
       { path: "family", element: <FamilyPage /> },
+      { path: "family/:id", element: <FamilyPlayerPage /> },
+      { path: "challenges", element: <ChallengesPage /> },
+      { path: "challenges/:id", element: <ChallengePage /> },
       { path: "members", element: <MembersPage /> },
       { path: "settings", element: <SettingsPage /> },
     ],
