@@ -278,8 +278,8 @@ export function ClubHome() {
         </Card>
       ) : null}
 
-      {/* 3. Cifras del club */}
-      {data ? (
+      {/* 3. Cifras del club: solo para quien lee la estructura (las familias ven lo suyo). */}
+      {data && (canStructure || support) ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {has("org.club_members.read") || support ? (
             <Link to={paths.clubMembers} className="no-underline">

@@ -45,7 +45,8 @@ test.describe("espacio del club", () => {
     // En móvil la barra inferior lleva cuatro destinos y "Más": los ajustes viven en el menú de persona.
     // La navegación se pinta cuando llega la sesión: se espera a un destino presente en ambas barras.
     await expect(page.getByRole("link", { name: "Secciones" }).first()).toBeVisible();
-    const settingsLink = page.getByRole("link", { name: "Ajustes" }).first();
+    // Exacto: el aviso de puesta en marcha del inicio también enlaza a los ajustes.
+    const settingsLink = page.getByRole("link", { name: "Ajustes", exact: true }).first();
     if (await settingsLink.isVisible()) {
       await settingsLink.click();
     } else {

@@ -30,6 +30,10 @@ test.describe("estructura del club", () => {
     await shot(page, "32-seccion-nueva", info.project.name);
     await sectionSheet.getByRole("button", { name: "Crear sección" }).click();
     await expect(page.getByText(`Sección Pádel ${sfx} creada.`)).toBeVisible();
+    // Al crearla se abre su ficha, con las categorías que propuso el deporte.
+    await expect(page.getByRole("heading", { name: new RegExp(`Pádel ${sfx}`) })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Resumen" })).toBeVisible();
+    await page.getByRole("link", { name: "Secciones" }).first().click();
     await expect(page.getByRole("link", { name: new RegExp(`Pádel ${sfx}`) })).toBeVisible();
 
     // Ficha de la sección de fútbol sala: categorías con sus equipos, personal y resumen.

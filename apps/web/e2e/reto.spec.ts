@@ -19,7 +19,8 @@ test.describe("reto por puntos y paneles del personal", () => {
     await shot(page, "03b-inicio-operativo", info.project.name);
     await expectLegibleButtons(page);
 
-    await page.getByRole("link", { name: "Reto" }).first().click();
+    // En móvil el reto vive en "Más": se abre por su ruta.
+    await page.goto(`${CLUB}/challenges`);
     await expect(page.getByRole("heading", { name: "Retos" })).toBeVisible();
     await expect(page.getByText("Reto de hábitos 2026-27").first()).toBeVisible();
     await shot(page, "70-retos", info.project.name);
@@ -64,7 +65,8 @@ test.describe("reto por puntos y paneles del personal", () => {
   test("la familia registra actividad y ve solo sus puntos", async ({ page }, info) => {
     const sfx = suffix(info.project.name);
     await login(page, "familia@demo.test");
-    await page.getByRole("link", { name: "Reto" }).first().click();
+    // En móvil el reto vive en "Más": se abre por su ruta.
+    await page.goto(`${CLUB}/challenges`);
     await expect(page.getByRole("heading", { name: "Reto" })).toBeVisible();
     await expect(page.getByRole("tab", { name: "Clara Martí" })).toHaveAttribute(
       "aria-selected",

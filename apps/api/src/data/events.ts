@@ -366,21 +366,29 @@ export function eventsRepo(db: () => Database) {
       return toRecords(scope, rows);
     },
 
-    async today(scope: OrgScope, timezone: string, now = new Date()): Promise<EventRecord[]> {
+    /** Los eventos de hoy del club o, con `teamIds`, solo los de esos equipos (lo propio). */
+    async today(
+      scope: OrgScope,
+      timezone: string,
+      now = new Date(),
+      teamIds?: string[],
+    ): Promise<EventRecord[]> {
       const { from, to } = dayRange(timezone, now);
       const rows = await query()
-        .where(conditions(scope, from, to, {}))
+        .where(conditions(scope, from, to, teamIds ? { teamIds } : {}))
         .orderBy(asc(schema.events.startsAt), asc(schema.events.title));
       return toRecords(scope, rows);
     },
 
-    /** El evento en curso o el siguiente del club. */
-    async next(scope: OrgScope, now = new Date()): Promise<EventRecord | null> {
+    /** El evento en curso o el siguiente del club o, con `teamIds`, de esos equipos. */
+    async next(scope: OrgScope, now = new Date(), teamIds?: string[]): Promise<EventRecord | null> {
+      if (teamIds && teamIds.length === 0) return null;
       const rows = await query()
         .where(
           and(
             eq(schema.events.organizationId, scope.organizationId),
             gt(schema.events.endsAt, now),
+            ...(teamIds ? [inArray(schema.events.teamId, teamIds)] : []),
           ),
         )
         .orderBy(asc(schema.events.startsAt))

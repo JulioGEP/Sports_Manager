@@ -69,7 +69,8 @@ test.describe("club completo", () => {
     await sheet.getByLabel("Instalación").selectOption({ label: "Sala polivalente" });
     await shot(page, "94-agenda-evento-nuevo", info.project.name);
     await sheet.getByRole("button", { name: "Guardar evento" }).click();
-    await expect(page.getByText("Evento creado.")).toBeVisible();
+    // Escritorio y móvil comparten base: el segundo aviso dice que la sala ya estaba ocupada.
+    await expect(page.getByText(/Evento creado\.|Se ha guardado igual\./)).toBeVisible();
     await expect(page.getByText(`Reunión de familias ${sfx}`).first()).toBeVisible();
 
     // El detalle de un entrenamiento: equipo, instalación y pase de lista.

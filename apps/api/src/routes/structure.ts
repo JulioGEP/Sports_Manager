@@ -226,12 +226,25 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
       ]);
       const canStructure = actor.permissions.has("org.structure.read");
       const canEvents = actor.permissions.has("org.events.read");
+      // Quien no lee la estructura (familias, cuerpo técnico sin más) ve en el inicio solo la
+      // agenda de lo suyo: los equipos de sus deportistas o los que lleva.
+      const scopedTeams: string[] | undefined =
+        canEvents && !canStructure
+          ? [
+              ...new Set([
+                ...(await data.events.teamIdsForGuardian(tenant.scope, actor.userId)),
+                ...(await data.memberships.ownTeamIds(tenant.scope, actor.userId)),
+              ]),
+            ]
+          : undefined;
       const [sectionCards, today, nextEvent, fees] = await Promise.all([
         canStructure
           ? data.sections.list(tenant.scope, counts.currentSeason?.id ?? null)
           : Promise.resolve([]),
-        canEvents ? data.events.today(tenant.scope, timezone) : Promise.resolve([]),
-        canEvents ? data.events.next(tenant.scope) : Promise.resolve(null),
+        canEvents
+          ? data.events.today(tenant.scope, timezone, new Date(), scopedTeams)
+          : Promise.resolve([]),
+        canEvents ? data.events.next(tenant.scope, new Date(), scopedTeams) : Promise.resolve(null),
         actor.permissions.has("org.fees.read")
           ? data.fees.summary(tenant.scope)
           : Promise.resolve(null),
