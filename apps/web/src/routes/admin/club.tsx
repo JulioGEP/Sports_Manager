@@ -123,16 +123,31 @@ export function PlatformClubPage() {
         actions={
           <>
             {org.status !== "active" ? (
-              <Button variant="secondary" loading={busy} onClick={() => void setStatus("active")}>
+              <Button
+                action="restore"
+                variant="secondary"
+                loading={busy}
+                onClick={() => void setStatus("active")}
+              >
                 {t("reactivate")}
               </Button>
             ) : (
-              <Button variant="secondary" loading={busy} onClick={() => setConfirming("suspended")}>
+              <Button
+                action="suspend"
+                variant="secondary"
+                loading={busy}
+                onClick={() => setConfirming("suspended")}
+              >
                 {t("suspend")}
               </Button>
             )}
             {org.status !== "archived" ? (
-              <Button variant="danger" loading={busy} onClick={() => setConfirming("archived")}>
+              <Button
+                action="archive"
+                variant="danger"
+                loading={busy}
+                onClick={() => setConfirming("archived")}
+              >
                 {t("archive")}
               </Button>
             ) : null}
@@ -164,11 +179,7 @@ export function PlatformClubPage() {
           description={t("adminsHint")}
           padded={false}
           actions={
-            <Button
-              size="sm"
-              icon={<Icon.Plus size={16} aria-hidden="true" />}
-              onClick={() => setInviteOpen(true)}
-            >
+            <Button action="invite" size="sm" onClick={() => setInviteOpen(true)}>
               {t("invite")}
             </Button>
           }
@@ -268,6 +279,7 @@ export function PlatformClubPage() {
         }
         body={confirming === "archived" ? t("confirmArchive") : t("confirmSuspend")}
         confirmLabel={confirming === "archived" ? t("archive") : t("suspend")}
+        confirmAction={confirming === "archived" ? "archive" : "suspend"}
         cancelLabel={c("cancel")}
         tone={confirming === "archived" ? "danger" : "default"}
         onConfirm={() => confirming && void setStatus(confirming)}
@@ -332,7 +344,7 @@ function InviteAdminSheet({
           <Button variant="secondary" onClick={onClose}>
             {c("cancel")}
           </Button>
-          <Button type="submit" form="invite-admin-form" loading={busy}>
+          <Button action="send" type="submit" form="invite-admin-form" loading={busy}>
             {t("submit")}
           </Button>
         </>

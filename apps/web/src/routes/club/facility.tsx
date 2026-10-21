@@ -91,7 +91,7 @@ export function FacilityPage() {
       <div className="flex flex-col gap-4">
         <Alert kind="error">{t("notFound")}</Alert>
         <div>
-          <ButtonLink to={paths.facilities} variant="secondary">
+          <ButtonLink action="back" to={paths.facilities} variant="secondary">
             {t("backToList")}
           </ButtonLink>
         </div>
@@ -127,19 +127,20 @@ export function FacilityPage() {
         actions={
           canWrite ? (
             <>
-              <Button
-                variant="secondary"
-                icon={<Icon.PencilSimple size={18} aria-hidden="true" />}
-                onClick={() => setEditing(true)}
-              >
+              <Button action="edit" variant="secondary" onClick={() => setEditing(true)}>
                 {t("detail.edit")}
               </Button>
               {facility.status === "active" ? (
-                <Button variant="danger" loading={busy} onClick={() => setConfirmArchive(true)}>
+                <Button
+                  action="archive"
+                  variant="danger"
+                  loading={busy}
+                  onClick={() => setConfirmArchive(true)}
+                >
                   {t("detail.archive")}
                 </Button>
               ) : (
-                <Button loading={busy} onClick={() => void setStatus("active")}>
+                <Button action="restore" loading={busy} onClick={() => void setStatus("active")}>
                   {t("detail.restore")}
                 </Button>
               )}
@@ -172,6 +173,7 @@ export function FacilityPage() {
         title={t("detail.confirmArchiveTitle", { name: facility.name })}
         body={t("detail.confirmArchiveBody")}
         confirmLabel={t("detail.archive")}
+        confirmAction="archive"
         cancelLabel={c("cancel")}
         onConfirm={() => void setStatus("archived")}
         onCancel={() => setConfirmArchive(false)}
@@ -283,14 +285,10 @@ function HoursCard({ facility, canWrite }: { facility: Facility; canWrite: boole
       }
       footer={
         <div className="flex flex-wrap items-center gap-3">
-          <Button
-            variant="secondary"
-            icon={<Icon.Plus size={18} aria-hidden="true" />}
-            onClick={add}
-          >
+          <Button action="add" variant="secondary" onClick={add}>
             {t("add")}
           </Button>
-          <Button loading={busy} disabled={!dirty} onClick={() => void save()}>
+          <Button action="save" loading={busy} disabled={!dirty} onClick={() => void save()}>
             {c("save")}
           </Button>
         </div>
@@ -334,6 +332,7 @@ function HoursCard({ facility, canWrite }: { facility: Facility; canWrite: boole
             />
             <IconButton
               label={t("remove")}
+              className="text-danger"
               onClick={() => setSlots((prev) => prev.filter((_, j) => j !== i))}
             >
               <Icon.Trash size={20} aria-hidden="true" />
@@ -429,7 +428,7 @@ function WeekCard({
             {events.data ? t("count", { count: events.data.events.length }) : ""}
             {conflicted.size > 0 ? ` · ${t("conflicts", { count: conflicted.size })}` : ""}
           </span>
-          <ButtonLink to={agendaPath} variant="tertiary" size="sm">
+          <ButtonLink action="open" to={agendaPath} variant="tertiary" size="sm">
             {t("openAgenda")}
           </ButtonLink>
         </div>

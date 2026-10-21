@@ -1,4 +1,6 @@
 import type { ReactNode } from "react";
+import { ButtonContent } from "./Button";
+import type { ActionKind } from "../icons/actions";
 
 /**
  * Portada del club. Ver DESIGN.md, sección 7.
@@ -47,10 +49,15 @@ export function ClubHero({ clubName, crest, subtitle, meta, actions, ariaLabel }
 
 export function ClubHeroButton({
   ghost = false,
+  action,
+  icon,
   children,
   onClick,
 }: {
   ghost?: boolean;
+  /** Acción del catálogo (DESIGN.md 8.1): el botón lleva su icono. */
+  action?: ActionKind | undefined;
+  icon?: ReactNode;
   children: ReactNode;
   onClick?: () => void;
 }) {
@@ -61,9 +68,11 @@ export function ClubHeroButton({
     <button
       type="button"
       onClick={onClick}
-      className={`h-(--h-control) rounded-control px-5 text-body ${cls}`}
+      className={`inline-flex h-(--h-control) items-center justify-center gap-2 rounded-control px-5 text-body ${cls}`}
     >
-      {children}
+      <ButtonContent action={action} icon={icon}>
+        {children}
+      </ButtonContent>
     </button>
   );
 }

@@ -208,10 +208,7 @@ export function AgendaPage() {
         description={familyOnly ? t("familyDescription") : t("description")}
         actions={
           canWrite || canWriteOwn ? (
-            <Button
-              icon={<Icon.Plus size={20} aria-hidden="true" />}
-              onClick={() => setCreating(true)}
-            >
+            <Button action="add" onClick={() => setCreating(true)}>
               {t("new")}
             </Button>
           ) : null
@@ -305,7 +302,12 @@ export function AgendaPage() {
             description={familyOnly ? t("emptyFamily") : t("emptyHint")}
             action={
               canWrite || canWriteOwn ? (
-                <Button variant="secondary" size="sm" onClick={() => setCreating(true)}>
+                <Button
+                  action="add"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setCreating(true)}
+                >
                   {t("new")}
                 </Button>
               ) : null
@@ -417,6 +419,7 @@ export function AgendaPage() {
             : t("confirmDeleteBody")
         }
         confirmLabel={t("delete")}
+        confirmAction="delete"
         cancelLabel={c("cancel")}
         onConfirm={() => deleting && void remove(deleting)}
         onCancel={() => {
@@ -476,14 +479,16 @@ function EventDetailSheet({
           {canEdit ? (
             <>
               {event.seriesId ? (
-                <Button variant="danger" onClick={() => onDelete(true)}>
+                <Button action="delete" variant="danger" onClick={() => onDelete(true)}>
                   {t("deleteSeries")}
                 </Button>
               ) : null}
-              <Button variant="danger" onClick={() => onDelete(false)}>
+              <Button action="delete" variant="danger" onClick={() => onDelete(false)}>
                 {event.seriesId ? t("deleteOne") : t("delete")}
               </Button>
-              <Button onClick={onEdit}>{t("edit")}</Button>
+              <Button action="edit" onClick={onEdit}>
+                {t("edit")}
+              </Button>
             </>
           ) : null}
         </>
@@ -658,7 +663,7 @@ export function EventSheet({
           <Button variant="secondary" onClick={onClose}>
             {c("cancel")}
           </Button>
-          <Button type="submit" form="event-form" loading={busy}>
+          <Button action="save" type="submit" form="event-form" loading={busy}>
             {event ? c("save") : t("submit")}
           </Button>
         </>
@@ -904,7 +909,7 @@ export function AttendanceSheet({
             {c("cancel")}
           </Button>
           {canWrite ? (
-            <Button loading={busy} onClick={() => void save()}>
+            <Button action="save" loading={busy} onClick={() => void save()}>
               {c("save")}
             </Button>
           ) : null}

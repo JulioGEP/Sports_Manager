@@ -129,12 +129,7 @@ export function TeamPage() {
   return (
     <div className="flex flex-col gap-5">
       <div>
-        <ButtonLink
-          to={paths.section(team.section.id)}
-          variant="tertiary"
-          size="sm"
-          icon={<Icon.ArrowLeft size={16} aria-hidden="true" />}
-        >
+        <ButtonLink action="back" to={paths.section(team.section.id)} variant="tertiary" size="sm">
           {t("back")}
         </ButtonLink>
       </div>
@@ -157,19 +152,12 @@ export function TeamPage() {
         actions={
           <>
             {canWrite ? (
-              <Button
-                variant="secondary"
-                icon={<Icon.PencilSimple size={18} aria-hidden="true" />}
-                onClick={() => setEditing(true)}
-              >
+              <Button action="edit" variant="secondary" onClick={() => setEditing(true)}>
                 {t("edit")}
               </Button>
             ) : null}
             {canRoster ? (
-              <Button
-                icon={<Icon.Plus size={20} aria-hidden="true" />}
-                onClick={() => setAdding(true)}
-              >
+              <Button action="add" onClick={() => setAdding(true)}>
                 {t("addPlayer")}
               </Button>
             ) : null}
@@ -198,7 +186,12 @@ export function TeamPage() {
                   title={t("emptyRoster")}
                   action={
                     canRoster ? (
-                      <Button variant="secondary" size="sm" onClick={() => setAdding(true)}>
+                      <Button
+                        action="add"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => setAdding(true)}
+                      >
                         {t("addPlayer")}
                       </Button>
                     ) : null
@@ -255,10 +248,20 @@ export function TeamPage() {
                 canRoster
                   ? (p) => (
                       <>
-                        <Button variant="secondary" size="sm" onClick={() => setEntry(p)}>
+                        <Button
+                          action="edit"
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => setEntry(p)}
+                        >
                           {t("editEntry")}
                         </Button>
-                        <Button variant="danger" size="sm" onClick={() => setRemoving(p)}>
+                        <Button
+                          action="delete"
+                          variant="danger"
+                          size="sm"
+                          onClick={() => setRemoving(p)}
+                        >
                           {t("remove")}
                         </Button>
                       </>
@@ -276,9 +279,9 @@ export function TeamPage() {
           actions={
             canWrite ? (
               <Button
+                action="addPerson"
                 variant="secondary"
                 size="sm"
-                icon={<Icon.UserPlus size={16} aria-hidden="true" />}
                 onClick={() => setAddingStaff(true)}
               >
                 {t("addStaff")}
@@ -300,7 +303,12 @@ export function TeamPage() {
                     </span>
                   </span>
                   {canWrite ? (
-                    <Button variant="tertiary" size="sm" onClick={() => setRemovingStaff(s)}>
+                    <Button
+                      action="delete"
+                      variant="danger"
+                      size="sm"
+                      onClick={() => setRemovingStaff(s)}
+                    >
                       {t("removeStaff")}
                     </Button>
                   ) : null}
@@ -318,7 +326,7 @@ export function TeamPage() {
           className="lg:col-start-2"
           actions={
             access.events ? (
-              <Button variant="secondary" size="sm" onClick={() => setSchedule(true)}>
+              <Button action="edit" variant="secondary" size="sm" onClick={() => setSchedule(true)}>
                 {slots.length === 0 ? t("schedule.set") : t("schedule.edit")}
               </Button>
             ) : null
@@ -411,6 +419,7 @@ export function TeamPage() {
         title={t("confirmRemoveTitle", { name: removing ? name(removing) : "", team: team.name })}
         body={t("confirmRemoveBody")}
         confirmLabel={t("remove")}
+        confirmAction="delete"
         cancelLabel={c("cancel")}
         onConfirm={() => removing && void removePlayer(removing)}
         onCancel={() => setRemoving(null)}
@@ -420,6 +429,7 @@ export function TeamPage() {
         title={t("confirmRemoveStaffTitle", { name: removingStaff?.name ?? "" })}
         body={t("confirmRemoveStaffBody")}
         confirmLabel={t("removeStaff")}
+        confirmAction="delete"
         cancelLabel={c("cancel")}
         onConfirm={() => removingStaff && void removeStaff(removingStaff)}
         onCancel={() => setRemovingStaff(null)}
@@ -517,11 +527,17 @@ function AddPlayerSheet({
       footer={
         <>
           {canCreate ? (
-            <Button variant="secondary" onClick={onNewPlayer}>
+            <Button action="add" variant="secondary" onClick={onNewPlayer}>
               {tt("newPlayer")}
             </Button>
           ) : null}
-          <Button type="submit" form="add-player-form" loading={busy} disabled={!selected}>
+          <Button
+            action="add"
+            type="submit"
+            form="add-player-form"
+            loading={busy}
+            disabled={!selected}
+          >
             {t("submit")}
           </Button>
         </>
@@ -649,7 +665,7 @@ function EntrySheet({
           <Button variant="secondary" onClick={onClose}>
             {c("cancel")}
           </Button>
-          <Button type="submit" form="entry-form" loading={busy}>
+          <Button action="save" type="submit" form="entry-form" loading={busy}>
             {c("save")}
           </Button>
         </>
@@ -752,7 +768,7 @@ function AddStaffSheet({
           <Button variant="secondary" onClick={onClose}>
             {c("cancel")}
           </Button>
-          <Button type="submit" form="staff-form" loading={busy} disabled={!selected}>
+          <Button action="add" type="submit" form="staff-form" loading={busy} disabled={!selected}>
             {t("submit")}
           </Button>
         </>

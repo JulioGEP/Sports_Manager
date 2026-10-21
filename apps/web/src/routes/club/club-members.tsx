@@ -124,10 +124,7 @@ export function ClubMembersPage() {
         description={t("description")}
         actions={
           canWrite ? (
-            <Button
-              icon={<Icon.Plus size={20} aria-hidden="true" />}
-              onClick={() => update({ new: "1" })}
-            >
+            <Button action="add" onClick={() => update({ new: "1" })}>
               {t("new")}
             </Button>
           ) : null
@@ -198,7 +195,12 @@ export function ClubMembersPage() {
               }
               action={
                 canWrite && members.data && members.data.members.length === 0 ? (
-                  <Button variant="secondary" size="sm" onClick={() => update({ new: "1" })}>
+                  <Button
+                    action="add"
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => update({ new: "1" })}
+                  >
                     {t("new")}
                   </Button>
                 ) : null
@@ -268,7 +270,7 @@ export function ClubMembersPage() {
             trailing: <StatusChip kind={memberStatusKind[m.status]}>{ms(m.status)}</StatusChip>,
           })}
           actions={(m) => (
-            <ButtonLink to={paths.clubMember(m.id)} variant="secondary" size="sm">
+            <ButtonLink action="open" to={paths.clubMember(m.id)} variant="secondary" size="sm">
               {c("open")}
             </ButtonLink>
           )}
@@ -390,7 +392,7 @@ function NewMemberSheet({
           <Button variant="secondary" onClick={onClose}>
             {c("cancel")}
           </Button>
-          <Button type="submit" form="club-member-form" loading={busy}>
+          <Button action="add" type="submit" form="club-member-form" loading={busy}>
             {t("submit")}
           </Button>
         </>

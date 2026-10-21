@@ -6,3 +6,4 @@ export * from "./components/ClubHero";
 export * from "./components/ConfirmDialog";
 export * from "./i18n/voice";
 export * from "./icons/sport";
+export * from "./icons/actions";

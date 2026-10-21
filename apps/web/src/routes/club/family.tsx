@@ -60,7 +60,12 @@ export function FamilyPage() {
                   {p.status === "inactive" ? (
                     <StatusChip kind="neutral">{t("inactive")}</StatusChip>
                   ) : null}
-                  <ButtonLink to={paths.familyPlayer(p.id)} variant="secondary" size="sm">
+                  <ButtonLink
+                    action="open"
+                    to={paths.familyPlayer(p.id)}
+                    variant="secondary"
+                    size="sm"
+                  >
                     {t("openProfile")}
                   </ButtonLink>
                 </>

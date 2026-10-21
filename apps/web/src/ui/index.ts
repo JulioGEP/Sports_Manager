@@ -1,4 +1,11 @@
-export { Button, ButtonLink, IconButton, type ButtonProps, type ButtonLinkProps } from "./button";
+export {
+  Button,
+  ButtonLink,
+  IconButton,
+  type ButtonProps,
+  type ButtonLinkProps,
+  type ActionKind,
+} from "./button";
 export { Field, Input, Select, ColorInput, controlClass } from "./field";
 export { Card } from "./card";
 export { PageHeader } from "./page-header";

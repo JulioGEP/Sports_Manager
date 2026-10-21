@@ -1,6 +1,6 @@
 # Design System · [NOMBRE DEL PRODUCTO]
 
-SaaS de gestión de clubes deportivos · Versión 1.0 · 20 de octubre de 2026
+SaaS de gestión de clubes deportivos · Versión 1.1 · 21 de octubre de 2026
 
 Este documento es la fuente de verdad del diseño. Todo lo que se construya en la app debe salir de aquí. Si algo no está definido, se pregunta antes de inventarlo.
 
@@ -17,7 +17,8 @@ Este documento es la fuente de verdad del diseño. Todo lo que se construya en l
 7. **Las acciones delicadas se confirman siempre.** Las demás, nunca.
 8. **Las cifras van en Geist Mono o con números tabulares.**
 9. **Los botones dicen un verbo.** "Pagar", "Guardar asistencia". Nunca "Aceptar".
-10. **Cuidamos al menor.** Ningún chat privado entre adultos del club y jugadores menores. Las familias solo ven los datos de sus hijos.
+10. **Toda acción reconocible lleva su icono, y siempre el mismo.** Editar es una rueda dentada, eliminar un cubo de basura en rojo, añadir un más. El catálogo está en 8.1.
+11. **Cuidamos al menor.** Ningún chat privado entre adultos del club y jugadores menores. Las familias solo ven los datos de sus hijos.
 
 ---
 
@@ -231,6 +232,49 @@ Es el patrón donde el club manda. Componente: `ClubHero`.
 - **Nunca emojis.**
 - **Clubes con colores muy claros** (amarillo, celeste): el motor usa el tono legible del club para el relleno, así el duotono se sigue viendo.
 
+### 8.1 Iconos de acción
+
+Un botón se reconoce antes de leerse. Por eso **toda acción que tenga icono en este catálogo lo lleva**, junto al verbo, y **la misma acción se ve igual en toda la app**: en la cabecera de la pantalla, en la fila de una tabla, en el pie de un panel y en el botón de confirmar. Un icono no sustituye al verbo: el texto sigue siendo obligatorio (regla de oro 9).
+
+| Acción | Verbos | Icono Phosphor | `action` |
+| --- | --- | --- | --- |
+| Añadir | Añadir, Nuevo, Crear, Dar de alta | `Plus` | `add` |
+| Añadir a alguien | Añadir al cuerpo técnico, Añadir al grupo | `UserPlus` | `addPerson` |
+| Invitar | Invitar, Invitar familia | `UserPlus` | `invite` |
+| Editar | Editar, Renombrar, Fijar horario, Roles | `Gear` (rueda dentada) | `edit` |
+| Eliminar | Eliminar, Quitar, Borrar, Revocar, Retirar | `Trash`, siempre en rojo | `delete` |
+| Dar de baja | Dar de baja (reversible) | `UserMinus` | `deactivate` |
+| Archivar | Archivar (reversible) | `Archive` | `archive` |
+| Recuperar | Recuperar, Restaurar, Reactivar | `ArrowCounterClockwise` | `restore` |
+| Guardar | Guardar, Guardar horario | `FloppyDisk` | `save` |
+| Enviar | Enviar invitación, Reenviar, Enviar enlace | `PaperPlaneTilt` | `send` |
+| Copiar | Copiar enlace | `Copy` | `copy` |
+| Vincular | Vincular miembro | `LinkSimple` | `link` |
+| Desvincular | Desvincular | `LinkBreak` | `unlink` |
+| Cobrar | Pagar, Cobrar, Registrar pago | `Coins` | `pay` |
+| Aprobar | Aprobar, Validar | `ThumbsUp` | `approve` |
+| Rechazar | Rechazar | `ThumbsDown` | `reject` |
+| Activar | Activar | `Play` | `activate` |
+| Terminar | Cerrar reto, cerrar temporada | `FlagCheckered` | `finish` |
+| Suspender | Suspender, Anular (reversible) | `Prohibit` | `suspend` |
+| Foto | Cambiar foto, Hacer foto | `Camera` | `photo` |
+| Subir | Subir logo, Subir archivo | `UploadSimple` | `upload` |
+| Mostrar | Ver archivadas | `Eye` | `show` |
+| Ocultar | Ocultar archivadas | `EyeSlash` | `hide` |
+| Volver | Volver, Volver a instalaciones | `ArrowLeft` | `back` |
+| Abrir | Abrir, Ver, Ir, Entrar en un club | `ArrowRight`, detrás del verbo | `open` |
+| Entrar | Iniciar sesión, Entrar, Unirme | `SignIn` | `signIn` |
+| Salir | Cerrar sesión | `SignOut` | `signOut` |
+
+Reglas:
+
+- **El icono va delante del verbo**, a 18 px (16 px en el botón compacto de 40 px). Solo `open` lo lleva detrás: la flecha señala hacia dónde se va.
+- **El icono hereda el color del botón.** Eliminar, quitar y archivar van en la variante `danger` (o `danger-solid` en la confirmación), y así el cubo de basura sale en rojo sin configurar nada. Un botón que solo lleva el icono de eliminar (franja de un horario) lleva `text-danger`.
+- **Cancelar y Cerrar no llevan icono.** Son la salida de un panel o un diálogo, no una acción, y la X ya está en la cabecera del panel. Tampoco llevan icono los botones de fecha ("Hoy", semana anterior y siguiente) ni los atajos de un formulario ("De lunes a viernes").
+- **El icono de una acción es decorativo** (`aria-hidden="true"`): el verbo ya dice qué hace. Un botón solo con icono sigue llevando `aria-label`.
+- **Un icono, un significado.** Como la rueda dentada es editar, el destino "Ajustes" de la navegación usa `SlidersHorizontal`.
+- **Si una acción nueva se repite** en dos pantallas, entra en el catálogo (`src/icons/actions.tsx`) y en esta tabla. No se elige un icono suelto en una pantalla. Una acción propia de una sola pantalla ("Pasar lista", "Gestionar accesos") puede llevar un icono propio por `icon`, siempre el mismo si se repite.
+
 ---
 
 ## 9. Componentes
@@ -248,6 +292,14 @@ Referencia de implementación en `src/components/`. Los que no tienen código a�
 | `danger-solid` | `bg-danger-solid text-white` | Solo dentro de la confirmación |
 
 Deshabilitado: `bg-raised text-muted`. El texto es siempre un verbo.
+
+Props: `action` pone el icono del catálogo (8.1) y es obligatoria cuando la acción está en él; `icon` admite un icono propio para una acción que no está; `size="sm"` es el botón compacto de 40 px para filas de tabla y cabeceras de tarjeta; `cta` es la acción fija inferior (9.2). `buttonClassName` y `ButtonContent` sirven para dar aspecto de botón a un enlace sin duplicar estilos.
+
+```tsx
+<Button action="add">Añadir jugador</Button>
+<Button action="edit" variant="secondary" size="sm">Editar</Button>
+<Button action="delete" variant="danger" size="sm">Quitar</Button>
+```
 
 ### 9.2 Acción fija inferior
 
@@ -284,7 +336,7 @@ Fila cápsula de 64 px: avatar de 40 px, nombre (16 px, 500), dato secundario (1
 
 - **Pestañas:** subrayado de 2 px en `club-fill` y recuento en Geist Mono.
 - **Barra de filtros:** búsqueda (280 px), desplegables con etiqueta incluida ("Equipo: Todos"), y a la derecha "Exportar" (secundario) y la acción principal.
-- **Tabla:** filas de 52 px, línea fina `line`, cabecera de 44 px en `text-label`. Casilla de selección a la izquierda. Cifras alineadas a la derecha en Geist Mono. Acciones de fila en un menú (botón de 44 px con `aria-label`). Fila seleccionada con fondo `club-soft`. Tablas anchas con desplazamiento horizontal dentro de su caja.
+- **Tabla:** filas de 52 px, línea fina `line`, cabecera de 44 px en `text-label`. Casilla de selección a la izquierda. Cifras alineadas a la derecha en Geist Mono. Acciones de fila como botones compactos con su icono de acción (8.1), "Editar" y "Quitar", o en un menú (botón de 44 px con `aria-label`) si son más de dos. Fila seleccionada con fondo `club-soft`. Tablas anchas con desplazamiento horizontal dentro de su caja.
 - **Paginación:** texto de rango a la izquierda ("1–6 de 128") y botones anterior y siguiente.
 
 ### 9.9 Tarjeta de evento
@@ -310,7 +362,7 @@ Se usa **siempre** para acciones delicadas:
 
 No se usa para marcar asistencia, confirmar un partido ni guardar cambios normales: si todo pide confirmación, la gente deja de leerlas.
 
-Texto: el título es la pregunta con el nombre, el cuerpo explica qué pasará y si se puede deshacer, y el botón repite el verbo. En móvil es un panel inferior; en escritorio, un diálogo centrado.
+Texto: el título es la pregunta con el nombre, el cuerpo explica qué pasará y si se puede deshacer, y el botón repite el verbo y el icono de la acción (`confirmAction`): "Quitar" con el cubo de basura, "Archivar" con la caja. "Cancelar" va sin icono. En móvil es un panel inferior; en escritorio, un diálogo centrado.
 
 ### 9.13 Aviso tras una acción
 
@@ -450,6 +502,7 @@ Reglas:
 | `tailwind/theme.css` | Tema para Tailwind v4 |
 | `tailwind/preset.cjs` | Preset para Tailwind v3 |
 | `src/components/*.tsx` | Componentes de referencia |
+| `src/icons/actions.tsx` | Catálogo de iconos de acción (8.1): `actionIcons`, `ActionIcon` |
 | `src/i18n/voice.ts` · `*.json` | Voz del club, textos e idiomas |
 | `icons/sport/*.svg` | Iconos de deporte propios |
 
@@ -487,6 +540,7 @@ t('ca', 'callup.title', { voice: club.voice, vars: { player: 'Marc', day: 'dissa
 | Necesito | Clase |
 | --- | --- |
 | Acción principal | `bg-club text-on-club rounded-control h-(--h-control)` |
+| Botón con icono de acción | `<Button action="edit">`, `<Button action="delete" variant="danger">` |
 | Texto en color del club | `text-club-text` |
 | Fondo de selección | `bg-club-soft text-club-soft-text` |
 | Tarjeta | `bg-surface rounded-card shadow-card` (+ `border border-border` en Precisa) |
@@ -503,6 +557,7 @@ Antes de crear o cambiar cualquier interfaz:
 1. Lee este documento entero la primera vez y la sección del componente cada vez.
 2. Usa solo clases del tema. Si necesitas un color, tamaño o radio que no existe, para y pregunta.
 3. Si un componente ya existe en `src/components/`, úsalo. No crees uno parecido.
+3b. Todo botón cuya acción esté en el catálogo (8.1) lleva `action`: `add`, `edit`, `delete`, `save`… Nunca un icono distinto para la misma acción. Si la acción se repite y no está, amplía el catálogo.
 4. Todo texto visible sale de `src/i18n/`. Si falta una clave, créala en castellano en la voz que toque y márcala para traducir.
 5. Comprueba zona táctil, contraste y foco antes de dar algo por terminado.
 6. No pongas la marca del producto dentro de la app de un club.
@@ -522,6 +577,7 @@ Antes de crear o cambiar cualquier interfaz:
 | 4. Forma | Envolvente en móvil, Precisa en gestión | Suave | Firma reconocible donde se ve y orden donde se trabaja |
 | 4. Forma | Asistencia con dos botones | Un toque alterna; todos presentes por defecto | Claridad del estado en cada fila |
 | 5. Iconos | Duotono de club | Lineal fino, relleno al activar | Identidad del club también en los iconos |
+| 8. Iconos | Icono fijo por acción en todos los botones: rueda dentada para editar, cubo de basura en rojo para eliminar, más para añadir | Botones solo con texto; icono a gusto de cada pantalla | Se reconocen sin leer y la misma acción se ve igual en toda la app |
 | 5. Interacción | Confirmar siempre las acciones delicadas | Deshacer siempre | Seguridad en dinero, bajas y comunicados |
 | 6. Gráficas | Evolución para familias, comparativa para entrenadores | Radar | Lectura honesta y protección del menor |
 | 6. Chat | Canales de equipo y 1:1 familia-entrenador, visibles para la coordinación | Sin chat | Comunicación real con protección del menor |

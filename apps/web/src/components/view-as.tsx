@@ -112,6 +112,7 @@ export function ViewAsBanner() {
         <span>{t("banner", { name, role: viewedRoles.map((r) => roles(r)).join(", ") })}</span>
       </span>
       <Button
+        action="back"
         variant="secondary"
         size="sm"
         onClick={() => {

@@ -111,7 +111,7 @@ export function PlatformSetupPage() {
           )}
         </Field>
         {error ? <Alert kind="error">{error}</Alert> : null}
-        <Button type="submit" cta loading={busy}>
+        <Button action="signIn" type="submit" cta loading={busy}>
           {t("submit")}
         </Button>
         <p className="text-center text-secondary">

@@ -161,12 +161,7 @@ export function FamilyPlayerPage() {
   return (
     <div className="flex flex-col gap-5">
       <div>
-        <ButtonLink
-          to={paths.family}
-          variant="tertiary"
-          size="sm"
-          icon={<Icon.ArrowLeft size={16} aria-hidden="true" />}
-        >
+        <ButtonLink action="back" to={paths.family} variant="tertiary" size="sm">
           {t("back")}
         </ButtonLink>
       </div>
@@ -192,6 +187,7 @@ export function FamilyPlayerPage() {
                   onChange={(e) => void uploadPhoto(e.target.files?.[0])}
                 />
                 <Button
+                  action="photo"
                   variant="tertiary"
                   size="sm"
                   loading={photoBusy}
@@ -200,7 +196,12 @@ export function FamilyPlayerPage() {
                   {photoBusy ? tp("photo.uploading") : tp("photo.change")}
                 </Button>
                 {player.photoUrl ? (
-                  <Button variant="tertiary" size="sm" onClick={() => setRemovingPhoto(true)}>
+                  <Button
+                    action="delete"
+                    variant="danger"
+                    size="sm"
+                    onClick={() => setRemovingPhoto(true)}
+                  >
                     {tp("photo.remove")}
                   </Button>
                 ) : null}
@@ -296,6 +297,7 @@ export function FamilyPlayerPage() {
               }
               actions={
                 <ButtonLink
+                  action="open"
                   to={`${paths.challenges}?player=${id}&challenge=${challenge.id}`}
                   variant="secondary"
                   size="sm"
@@ -493,6 +495,7 @@ export function FamilyPlayerPage() {
         title={tp("photo.confirmRemoveTitle", { name })}
         body={tp("photo.confirmRemoveBody")}
         confirmLabel={tp("photo.remove")}
+        confirmAction="delete"
         cancelLabel={c("cancel")}
         onConfirm={() => void removePhoto()}
         onCancel={() => setRemovingPhoto(false)}

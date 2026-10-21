@@ -54,6 +54,7 @@ import {
   StatusChip,
   Tabs,
   useToast,
+  type ActionKind,
 } from "@/ui";
 
 const TABS = [
@@ -216,7 +217,7 @@ function GeneralTab({
       <Card
         title={t("title")}
         footer={
-          <Button type="submit" loading={busy}>
+          <Button action="save" type="submit" loading={busy}>
             {c("save")}
           </Button>
         }
@@ -342,7 +343,7 @@ function BrandTab({
           title={t("title")}
           description={t("description")}
           footer={
-            <Button type="submit" loading={busy} disabled={!valid}>
+            <Button action="save" type="submit" loading={busy} disabled={!valid}>
               {c("save")}
             </Button>
           }
@@ -491,6 +492,7 @@ function LogoTab() {
         footer={
           branding.logoUrl ? (
             <Button
+              action="delete"
               variant="danger"
               size="sm"
               loading={busy}
@@ -519,6 +521,7 @@ function LogoTab() {
         title={t("confirmRemoveTitle")}
         body={t("confirmRemoveBody")}
         confirmLabel={t("remove")}
+        confirmAction="delete"
         cancelLabel={c("cancel")}
         onConfirm={() => void remove()}
         onCancel={() => setConfirmRemove(false)}
@@ -573,10 +576,7 @@ function SeasonsTab() {
         description={t("description")}
         padded={false}
         actions={
-          <Button
-            icon={<Icon.Plus size={18} aria-hidden="true" />}
-            onClick={() => setCreating(true)}
-          >
+          <Button action="add" onClick={() => setCreating(true)}>
             {t("new")}
           </Button>
         }
@@ -617,7 +617,7 @@ function SeasonsTab() {
           })}
           actions={(s) => (
             <span className="flex flex-wrap justify-end gap-2">
-              <Button size="sm" variant="secondary" onClick={() => setEditing(s)}>
+              <Button action="edit" size="sm" variant="secondary" onClick={() => setEditing(s)}>
                 {t("edit")}
               </Button>
               {!s.isCurrent ? (
@@ -632,7 +632,11 @@ function SeasonsTab() {
               icon={<Icon.CalendarBlank weight="duotone" />}
               title={t("empty")}
               description={t("emptyHint")}
-              action={<Button onClick={() => setCreating(true)}>{t("new")}</Button>}
+              action={
+                <Button action="add" onClick={() => setCreating(true)}>
+                  {t("new")}
+                </Button>
+              }
             />
           }
         />
@@ -728,7 +732,7 @@ function SeasonSheet({
           <Button variant="secondary" onClick={onClose}>
             {c("cancel")}
           </Button>
-          <Button type="submit" form="season-form" loading={busy}>
+          <Button action={season ? "save" : "add"} type="submit" form="season-form" loading={busy}>
             {season ? c("save") : t("submit")}
           </Button>
         </>
@@ -890,15 +894,25 @@ function MemberTypesTab() {
           })}
           actions={(m) => (
             <span className="flex flex-wrap justify-end gap-2">
-              <Button size="sm" variant="secondary" onClick={() => setRenaming(m)}>
+              <Button action="edit" size="sm" variant="secondary" onClick={() => setRenaming(m)}>
                 {t("rename")}
               </Button>
               {m.status === "active" ? (
-                <Button size="sm" variant="danger" onClick={() => void setStatus(m, "archived")}>
+                <Button
+                  action="archive"
+                  size="sm"
+                  variant="danger"
+                  onClick={() => void setStatus(m, "archived")}
+                >
                   {t("archive")}
                 </Button>
               ) : (
-                <Button size="sm" variant="secondary" onClick={() => void setStatus(m, "active")}>
+                <Button
+                  action="restore"
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => void setStatus(m, "active")}
+                >
                   {t("restore")}
                 </Button>
               )}
@@ -918,7 +932,7 @@ function MemberTypesTab() {
           title={t("newTitle")}
           description={t("newDescription")}
           footer={
-            <Button type="submit" loading={busy} disabled={!name.trim()}>
+            <Button action="add" type="submit" loading={busy} disabled={!name.trim()}>
               {t("add")}
             </Button>
           }
@@ -1000,7 +1014,7 @@ function RenameTypeSheet({
           <Button variant="secondary" onClick={onClose}>
             {c("cancel")}
           </Button>
-          <Button type="submit" form="rename-type-form" loading={busy}>
+          <Button action="save" type="submit" form="rename-type-form" loading={busy}>
             {c("save")}
           </Button>
         </>
@@ -1130,7 +1144,7 @@ function PaymentsForm({
           description={t("description")}
           footer={
             canWrite ? (
-              <Button type="submit" loading={busy} disabled={!dirty}>
+              <Button action="save" type="submit" loading={busy} disabled={!dirty}>
                 {c("save")}
               </Button>
             ) : null
@@ -1231,6 +1245,14 @@ function SetupTab() {
     m.roles.some((r) => r === "coach" || r === "staff"),
   ).length;
   const pending = (invitations.data?.invitations ?? []).filter((i) => i.state === "pending").length;
+  /** Cada paso lleva el icono de la acción que propone (DESIGN.md 8.1). */
+  const setupActions = {
+    logo: "upload",
+    colors: "edit",
+    season: "add",
+    section: "add",
+    invite: "invite",
+  } as const satisfies Record<string, ActionKind>;
   const steps = [
     { key: "logo", done: Boolean(branding.logoUrl), to: `${paths.settings}?tab=logo` },
     { key: "colors", done: !defaultColors, to: `${paths.settings}?tab=brand` },
@@ -1275,7 +1297,12 @@ function SetupTab() {
             {step.done ? (
               <StatusChip kind="success">{t("done")}</StatusChip>
             ) : (
-              <ButtonLink to={step.to} variant="secondary" size="sm">
+              <ButtonLink
+                action={setupActions[step.key]}
+                to={step.to}
+                variant="secondary"
+                size="sm"
+              >
                 {t(`${step.key}Action`)}
               </ButtonLink>
             )}

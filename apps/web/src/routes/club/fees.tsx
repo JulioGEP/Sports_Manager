@@ -81,10 +81,7 @@ function FeesAdmin() {
               <Button variant="secondary" onClick={() => setGenerating(true)}>
                 {t("generate.action")}
               </Button>
-              <Button
-                icon={<Icon.Plus size={18} aria-hidden="true" />}
-                onClick={() => setNewCharge(true)}
-              >
+              <Button action="add" onClick={() => setNewCharge(true)}>
                 {t("newCharge")}
               </Button>
             </>
@@ -298,16 +295,22 @@ function ChargesTab({ canWrite }: { canWrite: boolean }) {
                 <span className="flex flex-wrap justify-end gap-2">
                   {ch.status === "pending" || ch.status === "overdue" ? (
                     <>
-                      <Button size="sm" onClick={() => setPaying(ch)}>
+                      <Button action="pay" size="sm" onClick={() => setPaying(ch)}>
                         {t("recordPayment")}
                       </Button>
-                      <Button size="sm" variant="danger" onClick={() => setCancelling(ch)}>
+                      <Button
+                        action="suspend"
+                        size="sm"
+                        variant="danger"
+                        onClick={() => setCancelling(ch)}
+                      >
                         {t("cancel")}
                       </Button>
                     </>
                   ) : null}
                   {ch.status === "cancelled" ? (
                     <Button
+                      action="restore"
                       size="sm"
                       variant="secondary"
                       onClick={() => void setChargeStatus(ch, "pending")}
@@ -342,6 +345,7 @@ function ChargesTab({ canWrite }: { canWrite: boolean }) {
           concept: cancelling?.concept ?? "",
         })}
         confirmLabel={t("cancel")}
+        confirmAction="suspend"
         cancelLabel={c("cancel")}
         onConfirm={() => cancelling && void setChargeStatus(cancelling, "cancelled")}
         onCancel={() => setCancelling(null)}
@@ -514,10 +518,7 @@ function PlansTab({ canWrite }: { canWrite: boolean }) {
     <div className="flex flex-col gap-4">
       {canWrite ? (
         <div className="flex justify-end">
-          <Button
-            icon={<Icon.Plus size={18} aria-hidden="true" />}
-            onClick={() => setCreating(true)}
-          >
+          <Button action="add" onClick={() => setCreating(true)}>
             {t("new")}
           </Button>
         </div>
@@ -574,11 +575,12 @@ function PlansTab({ canWrite }: { canWrite: boolean }) {
           canWrite
             ? (p) => (
                 <span className="flex flex-wrap justify-end gap-2">
-                  <Button size="sm" variant="secondary" onClick={() => setEditing(p)}>
+                  <Button action="edit" size="sm" variant="secondary" onClick={() => setEditing(p)}>
                     {t("edit")}
                   </Button>
                   {p.status === "active" ? (
                     <Button
+                      action="archive"
                       size="sm"
                       variant="danger"
                       onClick={() => void setStatus(p, "archived")}
@@ -587,6 +589,7 @@ function PlansTab({ canWrite }: { canWrite: boolean }) {
                     </Button>
                   ) : (
                     <Button
+                      action="restore"
                       size="sm"
                       variant="secondary"
                       onClick={() => void setStatus(p, "active")}
@@ -604,7 +607,11 @@ function PlansTab({ canWrite }: { canWrite: boolean }) {
             title={t("empty")}
             description={t("emptyHint")}
             action={
-              canWrite ? <Button onClick={() => setCreating(true)}>{t("new")}</Button> : undefined
+              canWrite ? (
+                <Button action="add" onClick={() => setCreating(true)}>
+                  {t("new")}
+                </Button>
+              ) : undefined
             }
           />
         }
@@ -707,7 +714,7 @@ function PlanSheet({
           <Button variant="secondary" onClick={onClose}>
             {c("cancel")}
           </Button>
-          <Button type="submit" form="plan-form" loading={busy}>
+          <Button action={plan ? "save" : "add"} type="submit" form="plan-form" loading={busy}>
             {plan ? c("save") : t("submit")}
           </Button>
         </>
@@ -930,7 +937,7 @@ function MyFees() {
                       {money(ch.status === "paid" ? ch.amountCents : pending)}
                     </span>
                     {payable ? (
-                      <Button loading={paying === ch.id} onClick={() => void pay(ch)}>
+                      <Button action="pay" loading={paying === ch.id} onClick={() => void pay(ch)}>
                         {t("pay")}
                       </Button>
                     ) : null}

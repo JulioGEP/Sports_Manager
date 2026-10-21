@@ -141,10 +141,7 @@ function StaffChallengesPage() {
         description={t("description")}
         actions={
           canManage ? (
-            <Button
-              icon={<Icon.Plus size={20} aria-hidden="true" />}
-              onClick={() => setCreating(true)}
-            >
+            <Button action="add" onClick={() => setCreating(true)}>
               {t("new")}
             </Button>
           ) : null
@@ -180,7 +177,12 @@ function StaffChallengesPage() {
               description={challenges.data ? t("emptyHint") : undefined}
               action={
                 canManage && challenges.data ? (
-                  <Button variant="secondary" size="sm" onClick={() => setCreating(true)}>
+                  <Button
+                    action="add"
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setCreating(true)}
+                  >
                     {t("new")}
                   </Button>
                 ) : null
@@ -254,7 +256,7 @@ function StaffChallengesPage() {
             ),
           })}
           actions={(ch) => (
-            <ButtonLink to={paths.challenge(ch.id)} variant="secondary" size="sm">
+            <ButtonLink action="open" to={paths.challenge(ch.id)} variant="secondary" size="sm">
               {c("open")}
             </ButtonLink>
           )}
@@ -365,6 +367,7 @@ function NewChallengeSheet({
             {c("cancel")}
           </Button>
           <Button
+            action="add"
             type="submit"
             form="challenge-form"
             loading={busy}
@@ -622,10 +625,7 @@ function FamilyChallengesPage() {
             }
             actions={
               canWrite ? (
-                <Button
-                  icon={<Icon.Plus size={20} aria-hidden="true" />}
-                  onClick={() => setRegistering(true)}
-                >
+                <Button action="add" onClick={() => setRegistering(true)}>
                   {t("register")}
                 </Button>
               ) : null
@@ -693,7 +693,12 @@ function FamilyChallengesPage() {
                   title={t("noSubmissions")}
                   action={
                     canWrite ? (
-                      <Button variant="secondary" size="sm" onClick={() => setRegistering(true)}>
+                      <Button
+                        action="add"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => setRegistering(true)}
+                      >
                         {t("register")}
                       </Button>
                     ) : null
@@ -718,7 +723,12 @@ function FamilyChallengesPage() {
                         {tc(`submissionStatus.${s.status}`)}
                       </StatusChip>
                       {canWrite && s.status === "submitted" ? (
-                        <Button variant="tertiary" size="sm" onClick={() => setRemoving(s)}>
+                        <Button
+                          action="delete"
+                          variant="danger"
+                          size="sm"
+                          onClick={() => setRemoving(s)}
+                        >
                           {t("withdraw")}
                         </Button>
                       ) : null}
@@ -768,6 +778,7 @@ function FamilyChallengesPage() {
             title={t("confirmWithdrawTitle", { task: removing?.task.name ?? "" })}
             body={t("confirmWithdrawBody")}
             confirmLabel={t("withdraw")}
+            confirmAction="delete"
             cancelLabel={c("cancel")}
             onConfirm={() => removing && void remove(removing)}
             onCancel={() => setRemoving(null)}
@@ -854,7 +865,7 @@ function RegisterSheet({
           <Button variant="secondary" onClick={onClose}>
             {c("cancel")}
           </Button>
-          <Button type="submit" form="register-form" loading={busy} disabled={!task}>
+          <Button action="add" type="submit" form="register-form" loading={busy} disabled={!task}>
             {t("submit", { points: preview })}
           </Button>
         </>
