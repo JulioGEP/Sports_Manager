@@ -70,5 +70,14 @@ export const AUDIT_ACTIONS = [
   "challenge.submission_created",
   "challenge.submission_removed",
   "challenge.submission_reviewed",
+  "match_config.updated",
+  "match_action.created",
+  "match_action.updated",
+  "match_action.removed",
+  "match.created",
+  "match.updated",
+  "match.finished",
+  "match.removed",
+  "match.squad_updated",
 ] as const;
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];

@@ -78,6 +78,14 @@ export const PERMISSIONS = [
   "org.fees.write",
   /** Ver el club como otra persona del club sin cambiar de cuenta (solo administración). */
   "org.view_as",
+  /**
+   * Partido en directo (Bloque 20): consultar partidos y estadísticas; registrarlos en cualquier
+   * equipo (`write`) o solo en los propios (`write_own`); configurar el motor por sección.
+   */
+  "org.matches.read",
+  "org.matches.write",
+  "org.matches.write_own",
+  "org.matches.configure",
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
 
@@ -93,6 +101,7 @@ const CLUB_READ: readonly Permission[] = [
   "org.facilities.read",
   "org.events.read",
   "org.attendance.read",
+  "org.matches.read",
 ];
 
 /**
@@ -109,6 +118,7 @@ const STAFF_READ: readonly Permission[] = [
   "org.facilities.read",
   "org.events.read",
   "org.attendance.read",
+  "org.matches.read",
 ];
 
 /** Permisos que otorga cada rol de club. */
@@ -129,6 +139,8 @@ export const ROLE_PERMISSIONS: Record<RoleCode, readonly Permission[]> = {
     "org.fees.read",
     "org.fees.write",
     "org.view_as",
+    "org.matches.write",
+    "org.matches.configure",
   ],
   staff: [...STAFF_READ],
   coach: [
@@ -139,6 +151,7 @@ export const ROLE_PERMISSIONS: Record<RoleCode, readonly Permission[]> = {
     "org.challenges.review_own",
     "org.events.write_own",
     "org.attendance.write_own",
+    "org.matches.write_own",
   ],
   guardian: ["org.settings.read", "org.family.read", "org.family.write"],
 };
@@ -160,6 +173,8 @@ export const STAFF_POSITION_PERMISSIONS: Record<StaffPosition, readonly Permissi
     "org.challenges.review",
     "org.facilities.write",
     "org.events.write",
+    "org.matches.write",
+    "org.matches.configure",
   ],
   coordinator: [
     "org.members.invite",
@@ -169,8 +184,10 @@ export const STAFF_POSITION_PERMISSIONS: Record<StaffPosition, readonly Permissi
     "org.challenges.manage",
     "org.challenges.review",
     "org.events.write",
+    "org.matches.write",
+    "org.matches.configure",
   ],
-  delegate: ["org.events.write_own", "org.attendance.write_own"],
+  delegate: ["org.events.write_own", "org.attendance.write_own", "org.matches.write_own"],
   physio: ["org.players.assess"],
   fitness: ["org.players.assess"],
   psychologist: ["org.players.assess"],
@@ -195,6 +212,7 @@ export const SUPPORT_GRANT_PERMISSIONS: readonly Permission[] = [
   "org.facilities.read",
   "org.events.read",
   "org.fees.read",
+  "org.matches.read",
 ];
 
 /** Una pertenencia: el rol y, si es `staff`, su cargo. */

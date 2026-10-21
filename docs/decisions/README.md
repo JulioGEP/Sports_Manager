@@ -47,3 +47,4 @@ Las decisiones no se editan una vez aceptadas. Si cambian, se escribe una nueva 
 | 0031 | Club completo: secciones por deporte, personas y socios, agenda e instalaciones, asistencia, cuotas con Stripe y "ver como" | Aceptada |
 | 0032 | El reto tiene ámbito: de una sección entera o de un solo equipo | Aceptada |
 | 0033 | Alcance por cargo y visibilidad por rol gestionada desde "Personal" | Aceptada |
+| 0034 | Partido en directo: motor de registro configurable por deporte, estadísticas e histórico | Aceptada |

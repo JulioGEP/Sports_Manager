@@ -939,6 +939,15 @@
       "submit": "Save schedule",
       "saved": "Schedule saved.",
       "savedGenerated": "Schedule saved. {count, plural, =0 {Nothing needed generating} one {# session generated} other {# sessions generated}}."
+    },
+    "matches": {
+      "title": "Matches",
+      "description": "Live recording from the touchline and stats for every match.",
+      "all": "See all",
+      "new": "New match",
+      "empty": "No matches recorded yet.",
+      "live": "Live",
+      "scheduled": "Not started"
     }
   },
   "players": {
@@ -1775,7 +1784,8 @@
         "nameHint": "For example, Mon & Wed 19:00.",
         "submit": "Create group"
       }
-    }
+    },
+    "matchConfig": "Live match"
   },
   "sectionKinds": {
     "competition": "Competition",
@@ -2282,5 +2292,402 @@
       "checkoutSuccess": "Payment received. It may take a few seconds to show as paid.",
       "checkoutCancel": "Payment cancelled. You can try again any time."
     }
+  },
+  "matches": {
+    "backToTeam": "Team",
+    "title": "Matches",
+    "description": "Every match is recorded live from the touchline: actions, substitutions and clock.",
+    "history": "History and totals",
+    "new": "New match",
+    "liveNow": "{count, plural, one {One match is in play} other {# matches are in play}}",
+    "openLive": "Follow against {opponent}",
+    "list": "All matches",
+    "listDescription": "{count, plural, =0 {None yet} one {# match} other {# matches}}",
+    "empty": "No matches yet.",
+    "emptyHint": "Create one and record it live from the touchline.",
+    "table": {
+      "date": "Date",
+      "opponent": "Match",
+      "result": "Result",
+      "status": "Status",
+      "events": "Records"
+    },
+    "notPlayed": "–",
+    "won": "Win",
+    "lost": "Loss",
+    "drawn": "Draw",
+    "home": "Home",
+    "away": "Away",
+    "status": {
+      "scheduled": "Not started",
+      "live": "In play",
+      "finished": "Finished"
+    },
+    "continue": "Continue",
+    "open": "Open",
+    "stats": "Stats",
+    "remove": "Delete",
+    "removed": "Match against {opponent} deleted.",
+    "confirmRemoveTitle": "Delete the match against {opponent}?",
+    "confirmRemoveBody": "The squad and every record of the match are deleted. This cannot be undone.",
+    "newSheet": {
+      "title": "New match for {team}",
+      "description": "Opponent, date and home or away. Everything else is decided on the touchline.",
+      "created": "Match against {opponent} created.",
+      "fromAgenda": "Match from the agenda",
+      "fromAgendaHint": "If the match is already in the agenda, pick it and the form fills itself.",
+      "noEvent": "Not linked to the agenda",
+      "opponent": "Opponent",
+      "homeAway": "Home or away",
+      "date": "Date",
+      "squadHint": "The team roster becomes the squad. The starting line-up is chosen at kick-off.",
+      "submit": "Create match"
+    }
+  },
+  "match": {
+    "periods": {
+      "half1": "1st half",
+      "half2": "2nd half",
+      "quarter": "Quarter {n}",
+      "third": "Period {n}",
+      "generic": "Period {n}"
+    },
+    "back": "{team} matches",
+    "undo": "Undo",
+    "squad": "Squad",
+    "settings": "Settings",
+    "stats": "Stats",
+    "scoreboard": "Scoreboard and clock",
+    "fouls": "{count, plural, one {# foul} other {# fouls}}",
+    "pause": "Pause the clock",
+    "play": "Start the clock",
+    "status": {
+      "scheduled": "Not started",
+      "live": "In play",
+      "finished": "Finished"
+    },
+    "running": "Running",
+    "paused": "Paused",
+    "home": "Home",
+    "away": "Away",
+    "start": "Start the match",
+    "endPeriod": "End {period}",
+    "startPeriod": "Start {period}",
+    "finish": "Finish the match",
+    "reopen": "Reopen",
+    "lineupNeeded": "{count} of {total} on court: pick the starting line-up in Squad.",
+    "readOnly": "You can watch but not record: only the team's coaching staff or the administration can.",
+    "court": "Court",
+    "onCourt": "On court · {count}/{total}",
+    "courtHint": "Tap a player to record; tap another on court to swap positions; tap one on the bench to substitute.",
+    "formation": "System",
+    "attackDirection": "Switch attacking direction",
+    "attacks": "attacks",
+    "emptySlot": "Empty slot",
+    "keeper": "Goalkeeper",
+    "trayHint": "One tap records the action",
+    "more": "More actions",
+    "benchSelected": "{name} is ready to come on: tap who leaves the court.",
+    "tapPlayer": "Tap a player",
+    "tapPlayerHint": "Record an action, swap positions or substitute with the bench.",
+    "bench": "Bench",
+    "benchHint": "Two taps = substitution",
+    "benchEmpty": "Nobody on the bench.",
+    "sentOff": "sent off",
+    "opponentActions": "Opponent",
+    "teamActions": "Team",
+    "feed": "Latest actions",
+    "feedEmpty": "Nothing recorded yet.",
+    "feedSub": "{in} on for {out}",
+    "feedPeriodStart": "{period} starts",
+    "feedPeriodEnd": "{period} ends",
+    "feedLineup": "Starting line-up",
+    "zone": {
+      "description": "Tap the zone of the attacking half the finish came from. The goal is at the top.",
+      "goal": "Goal",
+      "skip": "Record without zone"
+    },
+    "moreDescription": "The whole catalogue of the section. The club configures it in the section.",
+    "started": "Match under way.",
+    "periodEnded": "{period} over.",
+    "finished": "Match finished. Stats are ready.",
+    "reopened": "Match reopened.",
+    "undone": "Last action undone.",
+    "confirmFinishTitle": "Finish the match at {score}?",
+    "confirmFinishBody": "Recording closes and the stats are computed. You can reopen it if anything is missing.",
+    "lineup": {
+      "title": "Squad and starting line-up",
+      "description": "Tap who starts ({count} on court). Mark the goalkeeper and add anyone missing.",
+      "counter": "{count} of {total} on court",
+      "submit": "Save squad",
+      "keeperNeeded": "Exactly one goalkeeper on court is needed.",
+      "starter": "Starts",
+      "benchPlayer": "Bench",
+      "keeper": "Goalkeeper",
+      "notCalled": "Not called up",
+      "saved": "Squad saved."
+    },
+    "settingsSheet": {
+      "title": "Match settings",
+      "description": "{periods} periods of {minutes} minutes, {players} on court. Periods and minutes change in the section configuration.",
+      "opponent": "Opponent",
+      "noFormation": "No system",
+      "toRight": "To the right",
+      "toLeft": "To the left",
+      "notes": "Match notes",
+      "saved": "Settings saved."
+    }
+  },
+  "matchStats": {
+    "back": "{team} matches",
+    "backToLive": "Back to the match",
+    "outcome": {
+      "won": "Win",
+      "lost": "Loss",
+      "drawn": "Draw"
+    },
+    "scope": {
+      "label": "Stats period",
+      "all": "Whole match"
+    },
+    "tiles": {
+      "played": "Time played",
+      "fouls": "Fouls · own and opponent",
+      "cards": "Own cards",
+      "events": "Records"
+    },
+    "comparison": {
+      "title": "Comparison with the opponent",
+      "description": "Each own action against its opponent mirror.",
+      "empty": "The catalogue has no opponent actions linked to own ones.",
+      "summary": "Comparison with the opponent: {rows}"
+    },
+    "zones": {
+      "title": "Finishing map",
+      "description": "Which zone of the attacking half the finishes came from. Format: times (goals).",
+      "allActions": "All",
+      "pick": "Map action",
+      "summary": "Nine zones of the attacking half with the finishes from each",
+      "empty": "No finishes with a zone.",
+      "legend": "The goal is at the top. Zones are stored already normalised by attacking direction."
+    },
+    "work": {
+      "title": "Team work by period",
+      "description": "How many times each own action was recorded in each period.",
+      "positive": "Favourable",
+      "negative": "Losses and sanctions",
+      "summary": "Favourable actions and losses per period"
+    },
+    "players": {
+      "title": "Outfield players",
+      "description": "Minutes, score on court and actions. Tap a column to sort; choose which actions to show."
+    },
+    "keepers": {
+      "title": "Goalkeepers",
+      "description": "Saves, goals conceded and percentage while on court."
+    },
+    "timeline": {
+      "title": "All records",
+      "description": "{count, plural, one {# record} other {# records}} in order."
+    },
+    "note": "Minutes, score on court and +/- only count while the player takes part. The rating adds the weight of each action (best in this match: {rating}).",
+    "table": {
+      "columns": "Visible actions",
+      "player": "Player",
+      "matches": "GP",
+      "starts": "Starts",
+      "minutes": "Min",
+      "saves": "Saves",
+      "scoreFor": "GF",
+      "conceded": "Conc.",
+      "scoreAgainst": "GA",
+      "savePct": "Save %",
+      "rating": "Rating"
+    },
+    "export": {
+      "button": "Export to Excel",
+      "summary": "Summary",
+      "match": "Match",
+      "date": "Date",
+      "opponent": "Opponent",
+      "metric": "Metric",
+      "period": "Period",
+      "ownScore": "Own score",
+      "opponentScore": "Opponent score",
+      "ownFouls": "Own fouls",
+      "opponentFouls": "Opponent fouls",
+      "players": "Players",
+      "zones": "Zones",
+      "zone": "Zone",
+      "events": "Records",
+      "clock": "Clock",
+      "kind": "Kind",
+      "action": "Action"
+    }
+  },
+  "matchHistory": {
+    "back": "Matches",
+    "title": "History and totals",
+    "description": "Pick the matches and the totals recompute instantly.",
+    "record": "Record",
+    "opponents": "Opponents",
+    "selection": {
+      "title": "Matches in the query",
+      "description": "{count} of {total} selected",
+      "finished": "Finished",
+      "all": "All",
+      "status": "Match status",
+      "pickAll": "Select all",
+      "pickNone": "Clear all",
+      "empty": "No matches to add up.",
+      "open": "View"
+    },
+    "tiles": {
+      "matches": "Matches",
+      "record": "Won · drawn · lost",
+      "score": "Points for · against"
+    },
+    "trend": {
+      "title": "Match by match",
+      "description": "Own and opponent score in each chosen match.",
+      "summary": "Score per match"
+    },
+    "comparisonDescription": "Sum of every chosen match.",
+    "zonesDescription": "Finishes added up per zone. Format: times (goals).",
+    "cross": {
+      "title": "Cross metrics",
+      "description": "Each player is a dot: choose what goes on each axis.",
+      "x": "Horizontal axis",
+      "y": "Vertical axis",
+      "summary": "Players placed by {x} and {y}"
+    },
+    "players": {
+      "title": "Players, totals",
+      "description": "Matches, starts, minutes and actions added up."
+    },
+    "keepersDescription": "Saves and goals conceded added up.",
+    "note": "The accumulated rating adds the weight of each action across the chosen matches (best: {best}).",
+    "export": {
+      "summary": "Summary",
+      "team": "Team",
+      "season": "Season",
+      "matches": "Matches",
+      "players": "Players",
+      "zones": "Zones",
+      "perMatch": "Per match"
+    }
+  },
+  "matchConfig": {
+    "back": "{section} section",
+    "title": "Live match",
+    "description": "How the game is played in this section and what can be recorded. The sport proposes; the club decides.",
+    "reset": "Back to what the sport proposes",
+    "resetDone": "Configuration reset to the sport's.",
+    "confirmResetTitle": "Go back to the sport's configuration?",
+    "confirmResetBody": "Settings return to the sport's and actions not in its catalogue are archived. Matches already recorded do not change.",
+    "scopes": {
+      "player": "Player",
+      "team": "Team",
+      "opponent": "Opponent"
+    },
+    "categories": {
+      "positive": "Favourable",
+      "negative": "Loss or sanction",
+      "neutral": "Neutral"
+    },
+    "flags": {
+      "ownScore": "+{n} to the score",
+      "opponentScore": "+{n} to the opponent",
+      "foul": "counts as foul",
+      "card": {
+        "yellow": "yellow",
+        "red": "red"
+      },
+      "zone": "asks for zone",
+      "keeper": "keeper only",
+      "quick": "quick tray"
+    },
+    "actions": {
+      "title": "Action catalogue",
+      "description": "What can be recorded with one tap. Corners, timeouts, whatever is needed.",
+      "new": "New action",
+      "empty": "No actions yet.",
+      "table": {
+        "name": "Action",
+        "scope": "Applies to",
+        "category": "Kind",
+        "flags": "Effects",
+        "weight": "Weight"
+      },
+      "noFlags": "no effects",
+      "archived": "Archived",
+      "restore": "Restore",
+      "removed": "Action {name} removed.",
+      "restored": "Action {name} restored.",
+      "confirmRemoveTitle": "Remove the action {name}?",
+      "confirmRemoveBody": "If it has been used in a match, it is archived to keep the history; otherwise it is deleted."
+    },
+    "settings": {
+      "title": "How the game is played",
+      "customized": "Section settings on top of the sport's.",
+      "fromSport": "Settings proposed by the sport. Change them if this section plays differently.",
+      "saved": "Settings saved.",
+      "periods": "Periods",
+      "periodMinutes": "Minutes per period",
+      "playersOnCourt": "Players on court",
+      "foulLimit": "Foul limit per period",
+      "foulLimitHint": "0 if not counted.",
+      "goalkeeper": "Has goalkeeper",
+      "yes": "Yes",
+      "no": "No",
+      "clock": "Clock",
+      "clock_up": "Counts up",
+      "clock_down": "Counts down",
+      "zones": "Zone map",
+      "zonesHint": "Ask for the zone on actions that have it.",
+      "formations": "Systems of play",
+      "formationsHint": "Comma separated, not counting the goalkeeper: 1-2-1, 2-2."
+    },
+    "actionSheet": {
+      "editTitle": "Edit {name}",
+      "newTitle": "New action",
+      "description": "Who it applies to, what it adds and how much it weighs in the rating.",
+      "submit": "Create action",
+      "name": "Name",
+      "nameHint": "The stats key is generated from the name.",
+      "codeHint": "Key: {code}. Renaming does not change it.",
+      "scope": "Applies to",
+      "category": "Kind",
+      "opponentScore": "Points to the opponent score",
+      "ownScore": "Points to own score",
+      "scoreHint": "Goal: 1. Three-pointer: 3. No score: 0.",
+      "weight": "Weight in the rating",
+      "weightHint": "Positive adds, negative subtracts. From -20 to 20.",
+      "card": "Card",
+      "noCard": "No card",
+      "mirrorOf": "Mirror of own action",
+      "mirrorHint": "For the comparison: opponent goal mirrors goal.",
+      "noMirror": "No mirror",
+      "countsFoul": "Counts as a team foul",
+      "quick": "In the quick tray",
+      "requiresZone": "Asks for the court zone",
+      "keeperOnly": "Goalkeeper only",
+      "saved": "Action saved.",
+      "created": "Action {name} created.",
+      "codeTaken": "There is already an action with that key in the section."
+    }
+  },
+  "playerMatches": {
+    "title": "Matches",
+    "description": "Totals and the line in every recorded match.",
+    "familyDescription": "The team result and what they did in each match. Only theirs.",
+    "error": "Matches could not be loaded.",
+    "empty": "No matches recorded yet.",
+    "matches": "Matches",
+    "starts": "{count, plural, one {# start} other {# starts}}",
+    "minutes": "Minutes",
+    "rating": "Rating",
+    "starter": "starter",
+    "bench": "bench"
   }
 }
