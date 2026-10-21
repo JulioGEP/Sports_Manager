@@ -66,7 +66,8 @@ export function Sheet({
           </header>
           <div className="flex-1 overflow-y-auto px-5 pb-5">{children}</div>
           {footer ? (
-            <footer className="flex flex-col-reverse gap-2 border-t border-line px-5 py-4 precisa:flex-row precisa:justify-end">
+            /* En Precisa los botones van en fila y, si no caben, pasan a otra línea: nunca se aplastan. */
+            <footer className="flex flex-col-reverse gap-2 border-t border-line px-5 py-4 precisa:flex-row precisa:flex-wrap precisa:justify-end">
               {footer}
             </footer>
           ) : null}
