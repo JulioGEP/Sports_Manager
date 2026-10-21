@@ -75,7 +75,9 @@ test.describe("estructura del club", () => {
     await shot(page, "34-equipo-nuevo", info.project.name);
     await teamSheet.getByRole("button", { name: "Crear equipo" }).click();
     await expect(page.getByText(`Cadete A ${sfx} creado.`)).toBeVisible();
-    await expect(page.getByRole("link", { name: `Cadete A ${sfx}` })).toBeVisible();
+    // Al crearlo se abre su ficha, vacía y con la categoría en el encabezado.
+    await expect(page.getByRole("heading", { name: new RegExp(`Cadete A ${sfx}`) })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Horario semanal" })).toBeVisible();
   });
 
   test("ficha de equipo: plantilla, cuerpo técnico y horario", async ({ page }, info) => {

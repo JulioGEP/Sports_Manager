@@ -111,7 +111,8 @@ test.describe("club completo", () => {
     await shot(page, "98-cuotas-cargos", info.project.name);
     await expectLegibleButtons(page);
 
-    // Registrar un pago a mano sobre el primer cargo abierto.
+    // Registrar un pago a mano sobre el primer cargo pendiente.
+    await page.getByLabel("Estado").selectOption("pending");
     await page.getByRole("button", { name: "Cobrar" }).first().click();
     const pay = page.getByRole("dialog");
     await expect(pay.getByRole("heading", { name: "Registrar pago" })).toBeVisible();
@@ -169,8 +170,9 @@ test.describe("club completo", () => {
     await page.goto(`${CLUB}/fees`);
     await expect(page.getByRole("heading", { name: "Mis cuotas" })).toBeVisible();
     await expect(page.getByText(/Pendiente|Nada pendiente/).first()).toBeVisible();
+    // Con cargos abiertos, el aviso de cobro a mano; sin ellos, nada que pagar.
     await expect(
-      page.getByText("El club apunta los pagos a mano: paga por transferencia o en secretaría"),
+      page.getByText(/El club apunta los pagos a mano|Nada pendiente|No tienes cuotas/).first(),
     ).toBeVisible();
     await shot(page, "99e-familia-cuotas", info.project.name);
     await expectLegibleButtons(page);
