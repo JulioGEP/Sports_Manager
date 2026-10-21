@@ -176,12 +176,11 @@ test.describe("partido en directo", () => {
     await page.getByRole("link", { name: "Alevín A" }).click();
     await expect(page.getByRole("heading", { name: "Partidos", exact: true })).toBeVisible();
     await expect(page.getByRole("link", { name: "Nuevo partido" })).toBeVisible();
-    // Otro equipo: solo mira.
+    // Otro equipo queda fuera de su ámbito (ADR 0033): en la sección solo aparecen los suyos.
     await page.goto(`${CLUB}/sections`);
     await page.getByRole("link", { name: /Fútbol sala/ }).click();
-    await page.getByRole("link", { name: "Infantil A" }).click();
-    await expect(page.getByRole("heading", { name: "Partidos", exact: true })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Nuevo partido" })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Alevín A" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Infantil A" })).toHaveCount(0);
     await signOut(page);
 
     await login(page, "familia@demo.test");
