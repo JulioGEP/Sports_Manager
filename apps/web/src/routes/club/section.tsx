@@ -37,9 +37,10 @@ import {
   Tabs,
   useToast,
 } from "@/ui";
+import { ChallengesCard, useChallengesOf } from "./challenges-card";
 import { SectionSheet, SportIcon } from "./sections";
 
-type Tab = "teams" | "staff";
+type Tab = "teams" | "staff" | "challenges";
 type DetailTeam = SectionDetailResponse["categories"][number]["teams"][number];
 
 /**
@@ -62,7 +63,8 @@ export function SectionPage() {
   const paths = clubPaths(slug);
   const seasonParam = params.get("season");
   const rawTab = params.get("tab");
-  const tab: Tab = rawTab === "staff" ? "staff" : "teams";
+  const tab: Tab = rawTab === "staff" || rawTab === "challenges" ? rawTab : "teams";
+  const canSeeChallenges = org.actor.permissions.includes("org.challenges.read");
 
   const detail = useQuery({
     queryKey: ["org", slug, "section", id, seasonParam],
@@ -76,6 +78,8 @@ export function SectionPage() {
     queryKey: ["org", slug, "seasons"],
     queryFn: () => apiFetch("/api/org/seasons", { schema: SeasonsResponseSchema }),
   });
+  // Los retos de la sección (ADR 0032): los de toda la sección y los de cada equipo.
+  const challenges = useChallengesOf({ sectionId: id }, canSeeChallenges);
   const reload = () => client.invalidateQueries({ queryKey: ["org", slug] });
   const update = (next: Record<string, string | null>) => {
     const sp = new URLSearchParams(params);
@@ -192,11 +196,20 @@ export function SectionPage() {
         items={[
           { key: "teams", label: w("tabTeams"), count: teamsCount },
           { key: "staff", label: t("tabStaff"), count: summary.staff.length },
+          ...(canSeeChallenges
+            ? [
+                {
+                  key: "challenges" as const,
+                  label: t("tabChallenges"),
+                  count: challenges.data?.challenges.length,
+                },
+              ]
+            : []),
         ]}
       />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-        <div className="flex flex-col gap-4">
+        <div className="flex min-w-0 flex-col gap-4">
           {tab === "teams" ? (
             categories.length === 0 ? (
               <Card>
@@ -326,6 +339,8 @@ export function SectionPage() {
                 </Card>
               ))
             )
+          ) : tab === "challenges" ? (
+            <ChallengesCard section={{ id: section.id, name: section.name }} />
           ) : (
             <Card title={t("tabStaff")} description={t("staffDescription")} padded={false}>
               {summary.staff.length === 0 ? (

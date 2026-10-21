@@ -232,6 +232,9 @@ export const clubPaths = (slug: string) => ({
   fees: `/${slug}/fees`,
   family: `/${slug}/family`,
   familyPlayer: (id: string) => `/${slug}/family/${id}`,
+  /** Los retos de uno de los suyos, para la familia (ADR 0032): dentro de la ficha del jugador. */
+  familyPlayerChallenges: (id: string) => `/${slug}/family/${id}/challenges`,
+  /** Vista de conjunto de los retos del club para el personal; sin entrada en la barra. */
   challenges: `/${slug}/challenges`,
   challenge: (id: string) => `/${slug}/challenges/${id}`,
   invitation: (token: string) => `/${slug}/invitations/${token}`,

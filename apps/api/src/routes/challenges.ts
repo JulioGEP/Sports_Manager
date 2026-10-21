@@ -224,6 +224,10 @@ export function createChallengeRoutes(config: ApiConfig, data: DataLayer) {
     throw forbidden();
   }
 
+  /** Seguimiento de un equipo concreto dentro del ámbito de validación: la intersección. */
+  const focusOn = (scope: string[] | undefined, teamId: string | undefined) =>
+    teamId ? (scope ? scope.filter((id) => id === teamId) : [teamId]) : scope;
+
   async function requireReviewOf(c: Ctx, tenant: Tenant, playerId: string) {
     const actor = c.get("actor");
     if (actor.permissions.has("org.challenges.review")) return;
@@ -243,15 +247,29 @@ export function createChallengeRoutes(config: ApiConfig, data: DataLayer) {
       path: "/api/org/challenges",
       tags: ["Retos"],
       summary:
-        "Retos del club: activos primero, agrupados por sección. `manage` dice hasta dónde llega quien pregunta",
+        "Retos del club: activos primero, agrupados por sección. Con `section`, los de esa sección; con `team`, los de ese equipo y los de toda su sección (su histórico). `manage` dice hasta dónde llega quien pregunta",
       security: [{ sessionCookie: [] }],
       middleware: [read],
+      request: {
+        query: z.object({
+          section: z.string().uuid().optional(),
+          team: z.string().uuid().optional(),
+        }),
+      },
       responses: { 200: json("Retos", ChallengesResponseSchema), ...errors },
     }),
     async (c) => {
       const tenant = scopeOf(c);
+      const { section, team: teamId } = c.req.valid("query");
+      const team = teamId ? await data.teams.byId(tenant.scope, teamId) : null;
+      if (teamId && !team) throw notFound("Ese equipo no existe.");
       const [challenges, manage] = await Promise.all([
-        data.challenges.list(tenant.scope).then((all) => visibleChallenges(c, all)),
+        data.challenges
+          .list(tenant.scope, {
+            sectionId: section,
+            ...(team ? { team: { id: team.id, sectionId: team.section.id } } : {}),
+          })
+          .then((all) => visibleChallenges(c, all)),
         manageScopeOf(c, tenant),
       ]);
       return c.json({ challenges: challenges.map(challengeDto), manage }, 200);
@@ -492,26 +510,32 @@ export function createChallengeRoutes(config: ApiConfig, data: DataLayer) {
       path: "/api/org/challenges/{id}/submissions",
       tags: ["Retos"],
       summary:
-        "Registros del reto para validar: todo el club con `org.challenges.review`, solo los equipos propios con `org.challenges.review_own`",
+        "Registros del reto para validar: todo el club con `org.challenges.review`, solo los equipos propios con `org.challenges.review_own`. Con `team`, solo los de ese equipo",
       security: [{ sessionCookie: [] }],
       middleware: [read],
       request: {
         params: idParam,
-        query: z.object({ status: z.enum(SUBMISSION_STATUSES).optional() }),
+        query: z.object({
+          status: z.enum(SUBMISSION_STATUSES).optional(),
+          team: z.string().uuid().optional(),
+        }),
       },
       responses: { 200: json("Registros", ChallengeSubmissionsResponseSchema), ...errors },
     }),
     async (c) => {
       const tenant = scopeOf(c);
       const { id } = c.req.valid("param");
-      const { status } = c.req.valid("query");
+      const { status, team } = c.req.valid("query");
       await challengeOr404(c, tenant, id);
-      const teamIds = await reviewScope(c, tenant);
-      const submissions = await data.challenges.submissions(tenant.scope, id, { status, teamIds });
+      const scopeTeams = await reviewScope(c, tenant);
+      const submissions = await data.challenges.submissions(tenant.scope, id, {
+        status,
+        teamIds: focusOn(scopeTeams, team),
+      });
       return c.json(
         {
           submissions: submissions.map((s) => submissionDto(s, tenant.organization.slug)),
-          scope: teamIds ? ("own" as const) : ("club" as const),
+          scope: scopeTeams ? ("own" as const) : ("club" as const),
         },
         200,
       );
@@ -566,22 +590,25 @@ export function createChallengeRoutes(config: ApiConfig, data: DataLayer) {
       path: "/api/org/challenges/{id}/standings",
       tags: ["Retos"],
       summary:
-        "Participación por jugador: puntos aprobados y pendientes. Solo para el personal; con `review_own`, solo los equipos propios",
+        "Participación por jugador: puntos aprobados y pendientes. Solo para el personal; con `review_own`, solo los equipos propios. Con `team`, el seguimiento de ese equipo",
       security: [{ sessionCookie: [] }],
       middleware: [read],
-      request: { params: idParam },
+      request: { params: idParam, query: z.object({ team: z.string().uuid().optional() }) },
       responses: { 200: json("Participación", ChallengeStandingsResponseSchema), ...errors },
     }),
     async (c) => {
       const tenant = scopeOf(c);
       const { id } = c.req.valid("param");
+      const { team } = c.req.valid("query");
       const challenge = await challengeOr404(c, tenant, id);
-      const teamIds = await reviewScope(c, tenant);
-      const standings = await data.challenges.standings(tenant.scope, id, { teamIds });
+      const scopeTeams = await reviewScope(c, tenant);
+      const standings = await data.challenges.standings(tenant.scope, id, {
+        teamIds: focusOn(scopeTeams, team),
+      });
       return c.json(
         {
           standings: standings.map((s) => standingDto(s, challenge, tenant.organization.slug)),
-          scope: teamIds ? ("own" as const) : ("club" as const),
+          scope: scopeTeams ? ("own" as const) : ("club" as const),
         },
         200,
       );

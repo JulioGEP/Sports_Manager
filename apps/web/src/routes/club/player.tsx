@@ -710,7 +710,11 @@ export function PlayerPage() {
                 {t("quickActions.familyAccess")}
               </ButtonLink>
               {canChallenges ? (
-                <ButtonLink action="open" to={paths.challenges} variant="secondary">
+                <ButtonLink
+                  action="open"
+                  to={current ? `${paths.team(current.teamId)}#challenges` : paths.challenges}
+                  variant="secondary"
+                >
                   {t("quickActions.challenge")}
                 </ButtonLink>
               ) : null}
