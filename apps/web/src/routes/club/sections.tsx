@@ -149,10 +149,7 @@ export function SectionsPage() {
         description={t("description")}
         actions={
           canWrite ? (
-            <Button
-              icon={<Icon.Plus size={20} aria-hidden="true" />}
-              onClick={() => update({ new: "1" })}
-            >
+            <Button action="add" onClick={() => update({ new: "1" })}>
               {t("new")}
             </Button>
           ) : null
@@ -198,7 +195,12 @@ export function SectionsPage() {
             description={t("emptyHint")}
             action={
               canWrite ? (
-                <Button variant="secondary" size="sm" onClick={() => update({ new: "1" })}>
+                <Button
+                  action="add"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => update({ new: "1" })}
+                >
                   {t("new")}
                 </Button>
               ) : null
@@ -405,7 +407,13 @@ export function SectionSheet({
           <Button variant="secondary" onClick={onClose}>
             {c("cancel")}
           </Button>
-          <Button type="submit" form="section-form" loading={busy} disabled={!sportCode}>
+          <Button
+            action={section ? "save" : "add"}
+            type="submit"
+            form="section-form"
+            loading={busy}
+            disabled={!sportCode}
+          >
             {section ? t("save") : t("submit")}
           </Button>
         </>

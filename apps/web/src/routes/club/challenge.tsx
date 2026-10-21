@@ -151,12 +151,7 @@ export function ChallengePage() {
   return (
     <div className="flex flex-col gap-5">
       <div>
-        <ButtonLink
-          to={paths.challenges}
-          variant="tertiary"
-          size="sm"
-          icon={<Icon.ArrowLeft size={16} aria-hidden="true" />}
-        >
+        <ButtonLink action="back" to={paths.challenges} variant="tertiary" size="sm">
           {t("back")}
         </ButtonLink>
       </div>
@@ -178,19 +173,17 @@ export function ChallengePage() {
           canManage ? (
             <>
               {challenge.status !== "closed" ? (
-                <Button
-                  variant="secondary"
-                  icon={<Icon.PencilSimple size={18} aria-hidden="true" />}
-                  onClick={() => setEditing(true)}
-                >
+                <Button action="edit" variant="secondary" onClick={() => setEditing(true)}>
                   {t("edit")}
                 </Button>
               ) : null}
               {challenge.status === "draft" ? (
-                <Button onClick={() => void setStatus("active")}>{t("activate")}</Button>
+                <Button action="activate" onClick={() => void setStatus("active")}>
+                  {t("activate")}
+                </Button>
               ) : null}
               {challenge.status === "active" ? (
-                <Button variant="danger" onClick={() => setClosing(true)}>
+                <Button action="finish" variant="danger" onClick={() => setClosing(true)}>
                   {t("close")}
                 </Button>
               ) : null}
@@ -241,11 +234,7 @@ export function ChallengePage() {
           padded={false}
           actions={
             editable ? (
-              <Button
-                size="sm"
-                icon={<Icon.Plus size={16} aria-hidden="true" />}
-                onClick={() => setTaskSheet("new")}
-              >
+              <Button action="add" size="sm" onClick={() => setTaskSheet("new")}>
                 {t("tasks.new")}
               </Button>
             ) : null
@@ -261,7 +250,12 @@ export function ChallengePage() {
                 title={t("tasks.empty")}
                 action={
                   editable ? (
-                    <Button variant="secondary" size="sm" onClick={() => setTaskSheet("new")}>
+                    <Button
+                      action="add"
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => setTaskSheet("new")}
+                    >
                       {t("tasks.new")}
                     </Button>
                   ) : null
@@ -328,11 +322,21 @@ export function ChallengePage() {
               editable
                 ? (task) => (
                     <>
-                      <Button variant="secondary" size="sm" onClick={() => setTaskSheet(task)}>
+                      <Button
+                        action="edit"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => setTaskSheet(task)}
+                      >
                         {t("tasks.edit")}
                       </Button>
                       {task.status === "active" ? (
-                        <Button variant="danger" size="sm" onClick={() => setRemovingTask(task)}>
+                        <Button
+                          action="delete"
+                          variant="danger"
+                          size="sm"
+                          onClick={() => setRemovingTask(task)}
+                        >
                           {t("tasks.remove")}
                         </Button>
                       ) : null}
@@ -370,6 +374,7 @@ export function ChallengePage() {
         title={t("tasks.confirmRemoveTitle", { name: removingTask?.name ?? "" })}
         body={t("tasks.confirmRemoveBody")}
         confirmLabel={t("tasks.remove")}
+        confirmAction="delete"
         cancelLabel={c("cancel")}
         onConfirm={() => removingTask && void removeTask(removingTask)}
         onCancel={() => setRemovingTask(null)}
@@ -379,6 +384,7 @@ export function ChallengePage() {
         title={t("confirmCloseTitle", { name: challenge.name })}
         body={t("confirmCloseBody")}
         confirmLabel={t("close")}
+        confirmAction="finish"
         cancelLabel={c("cancel")}
         onConfirm={() => void setStatus("closed")}
         onCancel={() => setClosing(false)}
@@ -541,17 +547,17 @@ function ReviewTab({
                   s.status === "submitted" ? (
                     <>
                       <Button
+                        action="approve"
                         size="sm"
                         loading={busy === s.id}
-                        icon={<Icon.ThumbsUp size={16} aria-hidden="true" />}
                         onClick={() => void review(s, "approved")}
                       >
                         {t("approve")}
                       </Button>
                       <Button
+                        action="reject"
                         variant="secondary"
                         size="sm"
-                        icon={<Icon.ThumbsDown size={16} aria-hidden="true" />}
                         onClick={() => setRejecting(s)}
                       >
                         {t("reject")}
@@ -596,7 +602,7 @@ function RejectSheet({
           <Button variant="secondary" onClick={onClose}>
             {c("cancel")}
           </Button>
-          <Button type="submit" form="reject-form">
+          <Button action="reject" type="submit" form="reject-form">
             {t("submit")}
           </Button>
         </>
@@ -791,7 +797,7 @@ function EditChallengeSheet({
           <Button variant="secondary" onClick={onClose}>
             {c("cancel")}
           </Button>
-          <Button type="submit" form="edit-challenge-form" loading={busy}>
+          <Button action="save" type="submit" form="edit-challenge-form" loading={busy}>
             {c("save")}
           </Button>
         </>
@@ -959,7 +965,7 @@ function TaskSheet({
           <Button variant="secondary" onClick={onClose}>
             {c("cancel")}
           </Button>
-          <Button type="submit" form="task-form" loading={busy}>
+          <Button action={task ? "save" : "add"} type="submit" form="task-form" loading={busy}>
             {task ? c("save") : t("submit")}
           </Button>
         </>

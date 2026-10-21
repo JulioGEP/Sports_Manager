@@ -108,7 +108,7 @@ export function InvitationPage() {
   ) {
     return (
       <AuthShell title={t("missingTitle")} description={t("missingBody")} club={clubInfo}>
-        <ButtonLink to="/login" variant="secondary">
+        <ButtonLink action="signIn" to="/login" variant="secondary">
           {t("goToLogin")}
         </ButtonLink>
       </AuthShell>
@@ -151,14 +151,16 @@ export function InvitationPage() {
     body = (
       <div className="flex flex-col gap-4">
         <Alert kind="info">{t("alreadyAccepted")}</Alert>
-        <ButtonLink to="/login">{t("goToLogin")}</ButtonLink>
+        <ButtonLink action="signIn" to="/login">
+          {t("goToLogin")}
+        </ButtonLink>
       </div>
     );
   } else if (me && me.email !== inv.email) {
     body = (
       <div className="flex flex-col gap-4">
         <Alert kind="warning">{t("otherSession", { email: inv.email, current: me.email })}</Alert>
-        <Button variant="secondary" cta onClick={() => void onSignOut()}>
+        <Button action="signOut" variant="secondary" cta onClick={() => void onSignOut()}>
           {t("signOutAndRetry")}
         </Button>
       </div>
@@ -168,7 +170,7 @@ export function InvitationPage() {
       <div className="flex flex-col gap-4">
         {summary}
         {error ? <Alert kind="error">{error}</Alert> : null}
-        <Button cta loading={busy} onClick={() => void accept({})}>
+        <Button action="signIn" cta loading={busy} onClick={() => void accept({})}>
           {t("join", { club: inv.organization.name })}
         </Button>
       </div>
@@ -176,7 +178,9 @@ export function InvitationPage() {
       <div className="flex flex-col gap-4">
         {summary}
         <Alert kind="info">{t("hasAccount", { email: inv.email })}</Alert>
-        <ButtonLink to={loginHref}>{t("goToLogin")}</ButtonLink>
+        <ButtonLink action="signIn" to={loginHref}>
+          {t("goToLogin")}
+        </ButtonLink>
       </div>
     );
   } else {
@@ -222,7 +226,7 @@ export function InvitationPage() {
           )}
         </Field>
         {error ? <Alert kind="error">{error}</Alert> : null}
-        <Button type="submit" cta loading={busy}>
+        <Button action="signIn" type="submit" cta loading={busy}>
           {t("join", { club: inv.organization.name })}
         </Button>
       </form>

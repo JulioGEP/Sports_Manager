@@ -200,16 +200,16 @@ export function ClubHome() {
         actions={
           <>
             {has("org.players.write") ? (
-              <ClubHeroButton onClick={() => void navigate(`${paths.players}?new=1`)}>
+              <ClubHeroButton action="add" onClick={() => void navigate(`${paths.players}?new=1`)}>
                 {t("hero.newPlayer")}
               </ClubHeroButton>
             ) : canFamily ? (
-              <ClubHeroButton onClick={() => void navigate(paths.family)}>
+              <ClubHeroButton action="open" onClick={() => void navigate(paths.family)}>
                 {t("hero.family")}
               </ClubHeroButton>
             ) : null}
             {canEvents || canFamily ? (
-              <ClubHeroButton ghost onClick={() => void navigate(paths.agenda)}>
+              <ClubHeroButton action="open" ghost onClick={() => void navigate(paths.agenda)}>
                 {t("hero.agenda")}
               </ClubHeroButton>
             ) : null}
@@ -238,7 +238,12 @@ export function ClubHome() {
           kind="info"
           title={t("onboarding.title")}
           actions={
-            <ButtonLink to={`${paths.settings}?tab=setup`} variant="secondary" size="sm">
+            <ButtonLink
+              action="open"
+              to={`${paths.settings}?tab=setup`}
+              variant="secondary"
+              size="sm"
+            >
               {t("onboarding.action")}
             </ButtonLink>
           }
@@ -265,7 +270,7 @@ export function ClubHome() {
             </span>
           }
           actions={
-            <ButtonLink to={paths.agenda} variant="tertiary" size="sm">
+            <ButtonLink action="open" to={paths.agenda} variant="tertiary" size="sm">
               {t("today.week")}
             </ButtonLink>
           }
@@ -378,7 +383,7 @@ export function ClubHome() {
                 {t("sections.title")}
               </h2>
             </div>
-            <ButtonLink to={paths.sections} variant="tertiary" size="sm">
+            <ButtonLink action="open" to={paths.sections} variant="tertiary" size="sm">
               {t("sections.all")}
             </ButtonLink>
           </div>
@@ -390,7 +395,12 @@ export function ClubHome() {
                 description={t("sections.emptyHint")}
                 action={
                   canStructureWrite ? (
-                    <ButtonLink to={`${paths.sections}?new=1`} variant="secondary" size="sm">
+                    <ButtonLink
+                      action="add"
+                      to={`${paths.sections}?new=1`}
+                      variant="secondary"
+                      size="sm"
+                    >
                       {t("sections.new")}
                     </ButtonLink>
                   ) : null
@@ -461,12 +471,7 @@ export function ClubHome() {
                         {t(`operations.${alert.key}Hint`)}
                       </span>
                     </span>
-                    <ButtonLink
-                      to={alert.to}
-                      variant="tertiary"
-                      size="sm"
-                      icon={<Icon.ArrowRight size={16} aria-hidden="true" />}
-                    >
+                    <ButtonLink action="open" to={alert.to} variant="tertiary" size="sm">
                       {t("operations.go")}
                     </ButtonLink>
                   </li>
@@ -527,7 +532,7 @@ export function ClubHome() {
           title={t("family.title")}
           description={t("family.description")}
           actions={
-            <ButtonLink to={paths.family} variant="secondary" size="sm">
+            <ButtonLink action="open" to={paths.family} variant="secondary" size="sm">
               {t("family.open")}
             </ButtonLink>
           }

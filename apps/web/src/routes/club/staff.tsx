@@ -190,10 +190,7 @@ export function StaffPage() {
         description={t("description")}
         actions={
           canInvite ? (
-            <Button
-              icon={<Icon.Plus size={20} aria-hidden="true" />}
-              onClick={() => setInviteOpen(true)}
-            >
+            <Button action="invite" onClick={() => setInviteOpen(true)}>
               {t("invite")}
             </Button>
           ) : null
@@ -323,7 +320,12 @@ export function StaffPage() {
               actions={
                 canManage
                   ? (m) => (
-                      <Button variant="secondary" size="sm" onClick={() => setRolesFor(m)}>
+                      <Button
+                        action="edit"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => setRolesFor(m)}
+                      >
                         {t("roles.manage")}
                       </Button>
                     )
@@ -354,9 +356,9 @@ export function StaffPage() {
                   action={
                     invitations.data ? (
                       <Button
+                        action="invite"
                         variant="secondary"
                         size="sm"
-                        icon={<Icon.Plus size={16} aria-hidden="true" />}
                         onClick={() => setInviteOpen(true)}
                       >
                         {t("invite")}
@@ -409,10 +411,20 @@ export function StaffPage() {
               actions={(i) =>
                 i.state === "pending" || i.state === "expired" ? (
                   <>
-                    <Button variant="secondary" size="sm" onClick={() => void resend(i.id)}>
+                    <Button
+                      action="send"
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => void resend(i.id)}
+                    >
                       {t("invitations.resend")}
                     </Button>
-                    <Button variant="danger" size="sm" onClick={() => setRevoking(i)}>
+                    <Button
+                      action="delete"
+                      variant="danger"
+                      size="sm"
+                      onClick={() => setRevoking(i)}
+                    >
                       {t("invitations.revoke")}
                     </Button>
                   </>
@@ -442,6 +454,7 @@ export function StaffPage() {
         title={t("invitations.confirmRevokeTitle", { email: revoking?.email ?? "" })}
         body={t("invitations.confirmRevokeBody")}
         confirmLabel={t("invitations.revoke")}
+        confirmAction="delete"
         cancelLabel={c("cancel")}
         onConfirm={() => revoking && void revoke(revoking)}
         onCancel={() => setRevoking(null)}
@@ -518,7 +531,7 @@ function InviteSheet({
           <Button variant="secondary" onClick={onClose}>
             {c("cancel")}
           </Button>
-          <Button type="submit" form="invite-form" loading={busy}>
+          <Button action="send" type="submit" form="invite-form" loading={busy}>
             {t("submit")}
           </Button>
         </>
@@ -768,6 +781,7 @@ function RolesSheet({
                 ) : null}
               </span>
               <Button
+                action={has ? "delete" : "add"}
                 variant={has ? "danger" : "secondary"}
                 size="sm"
                 loading={busy === role}

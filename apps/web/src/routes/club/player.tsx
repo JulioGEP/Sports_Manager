@@ -332,12 +332,7 @@ export function PlayerPage() {
   return (
     <div className="flex flex-col gap-5">
       <div>
-        <ButtonLink
-          to={paths.players}
-          variant="tertiary"
-          size="sm"
-          icon={<Icon.ArrowLeft size={16} aria-hidden="true" />}
-        >
+        <ButtonLink action="back" to={paths.players} variant="tertiary" size="sm">
           {t("back")}
         </ButtonLink>
       </div>
@@ -364,6 +359,7 @@ export function PlayerPage() {
                   onChange={(e) => void uploadPhoto(e.target.files?.[0])}
                 />
                 <Button
+                  action="photo"
                   variant="tertiary"
                   size="sm"
                   loading={photoBusy}
@@ -372,7 +368,12 @@ export function PlayerPage() {
                   {photoBusy ? t("photo.uploading") : t("photo.change")}
                 </Button>
                 {player.photoUrl ? (
-                  <Button variant="tertiary" size="sm" onClick={() => setRemovingPhoto(true)}>
+                  <Button
+                    action="delete"
+                    variant="danger"
+                    size="sm"
+                    onClick={() => setRemovingPhoto(true)}
+                  >
                     {t("photo.remove")}
                   </Button>
                 ) : null}
@@ -408,11 +409,7 @@ export function PlayerPage() {
         </div>
         <div className="flex flex-wrap gap-2">
           {canWrite ? (
-            <Button
-              variant="secondary"
-              icon={<Icon.PencilSimple size={18} aria-hidden="true" />}
-              onClick={() => setSheet("edit")}
-            >
+            <Button action="edit" variant="secondary" onClick={() => setSheet("edit")}>
               {t("editProfile")}
             </Button>
           ) : null}
@@ -490,11 +487,21 @@ export function PlayerPage() {
             canAssess ? (
               <>
                 {objective ? (
-                  <Button variant="tertiary" size="sm" onClick={() => setRemovingObjective(true)}>
+                  <Button
+                    action="delete"
+                    variant="danger"
+                    size="sm"
+                    onClick={() => setRemovingObjective(true)}
+                  >
                     {t("objective.remove")}
                   </Button>
                 ) : null}
-                <Button variant="secondary" size="sm" onClick={() => setSheet("objective")}>
+                <Button
+                  action={objective ? "edit" : "add"}
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setSheet("objective")}
+                >
                   {objective ? t("objective.edit") : t("objective.define")}
                 </Button>
               </>
@@ -534,7 +541,12 @@ export function PlayerPage() {
               description={t("objective.emptyHint")}
               action={
                 canAssess ? (
-                  <Button variant="secondary" size="sm" onClick={() => setSheet("objective")}>
+                  <Button
+                    action="add"
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setSheet("objective")}
+                  >
                     {t("objective.define")}
                   </Button>
                 ) : null
@@ -574,21 +586,16 @@ export function PlayerPage() {
                   </span>
                   {item.to ? (
                     <ButtonLink
+                      action="open"
                       to={item.to}
                       external={item.external ?? false}
                       variant="tertiary"
                       size="sm"
-                      icon={<Icon.ArrowRight size={16} aria-hidden="true" />}
                     >
                       {t("actions.go")}
                     </ButtonLink>
                   ) : item.onClick ? (
-                    <Button
-                      variant="tertiary"
-                      size="sm"
-                      icon={<Icon.ArrowRight size={16} aria-hidden="true" />}
-                      onClick={item.onClick}
-                    >
+                    <Button action="open" variant="tertiary" size="sm" onClick={item.onClick}>
                       {t("actions.go")}
                     </Button>
                   ) : null}
@@ -614,7 +621,7 @@ export function PlayerPage() {
                 {t("timeline.count", { count: timeline.length })}
               </StatusChip>
               {canAssess ? (
-                <Button variant="secondary" size="sm" onClick={() => setSheet("note")}>
+                <Button action="add" variant="secondary" size="sm" onClick={() => setSheet("note")}>
                   {t("timeline.add")}
                 </Button>
               ) : null}
@@ -695,15 +702,15 @@ export function PlayerPage() {
           <Card title={t("quickActions.title")}>
             <div className="flex flex-col gap-2">
               {current ? (
-                <ButtonLink to={paths.team(current.teamId)} variant="secondary">
+                <ButtonLink action="open" to={paths.team(current.teamId)} variant="secondary">
                   {t("quickActions.openTeam", { team: current.teamName })}
                 </ButtonLink>
               ) : null}
-              <ButtonLink to={`#${FAMILY_ANCHOR}`} external variant="secondary">
+              <ButtonLink action="open" to={`#${FAMILY_ANCHOR}`} external variant="secondary">
                 {t("quickActions.familyAccess")}
               </ButtonLink>
               {canChallenges ? (
-                <ButtonLink to={paths.challenges} variant="secondary">
+                <ButtonLink action="open" to={paths.challenges} variant="secondary">
                   {t("quickActions.challenge")}
                 </ButtonLink>
               ) : null}
@@ -729,7 +736,12 @@ export function PlayerPage() {
               </StatusChip>
             ) : null}
             {canAssess ? (
-              <Button variant="secondary" size="sm" onClick={() => setSheet("plan")}>
+              <Button
+                action={developmentPlan ? "edit" : "add"}
+                variant="secondary"
+                size="sm"
+                onClick={() => setSheet("plan")}
+              >
                 {developmentPlan ? t("plan.edit") : t("plan.create")}
               </Button>
             ) : null}
@@ -775,7 +787,7 @@ export function PlayerPage() {
             description={t("plan.emptyHint")}
             action={
               canAssess ? (
-                <Button variant="secondary" size="sm" onClick={() => setSheet("plan")}>
+                <Button action="add" variant="secondary" size="sm" onClick={() => setSheet("plan")}>
                   {t("plan.create")}
                 </Button>
               ) : null
@@ -852,15 +864,16 @@ export function PlayerPage() {
             actions={
               canWrite ? (
                 <>
-                  <Button variant="secondary" size="sm" onClick={() => setSheet("link")}>
+                  <Button
+                    action="link"
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setSheet("link")}
+                  >
                     {t("linkMember")}
                   </Button>
                   {canInvite ? (
-                    <Button
-                      size="sm"
-                      icon={<Icon.Envelope size={16} aria-hidden="true" />}
-                      onClick={() => setSheet("invite")}
-                    >
+                    <Button action="invite" size="sm" onClick={() => setSheet("invite")}>
                       {t("inviteFamily")}
                     </Button>
                   ) : null}
@@ -894,7 +907,12 @@ export function PlayerPage() {
                     </span>
                     <StatusChip kind="club">{rel(g.relationship)}</StatusChip>
                     {canWrite ? (
-                      <Button variant="tertiary" size="sm" onClick={() => setUnlinking(g)}>
+                      <Button
+                        action="unlink"
+                        variant="tertiary"
+                        size="sm"
+                        onClick={() => setUnlinking(g)}
+                      >
                         {t("unlink")}
                       </Button>
                     ) : null}
@@ -966,11 +984,21 @@ export function PlayerPage() {
                 {ps(player.status)}
               </StatusChip>
               {player.status === "active" ? (
-                <Button variant="danger" size="sm" onClick={() => setDeactivating(true)}>
+                <Button
+                  action="deactivate"
+                  variant="danger"
+                  size="sm"
+                  onClick={() => setDeactivating(true)}
+                >
                   {t("deactivate")}
                 </Button>
               ) : (
-                <Button variant="secondary" size="sm" onClick={() => void setStatus("active")}>
+                <Button
+                  action="restore"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => void setStatus("active")}
+                >
                   {t("reactivate")}
                 </Button>
               )}
@@ -1056,6 +1084,7 @@ export function PlayerPage() {
         title={t("confirmUnlinkTitle", { name: unlinking?.name ?? "" })}
         body={t("confirmUnlinkBody")}
         confirmLabel={t("unlink")}
+        confirmAction="unlink"
         cancelLabel={c("cancel")}
         onConfirm={() => unlinking && void unlink(unlinking)}
         onCancel={() => setUnlinking(null)}
@@ -1065,6 +1094,7 @@ export function PlayerPage() {
         title={t("photo.confirmRemoveTitle", { name })}
         body={t("photo.confirmRemoveBody")}
         confirmLabel={t("photo.remove")}
+        confirmAction="delete"
         cancelLabel={c("cancel")}
         onConfirm={() => void removePhoto()}
         onCancel={() => setRemovingPhoto(false)}
@@ -1074,6 +1104,7 @@ export function PlayerPage() {
         title={t("objective.confirmRemoveTitle", { name })}
         body={t("objective.confirmRemoveBody")}
         confirmLabel={t("objective.remove")}
+        confirmAction="delete"
         cancelLabel={c("cancel")}
         onConfirm={() => void removeObjective()}
         onCancel={() => setRemovingObjective(false)}
@@ -1084,6 +1115,7 @@ export function PlayerPage() {
         title={voice("member.remove.title", { player: name })}
         body={voice("member.remove.body")}
         confirmLabel={voice("member.remove.confirm")}
+        confirmAction="deactivate"
         cancelLabel={c("cancel")}
         onConfirm={() => void setStatus("inactive")}
         onCancel={() => setDeactivating(false)}
@@ -1162,7 +1194,7 @@ function EditPlayerSheet({
           <Button variant="secondary" onClick={onClose}>
             {c("cancel")}
           </Button>
-          <Button type="submit" form="edit-player-form" loading={busy}>
+          <Button action="save" type="submit" form="edit-player-form" loading={busy}>
             {c("save")}
           </Button>
         </>
@@ -1390,7 +1422,7 @@ function ObjectiveSheet({
           <Button variant="secondary" onClick={onClose}>
             {c("cancel")}
           </Button>
-          <Button type="submit" form="objective-form" loading={busy}>
+          <Button action="save" type="submit" form="objective-form" loading={busy}>
             {c("save")}
           </Button>
         </>
@@ -1521,7 +1553,7 @@ function IndicatorsSheet({
           <Button variant="secondary" onClick={onClose}>
             {c("cancel")}
           </Button>
-          <Button type="submit" form="indicators-form" loading={busy}>
+          <Button action="save" type="submit" form="indicators-form" loading={busy}>
             {c("save")}
           </Button>
         </>
@@ -1630,7 +1662,7 @@ function PlanSheet({
           <Button variant="secondary" onClick={onClose}>
             {c("cancel")}
           </Button>
-          <Button type="submit" form="plan-form" loading={busy}>
+          <Button action="save" type="submit" form="plan-form" loading={busy}>
             {c("save")}
           </Button>
         </>
@@ -1742,7 +1774,7 @@ function NoteSheet({
           <Button variant="secondary" onClick={onClose}>
             {c("cancel")}
           </Button>
-          <Button type="submit" form="note-form" loading={busy}>
+          <Button action="add" type="submit" form="note-form" loading={busy}>
             {t("submit")}
           </Button>
         </>
@@ -1839,7 +1871,7 @@ function InviteFamilySheet({
           <Button variant="secondary" onClick={onClose}>
             {c("cancel")}
           </Button>
-          <Button type="submit" form="invite-family-form" loading={busy}>
+          <Button action="send" type="submit" form="invite-family-form" loading={busy}>
             {t("submit")}
           </Button>
         </>
@@ -1960,7 +1992,13 @@ function LinkMemberSheet({
           <Button variant="secondary" onClick={onClose}>
             {c("cancel")}
           </Button>
-          <Button type="submit" form="link-member-form" loading={busy} disabled={!selected}>
+          <Button
+            action="link"
+            type="submit"
+            form="link-member-form"
+            loading={busy}
+            disabled={!selected}
+          >
             {t("submit")}
           </Button>
         </>

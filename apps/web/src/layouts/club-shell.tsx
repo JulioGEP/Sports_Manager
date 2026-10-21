@@ -132,7 +132,7 @@ function ClubFrame({ children }: { children: ReactNode }) {
             }
           : null,
         has("org.settings.write")
-          ? { to: paths.settings, label: t("settings"), icon: Icon.Gear, end: false }
+          ? { to: paths.settings, label: t("settings"), icon: Icon.SlidersHorizontal, end: false }
           : null,
       ].filter((l): l is NavLinkItem => l !== null),
     },
@@ -373,7 +373,7 @@ function ClubBody({ state, children }: { state: ClubState; children: ReactNode }
         title={t("noMembershipTitle")}
         actions={
           state.memberships.length > 0 ? (
-            <ButtonLink to="/clubs" variant="secondary" size="sm">
+            <ButtonLink action="open" to="/clubs" variant="secondary" size="sm">
               {t("myClubs")}
             </ButtonLink>
           ) : null

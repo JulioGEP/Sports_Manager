@@ -116,7 +116,7 @@ export function PaymentSheet({
           <Button variant="secondary" onClick={onClose}>
             {c("cancel")}
           </Button>
-          <Button type="submit" form="payment-form" loading={busy}>
+          <Button action="pay" type="submit" form="payment-form" loading={busy}>
             {t("submit")}
           </Button>
         </>
@@ -276,7 +276,7 @@ export function ChargeSheet({
           <Button variant="secondary" onClick={onClose}>
             {c("cancel")}
           </Button>
-          <Button type="submit" form="charge-form" loading={busy}>
+          <Button action="add" type="submit" form="charge-form" loading={busy}>
             {t("submit")}
           </Button>
         </>

@@ -41,7 +41,9 @@ export function Landing() {
             ) : null}
           </div>
         ) : (
-          <ButtonLink to="/login">{t("signIn")}</ButtonLink>
+          <ButtonLink action="signIn" to="/login">
+            {t("signIn")}
+          </ButtonLink>
         )}
         <LanguageSwitcher hasSession={session.kind === "authenticated"} compact />
       </div>

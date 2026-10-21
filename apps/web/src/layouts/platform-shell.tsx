@@ -50,19 +50,10 @@ export function PlatformShell() {
             title={t("forbiddenTitle")}
             actions={
               <>
-                <Button
-                  size="sm"
-                  icon={<Icon.SignOut size={16} aria-hidden="true" />}
-                  onClick={() => void onSignOut()}
-                >
+                <Button action="signOut" size="sm" onClick={() => void onSignOut()}>
                   {t("switchAccount")}
                 </Button>
-                <ButtonLink
-                  to="/"
-                  variant="secondary"
-                  size="sm"
-                  icon={<Icon.ArrowLeft size={16} aria-hidden="true" />}
-                >
+                <ButtonLink action="back" to="/" variant="secondary" size="sm">
                   {t("backToApp")}
                 </ButtonLink>
               </>
@@ -135,20 +126,10 @@ export function PlatformShell() {
             </span>
           </div>
           <LanguageSwitcher hasSession compact />
-          <ButtonLink
-            to="/"
-            variant="tertiary"
-            size="sm"
-            icon={<Icon.ArrowLeft size={16} aria-hidden="true" />}
-          >
+          <ButtonLink action="back" to="/" variant="tertiary" size="sm">
             {t("backToApp")}
           </ButtonLink>
-          <Button
-            variant="tertiary"
-            size="sm"
-            icon={<Icon.SignOut size={16} aria-hidden="true" />}
-            onClick={() => void onSignOut()}
-          >
+          <Button action="signOut" variant="tertiary" size="sm" onClick={() => void onSignOut()}>
             {t("signOut")}
           </Button>
         </div>

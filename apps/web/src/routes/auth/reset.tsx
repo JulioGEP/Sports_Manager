@@ -46,7 +46,9 @@ export function ResetPasswordPage() {
       {done ? (
         <div className="flex flex-col gap-4">
           <Alert kind="success">{t("done")}</Alert>
-          <ButtonLink to="/login">{t("goToLogin")}</ButtonLink>
+          <ButtonLink action="signIn" to="/login">
+            {t("goToLogin")}
+          </ButtonLink>
         </div>
       ) : (
         <form className="flex flex-col gap-4" onSubmit={(e) => void onSubmit(e)}>
@@ -77,7 +79,7 @@ export function ResetPasswordPage() {
             )}
           </Field>
           {error ? <Alert kind="error">{error}</Alert> : null}
-          <Button type="submit" cta loading={busy} disabled={!token}>
+          <Button action="save" type="submit" cta loading={busy} disabled={!token}>
             {t("submit")}
           </Button>
         </form>

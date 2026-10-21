@@ -43,6 +43,7 @@ export {
   Pulse,
   ShieldCheck,
   SignOut,
+  SlidersHorizontal,
   SquaresFour,
   Target,
   ThumbsDown,
