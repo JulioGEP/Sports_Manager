@@ -114,9 +114,8 @@ function ClubFrame({ children }: { children: ReactNode }) {
         has("org.facilities.read")
           ? { to: paths.facilities, label: t("facilities"), icon: Icon.Buildings, end: false }
           : null,
-        has("org.challenges.read") || has("org.family.read")
-          ? { to: paths.challenges, label: t("challenges"), icon: Icon.Trophy, end: false }
-          : null,
+        // El reto no va en la barra (ADR 0032): vive en la ficha de cada equipo y de cada sección,
+        // y para la familia en la ficha de cada uno de los suyos.
       ].filter((l): l is NavLinkItem => l !== null),
     },
     {

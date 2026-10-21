@@ -11,6 +11,7 @@ import {
   ChallengeSubmissionResponseSchema,
   ChallengeSubmissionsResponseSchema,
   SUBMISSION_STATUSES,
+  TeamDetailResponseSchema,
   type ChallengeArea,
   type ChallengeManageScope,
   type ChallengeStanding,
@@ -48,14 +49,15 @@ import {
 } from "@/ui";
 import {
   ScopeFields,
+  challengeKind,
   resolveScope,
   scopeIsComplete,
   scopeStateOf,
+  submissionKind,
   useScopeLabel,
   useScopeOptions,
   type ScopeState,
 } from "./challenge-scope";
-import { challengeKind, submissionKind } from "./challenges";
 
 type Tab = "tasks" | "review" | "standings";
 
@@ -81,11 +83,24 @@ export function ChallengePage() {
 
   const rawTab = params.get("tab");
   const tab: Tab = rawTab === "review" || rawTab === "standings" ? rawTab : "tasks";
-  const setTab = (next: Tab) => setParams(next === "tasks" ? {} : { tab: next }, { replace: true });
+  const setTab = (next: Tab) => {
+    const sp = new URLSearchParams(params);
+    if (next === "tasks") sp.delete("tab");
+    else sp.set("tab", next);
+    setParams(sp, { replace: true });
+  };
+  /** Desde qué equipo se ha llegado (ADR 0032): la vuelta y el seguimiento son de ese equipo. */
+  const teamParam = params.get("team");
 
   const detail = useQuery({
     queryKey: ["org", slug, "challenge", id],
     queryFn: () => apiFetch(`/api/org/challenges/${id}`, { schema: ChallengeDetailResponseSchema }),
+    retry: false,
+  });
+  const fromTeam = useQuery({
+    queryKey: ["org", slug, "team", teamParam],
+    queryFn: () => apiFetch(`/api/org/teams/${teamParam}`, { schema: TeamDetailResponseSchema }),
+    enabled: teamParam !== null,
     retry: false,
   });
   const reload = () => client.invalidateQueries({ queryKey: ["org", slug] });
@@ -113,6 +128,10 @@ export function ChallengePage() {
   const canManage = access.manage;
   const canReview = access.review;
   const editable = canManage && challenge.status !== "closed";
+  // Un reto de equipo vuelve a su equipo; uno de sección, al equipo desde el que se abrió o a la sección.
+  const backTeam =
+    challenge.team ?? (teamParam ? { id: teamParam, name: fromTeam.data?.team.name ?? "" } : null);
+  const focusTeam = challenge.team ? null : backTeam;
 
   async function setStatus(status: "active" | "closed") {
     setClosing(false);
@@ -152,12 +171,16 @@ export function ChallengePage() {
     <div className="flex flex-col gap-5">
       <div>
         <ButtonLink
-          to={paths.challenges}
+          to={backTeam ? paths.team(backTeam.id) : paths.section(challenge.section.id)}
           variant="tertiary"
           size="sm"
           icon={<Icon.ArrowLeft size={16} aria-hidden="true" />}
         >
-          {t("back")}
+          {backTeam
+            ? backTeam.name
+              ? t("backTeam", { team: backTeam.name })
+              : t("backTeamShort")
+            : t("backSection", { section: challenge.section.name })}
         </ButtonLink>
       </div>
       <PageHeader
@@ -345,9 +368,11 @@ export function ChallengePage() {
       ) : null}
 
       {tab === "review" && canReview ? (
-        <ReviewTab challenge={challenge} onChanged={() => void reload()} />
+        <ReviewTab challenge={challenge} focusTeam={focusTeam} onChanged={() => void reload()} />
       ) : null}
-      {tab === "standings" && canReview ? <StandingsTab challenge={challenge} /> : null}
+      {tab === "standings" && canReview ? (
+        <StandingsTab challenge={challenge} focusTeam={focusTeam} />
+      ) : null}
 
       {editing ? (
         <EditChallengeSheet
@@ -389,9 +414,12 @@ export function ChallengePage() {
 
 function ReviewTab({
   challenge,
+  focusTeam,
   onChanged,
 }: {
   challenge: ChallengeSummary;
+  /** En un reto de sección abierto desde un equipo: solo los registros de ese equipo. */
+  focusTeam: { id: string; name: string } | null;
   onChanged: () => void;
 }) {
   const t = useT("challenge.review");
@@ -407,13 +435,15 @@ function ReviewTab({
   const [rejecting, setRejecting] = useState<ChallengeSubmission | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
 
+  const query = new URLSearchParams();
+  if (status) query.set("status", status);
+  if (focusTeam) query.set("team", focusTeam.id);
   const submissions = useQuery({
-    queryKey: ["org", slug, "challenge", challenge.id, "submissions", status],
+    queryKey: ["org", slug, "challenge", challenge.id, "submissions", query.toString()],
     queryFn: () =>
-      apiFetch(
-        `/api/org/challenges/${challenge.id}/submissions${status ? `?status=${status}` : ""}`,
-        { schema: ChallengeSubmissionsResponseSchema },
-      ),
+      apiFetch(`/api/org/challenges/${challenge.id}/submissions?${query.toString()}`, {
+        schema: ChallengeSubmissionsResponseSchema,
+      }),
   });
   const reload = () =>
     client.invalidateQueries({ queryKey: ["org", slug, "challenge", challenge.id] });
@@ -446,7 +476,11 @@ function ReviewTab({
 
   return (
     <div className="flex flex-col gap-4">
-      {submissions.data?.scope === "own" ? <Alert kind="info">{t("ownScope")}</Alert> : null}
+      {focusTeam ? (
+        <Alert kind="info">{t("teamFocus", { team: focusTeam.name })}</Alert>
+      ) : submissions.data?.scope === "own" ? (
+        <Alert kind="info">{t("ownScope")}</Alert>
+      ) : null}
       <div className="w-full max-w-xs">
         <Select
           aria-label={t("filter")}
@@ -625,7 +659,14 @@ function RejectSheet({
   );
 }
 
-function StandingsTab({ challenge }: { challenge: ChallengeSummary }) {
+function StandingsTab({
+  challenge,
+  focusTeam,
+}: {
+  challenge: ChallengeSummary;
+  /** En un reto de sección abierto desde un equipo: el seguimiento de ese equipo. */
+  focusTeam: { id: string; name: string } | null;
+}) {
   const t = useT("challenge.standings");
   const tc = useT("challenges");
   const c = useT("common");
@@ -633,15 +674,22 @@ function StandingsTab({ challenge }: { challenge: ChallengeSummary }) {
   const { slug } = useReadyClub();
   const paths = clubPaths(slug);
   const standings = useQuery({
-    queryKey: ["org", slug, "challenge", challenge.id, "standings"],
+    queryKey: ["org", slug, "challenge", challenge.id, "standings", focusTeam?.id ?? ""],
     queryFn: () =>
-      apiFetch(`/api/org/challenges/${challenge.id}/standings`, {
-        schema: ChallengeStandingsResponseSchema,
-      }),
+      apiFetch(
+        `/api/org/challenges/${challenge.id}/standings${focusTeam ? `?team=${focusTeam.id}` : ""}`,
+        { schema: ChallengeStandingsResponseSchema },
+      ),
   });
   return (
     <div className="flex flex-col gap-4">
-      <Alert kind="info">{standings.data?.scope === "own" ? t("ownScope") : t("staffOnly")}</Alert>
+      <Alert kind="info">
+        {focusTeam
+          ? t("teamFocus", { team: focusTeam.name })
+          : standings.data?.scope === "own"
+            ? t("ownScope")
+            : t("staffOnly")}
+      </Alert>
       {standings.isError ? <Alert kind="error">{errors(errorKey(standings.error))}</Alert> : null}
       <Card padded={false}>
         <DataList<ChallengeStanding>

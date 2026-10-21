@@ -34,6 +34,7 @@ import {
   StatusChip,
   useToast,
 } from "@/ui";
+import { ChallengesCard } from "./challenges-card";
 import { TeamSheet } from "./section";
 import { ScheduleSheet } from "./team-schedule";
 
@@ -57,6 +58,7 @@ export function TeamPage() {
   const permissions = org.actor.permissions;
   const canWrite = permissions.includes("org.structure.write");
   const canSeePlayers = permissions.includes("org.players.read");
+  const canSeeChallenges = permissions.includes("org.challenges.read");
 
   const detail = useQuery({
     queryKey: ["org", slug, "team", id],
@@ -178,180 +180,194 @@ export function TeamPage() {
       />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-        <Card
-          title={t("roster")}
-          description={t("rosterDescription", { count: roster.length })}
-          padded={false}
-        >
-          {!canSeePlayers ? (
-            <div className="px-5 pb-5">
-              <Alert kind="info">{t("rosterHidden")}</Alert>
-            </div>
-          ) : (
-            <DataList<RosterEntry>
-              caption={t("roster")}
-              rows={roster}
-              getKey={(p) => p.playerId}
-              empty={
-                <EmptyState
-                  icon={<Icon.PersonSimpleRun weight="duotone" />}
-                  title={t("emptyRoster")}
-                  action={
-                    canRoster ? (
-                      <Button variant="secondary" size="sm" onClick={() => setAdding(true)}>
-                        {t("addPlayer")}
-                      </Button>
-                    ) : null
-                  }
-                />
-              }
-              columns={[
-                {
-                  key: "number",
-                  header: t("table.number"),
-                  numeric: true,
-                  cell: (p) => p.shirtNumber ?? <span className="font-sans text-muted">–</span>,
-                },
-                {
-                  key: "player",
-                  header: t("table.player"),
-                  cell: (p) => (
-                    <span className="flex items-center gap-3">
-                      <Avatar name={name(p)} size="sm" src={p.photoUrl} />
-                      <span className="flex min-w-0 flex-col">
-                        <Link to={paths.player(p.playerId)} className="font-medium text-ink">
-                          {name(p)}
-                        </Link>
-                        {p.status === "inactive" ? (
-                          <span className="text-secondary text-muted">{ps(p.status)}</span>
-                        ) : null}
+        <div className="flex min-w-0 flex-col gap-4">
+          <Card
+            title={t("roster")}
+            description={t("rosterDescription", { count: roster.length })}
+            padded={false}
+          >
+            {!canSeePlayers ? (
+              <div className="px-5 pb-5">
+                <Alert kind="info">{t("rosterHidden")}</Alert>
+              </div>
+            ) : (
+              <DataList<RosterEntry>
+                caption={t("roster")}
+                rows={roster}
+                getKey={(p) => p.playerId}
+                empty={
+                  <EmptyState
+                    icon={<Icon.PersonSimpleRun weight="duotone" />}
+                    title={t("emptyRoster")}
+                    action={
+                      canRoster ? (
+                        <Button variant="secondary" size="sm" onClick={() => setAdding(true)}>
+                          {t("addPlayer")}
+                        </Button>
+                      ) : null
+                    }
+                  />
+                }
+                columns={[
+                  {
+                    key: "number",
+                    header: t("table.number"),
+                    numeric: true,
+                    cell: (p) => p.shirtNumber ?? <span className="font-sans text-muted">–</span>,
+                  },
+                  {
+                    key: "player",
+                    header: t("table.player"),
+                    cell: (p) => (
+                      <span className="flex items-center gap-3">
+                        <Avatar name={name(p)} size="sm" src={p.photoUrl} />
+                        <span className="flex min-w-0 flex-col">
+                          <Link to={paths.player(p.playerId)} className="font-medium text-ink">
+                            {name(p)}
+                          </Link>
+                          {p.status === "inactive" ? (
+                            <span className="text-secondary text-muted">{ps(p.status)}</span>
+                          ) : null}
+                        </span>
                       </span>
+                    ),
+                  },
+                  {
+                    key: "position",
+                    header: t("table.position"),
+                    cell: (p) =>
+                      p.position ?? <span className="text-muted">{t("noPosition")}</span>,
+                  },
+                  { key: "age", header: t("table.age"), cell: (p) => ageOf(p) },
+                  {
+                    key: "family",
+                    header: t("table.family"),
+                    cell: (p) => t("familyCount", { count: p.guardiansCount }),
+                  },
+                ]}
+                mobileRow={(p) => ({
+                  leading: (
+                    <span className="grid size-10 shrink-0 place-items-center rounded-full bg-club-soft font-mono text-body text-club-soft-text">
+                      {p.shirtNumber ?? "–"}
                     </span>
                   ),
-                },
-                {
-                  key: "position",
-                  header: t("table.position"),
-                  cell: (p) => p.position ?? <span className="text-muted">{t("noPosition")}</span>,
-                },
-                { key: "age", header: t("table.age"), cell: (p) => ageOf(p) },
-                {
-                  key: "family",
-                  header: t("table.family"),
-                  cell: (p) => t("familyCount", { count: p.guardiansCount }),
-                },
-              ]}
-              mobileRow={(p) => ({
-                leading: (
-                  <span className="grid size-10 shrink-0 place-items-center rounded-full bg-club-soft font-mono text-body text-club-soft-text">
-                    {p.shirtNumber ?? "–"}
-                  </span>
-                ),
-                title: <Link to={paths.player(p.playerId)}>{name(p)}</Link>,
-                subtitle: `${p.position ?? t("noPosition")} · ${ageOf(p)}`,
-              })}
-              mobileActionsBelow
-              actions={
-                canRoster
-                  ? (p) => (
-                      <>
-                        <Button variant="secondary" size="sm" onClick={() => setEntry(p)}>
-                          {t("editEntry")}
-                        </Button>
-                        <Button variant="danger" size="sm" onClick={() => setRemoving(p)}>
-                          {t("remove")}
-                        </Button>
-                      </>
-                    )
-                  : undefined
-              }
-            />
-          )}
-        </Card>
+                  title: <Link to={paths.player(p.playerId)}>{name(p)}</Link>,
+                  subtitle: `${p.position ?? t("noPosition")} · ${ageOf(p)}`,
+                })}
+                mobileActionsBelow
+                actions={
+                  canRoster
+                    ? (p) => (
+                        <>
+                          <Button variant="secondary" size="sm" onClick={() => setEntry(p)}>
+                            {t("editEntry")}
+                          </Button>
+                          <Button variant="danger" size="sm" onClick={() => setRemoving(p)}>
+                            {t("remove")}
+                          </Button>
+                        </>
+                      )
+                    : undefined
+                }
+              />
+            )}
+          </Card>
 
-        <Card
-          title={t("staff")}
-          description={t("staffDescription")}
-          padded={false}
-          actions={
-            canWrite ? (
-              <Button
-                variant="secondary"
-                size="sm"
-                icon={<Icon.UserPlus size={16} aria-hidden="true" />}
-                onClick={() => setAddingStaff(true)}
-              >
-                {t("addStaff")}
-              </Button>
-            ) : null
-          }
-        >
-          {staff.length === 0 ? (
-            <EmptyState icon={<Icon.Users weight="duotone" />} title={t("emptyStaff")} />
-          ) : (
-            <ul className="flex flex-col divide-y divide-line">
-              {staff.map((s) => (
-                <li key={s.userId} className="flex min-h-16 items-center gap-3 px-5 py-3">
-                  <Avatar name={s.name} />
-                  <span className="flex min-w-0 flex-1 flex-col">
-                    <span className="truncate font-medium text-ink">{s.name}</span>
-                    <span className="truncate text-secondary text-muted">
-                      {staffRoles(s.roleInTeam)} · {s.email}
+          {/* El reto vive en la ficha del equipo (ADR 0032): el suyo, el de su sección y el histórico. */}
+          {canSeeChallenges ? (
+            <div id="challenges">
+              <ChallengesCard section={team.section} team={{ id: team.id, name: team.name }} />
+            </div>
+          ) : null}
+        </div>
+
+        <div className="flex min-w-0 flex-col gap-4">
+          <Card
+            title={t("staff")}
+            description={t("staffDescription")}
+            padded={false}
+            actions={
+              canWrite ? (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  icon={<Icon.UserPlus size={16} aria-hidden="true" />}
+                  onClick={() => setAddingStaff(true)}
+                >
+                  {t("addStaff")}
+                </Button>
+              ) : null
+            }
+          >
+            {staff.length === 0 ? (
+              <EmptyState icon={<Icon.Users weight="duotone" />} title={t("emptyStaff")} />
+            ) : (
+              <ul className="flex flex-col divide-y divide-line">
+                {staff.map((s) => (
+                  <li key={s.userId} className="flex min-h-16 items-center gap-3 px-5 py-3">
+                    <Avatar name={s.name} />
+                    <span className="flex min-w-0 flex-1 flex-col">
+                      <span className="truncate font-medium text-ink">{s.name}</span>
+                      <span className="truncate text-secondary text-muted">
+                        {staffRoles(s.roleInTeam)} · {s.email}
+                      </span>
                     </span>
-                  </span>
-                  {canWrite ? (
-                    <Button variant="tertiary" size="sm" onClick={() => setRemovingStaff(s)}>
-                      {t("removeStaff")}
-                    </Button>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
+                    {canWrite ? (
+                      <Button variant="tertiary" size="sm" onClick={() => setRemovingStaff(s)}>
+                        {t("removeStaff")}
+                      </Button>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
 
-        {/* Horario semanal (Bloque 16): de aquí salen los entrenamientos de la temporada. */}
-        <Card
-          title={t("schedule.title")}
-          description={activity ? t("schedule.descriptionActivity") : t("schedule.description")}
-          padded={false}
-          className="lg:col-start-2"
-          actions={
-            access.events ? (
-              <Button variant="secondary" size="sm" onClick={() => setSchedule(true)}>
-                {slots.length === 0 ? t("schedule.set") : t("schedule.edit")}
-              </Button>
-            ) : null
-          }
-        >
-          {slots.length === 0 ? (
-            <EmptyState
-              icon={<Icon.CalendarBlank weight="duotone" />}
-              title={t("schedule.empty")}
-            />
-          ) : (
-            <ul className="flex flex-col divide-y divide-line">
-              {slots.map((slot) => (
-                <li key={slot.id} className="flex min-h-12 items-center gap-3 px-5 py-2">
-                  <span className="w-24 shrink-0 font-medium text-ink">
-                    {weekdays(String(slot.weekday))}
-                  </span>
-                  <span className="font-mono text-ink">
-                    {slot.startsAt}–{slot.endsAt}
-                  </span>
-                  <span className="truncate text-secondary text-muted">
-                    {slot.facility?.name ?? t("schedule.noFacility")}
-                  </span>
+          {/* Horario semanal (Bloque 16): de aquí salen los entrenamientos de la temporada. */}
+          <Card
+            title={t("schedule.title")}
+            description={activity ? t("schedule.descriptionActivity") : t("schedule.description")}
+            padded={false}
+            actions={
+              access.events ? (
+                <Button variant="secondary" size="sm" onClick={() => setSchedule(true)}>
+                  {slots.length === 0 ? t("schedule.set") : t("schedule.edit")}
+                </Button>
+              ) : null
+            }
+          >
+            {slots.length === 0 ? (
+              <EmptyState
+                icon={<Icon.CalendarBlank weight="duotone" />}
+                title={t("schedule.empty")}
+              />
+            ) : (
+              <ul className="flex flex-col divide-y divide-line">
+                {slots.map((slot) => (
+                  <li key={slot.id} className="flex min-h-12 items-center gap-3 px-5 py-2">
+                    <span className="w-24 shrink-0 font-medium text-ink">
+                      {weekdays(String(slot.weekday))}
+                    </span>
+                    <span className="font-mono text-ink">
+                      {slot.startsAt}–{slot.endsAt}
+                    </span>
+                    <span className="truncate text-secondary text-muted">
+                      {slot.facility?.name ?? t("schedule.noFacility")}
+                    </span>
+                  </li>
+                ))}
+                <li className="px-5 py-3">
+                  <Link
+                    to={`${paths.agenda}?team=${team.id}`}
+                    className="text-secondary font-medium"
+                  >
+                    {t("schedule.openAgenda")}
+                  </Link>
                 </li>
-              ))}
-              <li className="px-5 py-3">
-                <Link to={`${paths.agenda}?team=${team.id}`} className="text-secondary font-medium">
-                  {t("schedule.openAgenda")}
-                </Link>
-              </li>
-            </ul>
-          )}
-        </Card>
+              </ul>
+            )}
+          </Card>
+        </div>
       </div>
 
       {canWrite && categories.data ? (

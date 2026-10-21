@@ -272,15 +272,19 @@ Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negoci
 
 ![Inicio de la entrenadora](escritorio-48b-entrenadora-inicio.png)
 
-## Reto por puntos (`/demo/challenges`, Bloque 13; ámbito por sección o equipo, ADR 0032)
+## Reto por puntos (Bloque 13; ámbito por sección o equipo, ADR 0032). Sin entrada en la barra: vive en cada sección y cada equipo
 
-### Retos del club: cada uno de una sección entera o de un solo equipo
+### Pestaña "Retos" de una sección: el de toda la sección y el de cada equipo
 
-![Retos](escritorio-70-retos.png)
+![Retos de la sección](escritorio-70-retos.png)
 
-### Nuevo reto (hoja): sección y alcance, toda la sección o un solo equipo
+### Nuevo reto desde la sección (hoja): la sección viene dada; toda la sección o un solo equipo
 
 ![Nuevo reto](escritorio-70b-reto-nuevo.png)
+
+### El reto en la ficha del equipo: el suyo, el de su sección y el histórico
+
+![Reto del equipo](escritorio-70c-equipo-retos.png)
 
 ### Un reto: catálogo de pruebas
 
@@ -290,7 +294,7 @@ Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negoci
 
 ![Nueva prueba](escritorio-71b-reto-prueba-nueva.png)
 
-### Validación de los registros de las familias
+### Validación de los registros de las familias, acotada al equipo desde el que se abrió
 
 ![Validación](escritorio-72-reto-validacion.png)
 
@@ -496,7 +500,7 @@ Las mismas pantallas en un móvil, con la forma envolvente del design system: ca
 
 ### Retos
 
-![Retos (móvil)](movil-70-retos.png)
+![Retos de la sección (móvil)](movil-70-retos.png)
 
 ### Validación del reto
 

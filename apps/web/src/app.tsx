@@ -13,7 +13,7 @@ import { LoginPage } from "@/routes/auth/login";
 import { ResetPasswordPage } from "@/routes/auth/reset";
 import { AgendaPage } from "@/routes/club/agenda";
 import { ChallengePage } from "@/routes/club/challenge";
-import { ChallengesPage } from "@/routes/club/challenges";
+import { ChallengesPage, FamilyPlayerChallengesPage } from "@/routes/club/challenges";
 import { ClubMemberPage } from "@/routes/club/club-member";
 import { ClubMembersPage } from "@/routes/club/club-members";
 import { FacilitiesPage } from "@/routes/club/facilities";
@@ -97,6 +97,7 @@ export const router = createBrowserRouter([
       { path: "fees", element: <FeesPage /> },
       { path: "family", element: <FamilyPage /> },
       { path: "family/:id", element: <FamilyPlayerPage /> },
+      { path: "family/:id/challenges", element: <FamilyPlayerChallengesPage /> },
       { path: "challenges", element: <ChallengesPage /> },
       { path: "challenges/:id", element: <ChallengePage /> },
       { path: "settings", element: <SettingsPage /> },

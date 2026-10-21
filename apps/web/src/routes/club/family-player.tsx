@@ -296,7 +296,7 @@ export function FamilyPlayerPage() {
               }
               actions={
                 <ButtonLink
-                  to={`${paths.challenges}?player=${id}&challenge=${challenge.id}`}
+                  to={`${paths.familyPlayerChallenges(id)}?challenge=${challenge.id}`}
                   variant="secondary"
                   size="sm"
                 >
