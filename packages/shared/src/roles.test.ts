@@ -28,19 +28,16 @@ describe("roles y permisos", () => {
   it("los permisos de varios roles son la unión", () => {
     const union = permissionsForRoles(["coach", "guardian"]);
     expect([...union].sort()).toEqual([
-      "org.activity.read",
       "org.attendance.read",
       "org.attendance.write_own",
       "org.challenges.manage",
       "org.challenges.read",
       "org.challenges.review_own",
-      "org.club_members.read",
       "org.events.read",
       "org.events.write_own",
       "org.facilities.read",
       "org.family.read",
       "org.family.write",
-      "org.members.read",
       "org.players.assess_own",
       "org.players.read",
       "org.roster.write_own",
@@ -51,8 +48,12 @@ describe("roles y permisos", () => {
     expect(hasPermission(["coach"], "org.players.write")).toBe(false);
     expect(hasPermission(["coach"], "org.players.assess")).toBe(false);
     expect(hasPermission(["guardian"], "org.members.read")).toBe(false);
-    expect(hasPermission(["guardian", "coach"], "org.members.read")).toBe(true);
+    // El cuerpo técnico no ve ni al personal, ni a los socios, ni los movimientos del club (Bloque 19).
+    expect(hasPermission(["guardian", "coach"], "org.members.read")).toBe(false);
+    expect(hasPermission(["coach"], "org.club_members.read")).toBe(false);
+    expect(hasPermission(["coach"], "org.activity.read")).toBe(false);
     expect(hasPermission(["org_admin"], "org.members.manage")).toBe(true);
+    expect(hasPermission(["org_admin"], "org.activity.read")).toBe(true);
   });
 
   it("el cargo del personal añade permisos solo con el rol staff", () => {
@@ -78,8 +79,12 @@ describe("roles y permisos", () => {
     // Solo la administración puede mirar el club como otra persona (Bloque 14).
     expect(permissionsForRoles(["org_admin"]).has("org.view_as")).toBe(true);
     expect(director.has("org.view_as")).toBe(false);
-    expect(director.has("org.fees.read")).toBe(true);
-    expect(director.has("org.fees.write")).toBe(false);
+    // Dirección y coordinación no ven socios, personal ni cuotas (Bloque 19).
+    expect(director.has("org.fees.read")).toBe(false);
+    expect(director.has("org.club_members.read")).toBe(false);
+    expect(director.has("org.members.read")).toBe(false);
+    expect(director.has("org.members.invite")).toBe(true);
+    expect(director.has("org.facilities.write")).toBe(true);
 
     // Un cargo sin el rol staff no añade nada.
     const coach = permissionsForMemberships([{ roleCode: "coach", position: "director" }]);

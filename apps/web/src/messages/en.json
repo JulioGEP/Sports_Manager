@@ -265,6 +265,11 @@
         "title": "Observation",
         "description": "Players without a sport rating and those below the threshold."
       }
+    },
+    "scope": {
+      "restricted": "You see your part of the club: {sections, plural, =0 {no sections} one {# section} other {# sections}}, {teams, plural, =0 {no teams} one {# team} other {# teams}} and {players, plural, =0 {no individual athletes} one {# individual athlete} other {# individual athletes}}.",
+      "emptyTitle": "Nothing assigned to you yet",
+      "emptyBody": "Ask a club admin to assign you a section, a team or athletes. Until then the club looks empty."
     }
   },
   "members": {
@@ -273,7 +278,8 @@
     "invite": "Invite",
     "tabs": {
       "members": "Staff",
-      "invitations": "Invitations"
+      "invitations": "Invitations",
+      "access": "Access"
     },
     "search": "Search by name or email",
     "empty": "No staff at the club yet.",
@@ -282,7 +288,8 @@
       "name": "Person",
       "roles": "Roles",
       "since": "Since",
-      "teams": "Teams"
+      "teams": "Teams",
+      "sections": "Sections"
     },
     "roles": {
       "manage": "Roles",
@@ -292,12 +299,21 @@
       "lastAdmin": "The last club administrator cannot be removed.",
       "hint": {
         "org_admin": "Manages members, invitations and settings.",
-        "coach": "Will see their people and, in Phase 1, teams and players.",
+        "coach": "Sees only their teams: roster, athletes, agenda and the facilities they use.",
         "guardian": "Family: in Phase 1 they will see their children's information.",
         "staff": "Club staff with a position: director, coordinator, delegate, physio, fitness, psychologist or scout."
       },
       "position": "Position",
-      "positionSaved": "Position saved: {position}."
+      "positionSaved": "Position saved: {position}.",
+      "sections": "Sections in their charge",
+      "sectionsHint": "Directors and coordinators only see the ticked sections. Sections they already coordinate count even if unticked.",
+      "sectionsEmpty": "The club has no sections yet.",
+      "sectionsSaved": "Sections for {name} saved.",
+      "coordinates": "Coordinates",
+      "exclusions": "Special exclusions",
+      "exclusionsHint": "Areas this person does not see even though their role does. Admins cannot be excluded.",
+      "exclusionsSaved": "Exclusions for {name} saved.",
+      "exclude": "Does not see {area}"
     },
     "inviteDrawer": {
       "title": "Invite someone",
@@ -335,7 +351,41 @@
       "confirmRevokeBody": "The link will stop working. You can invite again whenever you want.",
       "player": "Family of {name}"
     },
-    "noTeams": "No team"
+    "noTeams": "No team",
+    "noSections": "No section",
+    "access": {
+      "title": "What each role sees",
+      "description": "Tick what each role or position sees. Anything unticked disappears from their navigation and from the API. The scope (the whole club, their sections, their teams or the athletes they attend) goes with the position and is not changed here.",
+      "profile": "Role or position",
+      "scopeLabel": "Scope",
+      "scope": {
+        "club": "Whole club",
+        "sections": "Their sections",
+        "teams": "Their teams",
+        "attended": "Athletes they attend"
+      },
+      "areas": {
+        "sections": "Sections",
+        "players": "Athletes",
+        "club_members": "Members",
+        "staff": "Staff",
+        "agenda": "Agenda",
+        "facilities": "Facilities",
+        "challenges": "Challenge",
+        "fees": "Fees",
+        "activity": "Activity"
+      },
+      "toggle": "{area} for {profile}",
+      "changed": "Changed from the default",
+      "reset": "Back to the default",
+      "saved": "Access for {profile} saved.",
+      "adminNote": "Club admins see everything and cannot be excluded. Families only see what belongs to their athletes: agenda, challenge and fees.",
+      "exclusionsTitle": "Exclusions per person",
+      "exclusionsDescription": "People who do not see an area even though their role does. Change them from each person's roles.",
+      "exclusionsEmpty": "Nobody has exclusions.",
+      "excluded": "Does not see: {areas}",
+      "error": "Could not load access by role."
+    }
   },
   "settings": {
     "title": "Club settings",
@@ -706,7 +756,9 @@
     },
     "membership": {
       "role_assigned": "Role assigned",
-      "role_removed": "Role removed"
+      "role_removed": "Role removed",
+      "sections_updated": "Sections in charge changed",
+      "access_updated": "Access exclusions changed"
     },
     "platform": {
       "admin_created": "Platform administrator created"
@@ -740,7 +792,9 @@
       "objective_removed": "Individual objective removed",
       "indicators_updated": "Player indicators rated",
       "plan_updated": "Development plan saved",
-      "note_added": "Entry added to player"
+      "note_added": "Entry added to player",
+      "staff_assigned": "Staff assigned to athlete",
+      "staff_unassigned": "Staff removed from athlete"
     },
     "challenge": {
       "created": "Challenge created",
@@ -792,6 +846,9 @@
     },
     "view_as": {
       "started": "Viewed the club as someone else"
+    },
+    "access": {
+      "rule_updated": "Access by role changed"
     }
   },
   "team": {
@@ -1202,6 +1259,22 @@
       "memberNumber": "Member no. {number}",
       "makeMember": "Make a member",
       "notMember": "Not a member"
+    },
+    "staff": {
+      "title": "Assigned staff",
+      "description": "Who attends this athlete without coaching their team: physio, fitness, psychology. Assigning someone opens the profile to them.",
+      "empty": "Nobody assigned.",
+      "assign": "Assign staff",
+      "remove": "Remove",
+      "assigned": "{member} now attends {name}.",
+      "removed": "{member} no longer attends {name}.",
+      "sheet": {
+        "title": "Assign staff to {name}",
+        "description": "Club staff, coaches or admins. They will see the profile even if they do not coach the team.",
+        "member": "Person",
+        "submit": "Assign",
+        "empty": "No other staff available."
+      }
     }
   },
   "family": {
@@ -1244,10 +1317,10 @@
     "psychologist": "Psychologist",
     "scout": "Scout",
     "hint": {
-      "director": "Sees the whole club: structure, players, assessments and challenge. Does not manage members or settings.",
-      "coordinator": "Like the sporting director: structure, players, assessments and challenge.",
+      "director": "Sees their sections: structure, athletes, agenda, facilities and challenge. No members, staff or fees.",
+      "coordinator": "Like the sporting director, in their sections: structure, athletes, agenda and challenge.",
       "delegate": "Views teams, players and the challenge. Changes nothing.",
-      "physio": "Rates the body of any player and leaves notes.",
+      "physio": "Rates the body and leaves notes on the athletes they attend: those on their teams and those assigned to them.",
       "fitness": "Rates physical preparation and leaves notes.",
       "psychologist": "Rates wellbeing and leaves notes.",
       "scout": "Rates the sport dimension and leaves observation notes."

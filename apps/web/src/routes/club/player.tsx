@@ -65,7 +65,8 @@ type Pending = PlayerDetailResponse["pendingInvitations"][number];
 type Objective = NonNullable<PlayerDetailResponse["objective"]>;
 type Plan = NonNullable<PlayerDetailResponse["developmentPlan"]>;
 type Indicator = PlayerDetailResponse["indicators"][number];
-type SheetName = "edit" | "invite" | "link" | "objective" | "indicators" | "plan" | "note";
+type SheetName =
+  "edit" | "invite" | "link" | "objective" | "indicators" | "plan" | "note" | "staff";
 
 const inviteKind: Record<Pending["state"], StatusKind> = {
   pending: "info",
@@ -136,6 +137,7 @@ function useEligibleStaff(playerId: string) {
  */
 export function PlayerPage() {
   const t = useT("player");
+  const positionsT = useT("positions");
   const genders = useT("genders");
   const ps = useT("playerStatus");
   const rel = useT("relationships");
@@ -187,6 +189,9 @@ export function PlayerPage() {
   const { player, teams, guardians, pendingInvitations, objective, indicators, developmentPlan } =
     detail.data;
   const timeline = detail.data.timeline;
+  /** Personal asignado (Bloque 19): quien atiende al deportista sin llevar su equipo. */
+  const assignedStaff = detail.data.staff;
+  const canAssignStaff = detail.data.access.staff;
   /** Valorar y cambiar la foto: lo decide la API (permiso de club o cuerpo técnico del jugador). */
   const canAssess = detail.data.access.assess;
   const canPhoto = detail.data.access.photo;
@@ -226,6 +231,15 @@ export function PlayerPage() {
     try {
       await apiFetch(`/api/org/players/${id}/guardians/${g.userId}`, { method: "DELETE" });
       toast("success", t("unlinked", { name: g.name }));
+      void reload();
+    } catch (err) {
+      toast("error", errors(errorKey(err)));
+    }
+  }
+  async function unassignStaff(member: { userId: string; name: string }) {
+    try {
+      await apiFetch(`/api/org/players/${id}/staff/${member.userId}`, { method: "DELETE" });
+      toast("success", t("staff.removed", { member: member.name, name }));
       void reload();
     } catch (err) {
       toast("error", errors(errorKey(err)));
@@ -906,6 +920,45 @@ export function PlayerPage() {
           </Card>
         </div>
 
+        <Card
+          title={t("staff.title")}
+          description={t("staff.description")}
+          padded={false}
+          actions={
+            canAssignStaff ? (
+              <Button variant="secondary" size="sm" onClick={() => setSheet("staff")}>
+                {t("staff.assign")}
+              </Button>
+            ) : null
+          }
+        >
+          {assignedStaff.length === 0 ? (
+            <EmptyState icon={<Icon.Heartbeat weight="duotone" />} title={t("staff.empty")} />
+          ) : (
+            <ul className="flex flex-col divide-y divide-line">
+              {assignedStaff.map((member) => (
+                <li
+                  key={member.userId}
+                  className="flex min-h-16 flex-wrap items-center gap-3 px-5 py-3"
+                >
+                  <Avatar name={member.name} />
+                  <span className="flex min-w-0 flex-1 flex-col">
+                    <span className="truncate font-medium text-ink">{member.name}</span>
+                  </span>
+                  {member.position ? (
+                    <StatusChip kind="club">{positionsT(member.position)}</StatusChip>
+                  ) : null}
+                  {canAssignStaff ? (
+                    <Button variant="tertiary" size="sm" onClick={() => void unassignStaff(member)}>
+                      {t("staff.remove")}
+                    </Button>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+
         {canWrite ? (
           <Card title={t("status")}>
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -987,6 +1040,15 @@ export function PlayerPage() {
           excluded={guardians.map((g) => g.userId)}
           onClose={() => setSheet(null)}
           onLinked={() => void reload()}
+        />
+      ) : null}
+      {sheet === "staff" ? (
+        <AssignStaffSheet
+          playerId={id}
+          playerName={name}
+          excluded={assignedStaff.map((m) => m.userId)}
+          onClose={() => setSheet(null)}
+          onAssigned={() => void reload()}
         />
       ) : null}
       <ConfirmDialog
@@ -1939,6 +2001,101 @@ function LinkMemberSheet({
             </Select>
           )}
         </Field>
+      </form>
+    </Sheet>
+  );
+}
+
+/** Asignar personal a un deportista (Bloque 19): un miembro con rol de personal, entrenador o administración. */
+function AssignStaffSheet({
+  playerId,
+  playerName,
+  excluded,
+  onClose,
+  onAssigned,
+}: {
+  playerId: string;
+  playerName: string;
+  excluded: string[];
+  onClose: () => void;
+  onAssigned: () => void;
+}) {
+  const t = useT("player.staff.sheet");
+  const tp = useT("player.staff");
+  const c = useT("common");
+  const errors = useT("errors");
+  const toast = useToast();
+  const { slug } = useReadyClub();
+  const [userId, setUserId] = useState("");
+  const [busy, setBusy] = useState(false);
+  const members = useQuery({
+    queryKey: ["org", slug, "player", playerId, "eligible-staff"],
+    queryFn: () =>
+      apiFetch(`/api/org/players/${playerId}/eligible-staff`, {
+        schema: EligibleMembersResponseSchema,
+      }),
+  });
+  const candidates = (members.data?.members ?? []).filter((m) => !excluded.includes(m.userId));
+  const selected = candidates.find((m) => m.userId === userId) ?? candidates[0] ?? null;
+
+  async function submit(e: FormEvent) {
+    e.preventDefault();
+    if (!selected) return;
+    setBusy(true);
+    try {
+      await apiFetch(`/api/org/players/${playerId}/staff`, {
+        method: "POST",
+        body: { userId: selected.userId },
+        schema: PlayerDetailResponseSchema,
+      });
+      toast("success", tp("assigned", { member: selected.name, name: playerName }));
+      onClose();
+      onAssigned();
+    } catch (err) {
+      toast("error", errors(errorKey(err)));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Sheet
+      open
+      onClose={onClose}
+      closeLabel={c("close")}
+      title={t("title", { name: playerName })}
+      description={t("description")}
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose}>
+            {c("cancel")}
+          </Button>
+          <Button type="submit" form="assign-staff-form" loading={busy} disabled={!selected}>
+            {t("submit")}
+          </Button>
+        </>
+      }
+    >
+      <form id="assign-staff-form" className="flex flex-col gap-4" onSubmit={(e) => void submit(e)}>
+        {members.data && candidates.length === 0 ? (
+          <Alert kind="info">{t("empty")}</Alert>
+        ) : (
+          <Field label={t("member")}>
+            {(id) => (
+              <Select
+                id={id}
+                value={selected?.userId ?? ""}
+                onChange={(e) => setUserId(e.target.value)}
+              >
+                {candidates.map((m) => (
+                  <option key={m.userId} value={m.userId}>
+                    {m.name} · {m.email}
+                  </option>
+                ))}
+              </Select>
+            )}
+          </Field>
+        )}
       </form>
     </Sheet>
   );

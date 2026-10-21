@@ -1,11 +1,12 @@
 import {
-  permissionsForMemberships,
+  effectivePermissions,
   PLATFORM_SUPPORT_PERMISSIONS,
   SUPPORT_GRANT_PERMISSIONS,
   VIEW_AS_HEADER,
+  type AccessScope,
   type Permission,
 } from "@sportsmanager/shared";
-import type { MiddlewareHandler } from "hono";
+import type { Context, MiddlewareHandler } from "hono";
 import type { DataLayer } from "../data/index.ts";
 import type { AppEnv } from "./context.ts";
 import { forbidden, notFound } from "./errors.ts";
@@ -20,30 +21,38 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
  * "Ver como" (Bloque 14, ADR 0031): con `org.view_as`, la cabecera `x-sm-view-as` con el id de
  * otra persona del club convierte al actor en esa persona (sus roles, su cargo, sus equipos, su
  * familia). Una cabecera que no apunta a un miembro del club se ignora. La sesión no cambia.
+ *
+ * Los permisos son los del rol y el cargo con las reglas de acceso del club aplicadas
+ * (Bloque 19, ADR 0032): lo que la administración incluye o excluye por perfil y por persona.
  */
 export function requireActor(data: DataLayer): MiddlewareHandler<AppEnv> {
   return async (c, next) => {
     const tenant = c.get("tenant");
     if (tenant?.kind !== "organization") throw notFound();
     const user = c.get("sessionUser");
-    const memberships = await data.memberships.membershipsFor(tenant.scope, user.id);
+    const [memberships, rules] = await Promise.all([
+      data.memberships.membershipsFor(tenant.scope, user.id),
+      data.access.rulesFor(tenant.scope, user.id),
+    ]);
     if (memberships.length > 0) {
-      const own = permissionsForMemberships(memberships);
+      const own = effectivePermissions(memberships, rules);
       const viewAs = c.req.header(VIEW_AS_HEADER)?.trim() ?? "";
       if (own.has("org.view_as") && UUID.test(viewAs) && viewAs !== user.id) {
-        const [target, targetMemberships] = await Promise.all([
+        const [target, targetMemberships, targetRules] = await Promise.all([
           data.users.byId(viewAs),
           data.memberships.membershipsFor(tenant.scope, viewAs),
+          data.access.rulesFor(tenant.scope, viewAs),
         ]);
         if (target && targetMemberships.length > 0) {
           const roles = targetMemberships.map((m) => m.roleCode);
-          const permissions = permissionsForMemberships(targetMemberships);
+          const permissions = effectivePermissions(targetMemberships, targetRules);
           permissions.delete("org.view_as");
           c.set("actor", {
             kind: "member",
             userId: target.id,
             roles,
             position: targetMemberships.find((m) => m.roleCode === "staff")?.position ?? null,
+            memberships: targetMemberships,
             permissions,
             viewingAs: { userId: target.id, name: target.name, roles },
             // Quien mira sigue siendo la administración: puede cambiar de persona sin salir.
@@ -57,6 +66,7 @@ export function requireActor(data: DataLayer): MiddlewareHandler<AppEnv> {
         userId: user.id,
         roles: memberships.map((m) => m.roleCode),
         position: memberships.find((m) => m.roleCode === "staff")?.position ?? null,
+        memberships,
         permissions: own,
         viewingAs: null,
         canViewAs: own.has("org.view_as"),
@@ -75,6 +85,23 @@ export function requireActor(data: DataLayer): MiddlewareHandler<AppEnv> {
     }
     throw forbidden("No perteneces a este club.");
   };
+}
+
+/**
+ * Ámbito del actor (Bloque 19, ADR 0032): qué secciones, equipos y deportistas ve. Se resuelve
+ * una vez por petición; el soporte de plataforma no ve datos personales, así que su ámbito da igual.
+ */
+export async function accessScopeOf(data: DataLayer, c: Context<AppEnv>): Promise<AccessScope> {
+  const cached = c.get("accessScope");
+  if (cached) return cached;
+  const actor = c.get("actor");
+  const tenant = c.get("tenant");
+  const scope: AccessScope =
+    actor.kind === "member" && tenant.kind === "organization"
+      ? await data.access.scopeFor(tenant.scope, actor.userId, actor.memberships)
+      : { kind: "club" };
+  c.set("accessScope", scope);
+  return scope;
 }
 
 /** Comprueba un permiso, nunca un nombre de rol. */

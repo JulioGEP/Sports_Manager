@@ -116,10 +116,14 @@ test.describe("reto por puntos y paneles del personal", () => {
     await expect(page.getByText(/Cuerpo: \d+ de \d+ valorados/)).toBeVisible();
     await shot(page, "76-fisio-inicio", info.project.name);
     await expectLegibleButtons(page);
-    // La fisio valora, pero no da de alta jugadores.
+    // La fisio valora, pero no da de alta jugadores; y solo ve a quien atiende (Bloque 19).
+    await expect(page.getByText(/Ves tu parte del club/)).toBeVisible();
     await page.getByRole("link", { name: "Deportistas" }).first().click();
     await expect(page.getByRole("heading", { name: "Deportistas" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Nuevo jugador" })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Marc Martí" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Joel Castro" })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Socios" })).toHaveCount(0);
     await page.getByRole("link", { name: "Clara Martí" }).click();
     await expect(page.getByRole("button", { name: "Valorar" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Editar perfil" })).toHaveCount(0);

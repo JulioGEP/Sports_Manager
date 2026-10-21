@@ -1,6 +1,6 @@
-# Capturas de la interfaz (Bloques 14 a 18)
+# Capturas de la interfaz (Bloques 14 a 19)
 
-Capturas que generan las pruebas de interfaz (`pnpm test:ui`) contra la API real con base embebida, con el front de Vite + React + Tailwind sobre el design system del producto (`packages/design`, ADR 0027). Escritorio a 1280x800; móvil, Pixel 7. La fuente viva es el artefacto `capturas-interfaz` de CI; esta carpeta es la foto de la revisión del club completo (ADR 0031): secciones por deporte, socios, agenda e instalaciones, cuotas y "ver como", sobre lo que ya había de los bloques 11 a 13 (ADR 0028, 0029 y 0030).
+Capturas que generan las pruebas de interfaz (`pnpm test:ui`) contra la API real con base embebida, con el front de Vite + React + Tailwind sobre el design system del producto (`packages/design`, ADR 0027). Escritorio a 1280x800; móvil, Pixel 7. La fuente viva es el artefacto `capturas-interfaz` de CI; esta carpeta es la foto de la revisión del club completo (ADR 0031): secciones por deporte, socios, agenda e instalaciones, cuotas y "ver como", sobre lo que ya había de los bloques 11 a 13 (ADR 0028, 0029 y 0030), más el alcance por cargo y la gestión de acceso por rol del Bloque 19 (ADR 0032): el cuerpo técnico, la dirección y la fisio ven solo su parte del club, y "Personal" gana la pestaña "Acceso".
 
 Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negocio en `/admin`. Cuentas de demostración, todas con contraseña `123456`: `admin@demo.test` (administra el club demo; en este entorno también la plataforma), `entrenador@demo.test` (entrenadora del Alevín A), `familia@demo.test` (madre de dos jugadores y socia), `director@demo.test` (dirección deportiva), `fisio@demo.test` (fisioterapia), `natacion@demo.test` (coordinación de natación) y `basquet@demo.test`, `basquetfem@demo.test` y `yoga@demo.test` (cuerpo técnico). El club demo llega con la temporada 2026-27, cuatro secciones (fútbol sala, baloncesto, natación y yoga) con categorías, once equipos y grupos, 83 deportistas, socios con tres tipos, cuatro instalaciones con horario, la agenda generada desde los horarios, partidos, planes de cuota con cargos y pagos, y un reto activo.
 
@@ -209,6 +209,10 @@ Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negoci
 ### Roles de una persona (hoja)
 
 ![Roles de una persona](escritorio-13-miembros-roles.png)
+
+### Acceso por rol (Bloque 19): un check por rol o cargo y área, con el alcance a la vista
+
+![Acceso por rol](escritorio-14-personal-acceso.png)
 
 ### Ajustes del club: datos generales y zona horaria
 
@@ -453,6 +457,10 @@ Las mismas pantallas en un móvil, con la forma envolvente del design system: ca
 ### Personal del club
 
 ![Personal del club (móvil)](movil-10-miembros.png)
+
+### Acceso por rol
+
+![Acceso por rol (móvil)](movil-14-personal-acceso.png)
 
 ### Invitar a alguien (hoja)
 

@@ -71,6 +71,13 @@
       "when": 1792604547072,
       "tag": "20261021174227_club_completo_cleanup",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1792612527384,
+      "tag": "20261021195527_access_scope",
+      "breakpoints": true
     }
   ]
 }

@@ -45,3 +45,4 @@ Las decisiones no se editan una vez aceptadas. Si cambian, se escribe una nueva 
 | 0029 | Ficha ampliada del jugador: foto, indicadores, objetivo, PDI y timeline | Aceptada |
 | 0030 | Personal con cargo, permisos por equipo, ficha para la familia, inicio operativo y reto por puntos | Aceptada |
 | 0031 | Club completo: secciones por deporte, personas y socios, agenda e instalaciones, asistencia, cuotas con Stripe y "ver como" | Aceptada |
+| 0032 | Alcance por cargo y visibilidad por rol gestionada desde "Personal" | Aceptada |

@@ -30,6 +30,12 @@ export interface ApiFetchOptions<T> {
   schema?: Parser<T>;
   /** Club al que va dirigida la petición; por defecto, el club de la página actual. */
   club?: string | null;
+  /**
+   * Con "ver como" activo, la petición va por defecto con los ojos de la persona observada.
+   * `false` la manda con los ojos propios: lo necesita la lista de personas del propio "ver como",
+   * que la persona observada no siempre puede leer (Bloque 19).
+   */
+  viewAs?: boolean;
 }
 
 /**
@@ -61,10 +67,10 @@ export function getCurrentViewAs(): string | null {
   return currentViewAs;
 }
 
-function clubHeaders(club: string | null): Record<string, string> {
+function clubHeaders(club: string | null, viewAs = true): Record<string, string> {
   return {
     ...(club ? { [CLUB_HEADER]: club } : {}),
-    ...(club && currentViewAs ? { [VIEW_AS_HEADER]: currentViewAs } : {}),
+    ...(club && viewAs && currentViewAs ? { [VIEW_AS_HEADER]: currentViewAs } : {}),
   };
 }
 
@@ -98,7 +104,7 @@ export async function apiFetch<T = unknown>(
       method: options.method ?? "GET",
       headers: {
         accept: "application/json",
-        ...clubHeaders(club),
+        ...clubHeaders(club, options.viewAs ?? true),
         ...(options.body !== undefined ? { "content-type": "application/json" } : {}),
       },
       ...(options.body !== undefined ? { body: JSON.stringify(options.body) } : {}),

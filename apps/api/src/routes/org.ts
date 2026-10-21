@@ -1,19 +1,40 @@
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 import {
+  ACCESS_AREAS,
+  AccessAreaSchema,
+  AccessAreaUpdateSchema,
+  AccessOverviewResponseSchema,
+  AccessProfileRowSchema,
   ActivityResponseSchema,
   ApiErrorSchema,
   AssignRoleBodySchema,
   AssignRoleResponseSchema,
+  CONFIGURABLE_PROFILES,
+  ConfigurableProfileSchema,
+  defaultPermissionsOf,
+  effectivePermissions,
+  isAreaVisible,
   LOGO_CONTENT_TYPES,
   LOGO_MAX_BYTES,
+  MemberExclusionsResponseSchema,
+  MemberExclusionsUpdateSchema,
+  MemberSectionsResponseSchema,
+  MemberSectionsUpdateSchema,
+  membershipOfProfile,
   MembersResponseSchema,
   OrganizationBrandingSchema,
   OrganizationResponseSchema,
   OrganizationUpdateResponseSchema,
   OrganizationUpdateSchema,
+  PROFILE_SCOPE,
   RoleCodeSchema,
+  summarizeScope,
+  type AccessProfileRow,
+  type AccessRule,
+  type AccessScope,
   type Actor as ActorDto,
   type ClubVoice,
+  type ConfigurableProfile,
   type Locale,
   type OrganizationResponse,
   type PaymentProvider,
@@ -27,7 +48,7 @@ import {
   type OrganizationRow,
   type OrgScope,
 } from "../data/index.ts";
-import { requireActor, requirePermission } from "../http/actor.ts";
+import { accessScopeOf, requireActor, requirePermission } from "../http/actor.ts";
 import type { Actor, AppEnv } from "../http/context.ts";
 import {
   badRequest,
@@ -63,7 +84,7 @@ export function brandingDto(org: OrganizationRow) {
   };
 }
 
-function actorDto(actor: Actor): ActorDto {
+function actorDto(actor: Actor, scope: AccessScope): ActorDto {
   return actor.kind === "member"
     ? {
         kind: "member",
@@ -72,8 +93,24 @@ function actorDto(actor: Actor): ActorDto {
         permissions: [...actor.permissions],
         viewingAs: actor.viewingAs,
         canViewAs: actor.canViewAs,
+        scope: summarizeScope(scope),
       }
     : { kind: "platform_support", hasGrant: actor.hasGrant, permissions: [...actor.permissions] };
+}
+
+/** Una fila de la matriz de acceso: lo que ve un perfil por defecto y con las reglas del club. */
+function profileRow(profile: ConfigurableProfile, rules: readonly AccessRule[]): AccessProfileRow {
+  const defaults = defaultPermissionsOf(profile);
+  const effective = effectivePermissions([membershipOfProfile(profile)], rules);
+  return {
+    profile,
+    scope: PROFILE_SCOPE[profile],
+    areas: ACCESS_AREAS.map((area) => ({
+      area,
+      default: isAreaVisible(defaults, area),
+      visible: isAreaVisible(effective, area),
+    })),
+  };
 }
 
 /** Rutas del club del host. Cadena completa: club → sesión → pertenencia → permiso. */
@@ -155,7 +192,7 @@ export function createOrgRoutes(config: ApiConfig, data: DataLayer) {
           counts,
         };
       }
-      return c.json({ organization, actor: actorDto(actor) }, 200);
+      return c.json({ organization, actor: actorDto(actor, await accessScopeOf(data, c)) }, 200);
     },
   );
 
@@ -179,10 +216,205 @@ export function createOrgRoutes(config: ApiConfig, data: DataLayer) {
       const tenant = c.get("tenant");
       if (tenant.kind !== "organization") throw notFound();
       const members = await data.memberships.listMembers(tenant.scope);
+      const ids = members.map((m) => m.userId);
+      const [sections, exclusions] = await Promise.all([
+        data.access.sectionsByUser(tenant.scope, ids),
+        data.access.exclusionsByUser(tenant.scope, ids),
+      ]);
       return c.json(
-        { members: members.map((m) => ({ ...m, memberSince: m.memberSince.toISOString() })) },
+        {
+          members: members.map((m) => ({
+            ...m,
+            sections: sections.get(m.userId) ?? [],
+            excludedAreas: exclusions.get(m.userId) ?? [],
+            memberSince: m.memberSince.toISOString(),
+          })),
+        },
         200,
       );
+    },
+  );
+
+  // --- Acceso por rol (Bloque 19, ADR 0032): solo quien gestiona el personal ---
+  app.openapi(
+    createRoute({
+      method: "get",
+      path: "/api/org/access",
+      tags: ["Club"],
+      summary:
+        "Qué área ve cada rol o cargo, por defecto y con las reglas del club, y las exclusiones por persona",
+      security: [{ sessionCookie: [] }],
+      middleware: [requirePermission("org.members.manage")],
+      responses: {
+        200: {
+          description: "Matriz de acceso",
+          content: { "application/json": { schema: AccessOverviewResponseSchema } },
+        },
+        ...errorResponses,
+      },
+    }),
+    async (c) => {
+      const tenant = c.get("tenant");
+      if (tenant.kind !== "organization") throw notFound();
+      const rules = await data.access.listRules(tenant.scope);
+      const byUser = new Map<
+        string,
+        { userId: string; name: string; areas: (typeof ACCESS_AREAS)[number][] }
+      >();
+      for (const u of rules.users) {
+        const entry = byUser.get(u.userId) ?? { userId: u.userId, name: u.name, areas: [] };
+        entry.areas.push(u.area);
+        byUser.set(u.userId, entry);
+      }
+      return c.json(
+        {
+          profiles: CONFIGURABLE_PROFILES.map((profile) => profileRow(profile, rules.profiles)),
+          exclusions: [...byUser.values()],
+        },
+        200,
+      );
+    },
+  );
+
+  app.openapi(
+    createRoute({
+      method: "put",
+      path: "/api/org/access/profiles/{profile}/areas/{area}",
+      tags: ["Club"],
+      summary:
+        "Incluye o excluye un área para un rol o cargo. Igual que por defecto, borra la regla",
+      security: [{ sessionCookie: [] }],
+      middleware: [requirePermission("org.members.manage")],
+      request: {
+        params: z.object({ profile: ConfigurableProfileSchema, area: AccessAreaSchema }),
+        body: {
+          content: { "application/json": { schema: AccessAreaUpdateSchema } },
+          required: true,
+        },
+      },
+      responses: {
+        200: {
+          description: "La fila del perfil ya actualizada",
+          content: { "application/json": { schema: AccessProfileRowSchema } },
+        },
+        ...errorResponses,
+      },
+    }),
+    async (c) => {
+      const tenant = c.get("tenant");
+      if (tenant.kind !== "organization") throw notFound();
+      const { profile, area } = c.req.valid("param");
+      const { visible } = c.req.valid("json");
+      const byDefault = isAreaVisible(defaultPermissionsOf(profile), area);
+      const effect = visible === byDefault ? null : visible ? "allow" : "deny";
+      await data.access.setProfileRule(tenant.scope, profile, area, effect);
+      await data.audit.record({
+        actorUserId: c.get("sessionUser").id,
+        organizationId: tenant.organization.id,
+        action: "access.rule_updated",
+        target: profile,
+        details: { area, visible, effect },
+      });
+      const rules = await data.access.listRules(tenant.scope);
+      return c.json(profileRow(profile, rules.profiles), 200);
+    },
+  );
+
+  app.openapi(
+    createRoute({
+      method: "put",
+      path: "/api/org/access/members/{userId}",
+      tags: ["Club"],
+      summary:
+        "Exclusiones de una persona: las áreas que no ve aunque su rol sí. Sustituye la lista. La administración no se excluye",
+      security: [{ sessionCookie: [] }],
+      middleware: [requirePermission("org.members.manage")],
+      request: {
+        params: z.object({ userId: z.string().uuid() }),
+        body: {
+          content: { "application/json": { schema: MemberExclusionsUpdateSchema } },
+          required: true,
+        },
+      },
+      responses: {
+        200: {
+          description: "Exclusiones guardadas",
+          content: { "application/json": { schema: MemberExclusionsResponseSchema } },
+        },
+        409: {
+          description: "Es administración del club",
+          content: { "application/json": { schema: ApiErrorSchema } },
+        },
+        ...errorResponses,
+      },
+    }),
+    async (c) => {
+      const tenant = c.get("tenant");
+      if (tenant.kind !== "organization") throw notFound();
+      const { userId } = c.req.valid("param");
+      const { areas } = c.req.valid("json");
+      const roles = await data.memberships.rolesFor(tenant.scope, userId);
+      if (roles.length === 0) throw notFound("Esa persona no es miembro de este club.");
+      if (roles.includes("org_admin") && areas.length > 0)
+        throw conflict("La administración del club no se puede excluir de ninguna área.");
+      const saved = await data.access.setUserExclusions(tenant.scope, userId, areas);
+      await data.audit.record({
+        actorUserId: c.get("sessionUser").id,
+        organizationId: tenant.organization.id,
+        action: "membership.access_updated",
+        target: userId,
+        details: { excludedAreas: saved },
+      });
+      return c.json({ userId, areas: saved }, 200);
+    },
+  );
+
+  app.openapi(
+    createRoute({
+      method: "put",
+      path: "/api/org/members/{userId}/sections",
+      tags: ["Club"],
+      summary:
+        "Secciones a cargo de alguien del personal (dirección, coordinación). Sustituye las asignadas; las que coordina siguen por la sección",
+      security: [{ sessionCookie: [] }],
+      middleware: [requirePermission("org.members.manage")],
+      request: {
+        params: z.object({ userId: z.string().uuid() }),
+        body: {
+          content: { "application/json": { schema: MemberSectionsUpdateSchema } },
+          required: true,
+        },
+      },
+      responses: {
+        200: {
+          description: "Secciones a su cargo",
+          content: { "application/json": { schema: MemberSectionsResponseSchema } },
+        },
+        400: {
+          description: "Alguna sección no es de este club",
+          content: { "application/json": { schema: ApiErrorSchema } },
+        },
+        ...errorResponses,
+      },
+    }),
+    async (c) => {
+      const tenant = c.get("tenant");
+      if (tenant.kind !== "organization") throw notFound();
+      const { userId } = c.req.valid("param");
+      const { sectionIds } = c.req.valid("json");
+      const roles = await data.memberships.rolesFor(tenant.scope, userId);
+      if (roles.length === 0) throw notFound("Esa persona no es miembro de este club.");
+      const outcome = await data.access.setUserSections(tenant.scope, userId, sectionIds);
+      if (outcome === "unknown_section") throw badRequest("Alguna sección no es de este club.");
+      await data.audit.record({
+        actorUserId: c.get("sessionUser").id,
+        organizationId: tenant.organization.id,
+        action: "membership.sections_updated",
+        target: userId,
+        details: { sectionIds },
+      });
+      const sections = (await data.access.sectionsByUser(tenant.scope, [userId])).get(userId) ?? [];
+      return c.json({ userId, sections }, 200);
     },
   );
 

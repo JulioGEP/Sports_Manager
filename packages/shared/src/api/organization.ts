@@ -2,6 +2,7 @@ import { z } from "zod";
 import { LocaleSchema, LocalizedTextSchema } from "../locales.ts";
 import { ORGANIZATION_STATUSES } from "../organizations.ts";
 import { PAYMENT_PROVIDERS } from "../fees.ts";
+import { AccessAreaSchema, AccessScopeSummarySchema } from "../access.ts";
 import { PERMISSIONS, ROLE_CODES, RoleCodeSchema, StaffPositionSchema } from "../roles.ts";
 import { ClubVoiceSchema } from "../structure.ts";
 
@@ -22,6 +23,8 @@ export const ActorSchema = z.discriminatedUnion("kind", [
       .nullable(),
     /** Quien de verdad tiene la sesión puede elegir a quién mirar. */
     canViewAs: z.boolean(),
+    /** Qué parte del club ve (Bloque 19): todo, o sus secciones, equipos y deportistas. */
+    scope: AccessScopeSummarySchema,
   }),
   z.object({
     kind: z.literal("platform_support"),
@@ -84,6 +87,10 @@ export const MemberSchema = z.object({
   position: StaffPositionSchema.nullable(),
   /** Equipos de la temporada actual en los que está como cuerpo técnico. */
   teams: z.array(z.object({ teamId: z.string(), teamName: z.string() })),
+  /** Secciones a su cargo (Bloque 19): las que coordina o las que le asignó la administración. */
+  sections: z.array(z.object({ sectionId: z.string(), sectionName: z.string() })),
+  /** Áreas que la administración le ha excluido a esta persona en concreto. */
+  excludedAreas: z.array(AccessAreaSchema),
   memberSince: z.string(),
 });
 export const MembersResponseSchema = z.object({ members: z.array(MemberSchema) });

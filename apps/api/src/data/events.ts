@@ -12,7 +12,21 @@ import type {
   HomeAway,
   TeamScheduleSlot,
 } from "@sportsmanager/shared";
-import { and, asc, count, eq, gt, gte, inArray, lt, ne, notInArray, or, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  eq,
+  gt,
+  gte,
+  inArray,
+  isNull,
+  lt,
+  ne,
+  notInArray,
+  or,
+  sql,
+} from "drizzle-orm";
 import { isUniqueViolation } from "./db.ts";
 import type { OrgScope } from "./scope.ts";
 
@@ -45,6 +59,11 @@ export interface EventFilter {
   facilityId?: string | undefined;
   /** Solo estos equipos (agenda propia del cuerpo técnico o de una familia). */
   teamIds?: string[] | undefined;
+  /**
+   * Ámbito restringido (Bloque 19): los eventos de estos equipos, los de estas secciones sin
+   * equipo y los del club entero sin sección ni equipo (una reunión general, una reserva).
+   */
+  visible?: { teamIds: string[]; sectionIds: string[] } | undefined;
 }
 
 export interface FacilityRecord {
@@ -262,12 +281,8 @@ export function eventsRepo(db: () => Database) {
     return rows.map((row) => toRecord(row, attendance.get(row.id) ?? null));
   }
 
-  function conditions(scope: OrgScope, from: Date, to: Date, filter: EventFilter) {
-    const conds = [
-      eq(schema.events.organizationId, scope.organizationId),
-      lt(schema.events.startsAt, to),
-      gt(schema.events.endsAt, from),
-    ];
+  function filterConditions(filter: EventFilter) {
+    const conds = [];
     if (filter.sectionId) conds.push(eq(schema.events.sectionId, filter.sectionId));
     if (filter.teamId) conds.push(eq(schema.events.teamId, filter.teamId));
     if (filter.facilityId) conds.push(eq(schema.events.facilityId, filter.facilityId));
@@ -276,7 +291,39 @@ export function eventsRepo(db: () => Database) {
         filter.teamIds.length > 0 ? inArray(schema.events.teamId, filter.teamIds) : sql`false`,
       );
     }
-    return and(...conds);
+    if (filter.visible) {
+      const { teamIds, sectionIds } = filter.visible;
+      conds.push(
+        or(
+          teamIds.length > 0 ? inArray(schema.events.teamId, teamIds) : sql`false`,
+          and(
+            isNull(schema.events.teamId),
+            or(
+              isNull(schema.events.sectionId),
+              sectionIds.length > 0 ? inArray(schema.events.sectionId, sectionIds) : sql`false`,
+            ),
+          ),
+        )!,
+      );
+    }
+    return conds;
+  }
+
+  function conditions(scope: OrgScope, from: Date, to: Date, filter: EventFilter) {
+    return and(
+      eq(schema.events.organizationId, scope.organizationId),
+      lt(schema.events.startsAt, to),
+      gt(schema.events.endsAt, from),
+      ...filterConditions(filter),
+    );
+  }
+
+  /** Si un evento cae dentro de un filtro de ámbito (Bloque 19). */
+  function isVisible(event: EventRecord, visible: EventFilter["visible"]): boolean {
+    if (!visible) return true;
+    if (event.team) return visible.teamIds.includes(event.team.id);
+    if (event.section) return visible.sectionIds.includes(event.section.id);
+    return true;
   }
 
   async function byId(scope: OrgScope, id: string): Promise<EventRecord | null> {
@@ -352,6 +399,7 @@ export function eventsRepo(db: () => Database) {
 
   return {
     byId,
+    isVisible,
 
     /** Eventos que tocan el rango [from, to), por orden de inicio. */
     async listBetween(
@@ -366,29 +414,32 @@ export function eventsRepo(db: () => Database) {
       return toRecords(scope, rows);
     },
 
-    /** Los eventos de hoy del club o, con `teamIds`, solo los de esos equipos (lo propio). */
+    /** Los eventos de hoy del club o, con un filtro, solo los de lo propio (equipos o ámbito). */
     async today(
       scope: OrgScope,
       timezone: string,
       now = new Date(),
-      teamIds?: string[],
+      filter: EventFilter = {},
     ): Promise<EventRecord[]> {
       const { from, to } = dayRange(timezone, now);
       const rows = await query()
-        .where(conditions(scope, from, to, teamIds ? { teamIds } : {}))
+        .where(conditions(scope, from, to, filter))
         .orderBy(asc(schema.events.startsAt), asc(schema.events.title));
       return toRecords(scope, rows);
     },
 
-    /** El evento en curso o el siguiente del club o, con `teamIds`, de esos equipos. */
-    async next(scope: OrgScope, now = new Date(), teamIds?: string[]): Promise<EventRecord | null> {
-      if (teamIds && teamIds.length === 0) return null;
+    /** El evento en curso o el siguiente del club o, con un filtro, de lo propio. */
+    async next(
+      scope: OrgScope,
+      now = new Date(),
+      filter: EventFilter = {},
+    ): Promise<EventRecord | null> {
       const rows = await query()
         .where(
           and(
             eq(schema.events.organizationId, scope.organizationId),
             gt(schema.events.endsAt, now),
-            ...(teamIds ? [inArray(schema.events.teamId, teamIds)] : []),
+            ...filterConditions(filter),
           ),
         )
         .orderBy(asc(schema.events.startsAt))
@@ -718,7 +769,10 @@ export function facilitiesRepo(db: () => Database) {
     timezone: string,
     now = new Date(),
     onlyId: string | null = null,
+    /** Ámbito restringido (Bloque 19): solo las instalaciones que usan los equipos de quien pregunta. */
+    onlyIds: string[] | null = null,
   ): Promise<FacilityRecord[]> {
+    if (onlyIds && onlyIds.length === 0) return [];
     const rows = await db()
       .select({
         id: schema.facilities.id,
@@ -734,6 +788,7 @@ export function facilitiesRepo(db: () => Database) {
         and(
           eq(schema.facilities.organizationId, scope.organizationId),
           onlyId ? eq(schema.facilities.id, onlyId) : undefined,
+          onlyIds ? inArray(schema.facilities.id, onlyIds) : undefined,
         ),
       )
       .orderBy(asc(schema.facilities.sortOrder), asc(schema.facilities.name));
@@ -875,7 +930,11 @@ export function facilitiesRepo(db: () => Database) {
     },
 
     /** Instalaciones activas y cuántas no tienen franjas de apertura (alerta del inicio). */
-    async counts(scope: OrgScope): Promise<{ total: number; withoutHours: number }> {
+    async counts(
+      scope: OrgScope,
+      onlyIds: string[] | null = null,
+    ): Promise<{ total: number; withoutHours: number }> {
+      if (onlyIds && onlyIds.length === 0) return { total: 0, withoutHours: 0 };
       const active = await db()
         .select({ id: schema.facilities.id })
         .from(schema.facilities)
@@ -883,6 +942,7 @@ export function facilitiesRepo(db: () => Database) {
           and(
             eq(schema.facilities.organizationId, scope.organizationId),
             eq(schema.facilities.status, "active"),
+            onlyIds ? inArray(schema.facilities.id, onlyIds) : undefined,
           ),
         );
       if (active.length === 0) return { total: 0, withoutHours: 0 };
