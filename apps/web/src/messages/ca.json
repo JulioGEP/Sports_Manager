@@ -1282,7 +1282,7 @@
     "title": "Reptes",
     "description": "Reptes per punts: proves, registres de les famílies i validació del club.",
     "new": "Nou repte",
-    "familiesNote": "Les famílies registren l'activitat dels seus jugadors i veuen només els seus punts. La participació per jugador és només per al personal.",
+    "familiesNote": "Cada repte és d'una secció o d'un equip. Les famílies registren l'activitat dels seus jugadors i veuen només els seus punts. La participació per jugador és només per al personal.",
     "empty": "Encara no hi ha reptes.",
     "emptyHint": "Crea el primer amb el catàleg d'exemple i activa'l quan estigui a punt.",
     "from": "des del {date}",
@@ -1321,7 +1321,7 @@
     "maxPoints": "topall {points}",
     "sheet": {
       "title": "Nou repte",
-      "description": "Un període amb un catàleg de proves. Les famílies registren, el club valida.",
+      "description": "Un període amb un catàleg de proves, per a tota una secció o per a un sol equip. Les famílies registren, el club valida.",
       "submit": "Crear repte",
       "name": "Nom",
       "nameHint": "Per exemple, Repte d'estiu 2027.",
@@ -1341,7 +1341,23 @@
       "pointsOrder": "L'objectiu no pot ser menor que el mínim.",
       "created": "Repte {name} creat.",
       "editTitle": "Editar {name}",
-      "saved": "Repte desat."
+      "saved": "Repte desat.",
+      "scopeFixed": "La secció i l'equip del repte ja no canvien: el repte està en marxa."
+    },
+    "scope": {
+      "section": "Secció",
+      "kind": "Abast",
+      "kindHint": "Tota la secció, o un sol equip amb el seu propi repte.",
+      "wholeSection": "Tota la secció",
+      "wholeSectionShort": "tota la secció",
+      "oneTeam": "Un equip",
+      "team": "Equip",
+      "noTeams": "Aquesta secció no té equips aquesta temporada.",
+      "ownHint": "Només pots crear reptes per als teus equips.",
+      "noOwnTeams": "No portes cap equip aquesta temporada, així que no pots crear reptes.",
+      "noSections": "Crea abans una secció: els reptes són d'una secció o d'un equip.",
+      "filter": "Secció",
+      "filterAll": "Totes les seccions"
     }
   },
   "familyChallenge": {
@@ -1351,7 +1367,7 @@
     "noPlayersHint": "Demana a qui administra el club que et vinculi des de la fitxa del jugador.",
     "playerTabs": "Jugadors de la família",
     "noChallenge": "Ara mateix no hi ha cap repte actiu.",
-    "noChallengeHint": "Quan el club l'activi, el veuràs aquí.",
+    "noChallengeHint": "Quan el club n'activi un per a la seva secció o el seu equip, el veuràs aquí.",
     "register": "Registrar activitat",
     "target": "objectiu {target}",
     "progressLabel": "{points} de {target} punts del repte",
@@ -1383,7 +1399,8 @@
       "noteHint": "Opcional: un vídeo, una foto o un comentari.",
       "capHint": "Aquesta prova té un topall de {points} punts en tot el repte.",
       "saved": "Activitat registrada. El club la validarà."
-    }
+    },
+    "challengeTabs": "Reptes de {name}"
   },
   "challenge": {
     "back": "Reptes",
