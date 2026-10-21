@@ -272,11 +272,15 @@ Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negoci
 
 ![Inicio de la entrenadora](escritorio-48b-entrenadora-inicio.png)
 
-## Reto por puntos (`/demo/challenges`, Bloque 13)
+## Reto por puntos (`/demo/challenges`, Bloque 13; ámbito por sección o equipo, ADR 0032)
 
-### Retos del club
+### Retos del club: cada uno de una sección entera o de un solo equipo
 
 ![Retos](escritorio-70-retos.png)
+
+### Nuevo reto (hoja): sección y alcance, toda la sección o un solo equipo
+
+![Nuevo reto](escritorio-70b-reto-nuevo.png)
 
 ### Un reto: catálogo de pruebas
 
@@ -294,7 +298,7 @@ Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negoci
 
 ![Participación](escritorio-73-reto-participacion.png)
 
-### El reto visto por la familia: solo los puntos de los suyos
+### Los retos vistos por la familia: los de la sección y los del equipo de cada jugador, solo con sus puntos
 
 ![Reto de la familia](escritorio-74-familia-reto.png)
 
