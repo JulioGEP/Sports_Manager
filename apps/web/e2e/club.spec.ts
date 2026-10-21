@@ -43,6 +43,8 @@ test.describe("espacio del club", () => {
 
   test("ajustes: general, marca y logo", async ({ page }, info) => {
     // En móvil la barra inferior admite cinco destinos: los ajustes viven en el menú de persona.
+    // La navegación se pinta cuando llega la sesión: se espera a un destino presente en ambas barras.
+    await expect(page.getByRole("link", { name: "Miembros" }).first()).toBeVisible();
     const settingsLink = page.getByRole("link", { name: "Ajustes" }).first();
     if (await settingsLink.isVisible()) {
       await settingsLink.click();
