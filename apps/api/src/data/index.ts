@@ -22,6 +22,7 @@ import {
   logosRepo,
   type BlobStore,
 } from "./logos.ts";
+import { matchesRepo } from "./matches.ts";
 import { membershipsRepo } from "./memberships.ts";
 import { organizationsRepo } from "./organizations.ts";
 import { clubMembersRepo, memberTypesRepo, peopleRepo } from "./people.ts";
@@ -84,6 +85,13 @@ export type {
   StandingRecord,
   SubmissionRecord,
 } from "./challenges.ts";
+export type {
+  MatchActionTypeRecord,
+  MatchEventRecord,
+  MatchRecord,
+  MatchSquadRecord,
+  SectionMatchConfigRecord,
+} from "./matches.ts";
 export type {
   DevelopmentPlanRecord,
   PlayerEventDetails,
@@ -178,6 +186,7 @@ export function createDataLayer(options: DataLayerOptions) {
     attendance: attendanceRepo(db),
     fees: feesRepo(db),
     challenges: challengesRepo(db),
+    matches: matchesRepo(db),
     logos: logosRepo(
       db,
       options.logoStore ??

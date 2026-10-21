@@ -10,6 +10,7 @@ import { createEventRoutes } from "./routes/events.ts";
 import { createFeeRoutes } from "./routes/fees.ts";
 import { createHealthRoutes } from "./routes/health.ts";
 import { createInvitationRoutes } from "./routes/invitations.ts";
+import { createMatchRoutes } from "./routes/matches.ts";
 import { createMeRoutes } from "./routes/me.ts";
 import { createOrgRoutes } from "./routes/org.ts";
 import { createPeopleRoutes } from "./routes/people.ts";
@@ -26,7 +27,7 @@ export interface AppOptions {
   data?: DataLayer;
 }
 
-export const API_VERSION = "0.10.0";
+export const API_VERSION = "0.11.0";
 
 export function createApp(options: AppOptions = {}) {
   const config = options.config ?? loadConfig();
@@ -73,6 +74,7 @@ export function createApp(options: AppOptions = {}) {
   app.route("/", createEventRoutes(config, data));
   app.route("/", createFeeRoutes(config, data));
   app.route("/", createChallengeRoutes(config, data));
+  app.route("/", createMatchRoutes(config, data));
   app.route("/", createPlatformRoutes(config, data));
   app.route("/", createPlatformSetupRoutes(config, data));
 

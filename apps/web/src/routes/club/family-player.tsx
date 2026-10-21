@@ -17,6 +17,7 @@ import { clubPaths, useReadyClub } from "@/lib/club";
 import { useDates } from "@/lib/dates";
 import { shrinkImage } from "@/lib/images";
 import { useT } from "@/lib/intl";
+import { PlayerMatchesCard } from "@/components/player-matches";
 import {
   Alert,
   Avatar,
@@ -270,6 +271,9 @@ export function FamilyPlayerPage() {
             <EmptyState icon={<Icon.UsersThree weight="duotone" />} title={tf("noTeam")} />
           )}
         </Card>
+
+        {/* Partidos (Bloque 20): el resultado del equipo y la línea de este jugador, nunca la de otros. */}
+        <PlayerMatchesCard playerId={id} family />
 
         {/* Retos: los de su sección y los de su equipo (ADR 0032). Solo sus puntos, nunca los de otros. */}
         {challenges.length === 0 ? (

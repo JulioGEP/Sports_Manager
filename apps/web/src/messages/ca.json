@@ -938,6 +938,15 @@
       "submit": "Desar horari",
       "saved": "Horari desat.",
       "savedGenerated": "Horari desat. {count, plural, =0 {No calia generar res} one {# sessió generada} other {# sessions generades}}."
+    },
+    "matches": {
+      "title": "Partits",
+      "description": "Registre en directe des de la banda i estadístiques de cada partit.",
+      "all": "Veure'ls tots",
+      "new": "Nou partit",
+      "empty": "Encara no hi ha partits registrats.",
+      "live": "En directe",
+      "scheduled": "Sense començar"
     }
   },
   "players": {
@@ -1790,7 +1799,8 @@
         "submit": "Crear grup"
       }
     },
-    "tabChallenges": "Reptes"
+    "tabChallenges": "Reptes",
+    "matchConfig": "Partit en directe"
   },
   "sectionKinds": {
     "competition": "Competició",
@@ -2297,5 +2307,402 @@
       "checkoutSuccess": "Pagament rebut. Pot trigar uns segons a aparèixer com a pagat.",
       "checkoutCancel": "Pagament cancel·lat. Pots tornar-ho a provar quan vulguis."
     }
+  },
+  "matches": {
+    "backToTeam": "Equip",
+    "title": "Partits",
+    "description": "Cada partit es registra en directe des de la banda: accions, canvis i cronòmetre.",
+    "history": "Històric i acumulats",
+    "new": "Nou partit",
+    "liveNow": "{count, plural, one {Hi ha un partit en joc} other {Hi ha # partits en joc}}",
+    "openLive": "Seguir contra {opponent}",
+    "list": "Tots els partits",
+    "listDescription": "{count, plural, =0 {Cap encara} one {# partit} other {# partits}}",
+    "empty": "Encara no hi ha partits.",
+    "emptyHint": "Crea'n un i registra'l en directe des de la banda.",
+    "table": {
+      "date": "Data",
+      "opponent": "Partit",
+      "result": "Resultat",
+      "status": "Estat",
+      "events": "Registres"
+    },
+    "notPlayed": "–",
+    "won": "Victòria",
+    "lost": "Derrota",
+    "drawn": "Empat",
+    "home": "A casa",
+    "away": "Fora",
+    "status": {
+      "scheduled": "Sense començar",
+      "live": "En joc",
+      "finished": "Acabat"
+    },
+    "continue": "Continuar",
+    "open": "Obrir",
+    "stats": "Estadístiques",
+    "remove": "Esborrar",
+    "removed": "Partit contra {opponent} esborrat.",
+    "confirmRemoveTitle": "Esborrar el partit contra {opponent}?",
+    "confirmRemoveBody": "S'esborren la convocatòria i tots els registres del partit. No es pot desfer.",
+    "newSheet": {
+      "title": "Nou partit de {team}",
+      "description": "Rival, data i si es juga a casa o fora. La resta es decideix a la banda.",
+      "created": "Partit contra {opponent} creat.",
+      "fromAgenda": "Partit de l'agenda",
+      "fromAgendaHint": "Si el partit ja és a l'agenda, tria'l i s'omple sol.",
+      "noEvent": "Sense enllaçar amb l'agenda",
+      "opponent": "Rival",
+      "homeAway": "Casa o fora",
+      "date": "Data",
+      "squadHint": "La plantilla de l'equip entra com a convocatòria. El quintet inicial es tria en començar.",
+      "submit": "Crear partit"
+    }
+  },
+  "match": {
+    "periods": {
+      "half1": "1a part",
+      "half2": "2a part",
+      "quarter": "{n}r quart",
+      "third": "{n}r terç",
+      "generic": "Període {n}"
+    },
+    "back": "Partits de {team}",
+    "undo": "Desfer",
+    "squad": "Convocatòria",
+    "settings": "Ajustos",
+    "stats": "Estadístiques",
+    "scoreboard": "Marcador i cronòmetre",
+    "fouls": "{count, plural, one {# falta} other {# faltes}}",
+    "pause": "Aturar el cronòmetre",
+    "play": "Posar en marxa el cronòmetre",
+    "status": {
+      "scheduled": "Sense començar",
+      "live": "En joc",
+      "finished": "Acabat"
+    },
+    "running": "En marxa",
+    "paused": "Aturat",
+    "home": "A casa",
+    "away": "Fora",
+    "start": "Començar el partit",
+    "endPeriod": "Acabar {period}",
+    "startPeriod": "Començar {period}",
+    "finish": "Acabar el partit",
+    "reopen": "Reobrir",
+    "lineupNeeded": "{count} de {total} a pista: tria el quintet inicial a Convocatòria.",
+    "readOnly": "Veus el partit sense poder registrar: només el cos tècnic de l'equip o l'administració.",
+    "court": "Pista",
+    "onCourt": "A pista · {count}/{total}",
+    "courtHint": "Toca un jugador per registrar; toca'n un altre de la pista per intercanviar posicions; toca'n un de la banqueta per fer el canvi.",
+    "formation": "Sistema",
+    "attackDirection": "Canviar la direcció d'atac",
+    "attacks": "ataca",
+    "emptySlot": "Lloc lliure",
+    "keeper": "Porter",
+    "trayHint": "Un toc registra l'acció",
+    "more": "Més accions",
+    "benchSelected": "{name} està a punt per entrar: toca qui surt de la pista.",
+    "tapPlayer": "Toca un jugador",
+    "tapPlayerHint": "Registra una acció, intercanvia posicions o fes un canvi amb la banqueta.",
+    "bench": "Banqueta",
+    "benchHint": "Dos tocs = canvi",
+    "benchEmpty": "Ningú a la banqueta.",
+    "sentOff": "expulsat",
+    "opponentActions": "Rival",
+    "teamActions": "Equip",
+    "feed": "Últimes accions",
+    "feedEmpty": "Encara no hi ha res registrat.",
+    "feedSub": "Entra {in} per {out}",
+    "feedPeriodStart": "Comença la {period}",
+    "feedPeriodEnd": "Acaba la {period}",
+    "feedLineup": "Quintet inicial",
+    "zone": {
+      "description": "Toca la zona del mig camp d'atac des d'on s'ha finalitzat. La porteria és a dalt.",
+      "goal": "Porteria",
+      "skip": "Registrar sense zona"
+    },
+    "moreDescription": "Tot el catàleg de la secció. El configura el club a la secció.",
+    "started": "Partit en marxa.",
+    "periodEnded": "{period} acabada.",
+    "finished": "Partit acabat. Les estadístiques ja són a punt.",
+    "reopened": "Partit reobert.",
+    "undone": "Última acció desfeta.",
+    "confirmFinishTitle": "Acabar el partit amb {score}?",
+    "confirmFinishBody": "Es tanca el registre i es calculen les estadístiques. Podràs reobrir-lo si falta res.",
+    "lineup": {
+      "title": "Convocatòria i quintet inicial",
+      "description": "Toca qui surt d'inici ({count} a pista). Marca el porter i afegeix qui falti.",
+      "counter": "{count} de {total} a pista",
+      "submit": "Desar convocatòria",
+      "keeperNeeded": "Cal exactament un porter a pista.",
+      "starter": "Surt d'inici",
+      "benchPlayer": "Banqueta",
+      "keeper": "Porter",
+      "notCalled": "Sense convocar",
+      "saved": "Convocatòria desada."
+    },
+    "settingsSheet": {
+      "title": "Ajustos del partit",
+      "description": "{periods} períodes de {minutes} minuts, {players} a pista. Els períodes i minuts es canvien a la configuració de la secció.",
+      "opponent": "Rival",
+      "noFormation": "Sense sistema",
+      "toRight": "Cap a la dreta",
+      "toLeft": "Cap a l'esquerra",
+      "notes": "Notes del partit",
+      "saved": "Ajustos desats."
+    }
+  },
+  "matchStats": {
+    "back": "Partits de {team}",
+    "backToLive": "Tornar al partit",
+    "outcome": {
+      "won": "Victòria",
+      "lost": "Derrota",
+      "drawn": "Empat"
+    },
+    "scope": {
+      "label": "Període de les estadístiques",
+      "all": "Tot el partit"
+    },
+    "tiles": {
+      "played": "Temps jugat",
+      "fouls": "Faltes · pròpies i del rival",
+      "cards": "Targetes pròpies",
+      "events": "Registres"
+    },
+    "comparison": {
+      "title": "Comparativa amb el rival",
+      "description": "Cada acció pròpia davant el seu mirall del rival.",
+      "empty": "El catàleg no té accions del rival enllaçades amb les pròpies.",
+      "summary": "Comparativa amb el rival: {rows}"
+    },
+    "zones": {
+      "title": "Mapa de finalització",
+      "description": "Des de quina zona del mig camp d'atac s'ha finalitzat. Format: cops (gols).",
+      "allActions": "Totes",
+      "pick": "Acció del mapa",
+      "summary": "Nou zones del mig camp d'atac amb les finalitzacions des de cadascuna",
+      "empty": "Sense finalitzacions amb zona.",
+      "legend": "La porteria queda a dalt. Les zones es desen ja normalitzades per la direcció d'atac."
+    },
+    "work": {
+      "title": "Treball de l'equip per períodes",
+      "description": "Quants cops s'ha registrat cada acció pròpia a cada període.",
+      "positive": "Favorables",
+      "negative": "Pèrdues i sancions",
+      "summary": "Accions favorables i pèrdues per període"
+    },
+    "players": {
+      "title": "Jugadors de pista",
+      "description": "Minuts, marcador a pista i accions. Toca una columna per ordenar; tria quines accions veure."
+    },
+    "keepers": {
+      "title": "Porters",
+      "description": "Aturades, gols encaixats i percentatge mentre eren a pista."
+    },
+    "timeline": {
+      "title": "Tots els registres",
+      "description": "{count, plural, one {# registre} other {# registres}} en ordre."
+    },
+    "note": "Els minuts, el marcador a pista i el +/- només compten mentre el jugador participa. La valoració suma el pes de cada acció (la millor d'aquest partit: {rating}).",
+    "table": {
+      "columns": "Accions visibles",
+      "player": "Jugador",
+      "matches": "PJ",
+      "starts": "Tit.",
+      "minutes": "Min",
+      "saves": "Aturades",
+      "scoreFor": "GF",
+      "conceded": "Enc.",
+      "scoreAgainst": "GC",
+      "savePct": "% atur.",
+      "rating": "Valoració"
+    },
+    "export": {
+      "button": "Exportar a Excel",
+      "summary": "Resum",
+      "match": "Partit",
+      "date": "Data",
+      "opponent": "Rival",
+      "metric": "Mètrica",
+      "period": "Període",
+      "ownScore": "Marcador propi",
+      "opponentScore": "Marcador rival",
+      "ownFouls": "Faltes pròpies",
+      "opponentFouls": "Faltes rival",
+      "players": "Jugadors",
+      "zones": "Zones",
+      "zone": "Zona",
+      "events": "Registres",
+      "clock": "Crono",
+      "kind": "Tipus",
+      "action": "Acció"
+    }
+  },
+  "matchHistory": {
+    "back": "Partits",
+    "title": "Històric i acumulats",
+    "description": "Tria els partits i els acumulats es recalculen al moment.",
+    "record": "Balanç",
+    "opponents": "Rivals",
+    "selection": {
+      "title": "Partits a la consulta",
+      "description": "{count} de {total} seleccionats",
+      "finished": "Acabats",
+      "all": "Tots",
+      "status": "Estat dels partits",
+      "pickAll": "Marcar-los tots",
+      "pickNone": "Treure'ls tots",
+      "empty": "No hi ha partits per acumular.",
+      "open": "Veure"
+    },
+    "tiles": {
+      "matches": "Partits",
+      "record": "Guanyats · empatats · perduts",
+      "score": "Punts a favor · en contra"
+    },
+    "trend": {
+      "title": "Evolució per partit",
+      "description": "Marcador propi i del rival a cada partit triat.",
+      "summary": "Marcador per partit"
+    },
+    "comparisonDescription": "Suma de tots els partits triats.",
+    "zonesDescription": "Finalitzacions acumulades per zona. Format: cops (gols).",
+    "cross": {
+      "title": "Creuar mètriques",
+      "description": "Cada jugador és un punt: tria què posar a cada eix.",
+      "x": "Eix horitzontal",
+      "y": "Eix vertical",
+      "summary": "Jugadors situats per {x} i {y}"
+    },
+    "players": {
+      "title": "Jugadors acumulats",
+      "description": "Partits, titularitats, minuts i accions sumades."
+    },
+    "keepersDescription": "Aturades i gols encaixats sumats.",
+    "note": "La valoració acumulada suma el pes de cada acció a tots els partits triats (la millor: {best}).",
+    "export": {
+      "summary": "Resum",
+      "team": "Equip",
+      "season": "Temporada",
+      "matches": "Partits",
+      "players": "Jugadors",
+      "zones": "Zones",
+      "perMatch": "Per partit"
+    }
+  },
+  "matchConfig": {
+    "back": "Secció {section}",
+    "title": "Partit en directe",
+    "description": "Com es juga en aquesta secció i què es pot registrar. L'esport proposa; el club decideix.",
+    "reset": "Tornar al que proposa l'esport",
+    "resetDone": "Configuració restablerta a la de l'esport.",
+    "confirmResetTitle": "Tornar a la configuració de l'esport?",
+    "confirmResetBody": "Els ajustos tornen als de l'esport i les accions que no siguin al seu catàleg queden arxivades. Els partits ja registrats no canvien.",
+    "scopes": {
+      "player": "Jugador",
+      "team": "Equip",
+      "opponent": "Rival"
+    },
+    "categories": {
+      "positive": "Favorable",
+      "negative": "Pèrdua o sanció",
+      "neutral": "Neutra"
+    },
+    "flags": {
+      "ownScore": "+{n} al marcador",
+      "opponentScore": "+{n} al rival",
+      "foul": "compta falta",
+      "card": {
+        "yellow": "groga",
+        "red": "vermella"
+      },
+      "zone": "demana zona",
+      "keeper": "només porter",
+      "quick": "safata ràpida"
+    },
+    "actions": {
+      "title": "Catàleg d'accions",
+      "description": "El que es pot registrar d'un toc. Sacades, temps morts, el que calgui.",
+      "new": "Nova acció",
+      "empty": "Encara no hi ha accions.",
+      "table": {
+        "name": "Acció",
+        "scope": "A qui",
+        "category": "Tipus",
+        "flags": "Efectes",
+        "weight": "Pes"
+      },
+      "noFlags": "sense efectes",
+      "archived": "Arxivades",
+      "restore": "Recuperar",
+      "removed": "Acció {name} treta.",
+      "restored": "Acció {name} recuperada.",
+      "confirmRemoveTitle": "Treure l'acció {name}?",
+      "confirmRemoveBody": "Si ja s'ha fet servir en algun partit, s'arxiva per conservar l'historial; si no, s'esborra."
+    },
+    "settings": {
+      "title": "Com es juga",
+      "customized": "Ajustos propis de la secció sobre els de l'esport.",
+      "fromSport": "Ajustos que proposa l'esport. Canvia'ls si en aquesta secció es juga diferent.",
+      "saved": "Ajustos desats.",
+      "periods": "Períodes",
+      "periodMinutes": "Minuts per període",
+      "playersOnCourt": "Jugadors a pista",
+      "foulLimit": "Límit de faltes per període",
+      "foulLimitHint": "0 si no es compten.",
+      "goalkeeper": "Hi ha porter",
+      "yes": "Sí",
+      "no": "No",
+      "clock": "Cronòmetre",
+      "clock_up": "Compta cap amunt",
+      "clock_down": "Compte enrere",
+      "zones": "Mapa de zones",
+      "zonesHint": "Demanar la zona a les accions que la tinguin.",
+      "formations": "Sistemes de joc",
+      "formationsHint": "Separats per comes, sense comptar el porter: 1-2-1, 2-2."
+    },
+    "actionSheet": {
+      "editTitle": "Editar {name}",
+      "newTitle": "Nova acció",
+      "description": "A qui s'aplica, què suma i quant pesa a la valoració.",
+      "submit": "Crear acció",
+      "name": "Nom",
+      "nameHint": "La clau de les estadístiques es genera del nom.",
+      "codeHint": "Clau: {code}. No canvia en reanomenar.",
+      "scope": "A qui s'aplica",
+      "category": "Tipus",
+      "opponentScore": "Punts al marcador del rival",
+      "ownScore": "Punts al marcador propi",
+      "scoreHint": "Gol: 1. Triple: 3. Sense marcador: 0.",
+      "weight": "Pes a la valoració",
+      "weightHint": "Positiu suma, negatiu resta. De -20 a 20.",
+      "card": "Targeta",
+      "noCard": "Sense targeta",
+      "mirrorOf": "Mirall de l'acció pròpia",
+      "mirrorHint": "Per a la comparativa: gol del rival és mirall de gol.",
+      "noMirror": "Sense mirall",
+      "countsFoul": "Compta com a falta d'equip",
+      "quick": "A la safata ràpida",
+      "requiresZone": "Demana la zona de la pista",
+      "keeperOnly": "Només la fa el porter",
+      "saved": "Acció desada.",
+      "created": "Acció {name} creada.",
+      "codeTaken": "Ja hi ha una acció amb aquesta clau a la secció."
+    }
+  },
+  "playerMatches": {
+    "title": "Partits",
+    "description": "Els seus totals i la seva línia a cada partit registrat.",
+    "familyDescription": "El resultat de l'equip i el que va fer a cada partit. Només el seu.",
+    "error": "No s'han pogut carregar els partits.",
+    "empty": "Encara no hi ha partits registrats.",
+    "matches": "Partits",
+    "starts": "{count, plural, one {# d'inici} other {# d'inici}}",
+    "minutes": "Minuts",
+    "rating": "Valoració",
+    "starter": "titular",
+    "bench": "banqueta"
   }
 }

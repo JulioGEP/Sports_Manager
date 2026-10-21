@@ -129,9 +129,18 @@ export const AREA_PERMISSIONS: Record<
   AccessArea,
   { reads: readonly Permission[]; all: readonly Permission[] }
 > = {
+  /** Secciones, equipos y, con ellos, los partidos en directo (Bloque 20). */
   sections: {
-    reads: ["org.structure.read"],
-    all: ["org.structure.read", "org.structure.write", "org.roster.write_own"],
+    reads: ["org.structure.read", "org.matches.read"],
+    all: [
+      "org.structure.read",
+      "org.structure.write",
+      "org.roster.write_own",
+      "org.matches.read",
+      "org.matches.write",
+      "org.matches.write_own",
+      "org.matches.configure",
+    ],
   },
   players: {
     reads: ["org.players.read"],

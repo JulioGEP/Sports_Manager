@@ -23,13 +23,18 @@ import { FamilyPlayerPage } from "@/routes/club/family-player";
 import { FeesPage } from "@/routes/club/fees";
 import { ClubHome } from "@/routes/club/home";
 import { InvitationPage } from "@/routes/club/invitation";
+import { MatchLivePage } from "@/routes/club/match-live";
+import { MatchStatsPage } from "@/routes/club/match-stats";
 import { PlayerPage } from "@/routes/club/player";
 import { PlayersPage } from "@/routes/club/players";
 import { SectionPage } from "@/routes/club/section";
+import { SectionMatchConfigPage } from "@/routes/club/section-match-config";
 import { SectionsPage } from "@/routes/club/sections";
 import { SettingsPage } from "@/routes/club/settings";
 import { StaffPage } from "@/routes/club/staff";
 import { TeamPage } from "@/routes/club/team";
+import { TeamMatchHistoryPage } from "@/routes/club/team-match-history";
+import { TeamMatchesPage } from "@/routes/club/team-matches";
 import { ClubsPage } from "@/routes/clubs";
 import { Landing } from "@/routes/landing";
 import { ToastProvider } from "@/ui";
@@ -82,9 +87,15 @@ export const router = createBrowserRouter([
       { index: true, element: <ClubHome /> },
       { path: "sections", element: <SectionsPage /> },
       { path: "sections/:id", element: <SectionPage /> },
+      { path: "sections/:id/match-config", element: <SectionMatchConfigPage /> },
       // Las secciones sustituyen a la lista de equipos (Bloque 14); la ficha de equipo sigue aquí.
       { path: "teams", element: <ClubRedirect to="/sections" /> },
       { path: "teams/:id", element: <TeamPage /> },
+      // Partido en directo (Bloque 20): partidos del equipo, histórico, consola y estadísticas.
+      { path: "teams/:id/matches", element: <TeamMatchesPage /> },
+      { path: "teams/:id/matches/history", element: <TeamMatchHistoryPage /> },
+      { path: "matches/:id", element: <MatchLivePage /> },
+      { path: "matches/:id/stats", element: <MatchStatsPage /> },
       { path: "players", element: <PlayersPage /> },
       { path: "players/:id", element: <PlayerPage /> },
       { path: "club-members", element: <ClubMembersPage /> },

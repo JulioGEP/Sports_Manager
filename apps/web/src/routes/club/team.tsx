@@ -1,6 +1,7 @@
 import {
   CategoriesResponseSchema,
   EligibleMembersResponseSchema,
+  MatchesResponseSchema,
   PlayersResponseSchema,
   TEAM_STAFF_ROLES,
   TeamDetailResponseSchema,
@@ -74,6 +75,13 @@ export function TeamPage() {
   });
   const [schedule, setSchedule] = useState(false);
   const reload = () => client.invalidateQueries({ queryKey: ["org", slug] });
+  /** Partidos del equipo (Bloque 20): los últimos y la entrada al partido en directo. */
+  const canSeeMatches = permissions.includes("org.matches.read");
+  const matches = useQuery({
+    queryKey: ["org", slug, "team", id, "matches"],
+    queryFn: () => apiFetch(`/api/org/teams/${id}/matches`, { schema: MatchesResponseSchema }),
+    enabled: canSeeMatches && detail.data?.team.section.kind === "competition",
+  });
 
   const [editing, setEditing] = useState(false);
   const [adding, setAdding] = useState(false);
@@ -275,6 +283,64 @@ export function TeamPage() {
               />
             )}
           </Card>
+
+          {/* Partido en directo (Bloque 20): registro en la banda y estadísticas. Solo en competición. */}
+          {canSeeMatches && !activity ? (
+            <Card
+              title={t("matches.title")}
+              description={t("matches.description")}
+              padded={false}
+              actions={
+                <>
+                  <ButtonLink
+                    to={paths.teamMatches(id)}
+                    variant="secondary"
+                    size="sm"
+                    action="open"
+                  >
+                    {t("matches.all")}
+                  </ButtonLink>
+                  {matches.data?.access.write ? (
+                    <ButtonLink to={`${paths.teamMatches(id)}?new=1`} size="sm" action="add">
+                      {t("matches.new")}
+                    </ButtonLink>
+                  ) : null}
+                </>
+              }
+            >
+              {!matches.data ? (
+                <div className="px-5 pb-5" aria-busy="true">
+                  <div className="h-12 animate-pulse rounded-field bg-raised" />
+                </div>
+              ) : matches.data.matches.length === 0 ? (
+                <EmptyState icon={<Icon.SportIcons.Balon />} title={t("matches.empty")} />
+              ) : (
+                <ul className="flex flex-col divide-y divide-line">
+                  {matches.data.matches.slice(0, 4).map((m) => (
+                    <li key={m.id} className="flex min-h-13 items-center gap-3 px-5 py-2">
+                      <span className="w-24 shrink-0 text-secondary text-muted">
+                        {dates.day(m.playedOn)}
+                      </span>
+                      <Link
+                        to={m.status === "finished" ? paths.matchStats(m.id) : paths.match(m.id)}
+                        className="min-w-0 flex-1 truncate font-medium text-ink"
+                      >
+                        {m.opponent}
+                      </Link>
+                      {m.status === "live" ? (
+                        <StatusChip kind="club">{t("matches.live")}</StatusChip>
+                      ) : m.status === "scheduled" ? (
+                        <StatusChip kind="info">{t("matches.scheduled")}</StatusChip>
+                      ) : null}
+                      <span className="font-mono text-body tabular text-ink">
+                        {m.status === "scheduled" ? "–" : `${m.ownScore}–${m.opponentScore}`}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Card>
+          ) : null}
 
           {/* El reto vive en la ficha del equipo (ADR 0032): el suyo, el de su sección y el histórico. */}
           {canSeeChallenges ? (
