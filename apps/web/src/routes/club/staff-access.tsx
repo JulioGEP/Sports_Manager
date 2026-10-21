@@ -14,7 +14,7 @@ import { useT } from "@/lib/intl";
 import { Alert, Button, Card, EmptyState, Icon, StatusChip, useToast } from "@/ui";
 
 /**
- * Qué ve cada rol (Bloque 19, ADR 0032): una matriz con un check por rol o cargo y área. Lo que
+ * Qué ve cada rol (Bloque 19, ADR 0033): una matriz con un check por rol o cargo y área. Lo que
  * se marca o desmarca respecto a lo de por defecto queda como regla del club; volver a lo de por
  * defecto la borra. El alcance (todo el club, sus secciones, sus equipos, los deportistas que
  * atiende) va con el cargo y se enseña, pero no se cambia aquí. Debajo, las exclusiones por persona.

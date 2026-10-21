@@ -7,8 +7,9 @@ import { createSeeder } from "../data/testing/seed.ts";
 
 /**
  * Bloque 13 (ADR 0030) contra una base real: personal con cargo, permisos por equipo, ficha para
- * la familia, reto por puntos con validación y aislamiento entre clubes. Si uno falla, la PR no
- * se mezcla.
+ * la familia, reto por puntos con validación y aislamiento entre clubes. Con ADR 0032, el reto
+ * tiene ámbito: de una sección entera o de un solo equipo, y la entrenadora gestiona solo los de
+ * sus equipos. Si uno falla, la PR no se mezcla.
  */
 const BASE = "sportsmanager.test";
 const hostOf = (slug: string) => `${slug}.${BASE}`;
@@ -82,6 +83,7 @@ describe("personal con cargo, permisos por equipo, familia y reto", () => {
   let otherPlayerId = "";
   let familyCookie = "";
   let challengeId = "";
+  let teamChallengeId = "";
   let taskId = "";
   let submissionId = "";
   const familyEmail = "familia-reto@club-a.test";
@@ -537,13 +539,52 @@ describe("personal con cargo, permisos por equipo, familia y reto", () => {
     ).toBe(403);
   });
 
-  it("el reto: catálogo, registro de la familia, validación por equipo y cierre con rastro", async () => {
-    // Crear con el catálogo de ejemplo y activar.
-    const created = await json<{ challenge: { id: string; tasksCount: number; status: string } }>(
+  it("el reto: ámbito por sección o equipo, catálogo, registro de la familia, validación por equipo y cierre con rastro", async () => {
+    // Un reto es de una sección: sin sección no se crea; con una sección y un equipo que no es de ella, tampoco.
+    expect(
+      (
+        await request("POST", "/api/org/challenges", A, {
+          cookie: as(adminA),
+          body: { name: "Sin sección", minPoints: 10, targetPoints: 30 },
+        })
+      ).status,
+    ).toBe(400);
+    const otherSection = await json<{ section: { id: string } }>(
+      await request("POST", "/api/org/sections", A, {
+        cookie: as(adminA),
+        body: { name: "Baloncesto", sportCode: "basketball" },
+      }),
+      201,
+    );
+    expect(
+      (
+        await request("POST", "/api/org/challenges", A, {
+          cookie: as(adminA),
+          body: {
+            name: "Equipo de otra sección",
+            sectionId: otherSection.section.id,
+            teamId,
+            minPoints: 10,
+            targetPoints: 30,
+          },
+        })
+      ).status,
+    ).toBe(400);
+
+    // La administración crea el reto de toda la sección con el catálogo de ejemplo y lo activa.
+    type Summary = {
+      id: string;
+      tasksCount: number;
+      status: string;
+      section: { id: string; name: string };
+      team: { id: string; name: string } | null;
+    };
+    const created = await json<{ challenge: Summary }>(
       await request("POST", "/api/org/challenges", A, {
         cookie: as(adminA),
         body: {
           name: "Reto de otoño",
+          sectionId,
           minPoints: 10,
           targetPoints: 30,
           withDefaultTasks: true,
@@ -553,22 +594,128 @@ describe("personal con cargo, permisos por equipo, familia y reto", () => {
       201,
     );
     challengeId = created.challenge.id;
-    expect(created.challenge).toMatchObject({ tasksCount: 10, status: "active" });
+    expect(created.challenge).toMatchObject({
+      tasksCount: 10,
+      status: "active",
+      section: { id: sectionId, name: "Fútbol sala" },
+      team: null,
+    });
     expect(
       (
         await request("POST", "/api/org/challenges", A, {
           cookie: as(adminA),
-          body: { name: "Mal", minPoints: 50, targetPoints: 10 },
+          body: { name: "Mal", sectionId, minPoints: 50, targetPoints: 10 },
         })
       ).status,
     ).toBe(400);
 
-    // La entrenadora gestiona el catálogo; la delegación no.
+    // La entrenadora no toca el reto de la sección; crea el de su equipo y solo el de su equipo.
+    expect(
+      (
+        await request("POST", `/api/org/challenges/${challengeId}/tasks`, A, {
+          cookie: as(coachA),
+          body: { name: "Intrusa", area: "habits", kind: "rating", pointsPerUnit: 1 },
+        })
+      ).status,
+    ).toBe(403);
+    for (const body of [
+      { name: "Toda la sección", sectionId },
+      { name: "El otro equipo", sectionId, teamId: otherTeamId },
+    ]) {
+      expect(
+        (
+          await request("POST", "/api/org/challenges", A, {
+            cookie: as(coachA),
+            body: { ...body, minPoints: 5, targetPoints: 20 },
+          })
+        ).status,
+      ).toBe(403);
+    }
+    const teamChallenge = await json<{ challenge: Summary }>(
+      await request("POST", "/api/org/challenges", A, {
+        cookie: as(coachA),
+        body: {
+          name: "Reto técnico del Alevín A",
+          sectionId,
+          teamId,
+          minPoints: 5,
+          targetPoints: 20,
+          status: "active",
+        },
+      }),
+      201,
+    );
+    teamChallengeId = teamChallenge.challenge.id;
+    expect(teamChallenge.challenge.team).toMatchObject({ id: teamId, name: "Alevín A" });
+    const teamTask = await json<{
+      tasks: { id: string; name: string }[];
+      access: { manage: boolean; review: boolean };
+    }>(
+      await request("POST", `/api/org/challenges/${teamChallengeId}/tasks`, A, {
+        cookie: as(coachA),
+        body: {
+          name: "Conducción en zigzag",
+          area: "technique",
+          kind: "sessions",
+          pointsPerUnit: 2,
+          maxPoints: 10,
+        },
+      }),
+      201,
+    );
+    expect(teamTask.access).toEqual({ manage: true, review: true });
+    const teamTaskId = teamTask.tasks.find((t) => t.name === "Conducción en zigzag")!.id;
+    // La lista dice hasta dónde llega cada uno; la ficha, qué puede hacer con ese reto.
+    const coachList = await json<{
+      challenges: { id: string }[];
+      manage: { scope: string; ownTeamIds: string[] };
+    }>(await request("GET", "/api/org/challenges", A, { cookie: as(coachA) }), 200);
+    expect(coachList.manage).toEqual({ scope: "own", ownTeamIds: [teamId] });
+    expect(coachList.challenges.map((c) => c.id)).toEqual([challengeId, teamChallengeId]);
+    const sectionDetail = await json<{ access: { manage: boolean } }>(
+      await request("GET", `/api/org/challenges/${challengeId}`, A, { cookie: as(coachA) }),
+      200,
+    );
+    expect(sectionDetail.access.manage).toBe(false);
+    const adminList = await json<{ manage: { scope: string } }>(
+      await request("GET", "/api/org/challenges", A, { cookie: as(adminA) }),
+      200,
+    );
+    expect(adminList.manage.scope).toBe("club");
+    // Para la otra entrenadora el reto del Alevín A no existe (Bloque 19: fuera de sus equipos);
+    // la delegación no gestiona ninguno.
+    expect(
+      (
+        await request("PATCH", `/api/org/challenges/${teamChallengeId}`, A, {
+          cookie: as(coachOtherA),
+          body: { name: "Mío" },
+        })
+      ).status,
+    ).toBe(404);
+    expect(
+      (
+        await request("POST", `/api/org/challenges/${challengeId}/tasks`, A, {
+          cookie: as(delegateA),
+          body: { name: "X", area: "habits", kind: "rating", pointsPerUnit: 1 },
+        })
+      ).status,
+    ).toBe(403);
+    // El ámbito solo cambia en borrador.
+    expect(
+      (
+        await request("PATCH", `/api/org/challenges/${teamChallengeId}`, A, {
+          cookie: as(adminA),
+          body: { teamId: null },
+        })
+      ).status,
+    ).toBe(409);
+
+    // La administración añade al reto de la sección la prueba con tope que usará la familia.
     const withTask = await json<{
       tasks: { id: string; name: string; maxPoints: number | null }[];
     }>(
       await request("POST", `/api/org/challenges/${challengeId}/tasks`, A, {
-        cookie: as(coachA),
+        cookie: as(adminA),
         body: {
           name: "Entrenamiento completo",
           area: "training",
@@ -579,58 +726,128 @@ describe("personal con cargo, permisos por equipo, familia y reto", () => {
       }),
       201,
     );
-    const task = withTask.tasks.find(
+    taskId = withTask.tasks.find(
       (t) => t.name === "Entrenamiento completo" && t.maxPoints === 6,
-    )!;
-    taskId = task.id;
-    expect(
-      (
-        await request("POST", `/api/org/challenges/${challengeId}/tasks`, A, {
-          cookie: as(delegateA),
-          body: { name: "X", area: "habits", kind: "rating", pointsPerUnit: 1 },
-        })
-      ).status,
-    ).toBe(403);
+    )!.id;
 
-    // La familia registra: los puntos respetan el tope de la prueba (6): 2 sesiones = 4, 3 más = 2.
+    // La familia ve, por jugador, los retos de su sección y de su equipo: el de la sección antes.
     type FamilyView = {
-      challenge: { id: string } | null;
-      totals: { approved: number; pending: number; byArea: { training: number } };
-      submissions: { id: string; points: number; status: string }[];
+      challenges: {
+        challenge: { id: string; team: { id: string } | null };
+        totals: { approved: number; pending: number; byArea: { training: number } };
+        submissions: { id: string; points: number; status: string }[];
+      }[];
     };
-    const firstEntry = await json<FamilyView>(
-      await request("POST", `/api/org/family/players/${playerId}/challenge/submissions`, A, {
+    const viewOf = (view: FamilyView, id: string) =>
+      view.challenges.find((v) => v.challenge.id === id)!;
+    const familyList = await json<FamilyView>(
+      await request("GET", `/api/org/family/players/${playerId}/challenges`, A, {
         cookie: familyCookie,
-        body: { taskId, quantity: 2, note: "Vídeo en la carpeta" },
       }),
-      201,
+      200,
+    );
+    expect(familyList.challenges.map((v) => v.challenge.id)).toEqual([
+      challengeId,
+      teamChallengeId,
+    ]);
+
+    // Registra en el reto de la sección: los puntos respetan el tope de la prueba (6): 2 sesiones = 4, 3 más = 2.
+    const familyPath = (challenge: string) =>
+      `/api/org/family/players/${playerId}/challenges/${challenge}/submissions`;
+    const firstEntry = viewOf(
+      await json<FamilyView>(
+        await request("POST", familyPath(challengeId), A, {
+          cookie: familyCookie,
+          body: { taskId, quantity: 2, note: "Vídeo en la carpeta" },
+        }),
+        201,
+      ),
+      challengeId,
     );
     expect(firstEntry.submissions[0]).toMatchObject({ points: 4, status: "submitted" });
     expect(firstEntry.totals).toMatchObject({ approved: 0, pending: 4 });
     submissionId = firstEntry.submissions[0]!.id;
-    const second = await json<FamilyView>(
-      await request("POST", `/api/org/family/players/${playerId}/challenge/submissions`, A, {
-        cookie: familyCookie,
-        body: { taskId, quantity: 3 },
-      }),
-      201,
+    const second = viewOf(
+      await json<FamilyView>(
+        await request("POST", familyPath(challengeId), A, {
+          cookie: familyCookie,
+          body: { taskId, quantity: 3 },
+        }),
+        201,
+      ),
+      challengeId,
     );
     expect(second.submissions[0]!.points).toBe(2);
     expect(second.totals.pending).toBe(6);
-    // Retira el segundo; no puede registrar por un jugador que no es suyo.
-    const withdrawn = await json<FamilyView>(
-      await request(
-        "DELETE",
-        `/api/org/family/players/${playerId}/challenge/submissions/${second.submissions[0]!.id}`,
-        A,
-        { cookie: familyCookie },
+    // Retira el segundo; una prueba del reto de la sección no vale en el del equipo.
+    const withdrawn = viewOf(
+      await json<FamilyView>(
+        await request("DELETE", `${familyPath(challengeId)}/${second.submissions[0]!.id}`, A, {
+          cookie: familyCookie,
+        }),
+        200,
       ),
-      200,
+      challengeId,
     );
     expect(withdrawn.submissions).toHaveLength(1);
     expect(
       (
-        await request("POST", `/api/org/family/players/${otherPlayerId}/challenge/submissions`, A, {
+        await request("POST", familyPath(teamChallengeId), A, {
+          cookie: familyCookie,
+          body: { taskId, quantity: 1 },
+        })
+      ).status,
+    ).toBe(400);
+    // Registra en el reto de su equipo; no puede registrar por un jugador que no es suyo.
+    const teamEntry = viewOf(
+      await json<FamilyView>(
+        await request("POST", familyPath(teamChallengeId), A, {
+          cookie: familyCookie,
+          body: { taskId: teamTaskId, quantity: 1 },
+        }),
+        201,
+      ),
+      teamChallengeId,
+    );
+    expect(teamEntry.totals.pending).toBe(2);
+    expect(
+      (
+        await request(
+          "POST",
+          `/api/org/family/players/${otherPlayerId}/challenges/${challengeId}/submissions`,
+          A,
+          {
+            cookie: familyCookie,
+            body: { taskId, quantity: 1 },
+          },
+        )
+      ).status,
+    ).toBe(404);
+    // Un reto de otro equipo no es de este jugador, aunque sea de su sección.
+    const otherTeamChallenge = await json<{ challenge: { id: string } }>(
+      await request("POST", "/api/org/challenges", A, {
+        cookie: as(adminA),
+        body: {
+          name: "Reto del Infantil A",
+          sectionId,
+          teamId: otherTeamId,
+          minPoints: 5,
+          targetPoints: 20,
+          status: "active",
+        },
+      }),
+      201,
+    );
+    const stillTwo = await json<FamilyView>(
+      await request("GET", `/api/org/family/players/${playerId}/challenges`, A, {
+        cookie: familyCookie,
+      }),
+      200,
+    );
+    expect(stillTwo.challenges.map((v) => v.challenge.id)).toEqual([challengeId, teamChallengeId]);
+    expect(
+      (
+        await request("POST", familyPath(otherTeamChallenge.challenge.id), A, {
           cookie: familyCookie,
           body: { taskId, quantity: 1 },
         })
@@ -697,14 +914,18 @@ describe("personal con cargo, permisos por equipo, familia y reto", () => {
       reviewedBy: { name: "Caro Coach" },
     });
 
-    // La familia ve sus puntos aprobados; la administración, la participación del club.
+    // La familia ve sus puntos aprobados; la administración, la participación de la sección.
     const family = await json<FamilyView>(
-      await request("GET", `/api/org/family/players/${playerId}/challenge`, A, {
+      await request("GET", `/api/org/family/players/${playerId}/challenges`, A, {
         cookie: familyCookie,
       }),
       200,
     );
-    expect(family.totals).toMatchObject({ approved: 4, pending: 0, byArea: { training: 4 } });
+    expect(viewOf(family, challengeId).totals).toMatchObject({
+      approved: 4,
+      pending: 0,
+      byArea: { training: 4 },
+    });
     const standings = await json<{
       standings: { player: { name: string }; totals: { approved: number }; reachedMin: boolean }[];
       scope: string;
@@ -728,7 +949,7 @@ describe("personal con cargo, permisos por equipo, familia y reto", () => {
     );
     expect(removed.tasks.find((t) => t.id === taskId)?.status).toBe("archived");
 
-    // Cerrar deja rastro en el timeline y no admite más registros.
+    // Cerrar deja rastro en el timeline y no admite más registros; el reto del equipo sigue.
     await json(
       await request("PATCH", `/api/org/challenges/${challengeId}`, A, {
         cookie: as(adminA),
@@ -745,12 +966,12 @@ describe("personal con cargo, permisos por equipo, familia y reto", () => {
       details: { challenge: "Reto de otoño", points: 4 },
     });
     const afterClose = await json<FamilyView>(
-      await request("GET", `/api/org/family/players/${playerId}/challenge`, A, {
+      await request("GET", `/api/org/family/players/${playerId}/challenges`, A, {
         cookie: familyCookie,
       }),
       200,
     );
-    expect(afterClose.challenge).toBeNull();
+    expect(afterClose.challenges.map((v) => v.challenge.id)).toEqual([teamChallengeId]);
     expect(
       (
         await request("PATCH", `/api/org/challenges/${challengeId}`, A, {
@@ -761,11 +982,19 @@ describe("personal con cargo, permisos por equipo, familia y reto", () => {
     ).toBe(409);
   });
 
-  it("otro club no ve el reto ni por id", async () => {
+  it("otro club no ve el reto ni por id, ni crea retos sobre secciones ajenas", async () => {
     expect(
       (await request("GET", `/api/org/challenges/${challengeId}`, B, { cookie: as(adminB) }))
         .status,
     ).toBe(404);
+    expect(
+      (
+        await request("POST", "/api/org/challenges", B, {
+          cookie: as(adminB),
+          body: { name: "Sobre la sección del A", sectionId, minPoints: 1, targetPoints: 2 },
+        })
+      ).status,
+    ).toBe(400);
     const listB = await json<{ challenges: unknown[] }>(
       await request("GET", "/api/org/challenges", B, { cookie: as(adminB) }),
       200,

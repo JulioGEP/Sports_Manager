@@ -96,7 +96,7 @@ const CLUB_READ: readonly Permission[] = [
 ];
 
 /**
- * Lo que el cuerpo técnico y el personal leen por defecto (Bloque 19, ADR 0032): lo deportivo.
+ * Lo que el cuerpo técnico y el personal leen por defecto (Bloque 19, ADR 0033): lo deportivo.
  * Ni los socios, ni el personal del club, ni los últimos movimientos: eso lo incluye la
  * administración por rol desde "Personal" si quiere (`access.ts`). Además, lo que leen va
  * acotado a su ámbito: los equipos propios, las secciones propias o los deportistas atendidos.

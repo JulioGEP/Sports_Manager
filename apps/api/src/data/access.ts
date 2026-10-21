@@ -15,7 +15,7 @@ import { isUniqueViolation } from "./db.ts";
 import type { OrgScope } from "./scope.ts";
 
 /**
- * Alcance y visibilidad por rol (Bloque 19, ADR 0032): las reglas que fija la administración,
+ * Alcance y visibilidad por rol (Bloque 19, ADR 0033): las reglas que fija la administración,
  * las secciones y los deportistas a cargo de cada persona, y el ámbito resuelto de un actor.
  * Toda consulta lleva el ámbito del club (ADR 0015).
  */

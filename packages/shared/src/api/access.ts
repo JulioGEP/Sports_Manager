@@ -2,7 +2,7 @@ import { z } from "zod";
 import { ACCESS_SCOPE_KINDS, AccessAreaSchema, ConfigurableProfileSchema } from "../access.ts";
 
 /**
- * Gestión de acceso por rol (Bloque 19, ADR 0032), solo para `org.members.manage`: qué área
+ * Gestión de acceso por rol (Bloque 19, ADR 0033), solo para `org.members.manage`: qué área
  * ve cada perfil (por defecto y con las reglas del club) y las exclusiones por persona.
  */
 

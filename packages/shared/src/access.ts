@@ -10,7 +10,7 @@ import {
 } from "./roles.ts";
 
 /**
- * Alcance y visibilidad por rol (Bloque 19, ADR 0032). Dos piezas que se suman a los permisos:
+ * Alcance y visibilidad por rol (Bloque 19, ADR 0033). Dos piezas que se suman a los permisos:
  *
  * - El ámbito de cada perfil (`PROFILE_SCOPE`): qué parte del club ve. El cuerpo técnico, sus
  *   equipos; dirección y coordinación, sus secciones; fisioterapia, los deportistas que ha

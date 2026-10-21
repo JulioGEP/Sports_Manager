@@ -1,6 +1,6 @@
 {
-  "id": "451cafae-a9cf-443c-981c-72a5fbbbc14f",
-  "prevId": "205d4a80-36e4-4923-9720-a0f6e1ade5fb",
+  "id": "96995821-c6cd-4aaa-badb-86cf8384ada9",
+  "prevId": "3a396a12-2ad6-4ab7-a142-0119b0173c85",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -6014,6 +6014,18 @@
           "primaryKey": false,
           "notNull": false
         },
+        "section_id": {
+          "name": "section_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "team_id": {
+          "name": "team_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
         "name": {
           "name": "name",
           "type": "text",
@@ -6101,6 +6113,36 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "challenges_section_id_idx": {
+          "name": "challenges_section_id_idx",
+          "columns": [
+            {
+              "expression": "section_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "challenges_team_id_idx": {
+          "name": "challenges_team_id_idx",
+          "columns": [
+            {
+              "expression": "team_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
@@ -6128,6 +6170,32 @@
             "id"
           ],
           "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "challenges_section_id_sections_id_fk": {
+          "name": "challenges_section_id_sections_id_fk",
+          "tableFrom": "challenges",
+          "tableTo": "sections",
+          "columnsFrom": [
+            "section_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "challenges_team_id_teams_id_fk": {
+          "name": "challenges_team_id_teams_id_fk",
+          "tableFrom": "challenges",
+          "tableTo": "teams",
+          "columnsFrom": [
+            "team_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "challenges_created_by_users_id_fk": {

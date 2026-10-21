@@ -160,7 +160,7 @@ export function SectionPage() {
               {season && categories.length > 0 ? (
                 <Button
                   icon={<Icon.Plus size={20} aria-hidden="true" />}
-                  onClick={() => setNewTeamIn(categories[0]!.id)}
+                  onClick={() => setNewTeamIn(categories.length === 1 ? categories[0]!.id : "")}
                 >
                   {w("newTeam")}
                 </Button>
@@ -222,20 +222,9 @@ export function SectionPage() {
                   description={categoryMeta(cat, t)}
                   actions={
                     access.write ? (
-                      <>
-                        <Button variant="tertiary" size="sm" onClick={() => setEditCategory(cat)}>
-                          {c("edit")}
-                        </Button>
-                        {season ? (
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            onClick={() => setNewTeamIn(cat.id)}
-                          >
-                            {w("addTeam")}
-                          </Button>
-                        ) : null}
-                      </>
+                      <Button variant="tertiary" size="sm" onClick={() => setEditCategory(cat)}>
+                        {c("edit")}
+                      </Button>
                     ) : null
                   }
                 >

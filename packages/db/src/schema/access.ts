@@ -7,7 +7,7 @@ import { organizations } from "./organizations.ts";
 import { players, sections } from "./structure.ts";
 
 /**
- * Alcance y visibilidad por rol (Bloque 19, ADR 0032). Todo lleva `organization_id` (ADR 0015).
+ * Alcance y visibilidad por rol (Bloque 19, ADR 0033). Todo lleva `organization_id` (ADR 0015).
  * El ámbito de cada cargo va en código (`PROFILE_SCOPE`); aquí viven las relaciones que lo
  * concretan (secciones y deportistas a cargo de alguien) y las reglas que la administración
  * fija desde "Personal".

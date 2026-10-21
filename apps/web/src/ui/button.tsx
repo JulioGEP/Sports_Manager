@@ -45,7 +45,7 @@ function Spinner() {
 }
 
 const linkBase =
-  "inline-flex items-center justify-center gap-2 rounded-control px-5 text-body font-medium no-underline transition-colors duration-150";
+  "inline-flex items-center justify-center gap-2 rounded-control px-5 text-body font-medium whitespace-nowrap no-underline transition-colors duration-150";
 const linkVariants = {
   primary: "border border-club-edge bg-club text-on-club",
   secondary: "border border-control bg-surface text-ink",

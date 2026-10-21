@@ -1,4 +1,4 @@
--- Club de demostración, Bloque 19 (ADR 0032): la dirección deportiva lleva las cuatro secciones
+-- Club de demostración, Bloque 19 (ADR 0033): la dirección deportiva lleva las cuatro secciones
 -- y la fisioterapeuta atiende a Clara y Marc Martí, para que cada cuenta vea su ámbito sin
 -- picar datos. Todos los datos son ficticios. Idempotente: cada inserción salta si ya existe.
 

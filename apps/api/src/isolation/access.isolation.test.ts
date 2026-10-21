@@ -6,7 +6,7 @@ import { createDataLayer, createMemoryBlobStore, type DataLayer } from "../data/
 import { createSeeder } from "../data/testing/seed.ts";
 
 /**
- * Alcance y visibilidad por rol (Bloque 19, ADR 0032) contra una base real: la entrenadora ve
+ * Alcance y visibilidad por rol (Bloque 19, ADR 0033) contra una base real: la entrenadora ve
  * solo sus equipos; dirección y coordinación, sus secciones; fisioterapia, a quien atiende; y la
  * administración incluye o excluye áreas por rol y por persona desde "Personal". Otro club no
  * hereda ni ve nada. Si uno falla, la PR no se mezcla.
@@ -351,6 +351,39 @@ describe("alcance y visibilidad por rol", () => {
     ).toBe(404);
     // Instalaciones: las que usa su equipo, por horario o por evento.
     expect(await facilityNames(coachA)).toEqual(["Pista 1"]);
+
+    // Retos (ADR 0032): los de su sección y, de los de equipo, solo los de sus equipos.
+    const challenge = async (body: Record<string, unknown>) =>
+      (
+        await json<{ challenge: { id: string } }>(
+          await request("POST", "/api/org/challenges", A, {
+            cookie: as(adminA),
+            body: { minPoints: 0, targetPoints: 10, ...body },
+          }),
+          201,
+        )
+      ).challenge.id;
+    const futsalChallenge = await challenge({ name: "Reto fútbol sala", sectionId: futsal });
+    const alevinBChallenge = await challenge({
+      name: "Reto Alevín B",
+      sectionId: futsal,
+      teamId: alevinB,
+    });
+    const basketChallenge = await challenge({ name: "Reto baloncesto", sectionId: basket });
+    const challenges = await json<{ challenges: { id: string }[] }>(
+      await request("GET", "/api/org/challenges", A, { cookie: as(coachA) }),
+      200,
+    );
+    expect(challenges.challenges.map((ch) => ch.id)).toEqual([futsalChallenge]);
+    for (const [id, expected] of [
+      [alevinBChallenge, 404],
+      [basketChallenge, 404],
+      [futsalChallenge, 200],
+    ] as const) {
+      expect(
+        await status(await request("GET", `/api/org/challenges/${id}`, A, { cookie: as(coachA) })),
+      ).toBe(expected);
+    }
 
     // Ni personal, ni socios, ni movimientos del club.
     expect(await status(await request("GET", "/api/org/members", A, { cookie: as(coachA) }))).toBe(

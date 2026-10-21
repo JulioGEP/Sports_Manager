@@ -235,7 +235,7 @@ export function createOrgRoutes(config: ApiConfig, data: DataLayer) {
     },
   );
 
-  // --- Acceso por rol (Bloque 19, ADR 0032): solo quien gestiona el personal ---
+  // --- Acceso por rol (Bloque 19, ADR 0033): solo quien gestiona el personal ---
   app.openapi(
     createRoute({
       method: "get",

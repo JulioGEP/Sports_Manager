@@ -75,7 +75,14 @@
     {
       "idx": 10,
       "version": "7",
-      "when": 1792612527384,
+      "when": 1792612348756,
+      "tag": "20261021195228_challenge_scope",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1792614695539,
       "tag": "20261021195527_access_scope",
       "breakpoints": true
     }

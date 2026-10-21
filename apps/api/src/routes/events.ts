@@ -81,7 +81,7 @@ export const eventDto = (e: EventRecord): EventSummary => ({
  * `org.facilities.read` y `org.events.read`; escritura con `org.events.write` o, en los equipos
  * propios del cuerpo técnico, `org.events.write_own`. El pase de lista lo hace el cuerpo técnico
  * de cada equipo (`org.attendance.write_own`). Las familias ven la agenda de los suyos. Con un
- * ámbito restringido (Bloque 19, ADR 0032), solo salen los eventos de los equipos y secciones de
+ * ámbito restringido (Bloque 19, ADR 0033), solo salen los eventos de los equipos y secciones de
  * quien pregunta (y los del club entero) y las instalaciones que usan sus equipos.
  */
 export function createEventRoutes(config: ApiConfig, data: DataLayer) {

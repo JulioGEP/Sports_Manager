@@ -75,7 +75,7 @@ export const eventDto = (e: EventRecord): EventSummary => ({
  * con su deporte, categorías, equipos, plantilla y cuerpo técnico. Lectura con
  * `org.structure.read`, cambios con `org.structure.write`. La plantilla de un equipo también la
  * cambia su cuerpo técnico con `org.roster.write_own` (Bloque 13). Con un ámbito restringido
- * (Bloque 19, ADR 0032), solo salen las secciones y los equipos de quien pregunta.
+ * (Bloque 19, ADR 0033), solo salen las secciones y los equipos de quien pregunta.
  */
 export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
   const app = new OpenAPIHono<AppEnv>();

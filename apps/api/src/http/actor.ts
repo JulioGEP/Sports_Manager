@@ -23,7 +23,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
  * familia). Una cabecera que no apunta a un miembro del club se ignora. La sesión no cambia.
  *
  * Los permisos son los del rol y el cargo con las reglas de acceso del club aplicadas
- * (Bloque 19, ADR 0032): lo que la administración incluye o excluye por perfil y por persona.
+ * (Bloque 19, ADR 0033): lo que la administración incluye o excluye por perfil y por persona.
  */
 export function requireActor(data: DataLayer): MiddlewareHandler<AppEnv> {
   return async (c, next) => {
@@ -88,7 +88,7 @@ export function requireActor(data: DataLayer): MiddlewareHandler<AppEnv> {
 }
 
 /**
- * Ámbito del actor (Bloque 19, ADR 0032): qué secciones, equipos y deportistas ve. Se resuelve
+ * Ámbito del actor (Bloque 19, ADR 0033): qué secciones, equipos y deportistas ve. Se resuelve
  * una vez por petición; el soporte de plataforma no ve datos personales, así que su ámbito da igual.
  */
 export async function accessScopeOf(data: DataLayer, c: Context<AppEnv>): Promise<AccessScope> {

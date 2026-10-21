@@ -441,7 +441,7 @@ describe("esquema del Bloque 2 (Postgres embebido con todas las migraciones)", (
     }
   });
 
-  it("alcance por rol (ADR 0032): una regla por perfil o por persona, nunca las dos, y solo áreas conocidas", async () => {
+  it("alcance por rol (ADR 0033): una regla por perfil o por persona, nunca las dos, y solo áreas conocidas", async () => {
     const rule =
       "insert into access_rules (organization_id, profile, user_id, area, effect) values ($1, $2, $3, $4, $5)";
     expect(
@@ -493,7 +493,7 @@ describe("esquema del Bloque 2 (Postgres embebido con todas las migraciones)", (
     );
   });
 
-  it("el club demo trae a la dirección con sus secciones y a la fisio con sus deportistas (ADR 0032)", async () => {
+  it("el club demo trae a la dirección con sus secciones y a la fisio con sus deportistas (ADR 0033)", async () => {
     const { rows } = await client.query<{ sections: string; attended: string }>(
       `select
          (select count(*) from section_staff ss join users u on u.id = ss.user_id where u.email = 'director@demo.test') as sections,

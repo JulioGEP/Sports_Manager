@@ -77,15 +77,15 @@ test.describe("familia y entrenadora", () => {
     await expect(sheet.getByRole("button", { name: "Nuevo jugador" })).toHaveCount(0);
     await page.keyboard.press("Escape");
     await expect(page.getByRole("dialog")).toBeHidden();
-    // Su jugadora: valora el objetivo. Otro equipo: solo mira.
+    // Su jugadora: valora el objetivo. Los otros equipos de la sección ni aparecen (Bloque 19).
     await page.getByRole("link", { name: "Clara Martí" }).click();
     await expect(page.getByRole("button", { name: "Valorar" })).toBeVisible();
     await page.goto(`${CLUB}/sections`);
     await page.getByRole("link", { name: /Fútbol sala/ }).click();
-    await page.getByRole("link", { name: "Infantil A" }).click();
-    await expect(page.getByRole("heading", { name: "Infantil A" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Añadir jugador" })).toHaveCount(0);
-    await expect(page.getByRole("button", { name: "Quitar" })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Alevín A" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Infantil A" })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Socios" })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Personal" })).toHaveCount(0);
     await signOut(page);
   });
 });

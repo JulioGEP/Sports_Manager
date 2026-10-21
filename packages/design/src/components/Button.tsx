@@ -19,8 +19,10 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   cta?: boolean;
 }
 
+// La altura es fija, así que el texto no puede partirse en dos líneas: si falta sitio, el contenedor
+// (pie de panel, barra de acciones) es quien tiene que pasar el botón a otra fila.
 const base =
-  "inline-flex items-center justify-center gap-2 rounded-control px-5 text-body font-medium " +
+  "inline-flex items-center justify-center gap-2 rounded-control px-5 text-body font-medium whitespace-nowrap " +
   "transition-colors duration-150 " +
   "disabled:cursor-not-allowed disabled:border-transparent disabled:bg-raised disabled:text-muted";
 

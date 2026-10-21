@@ -11,7 +11,19 @@ import {
   type ChallengeUpdate,
   type SubmissionStatus,
 } from "@sportsmanager/shared";
-import { and, asc, count, countDistinct, desc, eq, inArray, sql, sum } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  countDistinct,
+  desc,
+  eq,
+  inArray,
+  isNull,
+  or,
+  sql,
+  sum,
+} from "drizzle-orm";
 import { today } from "./player-profile.ts";
 import type { OrgScope } from "./scope.ts";
 
@@ -19,6 +31,10 @@ import type { OrgScope } from "./scope.ts";
  * Retos por puntos (Fase 1, Bloque 13, ADR 0030). Toda consulta lleva el ámbito del club
  * (ADR 0015). Las familias solo ven lo suyo: la agregación por jugador la hace quien llama con
  * el jugador ya comprobado; la agregación del club (participación) solo sale al personal.
+ *
+ * Ámbito del reto (ADR 0032): cada reto es de una sección y, si se quiere, de un solo equipo.
+ * Un jugador participa en los retos activos de las secciones y los equipos donde está esta
+ * temporada (`activeFor`); puede tener varios a la vez.
  */
 
 export interface ChallengeRecord {
@@ -26,6 +42,8 @@ export interface ChallengeRecord {
   name: string;
   description: string | null;
   status: ChallengeStatus;
+  section: { id: string; name: string };
+  team: { id: string; name: string } | null;
   season: { id: string; name: string } | null;
   startsOn: string | null;
   endsOn: string | null;
@@ -145,6 +163,10 @@ export function challengesRepo(db: () => Database) {
         name: schema.challenges.name,
         description: schema.challenges.description,
         status: schema.challenges.status,
+        sectionId: schema.sections.id,
+        sectionName: schema.sections.name,
+        teamId: schema.teams.id,
+        teamName: schema.teams.name,
         seasonId: schema.seasons.id,
         seasonName: schema.seasons.name,
         startsOn: schema.challenges.startsOn,
@@ -154,7 +176,15 @@ export function challengesRepo(db: () => Database) {
         updatedAt: schema.challenges.updatedAt,
       })
       .from(schema.challenges)
+      .innerJoin(schema.sections, eq(schema.sections.id, schema.challenges.sectionId))
+      .leftJoin(schema.teams, eq(schema.teams.id, schema.challenges.teamId))
       .leftJoin(schema.seasons, eq(schema.seasons.id, schema.challenges.seasonId));
+
+  /** Los de toda la sección antes que los de un equipo; dentro, los más nuevos primero. */
+  const scopeOrder = () => [
+    sql`case when ${schema.challenges.teamId} is null then 0 else 1 end`,
+    desc(schema.challenges.createdAt),
+  ];
 
   type ChallengeRow = Awaited<ReturnType<ReturnType<typeof challengeQuery>["execute"]>>[number];
   const toChallenge = (
@@ -165,6 +195,8 @@ export function challengesRepo(db: () => Database) {
     name: row.name,
     description: row.description,
     status: row.status as ChallengeStatus,
+    section: { id: row.sectionId, name: row.sectionName },
+    team: row.teamId && row.teamName ? { id: row.teamId, name: row.teamName } : null,
     season: row.seasonId && row.seasonName ? { id: row.seasonId, name: row.seasonName } : null,
     startsOn: row.startsOn,
     endsOn: row.endsOn,
@@ -387,6 +419,70 @@ export function challengesRepo(db: () => Database) {
     return totals;
   }
 
+  /** Comprueba que la sección es del club y que el equipo, si lo hay, es de esa sección. */
+  async function checkScope(
+    scope: OrgScope,
+    sectionId: string,
+    teamId: string | null,
+  ): Promise<"ok" | "unknown_section" | "unknown_team"> {
+    const section = await db()
+      .select({ id: schema.sections.id })
+      .from(schema.sections)
+      .where(
+        and(
+          eq(schema.sections.organizationId, scope.organizationId),
+          eq(schema.sections.id, sectionId),
+        ),
+      )
+      .limit(1);
+    if (!section[0]) return "unknown_section";
+    if (teamId) {
+      const team = await db()
+        .select({ id: schema.teams.id })
+        .from(schema.teams)
+        .where(
+          and(
+            eq(schema.teams.organizationId, scope.organizationId),
+            eq(schema.teams.id, teamId),
+            eq(schema.teams.sectionId, sectionId),
+          ),
+        )
+        .limit(1);
+      if (!team[0]) return "unknown_team";
+    }
+    return "ok";
+  }
+
+  /** Equipos de la temporada actual donde está un jugador, como subconsulta. */
+  const currentTeamIdsOf = (scope: OrgScope, playerId: string) =>
+    db()
+      .select({ id: schema.teamPlayers.teamId })
+      .from(schema.teamPlayers)
+      .innerJoin(schema.teams, eq(schema.teams.id, schema.teamPlayers.teamId))
+      .innerJoin(schema.seasons, eq(schema.seasons.id, schema.teams.seasonId))
+      .where(
+        and(
+          eq(schema.teamPlayers.organizationId, scope.organizationId),
+          eq(schema.teamPlayers.playerId, playerId),
+          eq(schema.seasons.isCurrent, true),
+        ),
+      );
+
+  /** Secciones de esos equipos, como subconsulta. */
+  const currentSectionIdsOf = (scope: OrgScope, playerId: string) =>
+    db()
+      .select({ id: schema.teams.sectionId })
+      .from(schema.teamPlayers)
+      .innerJoin(schema.teams, eq(schema.teams.id, schema.teamPlayers.teamId))
+      .innerJoin(schema.seasons, eq(schema.seasons.id, schema.teams.seasonId))
+      .where(
+        and(
+          eq(schema.teamPlayers.organizationId, scope.organizationId),
+          eq(schema.teamPlayers.playerId, playerId),
+          eq(schema.seasons.isCurrent, true),
+        ),
+      );
+
   /** Puntos ya contados (aprobados o pendientes) de una prueba para un jugador: para aplicar el tope. */
   async function earnedForTask(scope: OrgScope, taskId: string, playerId: string): Promise<number> {
     const rows = await db()
@@ -410,13 +506,19 @@ export function challengesRepo(db: () => Database) {
     totalsFor,
     submissionById,
 
-    /** Retos del club: activos primero, después borradores, después cerrados; los más nuevos antes. */
+    /**
+     * Retos del club: activos primero, después borradores, después cerrados. Dentro de cada
+     * estado, agrupados por sección (en su orden), los de toda la sección antes que los de un
+     * equipo, y los más nuevos antes.
+     */
     async list(scope: OrgScope): Promise<ChallengeRecord[]> {
       const rows = await challengeQuery()
         .where(eq(schema.challenges.organizationId, scope.organizationId))
         .orderBy(
           sql`case ${schema.challenges.status} when 'active' then 0 when 'draft' then 1 else 2 end`,
-          desc(schema.challenges.createdAt),
+          asc(schema.sections.sortOrder),
+          asc(schema.sections.name),
+          ...scopeOrder(),
         )
         .limit(100);
       const counts = await countsFor(
@@ -426,21 +528,30 @@ export function challengesRepo(db: () => Database) {
       return rows.map((row) => toChallenge(row, counts.get(row.id)!));
     },
 
-    /** El reto activo del club (el más reciente si hubiera varios). */
-    async active(scope: OrgScope): Promise<ChallengeRecord | null> {
+    /**
+     * Retos activos en los que participa un jugador: los de las secciones donde está esta
+     * temporada y los de sus equipos. Los de toda la sección antes. Es lo que ve su familia.
+     */
+    async activeFor(scope: OrgScope, playerId: string): Promise<ChallengeRecord[]> {
       const rows = await challengeQuery()
         .where(
           and(
             eq(schema.challenges.organizationId, scope.organizationId),
             eq(schema.challenges.status, "active"),
+            inArray(schema.challenges.sectionId, currentSectionIdsOf(scope, playerId)),
+            or(
+              isNull(schema.challenges.teamId),
+              inArray(schema.challenges.teamId, currentTeamIdsOf(scope, playerId)),
+            ),
           ),
         )
-        .orderBy(desc(schema.challenges.createdAt))
-        .limit(1);
-      const row = rows[0];
-      if (!row) return null;
-      const counts = await countsFor(scope, [row.id]);
-      return toChallenge(row, counts.get(row.id)!);
+        .orderBy(asc(schema.sections.sortOrder), asc(schema.sections.name), ...scopeOrder())
+        .limit(20);
+      const counts = await countsFor(
+        scope,
+        rows.map((r) => r.id),
+      );
+      return rows.map((row) => toChallenge(row, counts.get(row.id)!));
     },
 
     /** Registros pendientes en los retos activos del club, o solo de unos equipos. */
@@ -484,7 +595,9 @@ export function challengesRepo(db: () => Database) {
       input: ChallengeCreate,
       createdBy: string,
       defaultTasks: ChallengeTaskCreate[] = [],
-    ): Promise<ChallengeRecord | "unknown_season"> {
+    ): Promise<ChallengeRecord | "unknown_season" | "unknown_section" | "unknown_team"> {
+      const scopeCheck = await checkScope(scope, input.sectionId, input.teamId ?? null);
+      if (scopeCheck !== "ok") return scopeCheck;
       if (input.seasonId) {
         const season = await db()
           .select({ id: schema.seasons.id })
@@ -503,6 +616,8 @@ export function challengesRepo(db: () => Database) {
           .insert(schema.challenges)
           .values({
             organizationId: scope.organizationId,
+            sectionId: input.sectionId,
+            teamId: input.teamId ?? null,
             seasonId: input.seasonId ?? null,
             name: input.name,
             description: input.description?.trim() ? input.description.trim() : null,
@@ -540,8 +655,26 @@ export function challengesRepo(db: () => Database) {
       scope: OrgScope,
       id: string,
       patch: ChallengeUpdate,
-    ): Promise<ChallengeRecord | "not_found" | "unknown_season"> {
+    ): Promise<
+      ChallengeRecord | "not_found" | "unknown_season" | "unknown_section" | "unknown_team"
+    > {
       const values: Partial<typeof schema.challenges.$inferInsert> = {};
+      if (patch.sectionId !== undefined || patch.teamId !== undefined) {
+        const current = await byId(scope, id);
+        if (!current) return "not_found";
+        const sectionId = patch.sectionId ?? current.section.id;
+        // Al cambiar de sección sin decir equipo, el equipo anterior ya no vale: pasa a toda la sección.
+        const teamId =
+          patch.teamId !== undefined
+            ? patch.teamId
+            : sectionId === current.section.id
+              ? (current.team?.id ?? null)
+              : null;
+        const scopeCheck = await checkScope(scope, sectionId, teamId);
+        if (scopeCheck !== "ok") return scopeCheck;
+        values.sectionId = sectionId;
+        values.teamId = teamId;
+      }
       if (patch.name !== undefined) values.name = patch.name;
       if (patch.description !== undefined)
         values.description = patch.description?.trim() ? patch.description.trim() : null;
