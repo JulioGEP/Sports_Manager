@@ -16,6 +16,7 @@ import {
   type ClubVoice,
   type Locale,
   type OrganizationResponse,
+  type PaymentProvider,
 } from "@sportsmanager/shared";
 import type { ApiConfig } from "../config.ts";
 import {
@@ -69,6 +70,8 @@ function actorDto(actor: Actor): ActorDto {
         roles: actor.roles,
         position: actor.position,
         permissions: [...actor.permissions],
+        viewingAs: actor.viewingAs,
+        canViewAs: actor.canViewAs,
       }
     : { kind: "platform_support", hasGrant: actor.hasGrant, permissions: [...actor.permissions] };
 }
@@ -91,6 +94,8 @@ export function createOrgRoutes(config: ApiConfig, data: DataLayer) {
       brandSecondaryColor: org.brandSecondaryColor,
       logoUrl: logoUrlFor(org.logoBlobKey, org.slug),
       voice: org.voice as ClubVoice,
+      timezone: org.timezone,
+      paymentsProvider: org.paymentsProvider as PaymentProvider,
       createdAt: org.createdAt.toISOString(),
     };
   }
@@ -127,6 +132,15 @@ export function createOrgRoutes(config: ApiConfig, data: DataLayer) {
       const status = org.status as "active" | "suspended" | "archived";
       const defaultLocale = org.defaultLocale as Locale;
 
+      if (actor.kind === "member" && actor.viewingAs) {
+        await data.audit.record({
+          actorUserId: c.get("sessionUser").id,
+          organizationId: org.id,
+          action: "view_as.started",
+          target: actor.viewingAs.userId,
+          details: { name: actor.viewingAs.name, roles: actor.viewingAs.roles },
+        });
+      }
       let organization: OrganizationResponse["organization"];
       if (actor.permissions.has("org.settings.read")) {
         organization = await fullView(org, tenant.scope);

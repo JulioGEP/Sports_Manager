@@ -9,6 +9,8 @@ import { createResetPasswordSender } from "./auth/reset-password.ts";
 import { createLazyDb } from "./db.ts";
 export { isUniqueViolation } from "./db.ts";
 import { emailOutboxRepo } from "./email/outbox.ts";
+import { attendanceRepo, eventsRepo, facilitiesRepo, schedulesRepo } from "./events.ts";
+import { feesRepo } from "./fees.ts";
 import type { ResendLike } from "./email/resend.ts";
 import { createEmailSender, type EmailSender } from "./email/sender.ts";
 import { invitationsRepo } from "./invitations.ts";
@@ -21,12 +23,13 @@ import {
 } from "./logos.ts";
 import { membershipsRepo } from "./memberships.ts";
 import { organizationsRepo } from "./organizations.ts";
+import { clubMembersRepo, memberTypesRepo, peopleRepo } from "./people.ts";
 import { platformRepo } from "./platform.ts";
 import { playerProfileRepo } from "./player-profile.ts";
 import { playersRepo } from "./players.ts";
 import { rolesRepo } from "./roles.ts";
 import { sportsRepo } from "./sports.ts";
-import { seasonsRepo, sectionsRepo, teamsRepo } from "./structure.ts";
+import { categoriesRepo, seasonsRepo, sectionsRepo, teamsRepo } from "./structure.ts";
 import { usersRepo } from "./users.ts";
 
 export type { OrgScope } from "./scope.ts";
@@ -42,6 +45,7 @@ export type { AssignRoleResult, Member, RemoveRoleResult, UserMembership } from 
 export type { InvitationByToken, InvitationRecord, IssuedInvitation } from "./invitations.ts";
 export type { UserRecord } from "./users.ts";
 export type {
+  CategoryRecord,
   RosterRecord,
   SeasonRecord,
   SectionRecord,
@@ -49,6 +53,17 @@ export type {
   StructureCounts,
   TeamRecord,
 } from "./structure.ts";
+export type { ClubMemberRecord, MemberTypeRecord, PersonRecord, PersonRow } from "./people.ts";
+export type {
+  AttendanceEntryRecord,
+  AttendanceSummaryRecord,
+  EventFilter,
+  EventRecord,
+  FacilityRecord,
+  ScheduleSlotRecord,
+} from "./events.ts";
+export { dayRange, fromLocal, localParts, weekRange } from "./events.ts";
+export type { FeesSummaryRecord, PersonFeesRecord } from "./fees.ts";
 export type {
   FamilyPlayerRecord,
   GuardianRecord,
@@ -146,8 +161,17 @@ export function createDataLayer(options: DataLayerOptions) {
     roles: rolesRepo(db),
     seasons: seasonsRepo(db),
     sections: sectionsRepo(db),
+    categories: categoriesRepo(db),
     teams: teamsRepo(db),
     players: playersRepo(db),
+    people: peopleRepo(db),
+    clubMembers: clubMembersRepo(db),
+    memberTypes: memberTypesRepo(db),
+    facilities: facilitiesRepo(db),
+    events: eventsRepo(db),
+    schedules: schedulesRepo(db),
+    attendance: attendanceRepo(db),
+    fees: feesRepo(db),
     challenges: challengesRepo(db),
     logos: logosRepo(
       db,

@@ -30,14 +30,14 @@ test.describe("acceso", () => {
   });
 
   test("sin sesión, las páginas del club llevan al login y vuelven después", async ({ page }) => {
-    await page.goto(`${CLUB}/members`);
-    await page.waitForURL(/\/login\?next=%2Fdemo%2Fmembers/);
+    await page.goto(`${CLUB}/staff`);
+    await page.waitForURL(/\/login\?next=%2Fdemo%2Fstaff/);
     await expect(page.getByRole("heading", { name: "Iniciar sesión" })).toBeVisible();
     await page.getByLabel("Email").fill(DEMO.email);
     await page.getByLabel("Contraseña").fill(DEMO.password);
     await page.getByRole("button", { name: "Entrar" }).click();
-    await page.waitForURL(new RegExp(`${CLUB}/members$`));
-    await expect(page.getByRole("heading", { name: "Miembros" })).toBeVisible();
+    await page.waitForURL(new RegExp(`${CLUB}/staff$`));
+    await expect(page.getByRole("heading", { name: "Personal" })).toBeVisible();
   });
 
   test("un club que no existe no abre nada", async ({ page }) => {

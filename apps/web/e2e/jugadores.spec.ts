@@ -11,7 +11,7 @@ import {
 } from "./helpers";
 
 /**
- * Jugadores y familias (Bloque 11): lista, ficha, invitación de familia y alta de un jugador.
+ * Deportistas y familias (Bloque 11): lista, ficha, invitación de familia y alta de un jugador.
  * Ficha ampliada (Bloque 12): foto, indicadores, objetivo, PDI, timeline y acciones prioritarias.
  */
 test.describe("jugadores y familias", () => {
@@ -20,8 +20,8 @@ test.describe("jugadores y familias", () => {
     const email = `padre-${sfx}@demo.test`;
     await login(page);
 
-    await page.getByRole("link", { name: "Jugadores" }).first().click();
-    await expect(page.getByRole("heading", { name: "Jugadores" })).toBeVisible();
+    await page.getByRole("link", { name: "Deportistas" }).first().click();
+    await expect(page.getByRole("heading", { name: "Deportistas" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Clara Martí" })).toBeVisible();
     await shot(page, "40-jugadores", info.project.name);
     await expectLegibleButtons(page);

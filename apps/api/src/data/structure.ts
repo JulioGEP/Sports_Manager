@@ -1,24 +1,33 @@
 import { schema, type Database } from "@sportsmanager/db";
-import type {
-  RosterAdd,
-  RosterUpdate,
-  SeasonCreate,
-  SeasonUpdate,
-  SectionCreate,
-  SectionStatus,
-  SectionUpdate,
-  TeamCreate,
-  TeamStatus,
-  TeamUpdate,
-  PlayerStatus,
+import {
+  defaultSectionKind,
+  type CategoryCreate,
+  type CategoryGender,
+  type CategoryStatus,
+  type CategoryUpdate,
+  type LocalizedText,
+  type PlayerStatus,
+  type RosterAdd,
+  type RosterUpdate,
+  type SeasonCreate,
+  type SeasonUpdate,
+  type SectionCreate,
+  type SectionKind,
+  type SectionStatus,
+  type SectionUpdate,
+  type TeamCreate,
+  type TeamStaffRole,
+  type TeamStatus,
+  type TeamUpdate,
 } from "@sportsmanager/shared";
 import { and, asc, count, countDistinct, desc, eq, inArray, sql } from "drizzle-orm";
 import { isUniqueViolation } from "./db.ts";
 import type { OrgScope } from "./scope.ts";
 
 /**
- * Estructura del club (Fase 1, Bloque 11, ADR 0028): temporadas, secciones y equipos con su
- * plantilla y su cuerpo técnico. Toda consulta lleva el ámbito del club (ADR 0015).
+ * Estructura del club (Fase 1, Bloque 11, ADR 0028; Bloque 14, ADR 0031): temporadas, secciones
+ * con su deporte, categorías y equipos con su plantilla y su cuerpo técnico. Toda consulta lleva
+ * el ámbito del club (ADR 0015).
  */
 
 export interface SeasonRecord {
@@ -35,6 +44,25 @@ export interface SectionRecord {
   name: string;
   status: SectionStatus;
   sortOrder: number;
+  sport: { code: string; name: LocalizedText };
+  kind: SectionKind;
+  coordinator: { userId: string; name: string } | null;
+  description: string | null;
+  categoriesCount: number;
+  teamsCount: number;
+  playersCount: number;
+  teamsWithoutStaff: number;
+}
+
+export interface CategoryRecord {
+  id: string;
+  sectionId: string;
+  name: string;
+  gender: CategoryGender | null;
+  birthYearFrom: number | null;
+  birthYearTo: number | null;
+  sortOrder: number;
+  status: CategoryStatus;
   teamsCount: number;
 }
 
@@ -42,11 +70,13 @@ export interface TeamRecord {
   id: string;
   name: string;
   category: string | null;
+  categoryId: string;
+  capacity: number | null;
   status: TeamStatus;
-  section: { id: string; name: string };
+  section: { id: string; name: string; kind: SectionKind };
   season: { id: string; name: string; isCurrent: boolean };
   playersCount: number;
-  staff: { userId: string; name: string }[];
+  staff: { userId: string; name: string; roleInTeam: TeamStaffRole }[];
 }
 
 export interface RosterRecord {
@@ -65,6 +95,7 @@ export interface StaffRecord {
   userId: string;
   name: string;
   email: string;
+  roleInTeam: TeamStaffRole;
 }
 
 export interface StructureCounts {
@@ -205,6 +236,31 @@ export function seasonsRepo(db: () => Database) {
 }
 
 export function sectionsRepo(db: () => Database) {
+  async function sportIdOf(code: string): Promise<string | null> {
+    const rows = await db()
+      .select({ id: schema.sports.id })
+      .from(schema.sports)
+      .where(and(eq(schema.sports.code, code), eq(schema.sports.isActive, true)))
+      .limit(1);
+    return rows[0]?.id ?? null;
+  }
+
+  async function coordinatorIsMember(scope: OrgScope, userId: string): Promise<boolean> {
+    const rows = await db()
+      .select({ id: schema.memberships.id })
+      .from(schema.memberships)
+      .where(
+        and(
+          eq(schema.memberships.organizationId, scope.organizationId),
+          eq(schema.memberships.userId, userId),
+          eq(schema.memberships.status, "active"),
+        ),
+      )
+      .limit(1);
+    return rows.length > 0;
+  }
+
+  /** Secciones con sus cifras en una temporada (la actual si no se indica otra). */
   async function list(scope: OrgScope, seasonId: string | null): Promise<SectionRecord[]> {
     const rows = await db()
       .select({
@@ -212,60 +268,144 @@ export function sectionsRepo(db: () => Database) {
         name: schema.sections.name,
         status: schema.sections.status,
         sortOrder: schema.sections.sortOrder,
+        kind: schema.sections.kind,
+        description: schema.sections.description,
+        sportCode: schema.sports.code,
+        sportName: schema.sports.name,
+        coordinatorId: schema.users.id,
+        coordinatorName: schema.users.name,
       })
       .from(schema.sections)
+      .innerJoin(schema.sports, eq(schema.sports.id, schema.sections.sportId))
+      .leftJoin(schema.users, eq(schema.users.id, schema.sections.coordinatorUserId))
       .where(eq(schema.sections.organizationId, scope.organizationId))
       .orderBy(asc(schema.sections.sortOrder), asc(schema.sections.name));
-    const counts = seasonId
+    const categories = await db()
+      .select({ sectionId: schema.categories.sectionId, total: count() })
+      .from(schema.categories)
+      .where(
+        and(
+          eq(schema.categories.organizationId, scope.organizationId),
+          eq(schema.categories.status, "active"),
+        ),
+      )
+      .groupBy(schema.categories.sectionId);
+    const teamsWhere = seasonId
+      ? and(
+          eq(schema.teams.organizationId, scope.organizationId),
+          eq(schema.teams.seasonId, seasonId),
+          eq(schema.teams.status, "active"),
+        )
+      : sql`false`;
+    const teams = seasonId
       ? await db()
-          .select({ sectionId: schema.teams.sectionId, total: count() })
+          .select({
+            sectionId: schema.teams.sectionId,
+            total: count(),
+            withoutStaff: sql<number>`count(*) filter (where not exists (select 1 from ${schema.teamStaff} ts where ts.team_id = ${schema.teams.id}))`,
+          })
           .from(schema.teams)
-          .where(
-            and(
-              eq(schema.teams.organizationId, scope.organizationId),
-              eq(schema.teams.seasonId, seasonId),
-              eq(schema.teams.status, "active"),
-            ),
-          )
+          .where(teamsWhere)
           .groupBy(schema.teams.sectionId)
       : [];
-    const byId = new Map(counts.map((c) => [c.sectionId, c.total]));
+    const players = seasonId
+      ? await db()
+          .select({
+            sectionId: schema.teams.sectionId,
+            total: countDistinct(schema.teamPlayers.playerId),
+          })
+          .from(schema.teamPlayers)
+          .innerJoin(schema.teams, eq(schema.teams.id, schema.teamPlayers.teamId))
+          .where(teamsWhere)
+          .groupBy(schema.teams.sectionId)
+      : [];
+    const categoriesBy = new Map(categories.map((c) => [c.sectionId, c.total]));
+    const teamsBy = new Map(teams.map((t) => [t.sectionId, t]));
+    const playersBy = new Map(players.map((p) => [p.sectionId, p.total]));
     return rows.map((row) => ({
       id: row.id,
       name: row.name,
       status: row.status as SectionStatus,
       sortOrder: row.sortOrder,
-      teamsCount: byId.get(row.id) ?? 0,
+      sport: { code: row.sportCode, name: row.sportName },
+      kind: row.kind as SectionKind,
+      coordinator:
+        row.coordinatorId && row.coordinatorName
+          ? { userId: row.coordinatorId, name: row.coordinatorName }
+          : null,
+      description: row.description,
+      categoriesCount: categoriesBy.get(row.id) ?? 0,
+      teamsCount: teamsBy.get(row.id)?.total ?? 0,
+      playersCount: playersBy.get(row.id) ?? 0,
+      teamsWithoutStaff: Number(teamsBy.get(row.id)?.withoutStaff ?? 0),
     }));
   }
 
-  async function byId(scope: OrgScope, id: string): Promise<SectionRecord | null> {
-    const all = await list(scope, null);
+  async function byId(
+    scope: OrgScope,
+    id: string,
+    seasonId: string | null = null,
+  ): Promise<SectionRecord | null> {
+    const all = await list(scope, seasonId);
     return all.find((s) => s.id === id) ?? null;
   }
 
   return {
     list,
     byId,
+    sportIdOf,
 
     async create(
       scope: OrgScope,
       input: SectionCreate,
-    ): Promise<{ outcome: "created"; section: SectionRecord } | NameTaken> {
+    ): Promise<
+      | { outcome: "created"; section: SectionRecord }
+      | { outcome: "unknown_sport" }
+      | { outcome: "unknown_coordinator" }
+      | NameTaken
+    > {
+      const sportId = await sportIdOf(input.sportCode);
+      if (!sportId) return { outcome: "unknown_sport" };
+      if (input.coordinatorUserId && !(await coordinatorIsMember(scope, input.coordinatorUserId)))
+        return { outcome: "unknown_coordinator" };
       const last = await db()
         .select({ max: sql<number>`coalesce(max(${schema.sections.sortOrder}), 0)` })
         .from(schema.sections)
         .where(eq(schema.sections.organizationId, scope.organizationId));
       try {
-        const rows = await db()
-          .insert(schema.sections)
-          .values({
-            organizationId: scope.organizationId,
-            name: input.name,
-            sortOrder: Number(last[0]?.max ?? 0) + 10,
-          })
-          .returning({ id: schema.sections.id });
-        const section = await byId(scope, rows[0]!.id);
+        const id = await db().transaction(async (tx) => {
+          const rows = await tx
+            .insert(schema.sections)
+            .values({
+              organizationId: scope.organizationId,
+              name: input.name,
+              sportId,
+              kind: input.kind ?? defaultSectionKind(input.sportCode),
+              coordinatorUserId: input.coordinatorUserId ?? null,
+              description: input.description?.trim() ? input.description.trim() : null,
+              sortOrder: Number(last[0]?.max ?? 0) + 10,
+            })
+            .returning({ id: schema.sections.id });
+          const sectionId = rows[0]!.id;
+          if (input.categories && input.categories.length > 0) {
+            await tx
+              .insert(schema.categories)
+              .values(
+                input.categories.map((c, index) => ({
+                  organizationId: scope.organizationId,
+                  sectionId,
+                  name: c.name,
+                  gender: c.gender ?? null,
+                  birthYearFrom: c.birthYearFrom ?? null,
+                  birthYearTo: c.birthYearTo ?? null,
+                  sortOrder: (index + 1) * 10,
+                })),
+              )
+              .onConflictDoNothing();
+          }
+          return sectionId;
+        });
+        const section = await byId(scope, id);
         if (!section) throw new Error("La sección recién creada no aparece.");
         return { outcome: "created", section };
       } catch (error) {
@@ -279,11 +419,28 @@ export function sectionsRepo(db: () => Database) {
       id: string,
       patch: SectionUpdate,
     ): Promise<
-      { outcome: "updated"; section: SectionRecord } | { outcome: "not_found" } | NameTaken
+      | { outcome: "updated"; section: SectionRecord }
+      | { outcome: "not_found" }
+      | { outcome: "unknown_sport" }
+      | { outcome: "unknown_coordinator" }
+      | NameTaken
     > {
       const values: Partial<typeof schema.sections.$inferInsert> = {};
       if (patch.name !== undefined) values.name = patch.name;
       if (patch.status !== undefined) values.status = patch.status;
+      if (patch.kind !== undefined) values.kind = patch.kind;
+      if (patch.description !== undefined)
+        values.description = patch.description?.trim() ? patch.description.trim() : null;
+      if (patch.sportCode !== undefined) {
+        const sportId = await sportIdOf(patch.sportCode);
+        if (!sportId) return { outcome: "unknown_sport" };
+        values.sportId = sportId;
+      }
+      if (patch.coordinatorUserId !== undefined) {
+        if (patch.coordinatorUserId && !(await coordinatorIsMember(scope, patch.coordinatorUserId)))
+          return { outcome: "unknown_coordinator" };
+        values.coordinatorUserId = patch.coordinatorUserId;
+      }
       try {
         if (Object.keys(values).length > 0) {
           const updated = await db()
@@ -305,6 +462,207 @@ export function sectionsRepo(db: () => Database) {
       const section = await byId(scope, id);
       return section ? { outcome: "updated", section } : { outcome: "not_found" };
     },
+
+    /** Cuerpo técnico de una sección en una temporada: quién lleva qué equipos. */
+    async staff(
+      scope: OrgScope,
+      sectionId: string,
+      seasonId: string,
+    ): Promise<{ userId: string; name: string; teams: { teamId: string; teamName: string }[] }[]> {
+      const rows = await db()
+        .select({
+          userId: schema.users.id,
+          name: schema.users.name,
+          teamId: schema.teams.id,
+          teamName: schema.teams.name,
+        })
+        .from(schema.teamStaff)
+        .innerJoin(schema.users, eq(schema.users.id, schema.teamStaff.userId))
+        .innerJoin(schema.teams, eq(schema.teams.id, schema.teamStaff.teamId))
+        .where(
+          and(
+            eq(schema.teamStaff.organizationId, scope.organizationId),
+            eq(schema.teams.sectionId, sectionId),
+            eq(schema.teams.seasonId, seasonId),
+            eq(schema.teams.status, "active"),
+          ),
+        )
+        .orderBy(asc(schema.users.name), asc(schema.teams.name));
+      const byUser = new Map<
+        string,
+        { userId: string; name: string; teams: { teamId: string; teamName: string }[] }
+      >();
+      for (const row of rows) {
+        const entry = byUser.get(row.userId) ?? { userId: row.userId, name: row.name, teams: [] };
+        entry.teams.push({ teamId: row.teamId, teamName: row.teamName });
+        byUser.set(row.userId, entry);
+      }
+      return [...byUser.values()];
+    },
+
+    /** Deportistas distintos y familias con acceso en los equipos de una sección y temporada. */
+    async counts(
+      scope: OrgScope,
+      sectionId: string,
+      seasonId: string,
+    ): Promise<{ players: number; guardians: number; playerIds: string[] }> {
+      const rows = await db()
+        .selectDistinct({ playerId: schema.teamPlayers.playerId })
+        .from(schema.teamPlayers)
+        .innerJoin(schema.teams, eq(schema.teams.id, schema.teamPlayers.teamId))
+        .where(
+          and(
+            eq(schema.teamPlayers.organizationId, scope.organizationId),
+            eq(schema.teams.sectionId, sectionId),
+            eq(schema.teams.seasonId, seasonId),
+          ),
+        );
+      const playerIds = rows.map((r) => r.playerId);
+      if (playerIds.length === 0) return { players: 0, guardians: 0, playerIds };
+      const guardians = await db()
+        .select({ total: countDistinct(schema.playerGuardians.userId) })
+        .from(schema.playerGuardians)
+        .where(
+          and(
+            eq(schema.playerGuardians.organizationId, scope.organizationId),
+            inArray(schema.playerGuardians.playerId, playerIds),
+          ),
+        );
+      return { players: playerIds.length, guardians: guardians[0]?.total ?? 0, playerIds };
+    },
+  };
+}
+
+export function categoriesRepo(db: () => Database) {
+  async function list(
+    scope: OrgScope,
+    filter: { sectionId?: string | undefined; seasonId?: string | null | undefined } = {},
+  ): Promise<CategoryRecord[]> {
+    const rows = await db()
+      .select({
+        id: schema.categories.id,
+        sectionId: schema.categories.sectionId,
+        name: schema.categories.name,
+        gender: schema.categories.gender,
+        birthYearFrom: schema.categories.birthYearFrom,
+        birthYearTo: schema.categories.birthYearTo,
+        sortOrder: schema.categories.sortOrder,
+        status: schema.categories.status,
+      })
+      .from(schema.categories)
+      .where(
+        and(
+          eq(schema.categories.organizationId, scope.organizationId),
+          ...(filter.sectionId ? [eq(schema.categories.sectionId, filter.sectionId)] : []),
+        ),
+      )
+      .orderBy(asc(schema.categories.sortOrder), asc(schema.categories.name));
+    const counts = filter.seasonId
+      ? await db()
+          .select({ categoryId: schema.teams.categoryId, total: count() })
+          .from(schema.teams)
+          .where(
+            and(
+              eq(schema.teams.organizationId, scope.organizationId),
+              eq(schema.teams.seasonId, filter.seasonId),
+              eq(schema.teams.status, "active"),
+            ),
+          )
+          .groupBy(schema.teams.categoryId)
+      : [];
+    const countsBy = new Map(counts.map((c) => [c.categoryId, c.total]));
+    return rows.map((row) => ({
+      ...row,
+      gender: row.gender as CategoryGender | null,
+      status: row.status as CategoryStatus,
+      teamsCount: countsBy.get(row.id) ?? 0,
+    }));
+  }
+
+  async function byId(scope: OrgScope, id: string): Promise<CategoryRecord | null> {
+    return (await list(scope)).find((c) => c.id === id) ?? null;
+  }
+
+  return {
+    list,
+    byId,
+
+    async create(
+      scope: OrgScope,
+      input: CategoryCreate,
+    ): Promise<
+      { outcome: "created"; category: CategoryRecord } | { outcome: "unknown_section" } | NameTaken
+    > {
+      const section = await db()
+        .select({ id: schema.sections.id })
+        .from(schema.sections)
+        .where(
+          and(
+            eq(schema.sections.organizationId, scope.organizationId),
+            eq(schema.sections.id, input.sectionId),
+          ),
+        )
+        .limit(1);
+      if (!section[0]) return { outcome: "unknown_section" };
+      const last = await db()
+        .select({ max: sql<number>`coalesce(max(${schema.categories.sortOrder}), 0)` })
+        .from(schema.categories)
+        .where(eq(schema.categories.sectionId, input.sectionId));
+      try {
+        const rows = await db()
+          .insert(schema.categories)
+          .values({
+            organizationId: scope.organizationId,
+            sectionId: input.sectionId,
+            name: input.name,
+            gender: input.gender ?? null,
+            birthYearFrom: input.birthYearFrom ?? null,
+            birthYearTo: input.birthYearTo ?? null,
+            sortOrder: Number(last[0]?.max ?? 0) + 10,
+          })
+          .returning({ id: schema.categories.id });
+        return { outcome: "created", category: (await byId(scope, rows[0]!.id))! };
+      } catch (error) {
+        if (isUniqueViolation(error)) return { outcome: "name_taken" };
+        throw error;
+      }
+    },
+
+    async update(
+      scope: OrgScope,
+      id: string,
+      patch: CategoryUpdate,
+    ): Promise<
+      { outcome: "updated"; category: CategoryRecord } | { outcome: "not_found" } | NameTaken
+    > {
+      const values: Partial<typeof schema.categories.$inferInsert> = {};
+      if (patch.name !== undefined) values.name = patch.name;
+      if (patch.gender !== undefined) values.gender = patch.gender;
+      if (patch.birthYearFrom !== undefined) values.birthYearFrom = patch.birthYearFrom;
+      if (patch.birthYearTo !== undefined) values.birthYearTo = patch.birthYearTo;
+      if (patch.sortOrder !== undefined) values.sortOrder = patch.sortOrder;
+      if (patch.status !== undefined) values.status = patch.status;
+      try {
+        if (Object.keys(values).length > 0) {
+          const updated = await db()
+            .update(schema.categories)
+            .set(values)
+            .where(
+              and(
+                eq(schema.categories.organizationId, scope.organizationId),
+                eq(schema.categories.id, id),
+              ),
+            )
+            .returning({ id: schema.categories.id });
+          if (!updated[0]) return { outcome: "not_found" };
+        }
+      } catch (error) {
+        if (isUniqueViolation(error)) return { outcome: "name_taken" };
+        throw error;
+      }
+      const category = await byId(scope, id);
+      return category ? { outcome: "updated", category } : { outcome: "not_found" };
+    },
   };
 }
 
@@ -312,10 +670,13 @@ export function teamsRepo(db: () => Database) {
   const selection = {
     id: schema.teams.id,
     name: schema.teams.name,
-    category: schema.teams.category,
+    category: schema.categories.name,
+    categoryId: schema.teams.categoryId,
+    capacity: schema.teams.capacity,
     status: schema.teams.status,
     sectionId: schema.sections.id,
     sectionName: schema.sections.name,
+    sectionKind: schema.sections.kind,
     seasonId: schema.seasons.id,
     seasonName: schema.seasons.name,
     seasonIsCurrent: schema.seasons.isCurrent,
@@ -326,9 +687,10 @@ export function teamsRepo(db: () => Database) {
       .select(selection)
       .from(schema.teams)
       .innerJoin(schema.sections, eq(schema.sections.id, schema.teams.sectionId))
+      .innerJoin(schema.categories, eq(schema.categories.id, schema.teams.categoryId))
       .innerJoin(schema.seasons, eq(schema.seasons.id, schema.teams.seasonId))
       .leftJoin(schema.teamPlayers, eq(schema.teamPlayers.teamId, schema.teams.id))
-      .groupBy(schema.teams.id, schema.sections.id, schema.seasons.id);
+      .groupBy(schema.teams.id, schema.sections.id, schema.categories.id, schema.seasons.id);
 
   async function staffFor(scope: OrgScope, teamIds: string[]): Promise<Map<string, StaffRecord[]>> {
     const map = new Map<string, StaffRecord[]>();
@@ -339,6 +701,7 @@ export function teamsRepo(db: () => Database) {
         userId: schema.users.id,
         name: schema.users.name,
         email: schema.users.email,
+        roleInTeam: schema.teamStaff.roleInTeam,
       })
       .from(schema.teamStaff)
       .innerJoin(schema.users, eq(schema.users.id, schema.teamStaff.userId))
@@ -351,7 +714,12 @@ export function teamsRepo(db: () => Database) {
       .orderBy(asc(schema.users.name));
     for (const row of rows) {
       const list = map.get(row.teamId) ?? [];
-      list.push({ userId: row.userId, name: row.name, email: row.email });
+      list.push({
+        userId: row.userId,
+        name: row.name,
+        email: row.email,
+        roleInTeam: row.roleInTeam as TeamStaffRole,
+      });
       map.set(row.teamId, list);
     }
     return map;
@@ -362,11 +730,13 @@ export function teamsRepo(db: () => Database) {
     id: row.id,
     name: row.name,
     category: row.category,
+    categoryId: row.categoryId,
+    capacity: row.capacity,
     status: row.status as TeamStatus,
-    section: { id: row.sectionId, name: row.sectionName },
+    section: { id: row.sectionId, name: row.sectionName, kind: row.sectionKind as SectionKind },
     season: { id: row.seasonId, name: row.seasonName, isCurrent: row.seasonIsCurrent },
     playersCount: row.playersCount,
-    staff: staff.map((s) => ({ userId: s.userId, name: s.name })),
+    staff: staff.map((s) => ({ userId: s.userId, name: s.name, roleInTeam: s.roleInTeam })),
   });
 
   async function byId(scope: OrgScope, id: string): Promise<TeamRecord | null> {
@@ -382,16 +752,22 @@ export function teamsRepo(db: () => Database) {
   return {
     byId,
 
-    /** Equipos de una temporada, por sección y nombre. */
-    async list(scope: OrgScope, seasonId: string): Promise<TeamRecord[]> {
+    /** Equipos de una temporada (y, si se pide, de una sección), por sección, categoría y nombre. */
+    async list(scope: OrgScope, seasonId: string, sectionId?: string): Promise<TeamRecord[]> {
       const rows = await query()
         .where(
           and(
             eq(schema.teams.organizationId, scope.organizationId),
             eq(schema.teams.seasonId, seasonId),
+            ...(sectionId ? [eq(schema.teams.sectionId, sectionId)] : []),
           ),
         )
-        .orderBy(asc(schema.sections.sortOrder), asc(schema.sections.name), asc(schema.teams.name));
+        .orderBy(
+          asc(schema.sections.sortOrder),
+          asc(schema.sections.name),
+          asc(schema.categories.sortOrder),
+          asc(schema.teams.name),
+        );
       const staff = await staffFor(
         scope,
         rows.map((r) => r.id),
@@ -403,17 +779,18 @@ export function teamsRepo(db: () => Database) {
       const rows = await db()
         .select({
           playerId: schema.players.id,
-          firstName: schema.players.firstName,
-          lastName: schema.players.lastName,
-          birthDate: schema.players.birthDate,
+          firstName: schema.people.firstName,
+          lastName: schema.people.lastName,
+          birthDate: schema.people.birthDate,
           status: schema.players.status,
           shirtNumber: schema.teamPlayers.shirtNumber,
           position: schema.teamPlayers.position,
           guardiansCount: count(schema.playerGuardians.id),
-          photoBlobKey: schema.players.photoBlobKey,
+          photoBlobKey: schema.people.photoBlobKey,
         })
         .from(schema.teamPlayers)
         .innerJoin(schema.players, eq(schema.players.id, schema.teamPlayers.playerId))
+        .innerJoin(schema.people, eq(schema.people.id, schema.players.personId))
         .leftJoin(schema.playerGuardians, eq(schema.playerGuardians.playerId, schema.players.id))
         .where(
           and(
@@ -421,11 +798,11 @@ export function teamsRepo(db: () => Database) {
             eq(schema.teamPlayers.teamId, teamId),
           ),
         )
-        .groupBy(schema.players.id, schema.teamPlayers.id)
+        .groupBy(schema.players.id, schema.people.id, schema.teamPlayers.id)
         .orderBy(
           sql`${schema.teamPlayers.shirtNumber} nulls last`,
-          asc(schema.players.lastName),
-          asc(schema.players.firstName),
+          asc(schema.people.lastName),
+          asc(schema.people.firstName),
         );
       return rows.map((row) => ({ ...row, status: row.status as PlayerStatus }));
     },
@@ -441,6 +818,7 @@ export function teamsRepo(db: () => Database) {
     ): Promise<
       | { outcome: "created"; team: TeamRecord }
       | { outcome: "unknown_section" }
+      | { outcome: "unknown_category" }
       | { outcome: "unknown_season" }
       | NameTaken
     > {
@@ -466,15 +844,28 @@ export function teamsRepo(db: () => Database) {
         )
         .limit(1);
       if (!season[0]) return { outcome: "unknown_season" };
+      const category = await db()
+        .select({ id: schema.categories.id })
+        .from(schema.categories)
+        .where(
+          and(
+            eq(schema.categories.organizationId, scope.organizationId),
+            eq(schema.categories.id, input.categoryId),
+            eq(schema.categories.sectionId, input.sectionId),
+          ),
+        )
+        .limit(1);
+      if (!category[0]) return { outcome: "unknown_category" };
       try {
         const rows = await db()
           .insert(schema.teams)
           .values({
             organizationId: scope.organizationId,
             sectionId: input.sectionId,
+            categoryId: input.categoryId,
             seasonId: input.seasonId,
             name: input.name,
-            category: input.category?.trim() ? input.category.trim() : null,
+            capacity: input.capacity ?? null,
           })
           .returning({ id: schema.teams.id });
         const team = await byId(scope, rows[0]!.id);
@@ -494,13 +885,33 @@ export function teamsRepo(db: () => Database) {
       | { outcome: "updated"; team: TeamRecord }
       | { outcome: "not_found" }
       | { outcome: "unknown_section" }
+      | { outcome: "unknown_category" }
       | NameTaken
     > {
+      const current = await byId(scope, id);
+      if (!current) return { outcome: "not_found" };
       const values: Partial<typeof schema.teams.$inferInsert> = {};
       if (patch.name !== undefined) values.name = patch.name;
-      if (patch.category !== undefined)
-        values.category = patch.category?.trim() ? patch.category.trim() : null;
+      if (patch.capacity !== undefined) values.capacity = patch.capacity;
       if (patch.status !== undefined) values.status = patch.status;
+      if (patch.categoryId !== undefined) {
+        const category = await db()
+          .select({ id: schema.categories.id })
+          .from(schema.categories)
+          .where(
+            and(
+              eq(schema.categories.organizationId, scope.organizationId),
+              eq(schema.categories.id, patch.categoryId),
+              eq(schema.categories.sectionId, patch.sectionId ?? current.section.id),
+            ),
+          )
+          .limit(1);
+        if (!category[0]) return { outcome: "unknown_category" };
+        values.categoryId = patch.categoryId;
+      } else if (patch.sectionId !== undefined && patch.sectionId !== current.section.id) {
+        // Cambiar de sección exige una categoría de la sección nueva.
+        return { outcome: "unknown_category" };
+      }
       if (patch.sectionId !== undefined) {
         const section = await db()
           .select({ id: schema.sections.id })
@@ -620,6 +1031,7 @@ export function teamsRepo(db: () => Database) {
       scope: OrgScope,
       teamId: string,
       userId: string,
+      roleInTeam: TeamStaffRole = "head_coach",
     ): Promise<"added" | "already_staff" | "not_member" | "unknown_team"> {
       const team = await db()
         .select({ id: schema.teams.id })
@@ -644,7 +1056,7 @@ export function teamsRepo(db: () => Database) {
       try {
         await db()
           .insert(schema.teamStaff)
-          .values({ organizationId: scope.organizationId, teamId, userId });
+          .values({ organizationId: scope.organizationId, teamId, userId, roleInTeam });
         return "added";
       } catch (error) {
         if (isUniqueViolation(error)) return "already_staff";
@@ -667,7 +1079,9 @@ export function teamsRepo(db: () => Database) {
     },
 
     /** Miembros con rol de entrenador, personal o administración, elegibles para el cuerpo técnico. */
-    async eligibleStaff(scope: OrgScope): Promise<StaffRecord[]> {
+    async eligibleStaff(
+      scope: OrgScope,
+    ): Promise<{ userId: string; name: string; email: string }[]> {
       const rows = await db()
         .selectDistinct({
           userId: schema.users.id,

@@ -1,8 +1,8 @@
-# Capturas de la interfaz (Bloque 13)
+# Capturas de la interfaz (Bloques 14 a 18)
 
-Capturas que generan las pruebas de interfaz (`pnpm test:ui`) contra la API real con base embebida, con el front nuevo (Vite + React + Tailwind) sobre el design system del producto (`packages/design`, ADR 0027). Escritorio a 1280x800; móvil, Pixel 7. La fuente viva es el artefacto `capturas-interfaz` de CI; esta carpeta es la foto de la revisión del Bloque 11, con la ficha de jugador del Bloque 12 (ADR 0029) y el inicio operativo, los paneles por cargo, la ficha para la familia y el reto del Bloque 13 (ADR 0030).
+Capturas que generan las pruebas de interfaz (`pnpm test:ui`) contra la API real con base embebida, con el front de Vite + React + Tailwind sobre el design system del producto (`packages/design`, ADR 0027). Escritorio a 1280x800; móvil, Pixel 7. La fuente viva es el artefacto `capturas-interfaz` de CI; esta carpeta es la foto de la revisión del club completo (ADR 0031): secciones por deporte, socios, agenda e instalaciones, cuotas y "ver como", sobre lo que ya había de los bloques 11 a 13 (ADR 0028, 0029 y 0030).
 
-Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negocio en `/admin`. Cuentas de demostración, todas con contraseña `123456`: `admin@demo.test` (administra el club demo; en este entorno también la plataforma), `entrenador@demo.test` (entrenadora del Alevín A), `familia@demo.test` (madre de dos jugadores), `director@demo.test` (dirección deportiva) y `fisio@demo.test` (fisioterapia). El club demo llega con la temporada 2026-27, la sección "Fútbol sala", cuatro equipos con plantilla (ADR 0028) y un reto activo con registros de la familia Martí (ADR 0030).
+Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negocio en `/admin`. Cuentas de demostración, todas con contraseña `123456`: `admin@demo.test` (administra el club demo; en este entorno también la plataforma), `entrenador@demo.test` (entrenadora del Alevín A), `familia@demo.test` (madre de dos jugadores y socia), `director@demo.test` (dirección deportiva), `fisio@demo.test` (fisioterapia), `natacion@demo.test` (coordinación de natación) y `basquet@demo.test`, `basquetfem@demo.test` y `yoga@demo.test` (cuerpo técnico). El club demo llega con la temporada 2026-27, cuatro secciones (fútbol sala, baloncesto, natación y yoga) con categorías, once equipos y grupos, 83 deportistas, socios con tres tipos, cuatro instalaciones con horario, la agenda generada desde los horarios, partidos, planes de cuota con cargos y pagos, y un reto activo.
 
 ## Acceso
 
@@ -26,27 +26,181 @@ Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negoci
 
 ![Nueva contraseña sin enlace válido](escritorio-07-nueva-contrasena-sin-token.png)
 
-## Espacio del club (`/demo`)
+## El inicio del club completo (`/demo`)
 
-### Portada del club: héroe con la marca, recuentos, primeros pasos y lo que viene
+### Portada del administrador: héroe con el próximo evento, hoy en el club, recuentos y el club por deporte
 
-![Portada del club](escritorio-03-inicio.png)
+![Portada del administrador](escritorio-03-inicio.png)
 
-### Inicio operativo: alertas del club, preparación de las fichas, accesos rápidos y últimos movimientos (Bloque 13)
+### Inicio con alertas del club, preparación de las fichas y actividad plegada
 
 ![Inicio operativo](escritorio-03b-inicio-operativo.png)
 
-### Menú de persona: clubes, administración del negocio, idioma y salir
+### Inicio completo: secciones, alertas y recuentos de socios y cuotas (Bloque 14)
+
+![Inicio del club completo](escritorio-03c-inicio-club-completo.png)
+
+### Menú de persona: ver el club como otra persona, clubes, negocio, idioma y salir
 
 ![Menú de persona](escritorio-04-menu-persona.png)
 
-### Miembros del club
+## Ver el club como otra persona (Bloque 14)
 
-![Miembros del club](escritorio-10-miembros.png)
+### Elegir a quién mirar: personal, familias y administración del club
+
+![Ver como](escritorio-80-ver-como.png)
+
+### El club con los ojos de la entrenadora, con la banda de salida
+
+![Ver como entrenadora](escritorio-81-ver-como-entrenadora.png)
+
+### El club con los ojos de una familia
+
+![Ver como familia](escritorio-82-ver-como-familia.png)
+
+## Secciones por deporte (`/demo/sections`, Bloque 14)
+
+### Secciones: una tarjeta por deporte con sus cifras, coordinación y alertas
+
+![Secciones](escritorio-30-secciones.png)
+
+### Nueva sección: el deporte propone el nombre y las categorías (hoja)
+
+![Nueva sección](escritorio-32-seccion-nueva.png)
+
+### Ficha de sección: categorías con sus equipos, resumen, alertas y accesos
+
+![Ficha de sección](escritorio-31-seccion-ficha.png)
+
+### Personal de la sección
+
+![Personal de la sección](escritorio-31b-seccion-personal.png)
+
+### Nueva categoría (hoja)
+
+![Nueva categoría](escritorio-33-categoria-nueva.png)
+
+### Nuevo equipo en una categoría (hoja)
+
+![Nuevo equipo](escritorio-34-equipo-nuevo.png)
+
+### Ficha de equipo: plantilla, cuerpo técnico con cargo y horario semanal
+
+![Ficha de equipo](escritorio-35-equipo-ficha.png)
+
+### Horario semanal del equipo, del que se genera la agenda (hoja)
+
+![Horario del equipo](escritorio-35b-equipo-horario.png)
+
+### Añadir a la plantilla a un jugador del club
+
+![Añadir jugador a la plantilla](escritorio-36-equipo-anadir-jugador.png)
+
+## Deportistas y familias (`/demo/players`)
+
+### Deportistas con sección, equipo, socio, familia y estado
+
+![Deportistas](escritorio-40-jugadores.png)
+
+### Ficha de deportista: foto, indicadores, objetivo, acciones prioritarias, timeline, datos personales y de socio, PDI, equipos, familia y estado
+
+![Ficha de deportista](escritorio-41-jugador-ficha.png)
+
+### Valorar los indicadores (hoja)
+
+![Valorar indicadores](escritorio-41b-jugador-valorar.png)
+
+### Ficha con foto, indicadores revisados y un registro añadido al timeline
+
+![Ficha completa](escritorio-41c-jugador-ficha-completa.png)
+
+### Invitar a la familia desde la ficha
+
+![Invitar familia](escritorio-42-jugador-invitar-familia.png)
+
+### Invitación de familia pendiente, con el enlace de pruebas
+
+![Familia pendiente](escritorio-43-jugador-familia-pendiente.png)
+
+### Alta de un deportista
+
+![Nuevo deportista](escritorio-44-jugador-nuevo.png)
+
+### Dar de baja: confirmación con el texto del design system
+
+![Dar de baja](escritorio-45-jugador-baja.png)
+
+## Socios (`/demo/club-members`, Bloque 15)
+
+### Socios con número, tipo, papeles en el club, cuotas y estado
+
+![Socios](escritorio-90-socios.png)
+
+### Nuevo socio: persona nueva o alguien que ya está en el club (hoja)
+
+![Nuevo socio](escritorio-91-socio-nuevo.png)
+
+### Ficha de socio: persona, socio, papeles y cuotas
+
+![Ficha de socio](escritorio-92-socio-ficha.png)
+
+## Agenda e instalaciones (`/demo/agenda`, `/demo/facilities`, Bloque 16)
+
+### Agenda de la semana, por sección, equipo o instalación
+
+![Agenda](escritorio-93-agenda.png)
+
+### Nuevo evento con instalación y repetición semanal (hoja)
+
+![Nuevo evento](escritorio-94-agenda-evento-nuevo.png)
+
+### Detalle de un entrenamiento: equipo, instalación y pase de lista
+
+![Detalle de evento](escritorio-95-agenda-evento.png)
+
+### Instalaciones con apertura y uso de la semana
+
+![Instalaciones](escritorio-96-instalaciones.png)
+
+### Ficha de instalación: horas de apertura y ocupación semanal
+
+![Ficha de instalación](escritorio-97-instalacion-ficha.png)
+
+## Cuotas y cobros (`/demo/fees`, Bloque 18)
+
+### Cargos del club: pendientes, vencidos y cobrados, con filtros
+
+![Cargos](escritorio-98-cuotas-cargos.png)
+
+### Registrar un pago a mano (hoja)
+
+![Registrar pago](escritorio-98b-cuotas-cobrar.png)
+
+### Planes de cuota: a quién aplica cada uno
+
+![Planes](escritorio-98c-cuotas-planes.png)
+
+### Ajustes: cómo cobra el club, con Stripe preparado y sin claves
+
+![Ajustes de cobro](escritorio-99-ajustes-cobros.png)
+
+## Personal y ajustes
+
+### Personal del club con cargo y equipos
+
+![Personal del club](escritorio-10-miembros.png)
+
+### Personal con cargo (Bloque 13)
+
+![Personal con cargo](escritorio-10b-miembros-cargos.png)
 
 ### Invitar a alguien (hoja)
 
 ![Invitar a alguien](escritorio-11-miembros-invitar.png)
+
+### Invitar a personal del club con cargo y equipo (hoja)
+
+![Invitar personal](escritorio-11b-miembros-invitar-personal.png)
 
 ### Invitaciones pendientes con el enlace de pruebas
 
@@ -56,15 +210,7 @@ Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negoci
 
 ![Roles de una persona](escritorio-13-miembros-roles.png)
 
-### Miembros con cargo y equipos (Bloque 13)
-
-![Miembros con cargo](escritorio-10b-miembros-cargos.png)
-
-### Invitar a personal del club con cargo y equipo (hoja)
-
-![Invitar personal](escritorio-11b-miembros-invitar-personal.png)
-
-### Ajustes del club: datos generales
+### Ajustes del club: datos generales y zona horaria
 
 ![Ajustes del club: datos generales](escritorio-20-ajustes-general.png)
 
@@ -84,73 +230,21 @@ Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negoci
 
 ![Ajustes del club: logo subido](escritorio-24-ajustes-logo-subido.png)
 
-## Estructura del club: equipos, secciones y temporadas (`/demo/teams`)
-
-### Equipos de la temporada actual, por sección
-
-![Equipos](escritorio-30-equipos.png)
-
-### Secciones
-
-![Secciones](escritorio-31-secciones.png)
-
-### Temporadas, con la actual marcada
-
-![Temporadas](escritorio-32-temporadas.png)
-
-### Nueva temporada (hoja)
+### Ajustes: nueva temporada (hoja)
 
 ![Nueva temporada](escritorio-33-temporada-nueva.png)
 
-### Nuevo equipo (hoja)
+### Ajustes: tipos de socio
 
-![Nuevo equipo](escritorio-34-equipo-nuevo.png)
+![Tipos de socio](escritorio-99b-ajustes-tipos-socio.png)
 
-### Ficha de equipo: plantilla con dorsal y posición, y cuerpo técnico
+### Ajustes: puesta en marcha del club
 
-![Ficha de equipo](escritorio-35-equipo-ficha.png)
-
-### Añadir a la plantilla a un jugador del club
-
-![Añadir jugador a la plantilla](escritorio-36-equipo-anadir-jugador.png)
-
-## Jugadores y familias (`/demo/players`)
-
-### Jugadores con equipo, familia y estado
-
-![Jugadores](escritorio-40-jugadores.png)
-
-### Ficha de jugador: foto, indicadores, objetivo, acciones prioritarias, timeline, datos deportivos, PDI, equipos, familia y estado
-
-![Ficha de jugador](escritorio-41-jugador-ficha.png)
-
-### Valorar los indicadores del jugador (hoja)
-
-![Valorar indicadores](escritorio-41b-jugador-valorar.png)
-
-### Ficha con foto, indicadores revisados y un registro añadido al timeline
-
-![Ficha completa](escritorio-41c-jugador-ficha-completa.png)
-
-### Invitar a la familia desde la ficha
-
-![Invitar familia](escritorio-42-jugador-invitar-familia.png)
-
-### Invitación de familia pendiente, con el enlace de pruebas
-
-![Familia pendiente](escritorio-43-jugador-familia-pendiente.png)
-
-### Alta de un jugador
-
-![Nuevo jugador](escritorio-44-jugador-nuevo.png)
-
-### Dar de baja: confirmación con el texto del design system
-
-![Dar de baja](escritorio-45-jugador-baja.png)
+![Puesta en marcha](escritorio-99c-ajustes-puesta-en-marcha.png)
 
 ## Familia y entrenadora
 
-### Portada de una familia: sus jugadores
+### Portada de una familia: sus deportistas
 
 ![Portada de una familia](escritorio-46-familia-inicio.png)
 
@@ -161,6 +255,14 @@ Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negoci
 ### Ficha de uno de los suyos, vista por la familia: foto, equipo, objetivo, reto y movimientos; sin indicadores (Bloque 13)
 
 ![Ficha para la familia](escritorio-47b-familia-ficha.png)
+
+### La agenda de la familia: lo que tienen sus hijos esta semana (Bloque 16)
+
+![Agenda de la familia](escritorio-99d-familia-agenda.png)
+
+### Mis cuotas: lo pendiente y lo pagado, con el aviso de cobro a mano (Bloque 18)
+
+![Mis cuotas](escritorio-99e-familia-cuotas.png)
 
 ### La entrenadora gestiona la plantilla de su equipo y valora a sus jugadores (Bloque 13)
 
@@ -282,7 +384,7 @@ Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negoci
 
 ## Móvil
 
-Las mismas pantallas en un móvil, con la forma envolvente del design system: cabecera con el escudo, barra de pestañas flotante abajo, listas en filas cápsula y hojas que ocupan todo el ancho.
+Las mismas pantallas en un móvil, con la forma envolvente del design system: cabecera con el escudo, barra de pestañas flotante abajo con cuatro destinos y "Más", listas en filas cápsula y hojas que ocupan todo el ancho.
 
 ### Entrada general
 
@@ -292,13 +394,65 @@ Las mismas pantallas en un móvil, con la forma envolvente del design system: ca
 
 ![Portada del club (móvil)](movil-03-inicio.png)
 
+### Inicio del club completo
+
+![Inicio del club completo (móvil)](movil-03c-inicio-club-completo.png)
+
 ### Menú de persona
 
 ![Menú de persona (móvil)](movil-04-menu-persona.png)
 
-### Miembros del club
+### Ver como entrenadora
 
-![Miembros del club (móvil)](movil-10-miembros.png)
+![Ver como entrenadora (móvil)](movil-81-ver-como-entrenadora.png)
+
+### Secciones
+
+![Secciones (móvil)](movil-30-secciones.png)
+
+### Ficha de sección
+
+![Ficha de sección (móvil)](movil-31-seccion-ficha.png)
+
+### Ficha de equipo
+
+![Ficha de equipo (móvil)](movil-35-equipo-ficha.png)
+
+### Deportistas
+
+![Deportistas (móvil)](movil-40-jugadores.png)
+
+### Ficha de deportista
+
+![Ficha de deportista (móvil)](movil-41-jugador-ficha.png)
+
+### Alta de un deportista
+
+![Nuevo deportista (móvil)](movil-44-jugador-nuevo.png)
+
+### Socios
+
+![Socios (móvil)](movil-90-socios.png)
+
+### Ficha de socio
+
+![Ficha de socio (móvil)](movil-92-socio-ficha.png)
+
+### Agenda
+
+![Agenda (móvil)](movil-93-agenda.png)
+
+### Instalaciones
+
+![Instalaciones (móvil)](movil-96-instalaciones.png)
+
+### Cargos
+
+![Cargos (móvil)](movil-98-cuotas-cargos.png)
+
+### Personal del club
+
+![Personal del club (móvil)](movil-10-miembros.png)
 
 ### Invitar a alguien (hoja)
 
@@ -316,26 +470,6 @@ Las mismas pantallas en un móvil, con la forma envolvente del design system: ca
 
 ![Ajustes del club: colores de marca (móvil)](movil-21-ajustes-marca.png)
 
-### Equipos
-
-![Equipos (móvil)](movil-30-equipos.png)
-
-### Ficha de equipo
-
-![Ficha de equipo (móvil)](movil-35-equipo-ficha.png)
-
-### Jugadores
-
-![Jugadores (móvil)](movil-40-jugadores.png)
-
-### Ficha de jugador
-
-![Ficha de jugador (móvil)](movil-41-jugador-ficha.png)
-
-### Alta de un jugador
-
-![Nuevo jugador (móvil)](movil-44-jugador-nuevo.png)
-
 ### Inicio operativo
 
 ![Inicio operativo (móvil)](movil-03b-inicio-operativo.png)
@@ -351,6 +485,10 @@ Las mismas pantallas en un móvil, con la forma envolvente del design system: ca
 ### Ficha para la familia
 
 ![Ficha para la familia (móvil)](movil-47b-familia-ficha.png)
+
+### Mis cuotas
+
+![Mis cuotas (móvil)](movil-99e-familia-cuotas.png)
 
 ### Retos
 

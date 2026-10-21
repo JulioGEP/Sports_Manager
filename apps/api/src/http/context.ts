@@ -27,11 +27,18 @@ export interface SessionUser {
 export type Actor =
   | {
       kind: "member";
+      /**
+       * Quién actúa dentro del club. Con "ver como" (Bloque 14) es la persona observada: los
+       * permisos y lo "propio" (equipos, familia) son los suyos. La sesión (`sessionUser`) sigue
+       * siendo la de quien de verdad está dentro, y es quien queda en la auditoría.
+       */
       userId: string;
       roles: RoleCode[];
       /** Cargo del personal (Bloque 13), si tiene el rol `staff`. */
       position: StaffPosition | null;
       permissions: ReadonlySet<Permission>;
+      viewingAs: { userId: string; name: string; roles: RoleCode[] } | null;
+      canViewAs: boolean;
     }
   | {
       kind: "platform_support";

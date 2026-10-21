@@ -16,6 +16,7 @@ import {
   PlayerIndicatorsUpdateSchema,
   PlayerNoteCreateSchema,
   PlayerObjectiveUpdateSchema,
+  PlayerBasicResponseSchema,
   PlayerResponseSchema,
   PlayersOverviewResponseSchema,
   PlayersResponseSchema,
@@ -66,6 +67,7 @@ const idParam = z.object({ id: z.string().uuid() });
 
 const playerDto = (p: PlayerRow, slug: string) => ({
   id: p.id,
+  personId: p.personId,
   firstName: p.firstName,
   lastName: p.lastName,
   birthDate: p.birthDate,
@@ -75,6 +77,21 @@ const playerDto = (p: PlayerRow, slug: string) => ({
   photoUrl: playerPhotoUrlFor(p.photoBlobKey, slug, p.id),
   dominantFoot: p.dominantFoot,
   heightCm: p.heightCm,
+});
+
+/** La ficha completa añade los datos de la persona (Bloque 14): solo con `org.players.read`. */
+const playerFullDto = (
+  p: PlayerRow,
+  slug: string,
+  clubMember: { id: string; memberNumber: number; status: string } | null,
+) => ({
+  ...playerDto(p, slug),
+  gender: p.gender,
+  email: p.email,
+  phone: p.phone,
+  nationalId: p.nationalId,
+  userId: p.userId,
+  clubMember,
 });
 
 /** El alta en el club: la fecha indicada o, si no la hay, la creación de la ficha. */
@@ -148,7 +165,7 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
       ((key: "actor") => Actor) &
       ((key: "tenant") => AppEnv["Variables"]["tenant"]);
   };
-  const actorId = (c: Ctx) => c.get("sessionUser").id;
+  const actorId = (c: Ctx) => c.get("actor").userId;
 
   /**
    * Valorar a un jugador (objetivo, indicadores, PDI, anotaciones): con permiso de club, o con el
@@ -196,6 +213,7 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
   async function detail(c: Ctx, tenant: Tenant, player: PlayerRow) {
     const scope = tenant.scope;
     const profile = data.playerProfile;
+    const clubMember = await data.clubMembers.byPerson(scope, player.personId);
     const [teams, guardians, invitations, objective, indicators, developmentPlan, events, access] =
       await Promise.all([
         data.players.teamsOf(scope, player.id),
@@ -209,7 +227,13 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
       ]);
     return {
       access,
-      player: playerDto(player, tenant.organization.slug),
+      player: playerFullDto(
+        player,
+        tenant.organization.slug,
+        clubMember
+          ? { id: clubMember.id, memberNumber: clubMember.memberNumber, status: clubMember.status }
+          : null,
+      ),
       teams,
       guardians,
       pendingInvitations: invitations
@@ -267,7 +291,7 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
     }),
     async (c) => {
       const tenant = scopeOf(c);
-      const players = await data.players.familyOf(tenant.scope, c.get("sessionUser").id);
+      const players = await data.players.familyOf(tenant.scope, c.get("actor").userId);
       return c.json(
         {
           players: players.map((p) => ({
@@ -365,7 +389,9 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
         query: z.object({
           q: z.string().max(80).optional(),
           team: z.string().uuid().optional(),
-          /** Lo que falta en la ficha: foto, objetivo, equipo o familia (alertas del inicio). */
+          section: z.string().uuid().optional(),
+          category: z.string().uuid().optional(),
+          /** Lo que falta en la ficha: foto, objetivo, equipo, familia o socio (alertas del inicio). */
           missing: z.enum(PLAYER_MISSING_FILTERS).optional(),
         }),
       },
@@ -373,17 +399,25 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
     }),
     async (c) => {
       const tenant = scopeOf(c);
-      const { q, team, missing } = c.req.valid("query");
-      const players = await data.players.list(tenant.scope, { query: q, teamId: team, missing });
+      const { q, team, section, category, missing } = c.req.valid("query");
+      const players = await data.players.list(tenant.scope, {
+        query: q,
+        teamId: team,
+        sectionId: section,
+        categoryId: category,
+        missing,
+      });
       return c.json(
         {
           players: players.map((p) => ({
             id: p.id,
+            personId: p.personId,
             firstName: p.firstName,
             lastName: p.lastName,
             birthDate: p.birthDate,
             status: p.status,
             teams: p.teams,
+            memberNumber: p.memberNumber,
             guardiansCount: p.guardiansCount,
             pendingInvitationsCount: p.pendingInvitationsCount,
             photoUrl: playerPhotoUrlFor(p.photoBlobKey, tenant.organization.slug, p.id),
@@ -450,7 +484,8 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
       },
       responses: {
         201: json("Jugador", PlayerDetailResponseSchema),
-        400: error("Equipo desconocido"),
+        400: error("Equipo o persona desconocidos"),
+        409: error("Esa persona ya tiene ficha de deportista"),
         ...errors,
       },
     }),
@@ -461,7 +496,11 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
         const team = await data.teams.byId(tenant.scope, body.teamId);
         if (!team) throw badRequest("Ese equipo no es de este club.");
       }
-      const player = await data.players.create(tenant.scope, body);
+      const created = await data.players.create(tenant.scope, body);
+      if (created.outcome === "unknown_person") throw badRequest("Esa persona no es de este club.");
+      if (created.outcome === "already_player")
+        throw conflict("Esa persona ya tiene ficha de deportista.");
+      const player = created.player;
       if (body.teamId) {
         await data.teams.addPlayer(tenant.scope, body.teamId, { playerId: player.id });
         const team = await data.teams.byId(tenant.scope, body.teamId);
@@ -530,7 +569,7 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
         });
       }
       await audit(c, tenant, "player.updated", playerDisplayName(player), body);
-      return c.json({ player: playerDto(player, tenant.organization.slug) }, 200);
+      return c.json({ player: (await detail(c, tenant, player)).player }, 200);
     },
   );
 
@@ -933,7 +972,7 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
       security: [{ sessionCookie: [] }],
       request: { params: idParam, body: { content: photoBody, required: true } },
       responses: {
-        200: json("Jugador", z.union([PlayerDetailResponseSchema, PlayerResponseSchema])),
+        200: json("Jugador", z.union([PlayerDetailResponseSchema, PlayerBasicResponseSchema])),
         413: error("Demasiado grande"),
         415: error("Formato no admitido"),
         ...errors,
@@ -977,7 +1016,7 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
       security: [{ sessionCookie: [] }],
       request: { params: idParam },
       responses: {
-        200: json("Jugador", z.union([PlayerDetailResponseSchema, PlayerResponseSchema])),
+        200: json("Jugador", z.union([PlayerDetailResponseSchema, PlayerBasicResponseSchema])),
         ...errors,
       },
     }),

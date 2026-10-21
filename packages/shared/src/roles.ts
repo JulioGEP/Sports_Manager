@@ -37,7 +37,7 @@ export const PERMISSIONS = [
   "org.members.manage",
   /** Vista de soporte: estado y agregados del club, sin datos personales. */
   "org.support.read",
-  /** Estructura del club (Fase 1): temporadas, secciones y equipos con su cuerpo técnico. */
+  /** Estructura del club (Fase 1): temporadas, secciones, categorías y equipos con su cuerpo técnico. */
   "org.structure.read",
   "org.structure.write",
   /** Plantilla de los equipos propios (cuerpo técnico): meter, editar y sacar jugadores. */
@@ -60,6 +60,24 @@ export const PERMISSIONS = [
   "org.challenges.manage",
   "org.challenges.review",
   "org.challenges.review_own",
+  /** Socios del club (Bloque 14): la lista con sus datos de contacto y su cuota. */
+  "org.club_members.read",
+  "org.club_members.write",
+  /** Instalaciones: piscina, pistas, salas y sus franjas. */
+  "org.facilities.read",
+  "org.facilities.write",
+  /** Agenda: entrenamientos, partidos, actividades y reservas. `write_own`: los equipos propios. */
+  "org.events.read",
+  "org.events.write",
+  "org.events.write_own",
+  /** Pase de lista: ver el resumen; `write_own`: pasar lista en los equipos propios. */
+  "org.attendance.read",
+  "org.attendance.write_own",
+  /** Cuotas y cobros. */
+  "org.fees.read",
+  "org.fees.write",
+  /** Ver el club como otra persona del club sin cambiar de cuenta (solo administración). */
+  "org.view_as",
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
 
@@ -71,6 +89,10 @@ const STAFF_READ: readonly Permission[] = [
   "org.players.read",
   "org.activity.read",
   "org.challenges.read",
+  "org.club_members.read",
+  "org.facilities.read",
+  "org.events.read",
+  "org.attendance.read",
 ];
 
 /** Permisos que otorga cada rol de club. */
@@ -85,6 +107,12 @@ export const ROLE_PERMISSIONS: Record<RoleCode, readonly Permission[]> = {
     "org.players.assess",
     "org.challenges.manage",
     "org.challenges.review",
+    "org.club_members.write",
+    "org.facilities.write",
+    "org.events.write",
+    "org.fees.read",
+    "org.fees.write",
+    "org.view_as",
   ],
   staff: [...STAFF_READ],
   coach: [
@@ -93,6 +121,8 @@ export const ROLE_PERMISSIONS: Record<RoleCode, readonly Permission[]> = {
     "org.players.assess_own",
     "org.challenges.manage",
     "org.challenges.review_own",
+    "org.events.write_own",
+    "org.attendance.write_own",
   ],
   guardian: ["org.settings.read", "org.family.read", "org.family.write"],
 };
@@ -100,7 +130,8 @@ export const ROLE_PERMISSIONS: Record<RoleCode, readonly Permission[]> = {
 /**
  * Permisos que añade cada cargo del personal (ADR 0030). Dirección y coordinación gestionan
  * la estructura, los jugadores y el reto como la administración, sin tocar miembros ni ajustes;
- * el resto valora a cualquier jugador en lo suyo; la delegación solo consulta.
+ * dirección además lleva socios, instalaciones y lee las cuotas; coordinación lleva la agenda.
+ * El resto valora a cualquier jugador en lo suyo; la delegación pasa lista en sus equipos.
  */
 export const STAFF_POSITION_PERMISSIONS: Record<StaffPosition, readonly Permission[]> = {
   director: [
@@ -110,6 +141,10 @@ export const STAFF_POSITION_PERMISSIONS: Record<StaffPosition, readonly Permissi
     "org.players.assess",
     "org.challenges.manage",
     "org.challenges.review",
+    "org.club_members.write",
+    "org.facilities.write",
+    "org.events.write",
+    "org.fees.read",
   ],
   coordinator: [
     "org.members.invite",
@@ -118,8 +153,9 @@ export const STAFF_POSITION_PERMISSIONS: Record<StaffPosition, readonly Permissi
     "org.players.assess",
     "org.challenges.manage",
     "org.challenges.review",
+    "org.events.write",
   ],
-  delegate: [],
+  delegate: ["org.events.write_own", "org.attendance.write_own"],
   physio: ["org.players.assess"],
   fitness: ["org.players.assess"],
   psychologist: ["org.players.assess"],
@@ -140,6 +176,10 @@ export const SUPPORT_GRANT_PERMISSIONS: readonly Permission[] = [
   "org.structure.read",
   "org.players.read",
   "org.challenges.read",
+  "org.club_members.read",
+  "org.facilities.read",
+  "org.events.read",
+  "org.fees.read",
 ];
 
 /** Una pertenencia: el rol y, si es `staff`, su cargo. */
@@ -175,3 +215,10 @@ export function hasPermission(roles: Iterable<RoleCode>, permission: Permission)
 
 export const MEMBERSHIP_STATUSES = ["active", "suspended"] as const;
 export type MembershipStatus = (typeof MEMBERSHIP_STATUSES)[number];
+
+/**
+ * "Ver como" (Bloque 14): la administración mira el club con los ojos de otra persona del club.
+ * La web manda el usuario elegido en esta cabecera; la API solo la acepta con `org.view_as` y
+ * resuelve los permisos del otro. Los cambios quedan auditados con quien de verdad los hizo.
+ */
+export const VIEW_AS_HEADER = "x-sm-view-as";

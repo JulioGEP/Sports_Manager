@@ -12,14 +12,16 @@ import {
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useLayoutEffect,
   useMemo,
+  useState,
   type ReactNode,
 } from "react";
 import { useParams } from "react-router";
-import { ApiClientError, apiFetch, setCurrentClub } from "./api";
+import { ApiClientError, apiFetch, setCurrentClub, setCurrentViewAs } from "./api";
 import { ME_QUERY, fetchMe } from "./session";
 import { applyClubColors } from "./theme";
 
@@ -46,6 +48,9 @@ interface ClubContextValue {
   slug: string;
   state: ClubState;
   refresh: () => Promise<void>;
+  /** "Ver como" (Bloque 14): la persona elegida, o nula si se mira con los propios ojos. */
+  viewAs: string | null;
+  setViewAs: (userId: string | null) => Promise<void>;
 }
 
 const ClubContext = createContext<ClubContextValue | null>(null);
@@ -58,15 +63,53 @@ export function isValidClubSlug(slug: string | undefined): slug is string {
  * Espacio de un club (ADR 0027): el slug viene de la ruta (`/demo/...`). Fija la cabecera de
  * club para la API, carga marca, sesión, club y pertenencias, y aplica los colores del club.
  */
+const viewAsKey = (slug: string) => `sm.viewAs.${slug}`;
+
+function readViewAs(slug: string | null): string | null {
+  if (!slug) return null;
+  try {
+    return sessionStorage.getItem(viewAsKey(slug));
+  } catch {
+    return null;
+  }
+}
+
 export function ClubProvider({ children }: { children: ReactNode }) {
   const { club } = useParams();
   const slug = isValidClubSlug(club) ? club : null;
   const queryClient = useQueryClient();
+  const [viewAs, setViewAsState] = useState<string | null>(() => readViewAs(slug));
 
   useLayoutEffect(() => {
     setCurrentClub(slug);
-    return () => setCurrentClub(null);
+    setCurrentViewAs(readViewAs(slug));
+    setViewAsState(readViewAs(slug));
+    return () => {
+      setCurrentClub(null);
+      setCurrentViewAs(null);
+    };
   }, [slug]);
+
+  const setViewAs = useCallback(
+    async (userId: string | null) => {
+      if (!slug) return;
+      try {
+        if (userId) sessionStorage.setItem(viewAsKey(slug), userId);
+        else sessionStorage.removeItem(viewAsKey(slug));
+      } catch {
+        // Sin almacenamiento, el cambio dura lo que dure la página.
+      }
+      setCurrentViewAs(userId);
+      setViewAsState(userId);
+      // Se vacía la caché del club: lo que vio una persona no puede quedarse en pantalla para otra
+      // (una consulta que ahora falla por permisos mantendría los datos anteriores).
+      await Promise.all([
+        queryClient.resetQueries({ queryKey: ["org", slug] }),
+        queryClient.resetQueries({ queryKey: ["agenda", slug] }),
+      ]);
+    },
+    [slug, queryClient],
+  );
 
   const branding = useQuery({
     queryKey: ["branding", slug],
@@ -79,7 +122,7 @@ export function ClubProvider({ children }: { children: ReactNode }) {
   const me = useQuery({ queryKey: ME_QUERY, queryFn: fetchMe, retry: false, staleTime: 60_000 });
   const authenticated = me.data !== null && me.data !== undefined;
   const org = useQuery({
-    queryKey: ["org", slug],
+    queryKey: ["org", slug, "self", viewAs],
     queryFn: () => apiFetch("/api/org", { schema: OrganizationResponseSchema, club: slug }),
     enabled: slug !== null && authenticated,
     retry: false,
@@ -138,6 +181,8 @@ export function ClubProvider({ children }: { children: ReactNode }) {
     () => ({
       slug: slug ?? "",
       state,
+      viewAs,
+      setViewAs,
       refresh: async () => {
         await Promise.all([
           queryClient.invalidateQueries({ queryKey: ["branding", slug] }),
@@ -146,7 +191,7 @@ export function ClubProvider({ children }: { children: ReactNode }) {
         ]);
       },
     }),
-    [slug, state, queryClient],
+    [slug, state, queryClient, viewAs, setViewAs],
   );
 
   return <ClubContext.Provider value={value}>{children}</ClubContext.Provider>;
@@ -160,20 +205,31 @@ export function useClub(): ClubContextValue {
 
 /** Para páginas que solo se pintan con el club cargado y la persona dentro. */
 export function useReadyClub() {
-  const { slug, state, refresh } = useClub();
+  const { slug, state, refresh, viewAs, setViewAs } = useClub();
   if (state.kind !== "ready") throw new Error("useReadyClub con el club sin cargar");
-  return { slug, ...state, refresh, base: `/${slug}` };
+  return { slug, ...state, refresh, viewAs, setViewAs, base: `/${slug}` };
 }
 
-/** Rutas del espacio del club. */
+/** Rutas del espacio del club (Bloque 14: secciones, socios, personal, agenda, instalaciones, cuotas). */
 export const clubPaths = (slug: string) => ({
   home: `/${slug}`,
-  members: `/${slug}/members`,
+  /** Personal del club (antes "miembros"). `/members` redirige aquí. */
+  staff: `/${slug}/staff`,
+  members: `/${slug}/staff`,
   settings: `/${slug}/settings`,
-  teams: `/${slug}/teams`,
+  sections: `/${slug}/sections`,
+  section: (id: string) => `/${slug}/sections/${id}`,
+  /** `/teams` redirige a secciones; la ficha de equipo sigue en `/teams/:id`. */
+  teams: `/${slug}/sections`,
   team: (id: string) => `/${slug}/teams/${id}`,
   players: `/${slug}/players`,
   player: (id: string) => `/${slug}/players/${id}`,
+  clubMembers: `/${slug}/club-members`,
+  clubMember: (id: string) => `/${slug}/club-members/${id}`,
+  agenda: `/${slug}/agenda`,
+  facilities: `/${slug}/facilities`,
+  facility: (id: string) => `/${slug}/facilities/${id}`,
+  fees: `/${slug}/fees`,
   family: `/${slug}/family`,
   familyPlayer: (id: string) => `/${slug}/family/${id}`,
   challenges: `/${slug}/challenges`,

@@ -102,10 +102,26 @@ export function playerProfileRepo(db: () => Database, photos: BlobStore) {
   const personOf = (userId: string | null, name: string | null): PersonRef | null =>
     userId && name ? { userId, name } : null;
 
+  /** La foto vive en la persona (Bloque 14): se localiza desde el jugador. */
+  async function personIdOf(scope: OrgScope, playerId: string): Promise<string | null> {
+    const rows = await db()
+      .select({ personId: schema.players.personId })
+      .from(schema.players)
+      .where(
+        and(
+          eq(schema.players.organizationId, scope.organizationId),
+          eq(schema.players.id, playerId),
+        ),
+      )
+      .limit(1);
+    return rows[0]?.personId ?? null;
+  }
+
   async function photoKeyOf(scope: OrgScope, playerId: string): Promise<string | null> {
     const rows = await db()
-      .select({ key: schema.players.photoBlobKey })
+      .select({ key: schema.people.photoBlobKey })
       .from(schema.players)
+      .innerJoin(schema.people, eq(schema.people.id, schema.players.personId))
       .where(
         and(
           eq(schema.players.organizationId, scope.organizationId),
@@ -413,19 +429,21 @@ export function playerProfileRepo(db: () => Database, photos: BlobStore) {
       contentType: PlayerPhotoContentType,
       options: { cleanup: boolean },
     ): Promise<string | null> {
+      const personId = await personIdOf(scope, playerId);
+      if (!personId) return null;
       const previous = await photoKeyOf(scope, playerId);
       const key = `${scope.organizationId}/${playerId}/${randomUUID()}`;
       await photos.set(key, body, contentType);
       const rows = await db()
-        .update(schema.players)
+        .update(schema.people)
         .set({ photoBlobKey: key })
         .where(
           and(
-            eq(schema.players.organizationId, scope.organizationId),
-            eq(schema.players.id, playerId),
+            eq(schema.people.organizationId, scope.organizationId),
+            eq(schema.people.id, personId),
           ),
         )
-        .returning({ id: schema.players.id });
+        .returning({ id: schema.people.id });
       if (!rows[0]) {
         await photos.delete(key).catch(() => undefined);
         return null;
@@ -440,14 +458,15 @@ export function playerProfileRepo(db: () => Database, photos: BlobStore) {
       options: { cleanup: boolean },
     ): Promise<boolean> {
       const previous = await photoKeyOf(scope, playerId);
-      if (!previous) return false;
+      const personId = await personIdOf(scope, playerId);
+      if (!previous || !personId) return false;
       await db()
-        .update(schema.players)
+        .update(schema.people)
         .set({ photoBlobKey: null })
         .where(
           and(
-            eq(schema.players.organizationId, scope.organizationId),
-            eq(schema.players.id, playerId),
+            eq(schema.people.organizationId, scope.organizationId),
+            eq(schema.people.id, personId),
           ),
         );
       if (options.cleanup) await photos.delete(previous).catch(() => undefined);

@@ -19,7 +19,8 @@ test.describe("reto por puntos y paneles del personal", () => {
     await shot(page, "03b-inicio-operativo", info.project.name);
     await expectLegibleButtons(page);
 
-    await page.getByRole("link", { name: "Reto" }).first().click();
+    // En móvil el reto vive en "Más": se abre por su ruta.
+    await page.goto(`${CLUB}/challenges`);
     await expect(page.getByRole("heading", { name: "Retos" })).toBeVisible();
     await expect(page.getByText("Reto de hábitos 2026-27").first()).toBeVisible();
     await shot(page, "70-retos", info.project.name);
@@ -64,7 +65,8 @@ test.describe("reto por puntos y paneles del personal", () => {
   test("la familia registra actividad y ve solo sus puntos", async ({ page }, info) => {
     const sfx = suffix(info.project.name);
     await login(page, "familia@demo.test");
-    await page.getByRole("link", { name: "Reto" }).first().click();
+    // En móvil el reto vive en "Más": se abre por su ruta.
+    await page.goto(`${CLUB}/challenges`);
     await expect(page.getByRole("heading", { name: "Reto" })).toBeVisible();
     await expect(page.getByRole("tab", { name: "Clara Martí" })).toHaveAttribute(
       "aria-selected",
@@ -103,9 +105,9 @@ test.describe("reto por puntos y paneles del personal", () => {
     await expect(page.getByRole("heading", { name: "Alertas del club" })).toBeVisible();
     await shot(page, "75-director-inicio", info.project.name);
     await expectLegibleButtons(page);
-    // La dirección escribe estructura: ve el botón de nuevo equipo.
-    await page.getByRole("link", { name: "Equipos" }).first().click();
-    await expect(page.getByRole("button", { name: "Nuevo equipo" })).toBeVisible();
+    // La dirección escribe estructura: ve el botón de nueva sección.
+    await page.getByRole("link", { name: "Secciones" }).first().click();
+    await expect(page.getByRole("button", { name: "Nueva sección" })).toBeVisible();
     await signOut(page);
 
     await login(page, "fisio@demo.test");
@@ -115,8 +117,8 @@ test.describe("reto por puntos y paneles del personal", () => {
     await shot(page, "76-fisio-inicio", info.project.name);
     await expectLegibleButtons(page);
     // La fisio valora, pero no da de alta jugadores.
-    await page.getByRole("link", { name: "Jugadores" }).first().click();
-    await expect(page.getByRole("heading", { name: "Jugadores" })).toBeVisible();
+    await page.getByRole("link", { name: "Deportistas" }).first().click();
+    await expect(page.getByRole("heading", { name: "Deportistas" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Nuevo jugador" })).toHaveCount(0);
     await page.getByRole("link", { name: "Clara Martí" }).click();
     await expect(page.getByRole("button", { name: "Valorar" })).toBeVisible();

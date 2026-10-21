@@ -22,6 +22,8 @@ import {
   yearsSince,
   type DevelopmentPlanStatus,
   type DominantFoot,
+  type PersonGender,
+  PERSON_GENDERS,
   type Guardian,
   type GuardianRelationship,
   type Locale,
@@ -134,6 +136,7 @@ function useEligibleStaff(playerId: string) {
  */
 export function PlayerPage() {
   const t = useT("player");
+  const genders = useT("genders");
   const ps = useT("playerStatus");
   const rel = useT("relationships");
   const states = useT("invitationState");
@@ -777,6 +780,24 @@ export function PlayerPage() {
                 term: t("since"),
                 detail: dates.day(player.joinedOn ?? player.createdAt.slice(0, 10)),
               },
+              { term: t("person.gender"), detail: player.gender ? genders(player.gender) : "–" },
+              { term: t("person.email"), detail: player.email ?? "–" },
+              { term: t("person.phone"), detail: player.phone ?? "–" },
+              { term: t("person.nationalId"), detail: player.nationalId ?? "–" },
+              {
+                term: t("person.member"),
+                detail: player.clubMember ? (
+                  <Link to={paths.clubMember(player.clubMember.id)}>
+                    {t("person.memberNumber", { number: player.clubMember.memberNumber })}
+                  </Link>
+                ) : permissions.includes("org.club_members.write") ? (
+                  <Link to={`${paths.clubMembers}?new=1&person=${player.personId}`}>
+                    {t("person.makeMember")}
+                  </Link>
+                ) : (
+                  t("person.notMember")
+                ),
+              },
             ]}
           />
         </Card>
@@ -1030,6 +1051,12 @@ function EditPlayerSheet({
   const [joinedOn, setJoinedOn] = useState(player.joinedOn ?? "");
   const [dominantFoot, setDominantFoot] = useState<DominantFoot | "">(player.dominantFoot ?? "");
   const [heightCm, setHeightCm] = useState(player.heightCm === null ? "" : String(player.heightCm));
+  const [gender, setGender] = useState<PersonGender | "">(player.gender ?? "");
+  const [email, setEmail] = useState(player.email ?? "");
+  const [phone, setPhone] = useState(player.phone ?? "");
+  const [nationalId, setNationalId] = useState(player.nationalId ?? "");
+  const genders = useT("genders");
+  const tpp = useT("player.person");
   const [busy, setBusy] = useState(false);
 
   async function submit(e: FormEvent) {
@@ -1045,6 +1072,10 @@ function EditPlayerSheet({
           joinedOn: joinedOn || null,
           dominantFoot: dominantFoot || null,
           heightCm: heightCm.trim() === "" ? null : Number(heightCm),
+          gender: gender || null,
+          email: email.trim() || null,
+          phone: phone.trim() || null,
+          nationalId: nationalId.trim() || null,
         },
         schema: PlayerResponseSchema,
       });
@@ -1150,6 +1181,58 @@ function EditPlayerSheet({
                 className="font-mono"
                 value={heightCm}
                 onChange={(e) => setHeightCm(e.target.value)}
+              />
+            )}
+          </Field>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label={tpp("gender")}>
+            {(id) => (
+              <Select
+                id={id}
+                value={gender}
+                onChange={(e) => setGender(e.target.value as PersonGender | "")}
+              >
+                <option value="">{tpp("genderNone")}</option>
+                {PERSON_GENDERS.map((code) => (
+                  <option key={code} value={code}>
+                    {genders(code)}
+                  </option>
+                ))}
+              </Select>
+            )}
+          </Field>
+          <Field label={tpp("nationalId")}>
+            {(id) => (
+              <Input
+                id={id}
+                maxLength={20}
+                value={nationalId}
+                onChange={(e) => setNationalId(e.target.value)}
+              />
+            )}
+          </Field>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label={tpp("email")} hint={tpp("emailHint")}>
+            {(id) => (
+              <Input
+                id={id}
+                type="email"
+                maxLength={254}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            )}
+          </Field>
+          <Field label={tpp("phone")}>
+            {(id) => (
+              <Input
+                id={id}
+                type="tel"
+                maxLength={30}
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
               />
             )}
           </Field>

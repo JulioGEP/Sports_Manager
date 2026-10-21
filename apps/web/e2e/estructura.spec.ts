@@ -1,67 +1,105 @@
 import { expect, test } from "@playwright/test";
 import { CLUB, expectLegibleButtons, login, shot, suffix } from "./helpers";
 
-/** Secciones y temporadas, equipos y plantillas (Bloque 11) con el club demo precargado. */
+/**
+ * Secciones por deporte con categorías, equipos y grupos (Bloque 14), ficha de equipo con
+ * plantilla, cuerpo técnico y horario semanal (Bloques 11 y 16), con el club demo precargado.
+ */
 test.describe("estructura del club", () => {
   test.beforeEach(async ({ page }) => {
     await login(page);
   });
 
-  test("equipos, secciones y temporadas", async ({ page }, info) => {
+  test("secciones, ficha de sección, categoría y equipo nuevos", async ({ page }, info) => {
     const sfx = suffix(info.project.name);
-    await page.getByRole("link", { name: "Equipos" }).first().click();
-    await expect(page.getByRole("heading", { name: "Equipos" })).toBeVisible();
-    await expect(page.getByText("Alevín A")).toBeVisible();
-    await expect(page.getByText("Infantil A")).toBeVisible();
-    await shot(page, "30-equipos", info.project.name);
+    await page.getByRole("link", { name: "Secciones" }).first().click();
+    await expect(page.getByRole("heading", { name: "Secciones" })).toBeVisible();
+    await expect(page.getByRole("link", { name: /Fútbol sala/ })).toBeVisible();
+    await expect(page.getByRole("link", { name: /Baloncesto/ })).toBeVisible();
+    await expect(page.getByRole("link", { name: /Natación/ })).toBeVisible();
+    await expect(page.getByRole("link", { name: /Yoga/ })).toBeVisible();
+    await shot(page, "30-secciones", info.project.name);
     await expectLegibleButtons(page);
 
-    await page.getByRole("tab", { name: "Secciones" }).click();
-    await expect(page.getByText("Fútbol sala").first()).toBeVisible();
-    await shot(page, "31-secciones", info.project.name);
+    // Nueva sección: el deporte propone el nombre y las categorías.
+    await page.getByRole("button", { name: "Nueva sección" }).first().click();
+    const sectionSheet = page.getByRole("dialog");
+    await sectionSheet.getByLabel("Deporte").selectOption({ label: "Pádel" });
+    await expect(sectionSheet.getByLabel("Nombre", { exact: true })).toHaveValue("Pádel");
+    await sectionSheet.getByLabel("Nombre", { exact: true }).fill(`Pádel ${sfx}`);
+    await shot(page, "32-seccion-nueva", info.project.name);
+    await sectionSheet.getByRole("button", { name: "Crear sección" }).click();
+    await expect(page.getByText(`Sección Pádel ${sfx} creada.`)).toBeVisible();
+    // Al crearla se abre su ficha, con las categorías que propuso el deporte.
+    await expect(page.getByRole("heading", { name: new RegExp(`Pádel ${sfx}`) })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Resumen" })).toBeVisible();
+    await page.getByRole("link", { name: "Secciones" }).first().click();
+    await expect(page.getByRole("link", { name: new RegExp(`Pádel ${sfx}`) })).toBeVisible();
 
-    await page.getByRole("tab", { name: "Temporadas" }).click();
-    await expect(page.getByText("2026-27").first()).toBeVisible();
-    await expect(page.getByText("Actual").first()).toBeVisible();
-    await shot(page, "32-temporadas", info.project.name);
+    // Ficha de la sección de fútbol sala: categorías con sus equipos, personal y resumen.
+    await page.getByRole("link", { name: /Fútbol sala/ }).click();
+    await expect(page.getByRole("heading", { name: /Fútbol sala/ })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Alevín A" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Infantil A" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Resumen" })).toBeVisible();
+    await shot(page, "31-seccion-ficha", info.project.name);
     await expectLegibleButtons(page);
 
-    // Nueva temporada, sin marcarla como actual.
-    await page.getByRole("button", { name: "Nueva temporada" }).click();
-    const seasonSheet = page.getByRole("dialog");
-    await seasonSheet.getByLabel("Nombre", { exact: true }).fill(`2027-28 ${sfx}`);
-    await seasonSheet.getByLabel("Empieza").fill("2027-09-01");
-    await seasonSheet.getByLabel("Acaba").fill("2028-06-30");
-    await shot(page, "33-temporada-nueva", info.project.name);
-    await seasonSheet.getByRole("button", { name: "Crear temporada" }).click();
-    await expect(page.getByText(`Temporada 2027-28 ${sfx} creada.`)).toBeVisible();
-    await expect(page.getByText(`2027-28 ${sfx}`)).toBeVisible();
+    await page.getByRole("tab", { name: /Personal/ }).click();
+    await expect(page.getByText("Carla Vidal").first()).toBeVisible();
+    await shot(page, "31b-seccion-personal", info.project.name);
+    await page.getByRole("tab", { name: /Equipos/ }).click();
 
-    // Nuevo equipo en la temporada actual.
-    await page.getByRole("tab", { name: "Equipos" }).click();
-    await page.getByRole("button", { name: "Nuevo equipo" }).click();
+    // Nueva categoría en la sección.
+    await page.getByRole("button", { name: "Nueva categoría" }).click();
+    const categorySheet = page.getByRole("dialog");
+    await categorySheet.getByLabel("Nombre", { exact: true }).fill(`Cadete ${sfx}`);
+    await categorySheet.getByLabel("Nacidos desde").fill("2011");
+    await categorySheet.getByLabel("Nacidos hasta").fill("2012");
+    await shot(page, "33-categoria-nueva", info.project.name);
+    await categorySheet.getByRole("button", { name: "Crear categoría" }).click();
+    await expect(page.getByText(`Categoría Cadete ${sfx} creada.`)).toBeVisible();
+    await expect(page.getByRole("heading", { name: `Cadete ${sfx}` })).toBeVisible();
+
+    // Nuevo equipo en esa categoría, en la temporada actual.
+    // La tarjeta de la categoría es la sección más interna que contiene su título.
+    await page
+      .locator("section")
+      .filter({ has: page.getByRole("heading", { name: `Cadete ${sfx}` }) })
+      .last()
+      .getByRole("button", { name: "Añadir equipo" })
+      .click();
     const teamSheet = page.getByRole("dialog");
-    await teamSheet.getByLabel("Nombre del equipo").fill(`Cadete ${sfx}`);
-    await teamSheet.getByLabel("Categoría").fill("Cadete");
+    await teamSheet.getByLabel("Nombre del equipo").fill(`Cadete A ${sfx}`);
+    await expect(teamSheet.getByLabel("Categoría")).toHaveValue(/.+/);
     await shot(page, "34-equipo-nuevo", info.project.name);
     await teamSheet.getByRole("button", { name: "Crear equipo" }).click();
-    await expect(page.getByText(`Equipo Cadete ${sfx} creado.`)).toBeVisible();
-    await expect(page.getByText(`Cadete ${sfx}`).first()).toBeVisible();
+    await expect(page.getByText(`Cadete A ${sfx} creado.`)).toBeVisible();
+    // Al crearlo se abre su ficha, vacía y con la categoría en el encabezado.
+    await expect(page.getByRole("heading", { name: new RegExp(`Cadete A ${sfx}`) })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Horario semanal" })).toBeVisible();
   });
 
-  test("ficha de equipo: plantilla y cuerpo técnico", async ({ page }, info) => {
-    await page.goto(`${CLUB}/teams`);
-    await page
-      .locator("tr, li")
-      .filter({ hasText: "Alevín A" })
-      .getByRole("link", { name: "Abrir" })
-      .first()
-      .click();
+  test("ficha de equipo: plantilla, cuerpo técnico y horario", async ({ page }, info) => {
+    await page.goto(`${CLUB}/sections`);
+    await page.getByRole("link", { name: /Fútbol sala/ }).click();
+    await page.getByRole("link", { name: "Alevín A" }).click();
     await expect(page.getByRole("heading", { name: "Alevín A" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Clara Martí" })).toBeVisible();
     await expect(page.getByText("Carla Vidal")).toBeVisible();
+    // Horario semanal sembrado: de aquí sale la agenda de la temporada (Bloque 16).
+    await expect(page.getByRole("heading", { name: "Horario semanal" })).toBeVisible();
+    await expect(page.getByText(/Lunes|Martes|Miércoles|Jueves|Viernes/).first()).toBeVisible();
     await shot(page, "35-equipo-ficha", info.project.name);
     await expectLegibleButtons(page);
+
+    await page.getByRole("button", { name: "Editar horario" }).click();
+    const schedule = page.getByRole("dialog");
+    await expect(schedule.getByRole("heading", { name: "Horario semanal" })).toBeVisible();
+    await expect(schedule.getByLabel("Día").first()).toBeVisible();
+    await shot(page, "35b-equipo-horario", info.project.name);
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("dialog")).toBeHidden();
 
     // Añadir a la plantilla a alguien que ya está en el club (el primero disponible).
     await page.getByRole("button", { name: "Añadir jugador" }).click();

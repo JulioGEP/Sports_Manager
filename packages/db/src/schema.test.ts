@@ -22,6 +22,7 @@ async function errorCode(
 const UNIQUE_VIOLATION = "23505";
 const CHECK_VIOLATION = "23514";
 const FK_VIOLATION = "23503";
+const NOT_NULL_VIOLATION = "23502";
 
 describe("esquema del Bloque 2 (Postgres embebido con todas las migraciones)", () => {
   let local: NetlifyDB;
@@ -197,37 +198,94 @@ describe("esquema del Bloque 2 (Postgres embebido con todas las migraciones)", (
     );
 
     const { rows: sec } = await client.query<{ id: string }>(
-      "insert into sections (organization_id, name) values ($1, 'Fútbol sala') returning id",
-      [orgId],
+      "insert into sections (organization_id, name, sport_id) values ($1, 'Fútbol sala', $2) returning id",
+      [orgId, sportId],
     );
     expect(
       await errorCode(
         client,
-        "insert into sections (organization_id, name) values ($1, 'Fútbol sala')",
-        [orgId],
+        "insert into sections (organization_id, name, sport_id) values ($1, 'Fútbol sala', $2)",
+        [orgId, sportId],
       ),
     ).toBe(UNIQUE_VIOLATION);
+    // Una sección siempre tiene deporte y un tipo conocido (Bloque 14).
+    expect(
+      await errorCode(
+        client,
+        "insert into sections (organization_id, name) values ($1, 'Sin deporte')",
+        [orgId],
+      ),
+    ).toBe(NOT_NULL_VIOLATION);
+    expect(
+      await errorCode(client, "update sections set kind = 'otro' where id = $1", [sec[0]!.id]),
+    ).toBe(CHECK_VIOLATION);
     expect(
       await errorCode(client, "update sections set status = 'deleted' where id = $1", [sec[0]!.id]),
     ).toBe(CHECK_VIOLATION);
 
+    // Categorías (Bloque 14): únicas por sección, género y años conocidos, no se borran con equipos.
+    const category =
+      "insert into categories (organization_id, section_id, name, gender, birth_year_from, birth_year_to) values ($1, $2, $3, $4, $5, $6) returning id";
+    const { rows: cat } = await client.query<{ id: string }>(category, [
+      orgId,
+      sec[0]!.id,
+      "Alevín",
+      "mixed",
+      2015,
+      2016,
+    ]);
+    expect(await errorCode(client, category, [orgId, sec[0]!.id, "Alevín", null, null, null])).toBe(
+      UNIQUE_VIOLATION,
+    );
+    expect(
+      await errorCode(client, category, [orgId, sec[0]!.id, "Rara", "unisex", null, null]),
+    ).toBe(CHECK_VIOLATION);
+    expect(
+      await errorCode(client, category, [orgId, sec[0]!.id, "Al revés", null, 2016, 2015]),
+    ).toBe(CHECK_VIOLATION);
+
     const team =
-      "insert into teams (organization_id, section_id, season_id, name, category) values ($1, $2, $3, $4, $5) returning id";
+      "insert into teams (organization_id, section_id, category_id, season_id, name) values ($1, $2, $3, $4, $5) returning id";
     const { rows: t1 } = await client.query<{ id: string }>(team, [
       orgId,
       sec[0]!.id,
+      cat[0]!.id,
       s1[0]!.id,
       "Alevín A",
-      "Alevín",
     ]);
-    expect(await errorCode(client, team, [orgId, sec[0]!.id, s1[0]!.id, "Alevín A", null])).toBe(
-      UNIQUE_VIOLATION,
+    expect(
+      await errorCode(client, team, [orgId, sec[0]!.id, cat[0]!.id, s1[0]!.id, "Alevín A"]),
+    ).toBe(UNIQUE_VIOLATION);
+    expect(
+      await errorCode(client, "update teams set capacity = 0 where id = $1", [t1[0]!.id]),
+    ).toBe(CHECK_VIOLATION);
+    expect(await errorCode(client, "delete from categories where id = $1", [cat[0]!.id])).toBe(
+      FK_VIOLATION,
     );
 
-    const { rows: p1 } = await client.query<{ id: string }>(
-      "insert into players (organization_id, first_name, last_name, birth_date) values ($1, 'Clara', 'Martí', '2015-02-03') returning id",
+    // Un deportista es una persona del club (Bloque 14): sin persona no hay ficha.
+    const { rows: person } = await client.query<{ id: string }>(
+      "insert into people (organization_id, first_name, last_name, birth_date) values ($1, 'Clara', 'Martí', '2015-02-03') returning id",
       [orgId],
     );
+    expect(
+      await errorCode(client, "insert into players (organization_id) values ($1)", [orgId]),
+    ).toBe(NOT_NULL_VIOLATION);
+    const { rows: p1 } = await client.query<{ id: string }>(
+      "insert into players (organization_id, person_id) values ($1, $2) returning id",
+      [orgId, person[0]!.id],
+    );
+    expect(
+      await errorCode(client, "insert into players (organization_id, person_id) values ($1, $2)", [
+        orgId,
+        person[0]!.id,
+      ]),
+    ).toBe(UNIQUE_VIOLATION);
+    expect(
+      await errorCode(client, "update people set email = 'Clara@club.test' where id = $1", [
+        person[0]!.id,
+      ]),
+    ).toBe(CHECK_VIOLATION);
     const roster =
       "insert into team_players (organization_id, team_id, player_id, shirt_number) values ($1, $2, $3, $4)";
     expect(await errorCode(client, roster, [orgId, t1[0]!.id, p1[0]!.id, 1])).toBeNull();
@@ -268,7 +326,10 @@ describe("esquema del Bloque 2 (Postgres embebido con todas las migraciones)", (
         "update invitations set relationship = 'cousin' where token_hash = 'hash-fam'",
       ),
     ).toBe(CHECK_VIOLATION);
-    await client.query("delete from players where id = $1", [p1[0]!.id]);
+    await client.query("delete from people where id = $1", [person[0]!.id]);
+    expect((await client.query("select 1 from players where id = $1", [p1[0]!.id])).rowCount).toBe(
+      0,
+    );
     expect(
       (await client.query("select 1 from team_players where player_id = $1", [p1[0]!.id])).rowCount,
     ).toBe(0);
@@ -294,9 +355,13 @@ describe("esquema del Bloque 2 (Postgres embebido con todas las migraciones)", (
   });
 
   it("ficha ampliada del jugador (ADR 0029): pie y altura válidos, un objetivo y un PDI por jugador, indicadores por dimensión y registros con tipo conocido", async () => {
-    const { rows: p } = await client.query<{ id: string }>(
-      "insert into players (organization_id, first_name, last_name, dominant_foot, height_cm) values ($1, 'Marc', 'Martí', 'right', 142) returning id",
+    const { rows: marc } = await client.query<{ id: string }>(
+      "insert into people (organization_id, first_name, last_name) values ($1, 'Marc', 'Martí') returning id",
       [orgId],
+    );
+    const { rows: p } = await client.query<{ id: string }>(
+      "insert into players (organization_id, person_id, dominant_foot, height_cm) values ($1, $2, 'right', 142) returning id",
+      [orgId, marc[0]!.id],
     );
     const playerId = p[0]!.id;
     expect(
@@ -376,7 +441,7 @@ describe("esquema del Bloque 2 (Postgres embebido con todas las migraciones)", (
     }
   });
 
-  it("el club demo llega con temporada, sección, equipos, plantilla y dos cuentas de prueba", async () => {
+  it("el club demo llega con temporada, secciones, equipos, plantilla y cuentas de prueba", async () => {
     const { rows } = await client.query<{
       teams: string;
       players: string;
@@ -389,8 +454,8 @@ describe("esquema del Bloque 2 (Postgres embebido con todas las migraciones)", (
          (select count(*) from team_staff ts join users u on u.id = ts.user_id where u.email = 'entrenador@demo.test') as staff,
          (select count(*) from player_guardians pg join users u on u.id = pg.user_id where u.email = 'familia@demo.test') as guardians`,
     );
-    expect(Number(rows[0]!.teams)).toBe(4);
-    expect(Number(rows[0]!.players)).toBe(36);
+    expect(Number(rows[0]!.teams)).toBe(11);
+    expect(Number(rows[0]!.players)).toBe(83);
     expect(Number(rows[0]!.staff)).toBe(1);
     expect(Number(rows[0]!.guardians)).toBe(2);
     const { rows: seasons } = await client.query<{ is_current: boolean }>(
@@ -413,8 +478,8 @@ describe("esquema del Bloque 2 (Postgres embebido con todas las migraciones)", (
          (select count(*) from player_indicators x where x.player_id = p.id) as indicators,
          (select count(*) from player_development_plans x where x.player_id = p.id) as plans,
          (select count(*) from player_events x where x.player_id = p.id) as events
-       from players p join organizations o on o.id = p.organization_id
-       where o.slug = 'demo' and p.first_name = 'Clara' and p.last_name = 'Martí'`,
+       from players p join people x on x.id = p.person_id join organizations o on o.id = p.organization_id
+       where o.slug = 'demo' and x.first_name = 'Clara' and x.last_name = 'Martí'`,
     );
     expect(rows).toHaveLength(1);
     expect(rows[0]).toMatchObject({ height_cm: 142, dominant_foot: "right" });
@@ -422,6 +487,85 @@ describe("esquema del Bloque 2 (Postgres embebido con todas las migraciones)", (
     expect(Number(rows[0]!.indicators)).toBe(4);
     expect(Number(rows[0]!.plans)).toBe(1);
     expect(Number(rows[0]!.events)).toBe(3);
+  });
+
+  it("el club completo (ADR 0031): el demo migra jugadores a personas y trae socios, instalaciones, agenda y cuotas", async () => {
+    const { rows } = await client.query<Record<string, string>>(
+      `select
+         (select count(*) from players p join organizations o on o.id = p.organization_id where o.slug = 'demo' and p.person_id is null) as orphans,
+         (select count(*) from sections s join organizations o on o.id = s.organization_id where o.slug = 'demo') as sections,
+         (select count(*) from categories c join organizations o on o.id = c.organization_id where o.slug = 'demo') as categories,
+         (select count(*) from club_members m join organizations o on o.id = m.organization_id where o.slug = 'demo') as members,
+         (select count(*) from facilities f join organizations o on o.id = f.organization_id where o.slug = 'demo') as facilities,
+         (select count(*) from events e join organizations o on o.id = e.organization_id where o.slug = 'demo' and e.kind = 'match') as matches,
+         (select count(*) from fee_charges c join organizations o on o.id = c.organization_id where o.slug = 'demo' and c.status = 'paid') as paid,
+         (select count(*) from people x join organizations o on o.id = x.organization_id join users u on u.id = x.user_id where o.slug = 'demo' and u.email = 'familia@demo.test') as family_person`,
+    );
+    expect(Number(rows[0]!.orphans)).toBe(0);
+    expect(Number(rows[0]!.sections)).toBe(4);
+    expect(Number(rows[0]!.categories)).toBe(12);
+    expect(Number(rows[0]!.members)).toBeGreaterThan(40);
+    expect(Number(rows[0]!.facilities)).toBe(4);
+    expect(Number(rows[0]!.matches)).toBe(8);
+    expect(Number(rows[0]!.paid)).toBeGreaterThan(0);
+    expect(Number(rows[0]!.family_person)).toBe(1);
+
+    // Socios: número único por club, estado conocido; cargos y pagos con importes positivos.
+    const { rows: member } = await client.query<{ organization_id: string; person_id: string }>(
+      "select m.organization_id, m.person_id from club_members m limit 1",
+    );
+    expect(
+      await errorCode(
+        client,
+        "insert into club_members (organization_id, person_id, member_number) values ($1, $2, 1)",
+        [member[0]!.organization_id, member[0]!.person_id],
+      ),
+    ).toBe(UNIQUE_VIOLATION);
+    expect(
+      await errorCode(client, "update club_members set status = 'expulsado' where person_id = $1", [
+        member[0]!.person_id,
+      ]),
+    ).toBe(CHECK_VIOLATION);
+    expect(
+      await errorCode(
+        client,
+        "insert into fee_charges (organization_id, person_id, concept, amount_cents, due_on) values ($1, $2, 'Cero', 0, current_date)",
+        [member[0]!.organization_id, member[0]!.person_id],
+      ),
+    ).toBe(CHECK_VIOLATION);
+
+    // Agenda: fin después de inicio, tipo conocido, día de la semana ISO en horarios y franjas.
+    const { rows: facility } = await client.query<{ id: string; organization_id: string }>(
+      "select id, organization_id from facilities limit 1",
+    );
+    expect(
+      await errorCode(
+        client,
+        "insert into events (organization_id, kind, title, starts_at, ends_at) values ($1, 'training', 'Al revés', now(), now() - interval '1 hour')",
+        [facility[0]!.organization_id],
+      ),
+    ).toBe(CHECK_VIOLATION);
+    expect(
+      await errorCode(
+        client,
+        "insert into events (organization_id, kind, title, starts_at, ends_at) values ($1, 'fiesta', 'Tipo raro', now(), now() + interval '1 hour')",
+        [facility[0]!.organization_id],
+      ),
+    ).toBe(CHECK_VIOLATION);
+    expect(
+      await errorCode(
+        client,
+        "insert into facility_hours (organization_id, facility_id, weekday, opens_at, closes_at) values ($1, $2, 8, '09:00', '10:00')",
+        [facility[0]!.organization_id, facility[0]!.id],
+      ),
+    ).toBe(CHECK_VIOLATION);
+    expect(
+      await errorCode(
+        client,
+        "update organizations set payments_provider = 'paypal' where id = $1",
+        [facility[0]!.organization_id],
+      ),
+    ).toBe(CHECK_VIOLATION);
   });
 
   it("borrar un club arrastra pertenencias e invitaciones; borrar un usuario deja en nulo quién invitó", async () => {

@@ -1,4 +1,4 @@
-import { ApiErrorSchema, type ApiErrorCode } from "@sportsmanager/shared";
+import { ApiErrorSchema, VIEW_AS_HEADER, type ApiErrorCode } from "@sportsmanager/shared";
 
 /** Códigos de error que la web traduce. Los de la API más los de Better Auth que importan. */
 export type ClientErrorCode =
@@ -47,6 +47,27 @@ export function getCurrentClub(): string | null {
   return currentClub;
 }
 
+/**
+ * "Ver como" (Bloque 14): la administración mira el club con los ojos de otra persona. La web
+ * manda su id en cada petición del club; la API decide si puede. Lo fija el espacio del club.
+ */
+let currentViewAs: string | null = null;
+
+export function setCurrentViewAs(userId: string | null): void {
+  currentViewAs = userId;
+}
+
+export function getCurrentViewAs(): string | null {
+  return currentViewAs;
+}
+
+function clubHeaders(club: string | null): Record<string, string> {
+  return {
+    ...(club ? { [CLUB_HEADER]: club } : {}),
+    ...(club && currentViewAs ? { [VIEW_AS_HEADER]: currentViewAs } : {}),
+  };
+}
+
 function errorFromBody(status: number, json: unknown): ApiClientError {
   const api = ApiErrorSchema.safeParse(json);
   if (api.success) return new ApiClientError(status, api.data.error.code, api.data.error.message);
@@ -77,7 +98,7 @@ export async function apiFetch<T = unknown>(
       method: options.method ?? "GET",
       headers: {
         accept: "application/json",
-        ...(club ? { [CLUB_HEADER]: club } : {}),
+        ...clubHeaders(club),
         ...(options.body !== undefined ? { "content-type": "application/json" } : {}),
       },
       ...(options.body !== undefined ? { body: JSON.stringify(options.body) } : {}),
@@ -95,7 +116,7 @@ export async function uploadFile<T>(path: string, file: File, schema: Parser<T>)
       headers: {
         accept: "application/json",
         "content-type": file.type,
-        ...(currentClub ? { [CLUB_HEADER]: currentClub } : {}),
+        ...clubHeaders(currentClub),
       },
       body: file,
     },

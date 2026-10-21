@@ -29,9 +29,15 @@ describe("roles y permisos", () => {
     const union = permissionsForRoles(["coach", "guardian"]);
     expect([...union].sort()).toEqual([
       "org.activity.read",
+      "org.attendance.read",
+      "org.attendance.write_own",
       "org.challenges.manage",
       "org.challenges.read",
       "org.challenges.review_own",
+      "org.club_members.read",
+      "org.events.read",
+      "org.events.write_own",
+      "org.facilities.read",
       "org.family.read",
       "org.family.write",
       "org.members.read",
@@ -62,8 +68,18 @@ describe("roles y permisos", () => {
     expect(director.has("org.members.manage")).toBe(false);
     expect(director.has("org.settings.write")).toBe(false);
 
+    // La delegación solo añade la agenda y el pase de lista de sus equipos (Bloque 16 y 17).
     const delegate = permissionsForMemberships([{ roleCode: "staff", position: "delegate" }]);
-    expect([...delegate].sort()).toEqual([...ROLE_PERMISSIONS.staff].sort());
+    expect([...delegate].sort()).toEqual(
+      [...ROLE_PERMISSIONS.staff, "org.events.write_own", "org.attendance.write_own"].sort(),
+    );
+    expect(delegate.has("org.players.write")).toBe(false);
+
+    // Solo la administración puede mirar el club como otra persona (Bloque 14).
+    expect(permissionsForRoles(["org_admin"]).has("org.view_as")).toBe(true);
+    expect(director.has("org.view_as")).toBe(false);
+    expect(director.has("org.fees.read")).toBe(true);
+    expect(director.has("org.fees.write")).toBe(false);
 
     // Un cargo sin el rol staff no añade nada.
     const coach = permissionsForMemberships([{ roleCode: "coach", position: "director" }]);

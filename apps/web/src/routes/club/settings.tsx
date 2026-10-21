@@ -1,49 +1,107 @@
 import {
+  ActivityResponseSchema,
   CLUB_VOICES,
+  InvitationsResponseSchema,
   LOCALES,
   LOGO_CONTENT_TYPES,
   LOGO_MAX_BYTES,
+  MemberTypeResponseSchema,
+  MemberTypesResponseSchema,
+  MembersResponseSchema,
   OrganizationBrandingSchema,
   OrganizationUpdateResponseSchema,
   OrganizationUpdateSchema,
+  PAYMENT_PROVIDERS,
+  PaymentsSettingsResponseSchema,
+  SeasonCreateSchema,
+  SeasonResponseSchema,
+  SeasonUpdateSchema,
+  SeasonsResponseSchema,
+  StructureSummarySchema,
   type ClubVoice,
   type Locale,
+  type MemberType,
+  type PaymentProvider,
+  type Season,
 } from "@sportsmanager/shared";
+import { brandTokens } from "@sportsmanager/shared/design";
 import { buildClubTheme } from "@sportsmanager/design";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState, type DragEvent, type FormEvent } from "react";
+import { useIntl } from "react-intl";
 import { useSearchParams } from "react-router";
-import { apiFetch, errorKey, uploadFile } from "@/lib/api";
-import { useReadyClub } from "@/lib/club";
+import { ApiClientError, apiFetch, errorKey, uploadFile } from "@/lib/api";
+import { clubPaths, useReadyClub } from "@/lib/club";
+import { useDates } from "@/lib/dates";
 import { useT } from "@/lib/intl";
 import {
   Alert,
   Button,
+  ButtonLink,
   Card,
   ColorInput,
   ConfirmDialog,
   Crest,
+  DataList,
+  Definitions,
+  EmptyState,
   Field,
   Icon,
   Input,
   PageHeader,
   Select,
+  Sheet,
+  StatusChip,
   Tabs,
   useToast,
 } from "@/ui";
 
-type Tab = "general" | "brand" | "logo";
+const TABS = [
+  "general",
+  "brand",
+  "logo",
+  "seasons",
+  "memberTypes",
+  "payments",
+  "setup",
+  "activity",
+] as const;
+type Tab = (typeof TABS)[number];
 
+/**
+ * Ajustes del club (Bloque 5; Bloque 14-18): datos, marca y logo, y ahora también temporadas,
+ * tipos de socio, cobros, la puesta en marcha que antes vivía en la portada y la actividad.
+ */
 export function SettingsPage() {
   const t = useT("settings");
   const { org } = useReadyClub();
   const [params, setParams] = useSearchParams();
   const raw = params.get("tab");
-  const tab: Tab = raw === "brand" || raw === "logo" ? raw : "general";
+  const tab: Tab = (TABS as readonly string[]).includes(raw ?? "") ? (raw as Tab) : "general";
+  const permissions = org.actor.permissions;
 
-  if (!org.actor.permissions.includes("org.settings.write") || org.organization.view !== "full") {
+  if (!permissions.includes("org.settings.write") || org.organization.view !== "full") {
     return <Alert kind="error">{t("forbidden")}</Alert>;
   }
   const o = org.organization;
+  const items = [
+    { key: "general" as const, label: t("tabs.general") },
+    { key: "brand" as const, label: t("tabs.brand") },
+    { key: "logo" as const, label: t("tabs.logo") },
+    ...(permissions.includes("org.structure.write")
+      ? [{ key: "seasons" as const, label: t("tabs.seasons") }]
+      : []),
+    ...(permissions.includes("org.club_members.write")
+      ? [{ key: "memberTypes" as const, label: t("tabs.memberTypes") }]
+      : []),
+    ...(permissions.includes("org.fees.read")
+      ? [{ key: "payments" as const, label: t("tabs.payments") }]
+      : []),
+    { key: "setup" as const, label: t("tabs.setup") },
+    ...(permissions.includes("org.activity.read")
+      ? [{ key: "activity" as const, label: t("tabs.activity") }]
+      : []),
+  ];
 
   return (
     <div className="flex flex-col gap-5">
@@ -52,14 +110,16 @@ export function SettingsPage() {
         label={t("title")}
         selected={tab}
         onChange={(key) => setParams(key === "general" ? {} : { tab: key }, { replace: true })}
-        items={[
-          { key: "general", label: t("tabs.general") },
-          { key: "brand", label: t("tabs.brand") },
-          { key: "logo", label: t("tabs.logo") },
-        ]}
+        items={items}
       />
       {tab === "general" ? (
-        <GeneralTab key={o.id} name={o.name} defaultLocale={o.defaultLocale} voice={o.voice} />
+        <GeneralTab
+          key={o.id}
+          name={o.name}
+          defaultLocale={o.defaultLocale}
+          voice={o.voice}
+          timezone={o.timezone}
+        />
       ) : null}
       {tab === "brand" ? (
         <BrandTab
@@ -70,18 +130,49 @@ export function SettingsPage() {
         />
       ) : null}
       {tab === "logo" ? <LogoTab /> : null}
+      {tab === "seasons" ? <SeasonsTab /> : null}
+      {tab === "memberTypes" ? <MemberTypesTab /> : null}
+      {tab === "payments" ? <PaymentsTab /> : null}
+      {tab === "setup" ? <SetupTab /> : null}
+      {tab === "activity" ? <ActivityTab /> : null}
     </div>
   );
+}
+
+const COMMON_ZONES = [
+  "Europe/Madrid",
+  "Atlantic/Canary",
+  "Europe/Lisbon",
+  "Europe/London",
+  "Europe/Paris",
+  "Europe/Rome",
+  "Europe/Berlin",
+  "America/Mexico_City",
+  "America/Bogota",
+  "America/Argentina/Buenos_Aires",
+  "America/Santiago",
+  "America/New_York",
+];
+
+function timezoneOptions(): string[] {
+  try {
+    const intl = Intl as unknown as { supportedValuesOf?: (key: string) => string[] };
+    return intl.supportedValuesOf?.("timeZone") ?? COMMON_ZONES;
+  } catch {
+    return COMMON_ZONES;
+  }
 }
 
 function GeneralTab({
   name: initialName,
   defaultLocale: initialLocale,
   voice: initialVoice,
+  timezone: initialTimezone,
 }: {
   name: string;
   defaultLocale: Locale;
   voice: ClubVoice;
+  timezone: string;
 }) {
   const t = useT("settings.general");
   const c = useT("common");
@@ -93,12 +184,14 @@ function GeneralTab({
   const [name, setName] = useState(initialName);
   const [defaultLocale, setDefaultLocale] = useState<Locale>(initialLocale);
   const [voice, setVoice] = useState<ClubVoice>(initialVoice);
+  const [timezone, setTimezone] = useState(initialTimezone);
   const [busy, setBusy] = useState(false);
+  const zones = useMemo(timezoneOptions, []);
 
   async function save(e: FormEvent) {
     e.preventDefault();
-    const parsed = OrganizationUpdateSchema.safeParse({ name, defaultLocale, voice });
-    if (!parsed.success) {
+    const parsed = OrganizationUpdateSchema.safeParse({ name, defaultLocale, voice, timezone });
+    if (!parsed.success || !zones.includes(timezone)) {
       toast("error", errors("bad_request"));
       return;
     }
@@ -153,6 +246,26 @@ function GeneralTab({
                   </option>
                 ))}
               </Select>
+            )}
+          </Field>
+          <Field label={t("timezone")} hint={t("timezoneHint")}>
+            {(id) => (
+              <>
+                <Input
+                  id={id}
+                  required
+                  list={`${id}-zones`}
+                  value={timezone}
+                  onChange={(e) => setTimezone(e.target.value)}
+                  autoComplete="off"
+                  spellCheck={false}
+                />
+                <datalist id={`${id}-zones`}>
+                  {zones.map((z) => (
+                    <option key={z} value={z} />
+                  ))}
+                </datalist>
+              </>
             )}
           </Field>
           <Field label={t("voice")} hint={`${voices(`hint.${voice}`)} ${t("voiceHint")}`}>
@@ -411,5 +524,811 @@ function LogoTab() {
         onCancel={() => setConfirmRemove(false)}
       />
     </div>
+  );
+}
+
+// --- Temporadas (antes en la pantalla de equipos) ---
+
+function SeasonsTab() {
+  const t = useT("settings.seasons");
+  const errors = useT("errors");
+  const toast = useToast();
+  const { range } = useDates();
+  const client = useQueryClient();
+  const { slug } = useReadyClub();
+  const [params, setParams] = useSearchParams();
+  const creating = params.get("new") === "1";
+  const [editing, setEditing] = useState<Season | null>(null);
+  const seasons = useQuery({
+    queryKey: ["org", slug, "seasons"],
+    queryFn: () => apiFetch("/api/org/seasons", { schema: SeasonsResponseSchema }),
+  });
+  const reload = () => client.invalidateQueries({ queryKey: ["org", slug] });
+
+  function setCreating(open: boolean) {
+    const next = new URLSearchParams(params);
+    if (open) next.set("new", "1");
+    else next.delete("new");
+    setParams(next, { replace: true });
+  }
+
+  async function makeCurrent(season: Season) {
+    try {
+      await apiFetch(`/api/org/seasons/${season.id}`, {
+        method: "PATCH",
+        body: { isCurrent: true },
+        schema: SeasonResponseSchema,
+      });
+      toast("success", t("madeCurrent", { name: season.name }));
+      void reload();
+    } catch (err) {
+      toast("error", errors(errorKey(err)));
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      <Card
+        title={t("title")}
+        description={t("description")}
+        padded={false}
+        actions={
+          <Button
+            icon={<Icon.Plus size={18} aria-hidden="true" />}
+            onClick={() => setCreating(true)}
+          >
+            {t("new")}
+          </Button>
+        }
+      >
+        {seasons.isError ? (
+          <div className="p-5">
+            <Alert kind="error">{t("loadError")}</Alert>
+          </div>
+        ) : null}
+        <DataList<Season>
+          caption={t("caption")}
+          columns={[
+            {
+              key: "name",
+              header: t("table.name"),
+              cell: (s) => (
+                <span className="flex flex-wrap items-center gap-2 font-medium text-ink">
+                  {s.name}
+                  {s.isCurrent ? <StatusChip kind="club">{t("current")}</StatusChip> : null}
+                </span>
+              ),
+            },
+            { key: "range", header: t("table.range"), cell: (s) => range(s.startsOn, s.endsOn) },
+            {
+              key: "teams",
+              header: t("table.teams"),
+              align: "right",
+              numeric: true,
+              cell: (s) => s.teamsCount,
+            },
+          ]}
+          rows={seasons.data?.seasons ?? []}
+          getKey={(s) => s.id}
+          mobileRow={(s) => ({
+            title: s.name,
+            subtitle: range(s.startsOn, s.endsOn),
+            trailing: s.isCurrent ? <StatusChip kind="club">{t("current")}</StatusChip> : null,
+          })}
+          actions={(s) => (
+            <span className="flex flex-wrap justify-end gap-2">
+              <Button size="sm" variant="secondary" onClick={() => setEditing(s)}>
+                {t("edit")}
+              </Button>
+              {!s.isCurrent ? (
+                <Button size="sm" variant="tertiary" onClick={() => void makeCurrent(s)}>
+                  {t("makeCurrent")}
+                </Button>
+              ) : null}
+            </span>
+          )}
+          empty={
+            <EmptyState
+              icon={<Icon.CalendarBlank weight="duotone" />}
+              title={t("empty")}
+              description={t("emptyHint")}
+              action={<Button onClick={() => setCreating(true)}>{t("new")}</Button>}
+            />
+          }
+        />
+      </Card>
+      {creating || editing ? (
+        <SeasonSheet
+          season={editing}
+          suggestCurrent={(seasons.data?.seasons.length ?? 0) === 0}
+          onClose={() => {
+            setCreating(false);
+            setEditing(null);
+          }}
+          onSaved={() => void reload()}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+function suggestSeasonName(): { name: string; startsOn: string; endsOn: string } {
+  const now = new Date();
+  const startYear = now.getMonth() >= 7 ? now.getFullYear() : now.getFullYear() - 1;
+  return {
+    name: `${startYear}-${String(startYear + 1).slice(2)}`,
+    startsOn: `${startYear}-09-01`,
+    endsOn: `${startYear + 1}-06-30`,
+  };
+}
+
+function SeasonSheet({
+  season,
+  suggestCurrent,
+  onClose,
+  onSaved,
+}: {
+  season: Season | null;
+  suggestCurrent: boolean;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const t = useT("settings.seasons.sheet");
+  const c = useT("common");
+  const errors = useT("errors");
+  const toast = useToast();
+  const suggestion = useMemo(suggestSeasonName, []);
+  const [name, setName] = useState(season?.name ?? suggestion.name);
+  const [startsOn, setStartsOn] = useState(season?.startsOn ?? suggestion.startsOn);
+  const [endsOn, setEndsOn] = useState(season?.endsOn ?? suggestion.endsOn);
+  const [isCurrent, setIsCurrent] = useState(suggestCurrent);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function submit(e: FormEvent) {
+    e.preventDefault();
+    setError(null);
+    const parsed = season
+      ? SeasonUpdateSchema.safeParse({ name, startsOn, endsOn })
+      : SeasonCreateSchema.safeParse({ name, startsOn, endsOn, isCurrent });
+    if (!parsed.success) {
+      setError(t("invalid"));
+      return;
+    }
+    setBusy(true);
+    try {
+      await apiFetch(season ? `/api/org/seasons/${season.id}` : "/api/org/seasons", {
+        method: season ? "PATCH" : "POST",
+        body: parsed.data,
+        schema: SeasonResponseSchema,
+      });
+      toast("success", t(season ? "saved" : "created"));
+      onClose();
+      onSaved();
+    } catch (err) {
+      setError(
+        err instanceof ApiClientError && err.status === 409
+          ? t("duplicate")
+          : errors(errorKey(err)),
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Sheet
+      open
+      onClose={onClose}
+      closeLabel={c("close")}
+      title={season ? t("editTitle") : t("title")}
+      description={t("description")}
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose}>
+            {c("cancel")}
+          </Button>
+          <Button type="submit" form="season-form" loading={busy}>
+            {season ? c("save") : t("submit")}
+          </Button>
+        </>
+      }
+    >
+      <form id="season-form" className="flex flex-col gap-4" onSubmit={(e) => void submit(e)}>
+        <Field label={t("name")} hint={t("nameHint")}>
+          {(id) => (
+            <Input
+              id={id}
+              required
+              maxLength={60}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          )}
+        </Field>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label={t("startsOn")}>
+            {(id) => (
+              <Input
+                id={id}
+                type="date"
+                required
+                value={startsOn}
+                onChange={(e) => setStartsOn(e.target.value)}
+              />
+            )}
+          </Field>
+          <Field label={t("endsOn")}>
+            {(id) => (
+              <Input
+                id={id}
+                type="date"
+                required
+                value={endsOn}
+                onChange={(e) => setEndsOn(e.target.value)}
+              />
+            )}
+          </Field>
+        </div>
+        {!season ? (
+          <label className="flex min-h-11 cursor-pointer items-center gap-3 rounded-field border border-control px-3 py-2">
+            <input
+              type="checkbox"
+              checked={isCurrent}
+              onChange={(e) => setIsCurrent(e.target.checked)}
+            />
+            <span className="flex flex-col">
+              <span className="text-body text-ink">{t("isCurrent")}</span>
+              <span className="text-label text-muted">{t("isCurrentHint")}</span>
+            </span>
+          </label>
+        ) : null}
+        {error ? <Alert kind="error">{error}</Alert> : null}
+      </form>
+    </Sheet>
+  );
+}
+
+// --- Tipos de socio ---
+
+function MemberTypesTab() {
+  const t = useT("settings.memberTypes");
+  const errors = useT("errors");
+  const toast = useToast();
+  const client = useQueryClient();
+  const { slug } = useReadyClub();
+  const [name, setName] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [renaming, setRenaming] = useState<MemberType | null>(null);
+  const types = useQuery({
+    queryKey: ["org", slug, "member-types"],
+    queryFn: () => apiFetch("/api/org/member-types", { schema: MemberTypesResponseSchema }),
+  });
+  const reload = () => client.invalidateQueries({ queryKey: ["org", slug, "member-types"] });
+
+  async function create(e: FormEvent) {
+    e.preventDefault();
+    if (!name.trim()) return;
+    setBusy(true);
+    try {
+      await apiFetch("/api/org/member-types", {
+        method: "POST",
+        body: { name: name.trim() },
+        schema: MemberTypeResponseSchema,
+      });
+      toast("success", t("created", { name: name.trim() }));
+      setName("");
+      void reload();
+    } catch (err) {
+      toast(
+        "error",
+        err instanceof ApiClientError && err.status === 409
+          ? t("duplicate")
+          : errors(errorKey(err)),
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function setStatus(type: MemberType, status: "active" | "archived") {
+    try {
+      await apiFetch(`/api/org/member-types/${type.id}`, {
+        method: "PATCH",
+        body: { status },
+        schema: MemberTypeResponseSchema,
+      });
+      toast("success", t(status === "archived" ? "archived" : "restored", { name: type.name }));
+      void reload();
+    } catch (err) {
+      toast("error", errors(errorKey(err)));
+    }
+  }
+
+  return (
+    <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+      <Card title={t("title")} description={t("description")} padded={false}>
+        {types.isError ? (
+          <div className="p-5">
+            <Alert kind="error">{t("loadError")}</Alert>
+          </div>
+        ) : null}
+        <DataList<MemberType>
+          caption={t("caption")}
+          columns={[
+            {
+              key: "name",
+              header: t("table.name"),
+              cell: (m) => <span className="font-medium text-ink">{m.name}</span>,
+            },
+            {
+              key: "members",
+              header: t("table.members"),
+              align: "right",
+              numeric: true,
+              cell: (m) => m.membersCount,
+            },
+            {
+              key: "status",
+              header: t("table.status"),
+              cell: (m) => (
+                <StatusChip kind={m.status === "active" ? "success" : "neutral"}>
+                  {t(`status.${m.status}`)}
+                </StatusChip>
+              ),
+            },
+          ]}
+          rows={types.data?.memberTypes ?? []}
+          getKey={(m) => m.id}
+          mobileRow={(m) => ({
+            title: m.name,
+            subtitle: t("membersCount", { count: m.membersCount }),
+            trailing:
+              m.status === "archived" ? (
+                <StatusChip kind="neutral">{t("status.archived")}</StatusChip>
+              ) : null,
+          })}
+          actions={(m) => (
+            <span className="flex flex-wrap justify-end gap-2">
+              <Button size="sm" variant="secondary" onClick={() => setRenaming(m)}>
+                {t("rename")}
+              </Button>
+              {m.status === "active" ? (
+                <Button size="sm" variant="danger" onClick={() => void setStatus(m, "archived")}>
+                  {t("archive")}
+                </Button>
+              ) : (
+                <Button size="sm" variant="secondary" onClick={() => void setStatus(m, "active")}>
+                  {t("restore")}
+                </Button>
+              )}
+            </span>
+          )}
+          empty={
+            <EmptyState
+              icon={<Icon.IdentificationCard weight="duotone" />}
+              title={t("empty")}
+              description={t("emptyHint")}
+            />
+          }
+        />
+      </Card>
+      <form onSubmit={(e) => void create(e)}>
+        <Card
+          title={t("newTitle")}
+          description={t("newDescription")}
+          footer={
+            <Button type="submit" loading={busy} disabled={!name.trim()}>
+              {t("add")}
+            </Button>
+          }
+        >
+          <Field label={t("name")}>
+            {(id) => (
+              <Input
+                id={id}
+                required
+                maxLength={60}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder={t("namePlaceholder")}
+              />
+            )}
+          </Field>
+        </Card>
+      </form>
+      {renaming ? (
+        <RenameTypeSheet
+          type={renaming}
+          onClose={() => setRenaming(null)}
+          onSaved={() => void reload()}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+function RenameTypeSheet({
+  type,
+  onClose,
+  onSaved,
+}: {
+  type: MemberType;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const t = useT("settings.memberTypes");
+  const c = useT("common");
+  const errors = useT("errors");
+  const toast = useToast();
+  const [name, setName] = useState(type.name);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function submit(e: FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setBusy(true);
+    try {
+      await apiFetch(`/api/org/member-types/${type.id}`, {
+        method: "PATCH",
+        body: { name: name.trim() },
+        schema: MemberTypeResponseSchema,
+      });
+      toast("success", t("renamed"));
+      onClose();
+      onSaved();
+    } catch (err) {
+      setError(
+        err instanceof ApiClientError && err.status === 409
+          ? t("duplicate")
+          : errors(errorKey(err)),
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Sheet
+      open
+      onClose={onClose}
+      closeLabel={c("close")}
+      title={t("renameTitle", { name: type.name })}
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose}>
+            {c("cancel")}
+          </Button>
+          <Button type="submit" form="rename-type-form" loading={busy}>
+            {c("save")}
+          </Button>
+        </>
+      }
+    >
+      <form id="rename-type-form" className="flex flex-col gap-4" onSubmit={(e) => void submit(e)}>
+        <Field label={t("name")}>
+          {(id) => (
+            <Input
+              id={id}
+              required
+              maxLength={60}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          )}
+        </Field>
+        {error ? <Alert kind="error">{error}</Alert> : null}
+      </form>
+    </Sheet>
+  );
+}
+
+// --- Cobros (Bloque 18): proveedor y cuenta de Stripe ---
+
+function PaymentsTab() {
+  const t = useT("settings.payments");
+  const c = useT("common");
+  const providers = useT("paymentProviders");
+  const errors = useT("errors");
+  const toast = useToast();
+  const client = useQueryClient();
+  const { slug, refresh, org } = useReadyClub();
+  const canWrite = org.actor.permissions.includes("org.settings.write");
+  const settings = useQuery({
+    queryKey: ["org", slug, "fees", "settings"],
+    queryFn: () => apiFetch("/api/org/fees/settings", { schema: PaymentsSettingsResponseSchema }),
+  });
+  if (settings.isPending) return <p className="text-body text-muted">{c("loading")}</p>;
+  if (settings.isError || !settings.data)
+    return <Alert kind="error">{errors(errorKey(settings.error))}</Alert>;
+  return (
+    <PaymentsForm
+      key={`${settings.data.payments.provider}:${settings.data.payments.stripeAccountId ?? ""}`}
+      initial={settings.data.payments}
+      canWrite={canWrite}
+      labels={{ t, c, providers, errors }}
+      onSaved={async () => {
+        await client.invalidateQueries({ queryKey: ["org", slug, "fees", "settings"] });
+        await refresh();
+        toast("success", t("saved"));
+      }}
+    />
+  );
+}
+
+function PaymentsForm({
+  initial,
+  canWrite,
+  labels: { t, c, providers, errors },
+  onSaved,
+}: {
+  initial: {
+    provider: PaymentProvider;
+    stripeAccountId: string | null;
+    stripeConfigured: boolean;
+    currency: string;
+  };
+  canWrite: boolean;
+  labels: {
+    t: ReturnType<typeof useT>;
+    c: ReturnType<typeof useT>;
+    providers: ReturnType<typeof useT>;
+    errors: ReturnType<typeof useT>;
+  };
+  onSaved: () => Promise<void>;
+}) {
+  const [provider, setProvider] = useState<PaymentProvider>(initial.provider);
+  const [accountId, setAccountId] = useState(initial.stripeAccountId ?? "");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const dirty =
+    provider !== initial.provider || (accountId.trim() || null) !== initial.stripeAccountId;
+
+  async function save(e: FormEvent) {
+    e.preventDefault();
+    setError(null);
+    if (provider === "stripe" && !initial.stripeConfigured) {
+      setError(t("conflictPlatform"));
+      return;
+    }
+    if (provider === "stripe" && !accountId.trim()) {
+      setError(t("conflictAccount"));
+      return;
+    }
+    setBusy(true);
+    try {
+      await apiFetch("/api/org/fees/settings", {
+        method: "PATCH",
+        body: {
+          ...(provider !== initial.provider ? { provider } : {}),
+          ...((accountId.trim() || null) !== initial.stripeAccountId
+            ? { stripeAccountId: accountId.trim() || null }
+            : {}),
+        },
+        schema: PaymentsSettingsResponseSchema,
+      });
+      await onSaved();
+    } catch (err) {
+      if (err instanceof ApiClientError && err.status === 409) {
+        setError(initial.stripeConfigured ? t("conflictAccount") : t("conflictPlatform"));
+      } else if (err instanceof ApiClientError && err.status === 400) {
+        setError(t("invalidAccount"));
+      } else {
+        setError(errors(errorKey(err)));
+      }
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <form onSubmit={(e) => void save(e)}>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card
+          title={t("title")}
+          description={t("description")}
+          footer={
+            canWrite ? (
+              <Button type="submit" loading={busy} disabled={!dirty}>
+                {c("save")}
+              </Button>
+            ) : null
+          }
+        >
+          <div className="flex flex-col gap-4">
+            {!initial.stripeConfigured ? (
+              <Alert kind="warning">{t("stripeNotConfigured")}</Alert>
+            ) : null}
+            <Field label={t("provider")} hint={t(`providerHint.${provider}`)}>
+              {(id) => (
+                <Select
+                  id={id}
+                  value={provider}
+                  disabled={!canWrite}
+                  onChange={(e) => setProvider(e.target.value as PaymentProvider)}
+                >
+                  {PAYMENT_PROVIDERS.map((p) => (
+                    <option key={p} value={p}>
+                      {providers(p)}
+                    </option>
+                  ))}
+                </Select>
+              )}
+            </Field>
+            <Field label={t("stripeAccount")} hint={t("stripeAccountHint")}>
+              {(id) => (
+                <Input
+                  id={id}
+                  value={accountId}
+                  disabled={!canWrite}
+                  placeholder="acct_…"
+                  autoComplete="off"
+                  spellCheck={false}
+                  onChange={(e) => setAccountId(e.target.value)}
+                />
+              )}
+            </Field>
+            {error ? <Alert kind="error">{error}</Alert> : null}
+          </div>
+        </Card>
+        <Card title={t("statusTitle")}>
+          <Definitions
+            items={[
+              { term: t("currentProvider"), detail: providers(initial.provider) },
+              {
+                term: t("platformKeys"),
+                detail: (
+                  <StatusChip kind={initial.stripeConfigured ? "success" : "warning"}>
+                    {initial.stripeConfigured ? t("ready") : t("missing")}
+                  </StatusChip>
+                ),
+              },
+              {
+                term: t("connectedAccount"),
+                detail: initial.stripeAccountId ? (
+                  <span className="font-mono text-secondary">{initial.stripeAccountId}</span>
+                ) : (
+                  <StatusChip kind="neutral">{t("notConnected")}</StatusChip>
+                ),
+              },
+              { term: t("currency"), detail: initial.currency },
+            ]}
+          />
+          <p className="mt-4 text-secondary text-muted">{t("howItWorks")}</p>
+        </Card>
+      </div>
+    </form>
+  );
+}
+
+// --- Puesta en marcha (antes "primeros pasos" en la portada) ---
+
+function SetupTab() {
+  const t = useT("settings.setup");
+  const { slug, org, branding } = useReadyClub();
+  const paths = clubPaths(slug);
+  const permissions = org.actor.permissions;
+  const summary = useQuery({
+    queryKey: ["org", slug, "summary"],
+    queryFn: () => apiFetch("/api/org/summary", { schema: StructureSummarySchema }),
+    enabled: permissions.includes("org.structure.read"),
+  });
+  const members = useQuery({
+    queryKey: ["org", slug, "members"],
+    queryFn: () => apiFetch("/api/org/members", { schema: MembersResponseSchema }),
+    enabled: permissions.includes("org.members.read"),
+  });
+  const invitations = useQuery({
+    queryKey: ["org", slug, "invitations"],
+    queryFn: () => apiFetch("/api/org/invitations", { schema: InvitationsResponseSchema }),
+    enabled: permissions.includes("org.members.invite"),
+  });
+  const defaultColors =
+    branding.brandPrimaryColor === brandTokens["--color-brand-primary"] &&
+    branding.brandSecondaryColor === brandTokens["--color-brand-secondary"];
+  const staff = (members.data?.members ?? []).filter((m) =>
+    m.roles.some((r) => r === "coach" || r === "staff"),
+  ).length;
+  const pending = (invitations.data?.invitations ?? []).filter((i) => i.state === "pending").length;
+  const steps = [
+    { key: "logo", done: Boolean(branding.logoUrl), to: `${paths.settings}?tab=logo` },
+    { key: "colors", done: !defaultColors, to: `${paths.settings}?tab=brand` },
+    {
+      key: "season",
+      done: Boolean(summary.data?.currentSeason),
+      to: `${paths.settings}?tab=seasons&new=1`,
+    },
+    {
+      key: "section",
+      done: (summary.data?.sections ?? 0) > 0,
+      to: summary.data?.currentSeason
+        ? `${paths.sections}?new=1`
+        : `${paths.settings}?tab=seasons&new=1`,
+    },
+    { key: "invite", done: staff > 0 || pending > 0, to: `${paths.staff}?invite=1` },
+  ] as const;
+  const done = steps.filter((s) => s.done).length;
+
+  return (
+    <Card
+      title={t("title")}
+      description={t("description", { done, total: steps.length })}
+      padded={false}
+    >
+      <ol className="flex flex-col divide-y divide-line">
+        {steps.map((step) => (
+          <li key={step.key} className="flex min-h-16 items-center gap-3 px-5 py-3">
+            <span
+              aria-hidden="true"
+              className={`grid size-7 shrink-0 place-items-center rounded-full ${
+                step.done ? "bg-success-soft text-success" : "border border-control text-muted"
+              }`}
+            >
+              {step.done ? <Icon.Check size={16} weight="bold" /> : null}
+            </span>
+            <span
+              className={`flex-1 text-body ${step.done ? "text-muted line-through" : "text-ink"}`}
+            >
+              {t(step.key)}
+            </span>
+            {step.done ? (
+              <StatusChip kind="success">{t("done")}</StatusChip>
+            ) : (
+              <ButtonLink to={step.to} variant="secondary" size="sm">
+                {t(`${step.key}Action`)}
+              </ButtonLink>
+            )}
+          </li>
+        ))}
+      </ol>
+    </Card>
+  );
+}
+
+// --- Actividad: todo lo que ha pasado en el club ---
+
+function ActivityTab() {
+  const t = useT("settings.activity");
+  const auditActions = useT("audit");
+  const intl = useIntl();
+  const { slug } = useReadyClub();
+  const activity = useQuery({
+    queryKey: ["org", slug, "activity", 100],
+    queryFn: () => apiFetch("/api/org/activity?limit=100", { schema: ActivityResponseSchema }),
+  });
+  const when = (iso: string) =>
+    intl.formatDate(new Date(iso), { dateStyle: "medium", timeStyle: "short" });
+
+  return (
+    <Card title={t("title")} description={t("description")} padded={false}>
+      {activity.isError ? (
+        <div className="p-5">
+          <Alert kind="error">{t("loadError")}</Alert>
+        </div>
+      ) : null}
+      {activity.data && activity.data.entries.length === 0 ? (
+        <EmptyState icon={<Icon.Pulse weight="duotone" />} title={t("empty")} />
+      ) : (
+        <ul className="flex flex-col divide-y divide-line">
+          {activity.data?.entries.map((entry) => (
+            <li key={entry.id} className="flex min-h-14 items-center gap-3 px-5 py-2">
+              <span className="text-club-text">
+                <Icon.Pulse size={20} weight="duotone" aria-hidden="true" />
+              </span>
+              <span className="flex min-w-0 flex-1 flex-col">
+                <span className="truncate text-body text-ink">
+                  {auditActions(entry.action)}
+                  {entry.target ? ` · ${entry.target}` : ""}
+                </span>
+                <span className="truncate text-secondary text-muted">
+                  {entry.actorName ?? t("system")} · {when(entry.createdAt)}
+                </span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </Card>
   );
 }

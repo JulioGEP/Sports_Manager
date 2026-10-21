@@ -32,6 +32,8 @@ const EnvSchema = z.object({
   EMAIL_FROM: optionalString,
   EMAIL_DEBUG_LOG: optionalString,
   PLATFORM_ADMIN_EMAILS: optionalString,
+  STRIPE_SECRET_KEY: optionalString,
+  STRIPE_WEBHOOK_SECRET: optionalString,
   LOGO_STORE: z.preprocess(
     (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
     z.enum(["netlify", "memory"]).optional(),
@@ -48,6 +50,17 @@ export interface EmailConfig {
   resendApiKey: string | null;
   /** Escribe cada email en el log de la función. Solo previews y local; nunca en producción. */
   debugLog: boolean;
+}
+
+/**
+ * Cobros por Stripe (Bloque 18). Como con Resend: preparado y sin conectar hasta tener claves.
+ * Sin las dos claves, ningún club puede activar el proveedor `stripe` y el webhook responde 400.
+ */
+export interface PaymentsConfig {
+  stripeSecretKey: string | null;
+  stripeWebhookSecret: string | null;
+  /** Las dos claves están configuradas: los clubes pueden cobrar por Stripe. */
+  stripeConfigured: boolean;
 }
 
 export interface ApiConfig {
@@ -68,6 +81,7 @@ export interface ApiConfig {
   isLocal: boolean;
   invitationTtlDays: number;
   email: EmailConfig;
+  payments: PaymentsConfig;
   /**
    * Emails que cuentan como administradores de plataforma además de la tabla `platform_admins`
    * (ADR 0023). Es la vía para el primer administrador, sin contraseñas sembradas.
@@ -117,6 +131,11 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
       from: parsed.EMAIL_FROM ?? null,
       resendApiKey: parsed.RESEND_API_KEY ?? null,
       debugLog: parsed.EMAIL_DEBUG_LOG === "true" || parsed.NETLIFY_DEV === "true",
+    },
+    payments: {
+      stripeSecretKey: parsed.STRIPE_SECRET_KEY ?? null,
+      stripeWebhookSecret: parsed.STRIPE_WEBHOOK_SECRET ?? null,
+      stripeConfigured: Boolean(parsed.STRIPE_SECRET_KEY && parsed.STRIPE_WEBHOOK_SECRET),
     },
   };
 }

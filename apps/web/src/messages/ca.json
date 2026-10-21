@@ -7,7 +7,9 @@
     "copy": "Copiar l'enllaç",
     "copied": "Copiat",
     "remove": "Treure",
-    "open": "Obrir"
+    "open": "Obrir",
+    "current": "Actual",
+    "edit": "Editar"
   },
   "nav": {
     "home": "Inici",
@@ -26,10 +28,22 @@
     "supportLimited": "Mode suport de plataforma: veus l'estat i els recomptes del club, sense dades personals.",
     "supportFull": "Mode suport de plataforma amb autorització del club: lectura completa, sense canvis.",
     "clubNotFound": "Aquest club no existeix o no està actiu.",
-    "teams": "Equips",
-    "players": "Jugadors",
+    "players": "Esportistes",
     "family": "La meva família",
-    "challenges": "Repte"
+    "challenges": "Repte",
+    "sections": "Seccions",
+    "clubMembers": "Socis",
+    "staff": "Personal",
+    "agenda": "Agenda",
+    "facilities": "Instal·lacions",
+    "fees": "Quotes",
+    "myFees": "Les meves quotes",
+    "more": "Més",
+    "close": "Tanca",
+    "groupClub": "El club",
+    "groupActivity": "Activitat",
+    "groupManagement": "Gestió",
+    "viewAs": "Veure el club com…"
   },
   "auth": {
     "login": {
@@ -95,88 +109,80 @@
   },
   "home": {
     "greeting": "Hola, {name}",
-    "subtitle": "Tauler de {club}.",
-    "stats": {
-      "members": "Membres",
-      "pending": "Invitacions pendents",
-      "yourRole": "El teu rol al club",
-      "teams": "Equips",
-      "players": "Jugadors",
-      "guardians": "Famílies",
-      "season": "Temporada actual",
-      "noSeason": "Sense temporada"
-    },
-    "support": {
-      "badge": "Suport de plataforma"
-    },
-    "firstSteps": {
-      "title": "Primers passos",
-      "description": "Deixa el club a punt per a la seva gent.",
-      "logo": "Puja el logo del club",
-      "logoAction": "Pujar logo",
-      "colors": "Tria els colors de marca",
-      "colorsAction": "Triar colors",
-      "invite": "Convida el primer entrenador",
-      "inviteAction": "Convidar",
-      "done": "Fet",
-      "team": "Crea el primer equip",
-      "teamAction": "Crear equip"
-    },
     "hero": {
-      "sport": "Esport principal: {sport}",
       "label": "Portada de {club}",
-      "members": "Veure membres",
-      "teams": "Veure equips"
+      "meta": "{season} · {sections, plural, one {# secció} other {# seccions}} · {teams, plural, one {# equip} other {# equips}}",
+      "noSeason": "Sense temporada",
+      "next": "Següent: {title}, {when}",
+      "newPlayer": "Nou esportista",
+      "family": "La meva família",
+      "agenda": "Veure agenda"
     },
-    "structure": {
-      "title": "Estructura del club",
-      "description": "Seccions, equips i jugadors de la temporada actual.",
-      "sections": "{count, plural, one {# secció} other {# seccions}}",
-      "teams": "{count, plural, one {# equip} other {# equips}}",
-      "players": "{count, plural, one {# jugador} other {# jugadors}}",
-      "guardians": "{count, plural, one {# família} other {# famílies}}",
-      "openTeams": "Veure equips",
-      "openPlayers": "Veure jugadors",
-      "noSeasonTitle": "Encara no hi ha temporada",
-      "noSeasonBody": "Crea la primera temporada per començar a muntar equips.",
-      "createSeason": "Crear temporada"
+    "onboarding": {
+      "title": "Deixa el club amb la seva imatge",
+      "body": "Puja l'escut i tria els colors de marca: la gent del club els veurà a cada pantalla.",
+      "action": "Anar a ajustos"
     },
-    "family": {
-      "title": "La teva família",
-      "description": "Els jugadors vinculats al teu compte.",
-      "open": "Veure la meva família",
-      "empty": "Encara no hi ha cap jugador vinculat al teu compte. Demana al club que et vinculi.",
-      "challenge": "Repte"
+    "today": {
+      "eyebrow": "Avui al club",
+      "week": "Veure la setmana",
+      "empty": "Avui no hi ha res a l'agenda.",
+      "emptyHint": "Els entrenaments surten aquí quan cada equip té horari."
+    },
+    "stats": {
+      "clubMembers": "Socis",
+      "clubMembersJoined": "Socis · {count, plural, one {# alta aquest mes} other {# altes aquest mes}}",
+      "players": "Esportistes",
+      "teams": "Equips i grups",
+      "staff": "Personal",
+      "feesPending": "Quotes pendents",
+      "feesOverdue": "Quotes pendents · {count, plural, one {# vençuda} other {# vençudes}}"
+    },
+    "sections": {
+      "eyebrow": "Seccions",
+      "title": "El club per esport",
+      "all": "Veure-les totes",
+      "empty": "Encara no hi ha seccions.",
+      "emptyHint": "Una secció per esport o activitat: futbol, bàsquet, ioga, natació.",
+      "new": "Nova secció"
     },
     "operations": {
-      "eyebrow": "Què cal fer avui",
+      "eyebrow": "Què cal avui",
       "title": "Alertes del club",
       "count": "{count, plural, =0 {Tot al dia} one {# alerta} other {# alertes}}",
       "allClear": "Tot al dia.",
       "allClearHint": "No hi ha res pendent al club.",
       "go": "Anar-hi",
+      "teamsWithoutStaff": "{count, plural, one {# equip sense cos tècnic} other {# equips sense cos tècnic}}",
+      "teamsWithoutStaffHint": "Assigna algú des de la fitxa de cada equip.",
       "pendingInvitations": "{count, plural, one {# invitació pendent} other {# invitacions pendents}}",
       "pendingInvitationsHint": "Reenvia o revoca les que no s'accepten.",
+      "feesOverdue": "{count, plural, one {# quota vençuda} other {# quotes vençudes}}",
+      "feesOverdueHint": "Cobraments amb la data passada i sense pagar.",
       "challengeSubmissionsPending": "{count, plural, one {# registre del repte per validar} other {# registres del repte per validar}}",
       "challengeSubmissionsPendingHint": "Les famílies esperen la validació del club.",
       "objectivesOverdue": "{count, plural, one {# objectiu amb la revisió vençuda} other {# objectius amb la revisió vençuda}}",
-      "objectivesOverdueHint": "Revisa el progrés i fixa la data següent.",
+      "objectivesOverdueHint": "Revisa el progrés i fixa la següent data.",
       "plansOverdue": "{count, plural, one {# pla de desenvolupament amb la revisió vençuda} other {# plans de desenvolupament amb la revisió vençuda}}",
-      "plansOverdueHint": "Actualitza el PDI i la propera revisió.",
-      "playersWithoutTeam": "{count, plural, one {# jugador sense equip aquesta temporada} other {# jugadors sense equip aquesta temporada}}",
-      "playersWithoutTeamHint": "Posa'ls en una plantilla.",
-      "playersWithoutObjective": "{count, plural, one {# jugador sense objectiu individual} other {# jugadors sense objectiu individual}}",
+      "plansOverdueHint": "Actualitza el PDI i la seva propera revisió.",
+      "playersWithoutTeam": "{count, plural, one {# esportista sense equip aquesta temporada} other {# esportistes sense equip aquesta temporada}}",
+      "playersWithoutTeamHint": "Posa'ls en una plantilla o grup.",
+      "playersWithoutMembership": "{count, plural, one {# esportista sense fitxa de soci} other {# esportistes sense fitxa de soci}}",
+      "playersWithoutMembershipHint": "Dona'ls d'alta com a socis per cobrar-los quota.",
+      "playersWithoutObjective": "{count, plural, one {# esportista sense objectiu individual} other {# esportistes sense objectiu individual}}",
       "playersWithoutObjectiveHint": "Defineix una prioritat per a cada fitxa.",
-      "playersWithoutFamily": "{count, plural, one {# jugador sense accés familiar} other {# jugadors sense accés familiar}}",
+      "playersWithoutFamily": "{count, plural, one {# esportista sense accés familiar} other {# esportistes sense accés familiar}}",
       "playersWithoutFamilyHint": "Convida la seva família des de la fitxa.",
       "playersWithoutPhoto": "{count, plural, one {# fitxa sense fotografia} other {# fitxes sense fotografia}}",
-      "playersWithoutPhotoHint": "La foto ajuda a identificar cada jugador."
+      "playersWithoutPhotoHint": "La foto ajuda a identificar cada esportista.",
+      "facilitiesWithoutHours": "{count, plural, one {# instal·lació sense horari} other {# instal·lacions sense horari}}",
+      "facilitiesWithoutHoursHint": "Sense horari no es poden detectar solapaments."
     },
     "readiness": {
       "eyebrow": "Salut de les dades",
       "title": "Preparació de les fitxes",
-      "description": "Set comprovacions per jugador actiu: foto, naixement, equip, família, objectiu, indicadors i PDI.",
-      "total": "{count, plural, one {# jugador actiu} other {# jugadors actius}}",
+      "description": "Set comprovacions per esportista actiu: foto, naixement, equip, família, objectiu, indicadors i PDI.",
+      "total": "{count, plural, one {# esportista actiu} other {# esportistes actius}}",
       "progressLabel": "Fitxes preparades al {percent} per cent",
       "withPhoto": "Amb foto",
       "withBirthDate": "Amb naixement",
@@ -184,25 +190,22 @@
       "withFamily": "Amb família",
       "withObjective": "Amb objectiu",
       "withIndicators": "Amb indicadors",
-      "withPlan": "Amb PDI"
+      "withPlan": "Amb PDI",
+      "bySection": "Veure per secció"
     },
-    "quickActions": {
-      "title": "Accessos ràpids",
-      "description": "El que més es fa al club, a un toc.",
-      "newPlayer": "Donar d'alta un jugador",
-      "newPlayerHint": "Crear la fitxa i assignar-li equip.",
-      "newTeam": "Crear un equip",
-      "newTeamHint": "En una secció de la temporada actual.",
-      "inviteFamily": "Convidar una família",
-      "inviteFamilyHint": "Des de la fitxa del seu jugador.",
-      "challenge": "Obrir el repte",
-      "challengeHint": "Proves, validacions i participació."
+    "family": {
+      "title": "La teva família",
+      "description": "Els esportistes vinculats al teu compte.",
+      "open": "Veure la meva família",
+      "empty": "Encara no hi ha cap esportista vinculat al teu compte. Demana al club que et vinculi.",
+      "noTeam": "Sense equip"
     },
     "activity": {
       "title": "Últims moviments",
-      "description": "Què ha passat al club aquests dies.",
+      "toggle": "Mostrar o amagar",
       "empty": "Encara no hi ha moviments.",
-      "system": "Sistema"
+      "system": "Sistema",
+      "all": "Veure tot el registre"
     },
     "panel": {
       "rated": "{dimension}: {rated} de {total} valorats",
@@ -265,15 +268,15 @@
     }
   },
   "members": {
-    "title": "Membres",
-    "description": "Qui forma part del club i amb quin rol.",
+    "title": "Personal del club",
+    "description": "Qui treballa al club i amb quin rol: direcció, entrenadors i personal. Les famílies i els socis tenen les seves pròpies pantalles.",
     "invite": "Convidar",
     "tabs": {
-      "members": "Membres",
+      "members": "Personal",
       "invitations": "Invitacions"
     },
     "search": "Cercar per nom o correu",
-    "empty": "Encara no hi ha membres.",
+    "empty": "Encara no hi ha personal al club.",
     "emptyInvitations": "No hi ha invitacions pendents.",
     "table": {
       "name": "Persona",
@@ -336,12 +339,17 @@
   },
   "settings": {
     "title": "Configuració del club",
-    "description": "Nom, idioma, marca i logo. El que canviïs aquí ho veu tot el club.",
+    "description": "Nom, idioma, marca i logo; temporades, tipus de soci i cobraments. El que canviïs aquí ho veu tot el club.",
     "forbidden": "No pots editar la configuració d'aquest club.",
     "tabs": {
       "general": "General",
       "brand": "Marca",
-      "logo": "Logo"
+      "logo": "Logo",
+      "seasons": "Temporades",
+      "memberTypes": "Tipus de soci",
+      "payments": "Cobraments",
+      "setup": "Posada en marxa",
+      "activity": "Activitat"
     },
     "general": {
       "title": "Dades del club",
@@ -350,7 +358,9 @@
       "defaultLocaleHint": "Idioma dels correus i de la interfície per a qui no n'hagi triat cap altre.",
       "saved": "Canvis desats.",
       "voice": "Veu del club",
-      "voiceHint": "Com parla el club a la seva gent en els avisos i missatges del dia a dia. Diners, baixes i dades personals fan servir sempre un to professional."
+      "voiceHint": "Com parla el club a la seva gent en els avisos i missatges del dia a dia. Diners, baixes i dades personals fan servir sempre un to professional.",
+      "timezone": "Zona horària",
+      "timezoneHint": "L'agenda es pinta en aquesta zona, sigui quina sigui la del dispositiu."
     },
     "brand": {
       "title": "Colors de marca",
@@ -379,6 +389,119 @@
       "removed": "Logo tret.",
       "confirmRemoveTitle": "Treure el logo del club?",
       "confirmRemoveBody": "La capçalera, el login i el selector de clubs tornaran a mostrar les inicials. Pots pujar-ne un altre quan vulguis."
+    },
+    "seasons": {
+      "title": "Temporades",
+      "description": "Els equips i les plantilles van per temporada. L'actual és la que veu tot el club.",
+      "caption": "Temporades del club",
+      "new": "Nova temporada",
+      "current": "Actual",
+      "edit": "Editar",
+      "makeCurrent": "Fer actual",
+      "madeCurrent": "{name} ja és la temporada actual.",
+      "loadError": "No s'han pogut carregar les temporades.",
+      "empty": "Encara no hi ha temporades.",
+      "emptyHint": "Crea la primera per poder crear seccions i equips.",
+      "table": {
+        "name": "Temporada",
+        "range": "Dates",
+        "teams": "Equips"
+      },
+      "sheet": {
+        "title": "Nova temporada",
+        "editTitle": "Editar temporada",
+        "description": "Dates de calendari sense hora. Una temporada sol anar de setembre a juny.",
+        "name": "Nom",
+        "nameHint": "Per exemple, 2026-27.",
+        "startsOn": "Comença",
+        "endsOn": "Acaba",
+        "isCurrent": "Fer-la la temporada actual",
+        "isCurrentHint": "L'anterior deixa de ser-ho. Els equips nous es creen a l'actual.",
+        "submit": "Crear temporada",
+        "created": "Temporada creada.",
+        "saved": "Temporada desada.",
+        "invalid": "Revisa el nom i les dates: ha d'acabar després de començar.",
+        "duplicate": "Ja hi ha una temporada amb aquest nom."
+      }
+    },
+    "memberTypes": {
+      "title": "Tipus de soci",
+      "description": "Les classes de soci del club: numerari, familiar, juvenil, honorífic… Cada pla de quota pot anar a un tipus.",
+      "caption": "Tipus de soci",
+      "newTitle": "Nou tipus",
+      "newDescription": "Un nom curt. El veuràs en donar d'alta socis i als plans de quota.",
+      "name": "Nom",
+      "namePlaceholder": "Soci numerari",
+      "add": "Afegir tipus",
+      "created": "Tipus «{name}» creat.",
+      "duplicate": "Ja hi ha un tipus amb aquest nom.",
+      "rename": "Reanomenar",
+      "renameTitle": "Reanomenar «{name}»",
+      "renamed": "Tipus reanomenat.",
+      "archive": "Arxivar",
+      "restore": "Recuperar",
+      "archived": "Tipus «{name}» arxivat.",
+      "restored": "Tipus «{name}» recuperat.",
+      "loadError": "No s'han pogut carregar els tipus de soci.",
+      "empty": "Encara no hi ha tipus de soci.",
+      "emptyHint": "Afegeix el primer amb el formulari del costat.",
+      "membersCount": "{count, plural, one {# soci} other {# socis}}",
+      "status": {
+        "active": "Actiu",
+        "archived": "Arxivat"
+      },
+      "table": {
+        "name": "Tipus",
+        "members": "Socis",
+        "status": "Estat"
+      }
+    },
+    "payments": {
+      "title": "Com cobra el club",
+      "description": "A mà, el club apunta cada pagament. Amb Stripe, les famílies i els socis paguen des de l'app i el pagament es registra sol.",
+      "provider": "Proveïdor de cobrament",
+      "providerHint": {
+        "manual": "Les quotes es cobren per transferència o a secretaria i algú les registra a l'app.",
+        "stripe": "Cada càrrec pendent porta un botó de pagament. Els diners van al compte de Stripe del club."
+      },
+      "stripeAccount": "Compte de Stripe del club",
+      "stripeAccountHint": "L'identificador «acct_…» del compte connectat. El dona Stripe en connectar el club.",
+      "stripeNotConfigured": "Stripe encara no està configurat a la plataforma. Pots deixar el compte preparat, però el cobrament en línia no s'activarà fins que hi hagi claus.",
+      "conflictPlatform": "Stripe encara no està configurat a la plataforma. Mentrestant, el club cobra a mà.",
+      "conflictAccount": "Per cobrar per Stripe cal el compte connectat del club (acct_…).",
+      "invalidAccount": "Aquest identificador de compte no sembla de Stripe (acct_…).",
+      "saved": "Ajustos de cobrament desats.",
+      "statusTitle": "Estat",
+      "currentProvider": "Proveïdor actual",
+      "platformKeys": "Claus de Stripe a la plataforma",
+      "ready": "A punt",
+      "missing": "Sense configurar",
+      "connectedAccount": "Compte connectat",
+      "notConnected": "Sense connectar",
+      "currency": "Moneda",
+      "howItWorks": "Stripe queda preparat com Resend per a l'email: sense claus, el club segueix cobrant a mà; amb claus i compte connectat, el pagament en línia s'activa en triar Stripe."
+    },
+    "setup": {
+      "title": "Posada en marxa",
+      "description": "{done} de {total} passos fets. Deixa el club a punt per a la seva gent.",
+      "done": "Fet",
+      "logo": "Puja el logo del club",
+      "logoAction": "Pujar logo",
+      "colors": "Tria els colors de marca",
+      "colorsAction": "Triar colors",
+      "season": "Crea la temporada actual",
+      "seasonAction": "Crear temporada",
+      "section": "Crea la primera secció",
+      "sectionAction": "Crear secció",
+      "invite": "Convida el primer entrenador o personal",
+      "inviteAction": "Convidar"
+    },
+    "activity": {
+      "title": "Activitat del club",
+      "description": "Els últims cent moviments: qui va fer què.",
+      "empty": "Encara no hi ha moviments.",
+      "system": "Sistema",
+      "loadError": "No s'ha pogut carregar l'activitat."
     }
   },
   "clubs": {
@@ -572,7 +695,8 @@
       "created": "Club creat",
       "updated": "Club editat",
       "logo_updated": "Logo canviat",
-      "logo_removed": "Logo tret"
+      "logo_removed": "Logo tret",
+      "payments_updated": "Ajustos de cobrament canviats"
     },
     "invitation": {
       "created": "Invitació enviada",
@@ -602,7 +726,8 @@
       "roster_updated": "Plantilla editada",
       "roster_removed": "Jugador tret de la plantilla",
       "staff_added": "Cos tècnic afegit",
-      "staff_removed": "Cos tècnic retirat"
+      "staff_removed": "Cos tècnic retirat",
+      "schedule_updated": "Horari de l'equip canviat"
     },
     "player": {
       "created": "Jugador donat d'alta",
@@ -626,90 +751,47 @@
       "submission_created": "Registre del repte enviat",
       "submission_removed": "Registre del repte retirat",
       "submission_reviewed": "Registre del repte validat"
-    }
-  },
-  "teams": {
-    "title": "Equips",
-    "description": "Seccions, temporades i equips amb la seva plantilla.",
-    "tabs": {
-      "teams": "Equips",
-      "sections": "Seccions",
-      "seasons": "Temporades"
     },
-    "season": "Temporada",
-    "current": "Actual",
-    "newTeam": "Nou equip",
-    "newSection": "Nova secció",
-    "newSeason": "Nova temporada",
-    "empty": "Encara no hi ha equips en aquesta temporada.",
-    "emptySeason": "Sense temporada no hi ha equips. Crea la primera a la pestanya Temporades.",
-    "emptySections": "Encara no hi ha seccions.",
-    "emptySeasons": "Encara no hi ha temporades.",
-    "table": {
-      "team": "Equip",
-      "category": "Categoria",
-      "players": "Jugadors",
-      "staff": "Cos tècnic",
-      "section": "Secció",
-      "status": "Estat",
-      "teams": "Equips",
-      "dates": "Dates",
-      "name": "Nom"
+    "category": {
+      "created": "Categoria creada",
+      "updated": "Categoria editada"
     },
-    "noStaff": "Sense cos tècnic",
-    "noCategory": "Sense categoria",
-    "open": "Obrir",
-    "edit": "Editar",
-    "makeCurrent": "Fer actual",
-    "madeCurrent": "{name} ja és la temporada actual.",
-    "archive": "Arxivar",
-    "reactivate": "Reactivar",
-    "sectionStatus": {
-      "active": "Activa",
-      "archived": "Arxivada"
+    "person": {
+      "updated": "Dades de persona editades"
     },
-    "teamSheet": {
-      "title": "Nou equip",
-      "editTitle": "Editar {name}",
-      "description": "Un equip viu en una secció i una temporada.",
-      "name": "Nom de l'equip",
-      "nameHint": "Per exemple, Aleví A.",
-      "category": "Categoria",
-      "categoryHint": "Text lliure: cada club i federació l'anomena a la seva manera.",
-      "section": "Secció",
-      "season": "Temporada",
-      "submit": "Crear equip",
-      "save": "Desar",
-      "created": "Equip {name} creat.",
-      "saved": "Equip desat.",
-      "nameTaken": "Ja hi ha un equip amb aquest nom en aquesta secció i temporada."
+    "club_member": {
+      "created": "Soci donat d'alta",
+      "updated": "Fitxa de soci editada"
     },
-    "sectionSheet": {
-      "title": "Nova secció",
-      "editTitle": "Editar secció",
-      "description": "La capa entre el club i els seus equips: per esport, per gènere o com ho organitzi el club.",
-      "name": "Nom de la secció",
-      "submit": "Crear secció",
-      "save": "Desar",
-      "created": "Secció {name} creada.",
-      "saved": "Secció desada.",
-      "nameTaken": "Ja hi ha una secció amb aquest nom."
+    "member_type": {
+      "created": "Tipus de soci creat",
+      "updated": "Tipus de soci editat"
     },
-    "seasonSheet": {
-      "title": "Nova temporada",
-      "editTitle": "Editar temporada",
-      "description": "Els equips i les plantilles van per temporada, per conservar l'historial.",
-      "name": "Nom",
-      "nameHint": "Per exemple, 2026-27.",
-      "startsOn": "Comença",
-      "endsOn": "Acaba",
-      "isCurrent": "Marcar com a temporada actual",
-      "submit": "Crear temporada",
-      "save": "Desar",
-      "created": "Temporada {name} creada.",
-      "saved": "Temporada desada.",
-      "nameTaken": "Ja hi ha una temporada amb aquest nom.",
-      "dates": "La temporada ha d'acabar després de començar."
+    "facility": {
+      "created": "Instal·lació creada",
+      "updated": "Instal·lació editada"
+    },
+    "event": {
+      "created": "Esdeveniment creat",
+      "updated": "Esdeveniment editat",
+      "removed": "Esdeveniment eliminat"
+    },
+    "attendance": {
+      "recorded": "Llista passada"
+    },
+    "fee_plan": {
+      "created": "Pla de quota creat",
+      "updated": "Pla de quota editat"
+    },
+    "fee_charge": {
+      "created": "Càrrec creat",
+      "updated": "Càrrec editat"
+    },
+    "payment": {
+      "recorded": "Pagament registrat"
+    },
+    "view_as": {
+      "started": "Va veure el club com una altra persona"
     }
   },
   "team": {
@@ -751,7 +833,8 @@
       "description": "Membres del club amb rol d'entrenador o administrador.",
       "member": "Persona",
       "empty": "No hi ha ningú disponible. Convida un entrenador des de Membres.",
-      "submit": "Afegir"
+      "submit": "Afegir",
+      "role": "Càrrec a l'equip"
     },
     "addPlayerSheet": {
       "title": "Afegir jugador a {team}",
@@ -772,11 +855,38 @@
       "saved": "Canvis desats."
     },
     "edit": "Editar equip",
-    "archived": "Equip arxivat"
+    "archived": "Equip arxivat",
+    "srTitle": "Fitxa de l'equip",
+    "capacity": "{count} de {capacity} places",
+    "schedule": {
+      "title": "Horari setmanal",
+      "description": "Entrenaments fixos de la setmana. Amb ells es genera l'agenda de la temporada.",
+      "descriptionActivity": "Sessions fixes de la setmana. Amb elles es genera l'agenda de la temporada.",
+      "set": "Fixar horari",
+      "edit": "Editar horari",
+      "empty": "Encara no hi ha horari.",
+      "noFacility": "Sense instal·lació",
+      "openAgenda": "Veure a l'agenda"
+    },
+    "scheduleSheet": {
+      "title": "Horari setmanal",
+      "description": "Una fila per franja. En desar pots regenerar l'agenda des d'avui; les sessions amb llista passada es respecten.",
+      "weekday": "Dia",
+      "startsAt": "Comença",
+      "endsAt": "Acaba",
+      "facility": "Instal·lació",
+      "noFacility": "Sense instal·lació",
+      "addSlot": "Afegir franja",
+      "generate": "Generar l'agenda de la temporada des d'avui",
+      "generateHint": "Crea una sessió per franja i setmana fins que acabi la temporada. Les que ja existeixen no es dupliquen.",
+      "submit": "Desar horari",
+      "saved": "Horari desat.",
+      "savedGenerated": "Horari desat. {count, plural, =0 {No calia generar res} one {# sessió generada} other {# sessions generades}}."
+    }
   },
   "players": {
-    "title": "Jugadors",
-    "description": "Totes les persones que juguen al club, amb el seu equip i la seva família.",
+    "title": "Esportistes",
+    "description": "Qui entrena al club: fitxa, equip o grup, família i estat.",
     "new": "Nou jugador",
     "search": "Cercar per nom",
     "teamFilter": "Equip",
@@ -788,7 +898,8 @@
       "age": "Edat",
       "teams": "Equips",
       "family": "Família",
-      "status": "Estat"
+      "status": "Estat",
+      "member": "Soci"
     },
     "noTeam": "Sense equip",
     "sheet": {
@@ -811,9 +922,26 @@
       "photo": "sense foto",
       "objective": "sense objectiu",
       "team": "sense equip",
-      "family": "sense família"
+      "family": "sense família",
+      "member": "sense fitxa de soci"
     },
-    "pendingCount": "{count, plural, one {# invitació pendent} other {# invitacions pendents}}"
+    "pendingCount": "{count, plural, one {# invitació pendent} other {# invitacions pendents}}",
+    "tabs": {
+      "players": "Esportistes",
+      "families": "Famílies"
+    },
+    "families": {
+      "empty": "Encara no hi ha famílies.",
+      "emptyHint": "Es creen en convidar la família des de la fitxa d'un esportista.",
+      "person": "Persona",
+      "since": "Des de"
+    },
+    "sectionFilter": "Secció",
+    "allSections": "Totes les seccions",
+    "categoryFilter": "Categoria",
+    "allCategories": "Totes les categories",
+    "memberNumber": "Núm. {number}",
+    "notMember": "No soci"
   },
   "playerStatus": {
     "active": "Actiu",
@@ -1062,6 +1190,18 @@
       "emotional": "Emocional",
       "habits": "Hàbits",
       "person": "Persona"
+    },
+    "person": {
+      "gender": "Gènere",
+      "genderNone": "Sense indicar",
+      "email": "Correu",
+      "emailHint": "El de la persona, si en té. La família entra amb el seu.",
+      "phone": "Telèfon",
+      "nationalId": "Document",
+      "member": "Soci",
+      "memberNumber": "Soci núm. {number}",
+      "makeMember": "Donar d'alta com a soci",
+      "notMember": "No és soci"
     }
   },
   "family": {
@@ -1345,6 +1485,714 @@
         "pending": "Per validar",
         "goal": "Fita"
       }
+    }
+  },
+  "viewAs": {
+    "title": "Veure el club com…",
+    "description": "Mira el club amb els ulls d'una altra persona: les seves pantalles, els seus equips, la seva família. La teva sessió no canvia i els canvis queden al teu nom.",
+    "search": "Cerca per nom o email",
+    "empty": "No hi ha més persones al club.",
+    "error": "No s'ha pogut carregar la llista de persones.",
+    "banner": "Estàs veient el club com {name} ({role}).",
+    "exit": "Tornar a la meva vista"
+  },
+  "sections": {
+    "title": "Seccions",
+    "description": "El club per esport o activitat: categories, equips i grups de la temporada.",
+    "new": "Nova secció",
+    "season": "Temporada",
+    "current": "Actual",
+    "noSeasonTitle": "Encara no hi ha temporada",
+    "noSeasonBody": "Els equips i els grups van per temporada. Crea la primera a Ajustos.",
+    "createSeason": "Crear temporada",
+    "empty": "Encara no hi ha seccions.",
+    "emptyHint": "Una per esport o activitat. En crear-la pots deixar les categories ja muntades.",
+    "archivedTitle": "Seccions arxivades",
+    "archivedDescription": "Es conserven amb el seu historial. Pots reactivar-les des de la seva fitxa.",
+    "card": {
+      "competitionNums": "{categories, plural, one {# categoria} other {# categories}} · {teams, plural, one {# equip} other {# equips}} · {players, plural, one {# esportista} other {# esportistes}}",
+      "activityNums": "{categories, plural, one {# nivell} other {# nivells}} · {teams, plural, one {# grup} other {# grups}} · {players, plural, one {# esportista} other {# esportistes}}",
+      "coordinator": "Coordina {name}",
+      "noCoordinator": "Sense coordinació",
+      "archived": "Arxivada",
+      "withoutStaff": "{count, plural, one {# equip sense cos tècnic} other {# equips sense cos tècnic}}",
+      "noTeams": "Sense equips",
+      "ok": "Al dia"
+    },
+    "sheet": {
+      "title": "Nova secció",
+      "editTitle": "Editar {name}",
+      "description": "Un esport o activitat del club, amb qui el coordina.",
+      "sport": "Esport",
+      "sportHint": "Decideix la icona, les posicions i les categories suggerides.",
+      "sportPlaceholder": "Tria un esport",
+      "name": "Nom",
+      "nameHint": "Per exemple, Futbol o Ioga. S'omple amb l'esport.",
+      "kind": "Tipus",
+      "coordinator": "Coordinació",
+      "coordinatorHint": "Qui respon de la secció. Pot ser qualsevol persona del club.",
+      "noCoordinator": "Sense assignar",
+      "descriptionLabel": "Descripció",
+      "categories": "Categories de partida",
+      "categoriesHint": "Les suggerides per l'esport. Desmarca les que no facis servir; després s'editen.",
+      "ages": "{from} a {to} anys",
+      "agesFrom": "des de {from} anys",
+      "agesTo": "fins a {to} anys",
+      "submit": "Crear secció",
+      "save": "Desar",
+      "created": "Secció {name} creada.",
+      "saved": "Secció desada.",
+      "nameTaken": "Ja hi ha una secció amb aquest nom."
+    }
+  },
+  "section": {
+    "back": "Seccions",
+    "seasonLabel": "Temporada {season}",
+    "archived": "Arxivada",
+    "active": "Actiu",
+    "coordinator": "Coordina {name}",
+    "noCoordinator": "Sense coordinació",
+    "noCoordinatorAssign": "Sense coordinació · assigna algú",
+    "edit": "Editar",
+    "newCategory": "Nova categoria",
+    "season": "Temporada",
+    "noSeason": "Sense temporada no hi ha equips.",
+    "tabStaff": "Personal",
+    "staffDescription": "Qui coordina la secció i el cos tècnic dels seus equips.",
+    "emptyStaff": "Encara no hi ha ningú en aquesta secció.",
+    "emptyCategories": "Encara no hi ha categories",
+    "emptyCategoriesHint": "Les categories agrupen els equips per edat o nivell.",
+    "table": {
+      "staff": "Cos tècnic",
+      "next": "Següent",
+      "status": "Estat"
+    },
+    "noStaff": "Sense cos tècnic",
+    "vs": "contra {opponent}",
+    "noNext": "Res programat",
+    "summary": {
+      "title": "Resum",
+      "guardians": "Famílies",
+      "readiness": "Fitxes preparades",
+      "staff": "Personal",
+      "eventsThisWeek": "Esdeveniments aquesta setmana"
+    },
+    "alerts": {
+      "title": "Alertes",
+      "allClear": "Tot al dia en aquesta secció.",
+      "noCoordinator": "Sense coordinació",
+      "noCoordinatorHint": "Assigna algú que respongui de la secció.",
+      "withoutStaffHint": "Assigna el cos tècnic des de cada equip."
+    },
+    "links": {
+      "title": "Accessos",
+      "agenda": "Agenda de la secció"
+    },
+    "bornBetween": "nascuts entre {from} i {to}",
+    "bornUntil": "nascuts fins a {to}",
+    "bornFrom": "nascuts des de {from}",
+    "genders": {
+      "male": "Masculí",
+      "female": "Femení",
+      "mixed": "Mixt"
+    },
+    "competition": {
+      "newTeam": "Nou equip",
+      "tabTeams": "Equips",
+      "addTeam": "Afegir equip",
+      "emptyTeams": "Sense equips en aquesta categoria.",
+      "table": {
+        "team": "Equip",
+        "players": "Jugadors"
+      },
+      "playersCount": "{count, plural, one {# jugador} other {# jugadors}}",
+      "summary": {
+        "players": "Jugadors"
+      },
+      "alerts": {
+        "withoutStaff": "{count, plural, one {# equip sense cos tècnic} other {# equips sense cos tècnic}}",
+        "noPlayers": "Encara no hi ha jugadors a la secció."
+      },
+      "links": {
+        "players": "Jugadors de la secció"
+      }
+    },
+    "activity": {
+      "newTeam": "Nou grup",
+      "tabTeams": "Grups",
+      "addTeam": "Afegir grup",
+      "emptyTeams": "Sense grups en aquest nivell.",
+      "table": {
+        "team": "Grup",
+        "players": "Inscrits"
+      },
+      "playersCount": "{count, plural, one {# inscrit} other {# inscrits}}",
+      "summary": {
+        "players": "Inscrits"
+      },
+      "alerts": {
+        "withoutStaff": "{count, plural, one {# grup sense monitor} other {# grups sense monitor}}",
+        "noPlayers": "Encara no hi ha inscrits a la secció."
+      },
+      "links": {
+        "players": "Inscrits de la secció"
+      }
+    },
+    "categorySheet": {
+      "title": "Nova categoria",
+      "editTitle": "Editar {name}",
+      "description": "Agrupa equips o grups per edat, gènere o nivell.",
+      "name": "Nom",
+      "nameHint": "Per exemple, Aleví, Sènior o Iniciació.",
+      "gender": "Gènere",
+      "anyGender": "Indiferent",
+      "birthYearFrom": "Nascuts des de",
+      "birthYearTo": "Nascuts fins a",
+      "yearsHint": "Anys de naixement. Opcional.",
+      "status": "Estat",
+      "statusActive": "Activa",
+      "statusArchived": "Arxivada",
+      "submit": "Crear categoria",
+      "save": "Desar",
+      "created": "Categoria {name} creada.",
+      "saved": "Categoria desada.",
+      "nameTaken": "Ja hi ha una categoria amb aquest nom a la secció."
+    },
+    "teamSheet": {
+      "editTitle": "Editar {name}",
+      "section": "Secció",
+      "category": "Categoria",
+      "categoryHint": "De la secció. Crea les categories des de la fitxa de la secció.",
+      "categoryPlaceholder": "Tria una categoria",
+      "capacity": "Places",
+      "capacityHint": "Màxim d'inscrits. Buit si no hi ha límit.",
+      "status": "Estat",
+      "statusActive": "Actiu",
+      "statusArchived": "Arxivat",
+      "save": "Desar",
+      "created": "{name} creat.",
+      "saved": "Desat.",
+      "nameTaken": "Ja n'hi ha un amb aquest nom en aquesta categoria i temporada.",
+      "competition": {
+        "title": "Nou equip",
+        "description": "Un equip viu en una categoria de la secció i en una temporada.",
+        "name": "Nom de l'equip",
+        "nameHint": "Per exemple, Aleví A.",
+        "submit": "Crear equip"
+      },
+      "activity": {
+        "title": "Nou grup",
+        "description": "Un grup amb horari i places dins de l'activitat.",
+        "name": "Nom del grup",
+        "nameHint": "Per exemple, Dilluns i dimecres 19:00.",
+        "submit": "Crear grup"
+      }
+    }
+  },
+  "sectionKinds": {
+    "competition": "Competició",
+    "activity": "Activitat",
+    "hint": {
+      "competition": "Equips per categoria que competeixen: partits, convocatòries, rivals.",
+      "activity": "Grups amb horari i places: ioga, natació, escola."
+    }
+  },
+  "teamStaffRoles": {
+    "head_coach": "Primer entrenador",
+    "assistant": "Segon entrenador",
+    "delegate": "Delegat",
+    "physio": "Fisio",
+    "other": "Altre"
+  },
+  "weekdays": {
+    "1": "Dilluns",
+    "2": "Dimarts",
+    "3": "Dimecres",
+    "4": "Dijous",
+    "5": "Divendres",
+    "6": "Dissabte",
+    "7": "Diumenge"
+  },
+  "genders": {
+    "female": "Dona",
+    "male": "Home",
+    "other": "Altre"
+  },
+  "memberStatus": {
+    "active": "Al dia",
+    "pending": "Pendent d'alta",
+    "suspended": "Suspès",
+    "left": "Baixa"
+  },
+  "feeStatus": {
+    "pending": "Pendent",
+    "paid": "Pagat",
+    "overdue": "Vençut",
+    "cancelled": "Anul·lat"
+  },
+  "paymentMethods": {
+    "cash": "Efectiu",
+    "transfer": "Transferència",
+    "card": "Targeta",
+    "stripe": "Stripe",
+    "other": "Altre"
+  },
+  "paymentProviders": {
+    "manual": "A mà (el club apunta els pagaments)",
+    "stripe": "Stripe (pagament en línia)"
+  },
+  "feePeriods": {
+    "monthly": "Mensual",
+    "quarterly": "Trimestral",
+    "yearly": "Anual",
+    "once": "Pagament únic"
+  },
+  "eventKinds": {
+    "training": "Entrenament",
+    "match": "Partit",
+    "activity": "Activitat",
+    "meeting": "Reunió",
+    "booking": "Reserva",
+    "other": "Altre"
+  },
+  "facilityKinds": {
+    "pool": "Piscina",
+    "court": "Pista",
+    "field": "Camp",
+    "room": "Sala",
+    "gym": "Gimnàs",
+    "other": "Altra"
+  },
+  "attendance": {
+    "title": "Passar llista",
+    "marked": "{marked} de {total} marcats",
+    "present": "Present",
+    "absent": "Absent",
+    "excused": "Justificat",
+    "excuse": "Justificar",
+    "unmarked": "Sense marcar",
+    "group": "Assistència de {name}",
+    "empty": "Aquest esdeveniment no té equip o l'equip no té plantilla.",
+    "readOnly": "Només el cos tècnic de l'equip pot passar llista.",
+    "saved": "Llista desada: {present} de {total} presents."
+  },
+  "clubMembers": {
+    "title": "Socis",
+    "description": "Qui és soci del club, de quin tipus i si està al dia.",
+    "new": "Nou soci",
+    "search": "Cerca per nom, email o número",
+    "statusFilter": "Estat",
+    "typeFilter": "Tipus",
+    "allStatuses": "Tots els estats",
+    "allTypes": "Tots els tipus",
+    "empty": "Encara no hi ha socis. Dona d'alta el primer o crea els tipus de soci a Ajustos.",
+    "noResults": "Ningú coincideix amb els filtres.",
+    "noType": "Sense tipus",
+    "numberShort": "Núm. {number}",
+    "upToDate": "Al dia",
+    "table": {
+      "number": "Núm.",
+      "person": "Persona",
+      "type": "Tipus",
+      "roles": "Papers",
+      "status": "Estat",
+      "fees": "Quotes",
+      "since": "Des de"
+    },
+    "roles": {
+      "player": "Esportista",
+      "staff": "Personal",
+      "guardianOf": "Família de {names}",
+      "none": "Només soci"
+    },
+    "sheet": {
+      "title": "Nou soci",
+      "description": "Una persona que ja és al club (esportista, família, personal) o algú nou.",
+      "mode": "Qui?",
+      "modeNew": "Persona nova",
+      "modeExisting": "Algú que ja és al club",
+      "person": "Persona",
+      "personHint": "Escriu almenys dues lletres del nom o de l'email.",
+      "choosePerson": "Tria una persona de la llista.",
+      "noPeople": "Ningú coincideix. Prova un altre nom o dona-la d'alta com a persona nova.",
+      "isPlayer": "Esportista",
+      "isMember": "Ja és soci",
+      "firstName": "Nom",
+      "lastName": "Cognoms",
+      "birthDate": "Data de naixement",
+      "gender": "Gènere",
+      "noGender": "Sense indicar",
+      "email": "Email",
+      "phone": "Telèfon",
+      "memberType": "Tipus de soci",
+      "noType": "Sense tipus",
+      "memberNumber": "Número de soci",
+      "memberNumberHint": "Si el deixes buit, el club assigna el següent.",
+      "joinedOn": "Alta",
+      "submit": "Donar d'alta",
+      "created": "{name} ja és soci del club."
+    }
+  },
+  "clubMember": {
+    "back": "Socis",
+    "eyebrow": "Soci núm. {number} · {type}",
+    "noType": "Sense tipus",
+    "editMember": "Editar fitxa de soci",
+    "leave": "Donar de baixa",
+    "left": "{name} ha causat baixa. L'historial es conserva.",
+    "confirmLeaveTitle": "Donar de baixa {name}?",
+    "confirmLeaveBody": "Deixa de comptar com a soci i no rebrà nous càrrecs. La fitxa i l'historial es conserven.",
+    "person": {
+      "title": "Persona",
+      "edit": "Editar dades",
+      "birthDate": "Naixement",
+      "age": "{age} anys",
+      "gender": "Gènere",
+      "unknown": "Sense indicar",
+      "email": "Email",
+      "phone": "Telèfon",
+      "nationalId": "DNI / NIE",
+      "notes": "Notes",
+      "account": "Compte",
+      "hasAccount": "Té accés a l'app",
+      "noAccount": "Sense accés a l'app"
+    },
+    "member": {
+      "title": "Soci",
+      "number": "Número",
+      "type": "Tipus",
+      "status": "Estat",
+      "joinedOn": "Alta",
+      "leftOn": "Baixa"
+    },
+    "roles": {
+      "title": "Papers al club",
+      "description": "El que aquesta persona és, a més de sòcia.",
+      "player": "Esportista",
+      "staff": "Personal del club",
+      "guardianOf": "Família de {names}",
+      "none": "Només soci: no és esportista, família ni personal."
+    },
+    "fees": {
+      "title": "Quotes",
+      "summary": "Pendent {pending} · pagat {paid}",
+      "newCharge": "Nou càrrec",
+      "concept": "Concepte",
+      "dueOn": "Venç",
+      "amount": "Import",
+      "status": "Estat",
+      "paid": "Pagat",
+      "pay": "Cobrar",
+      "empty": "Sense càrrecs encara."
+    },
+    "personSheet": {
+      "title": "Dades de la persona",
+      "firstName": "Nom",
+      "lastName": "Cognoms",
+      "birthDate": "Data de naixement",
+      "gender": "Gènere",
+      "noGender": "Sense indicar",
+      "email": "Email",
+      "phone": "Telèfon",
+      "nationalId": "DNI / NIE",
+      "notes": "Notes",
+      "saved": "Dades desades."
+    },
+    "memberSheet": {
+      "title": "Fitxa de soci",
+      "memberNumber": "Número de soci",
+      "memberType": "Tipus de soci",
+      "noType": "Sense tipus",
+      "status": "Estat",
+      "joinedOn": "Alta",
+      "leftOn": "Baixa",
+      "saved": "Fitxa desada."
+    }
+  },
+  "agenda": {
+    "title": "Agenda",
+    "description": "Entrenaments, partits, activitats i reserves de la setmana.",
+    "familyDescription": "El que tenen els teus fills aquesta setmana.",
+    "new": "Nou esdeveniment",
+    "today": "Avui",
+    "prevWeek": "Setmana anterior",
+    "nextWeek": "Setmana següent",
+    "sectionFilter": "Secció",
+    "teamFilter": "Equip",
+    "facilityFilter": "Instal·lació",
+    "allSections": "Totes les seccions",
+    "allTeams": "Tots els equips",
+    "allFacilities": "Totes les instal·lacions",
+    "empty": "Aquesta setmana no hi ha res a l'agenda.",
+    "emptyHint": "Crea un esdeveniment o genera els entrenaments des de l'horari de cada equip.",
+    "emptyFamily": "Aquesta setmana no hi ha res per a la teva família.",
+    "free": "Lliure",
+    "conflict": "Solapament",
+    "attendance": "Passar llista",
+    "attendanceShort": "{present}/{total} presents",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "deleteOne": "Eliminar només aquest",
+    "deleteSeries": "Eliminar tota la sèrie",
+    "removed": "Esdeveniment eliminat.",
+    "confirmDeleteTitle": "Eliminar «{title}»?",
+    "confirmDeleteBody": "Desapareix de l'agenda. Si ja s'ha passat llista, l'assistència es perd.",
+    "confirmDeleteOneBody": "Només aquest esdeveniment. La resta de la sèrie setmanal es queden.",
+    "confirmDeleteSeriesBody": "S'eliminen aquest i tots els esdeveniments de la mateixa sèrie setmanal, inclosos els ja passats.",
+    "homeAway": {
+      "home": "A casa",
+      "away": "A fora"
+    },
+    "detail": {
+      "section": "Secció",
+      "team": "Equip",
+      "facility": "Instal·lació",
+      "location": "Lloc",
+      "opponent": "Rival",
+      "attendance": "Assistència",
+      "series": "Repetició",
+      "seriesHint": "Forma part d'una sèrie setmanal."
+    },
+    "sheet": {
+      "title": "Nou esdeveniment",
+      "editTitle": "Editar esdeveniment",
+      "description": "L'hora és la del club. Si tries instal·lació, avisem si ja està ocupada.",
+      "kind": "Tipus",
+      "eventTitle": "Títol",
+      "section": "Secció",
+      "noSection": "Sense secció",
+      "team": "Equip o grup",
+      "noTeam": "Sense equip",
+      "facility": "Instal·lació",
+      "noFacility": "Sense instal·lació",
+      "date": "Data",
+      "startTime": "Comença",
+      "endTime": "Acaba",
+      "location": "Lloc",
+      "locationHint": "Per a partits a fora o llocs que no són del club.",
+      "opponent": "Rival",
+      "homeAwayLabel": "Casa o fora",
+      "homeAwayUnknown": "Sense indicar",
+      "notes": "Notes",
+      "repeatUntil": "Repetir cada setmana fins a",
+      "repeatUntilHint": "Opcional. Crea un esdeveniment per setmana fins a aquesta data inclosa.",
+      "submit": "Desar esdeveniment",
+      "saved": "Esdeveniment desat.",
+      "created": "{count, plural, one {Esdeveniment creat.} other {# esdeveniments creats.}}",
+      "conflictWith": "Compte: la instal·lació ja té «{title}» a aquesta hora. S'ha desat igualment."
+    }
+  },
+  "facilities": {
+    "title": "Instal·lacions",
+    "description": "Piscina, pistes i sales del club, amb les hores d'obertura i el que les ocupa.",
+    "new": "Nova instal·lació",
+    "empty": "Encara no hi ha instal·lacions.",
+    "emptyHint": "Dona d'alta la piscina, les pistes o les sales per assignar-les als esdeveniments i veure els solapaments.",
+    "loadError": "No s'han pogut carregar les instal·lacions.",
+    "notFound": "Aquesta instal·lació no existeix o ja no hi és.",
+    "backToList": "Tornar a instal·lacions",
+    "archived": "Arxivada",
+    "capacityShort": "{count, plural, one {# plaça} other {# places}}",
+    "showArchived": "Veure {count, plural, one {# arxivada} other {# arxivades}}",
+    "hideArchived": "Amagar arxivades",
+    "card": {
+      "hours": "Obertura",
+      "noHours": "Sense franges",
+      "openDays": "{count, plural, one {# dia a la setmana} other {# dies a la setmana}}",
+      "thisWeek": "Aquesta setmana",
+      "events": "{count, plural, =0 {Lliure} one {# esdeveniment} other {# esdeveniments}}"
+    },
+    "detail": {
+      "edit": "Editar",
+      "archive": "Arxivar",
+      "restore": "Recuperar",
+      "archivedHint": "Instal·lació arxivada: no es pot triar en esdeveniments nous. La pots recuperar quan vulguis.",
+      "archivedToast": "Instal·lació arxivada.",
+      "restoredToast": "Instal·lació recuperada.",
+      "confirmArchiveTitle": "Arxivar {name}?",
+      "confirmArchiveBody": "Deixa d'aparèixer en crear esdeveniments. Els que ja la fan servir es mantenen."
+    },
+    "sheet": {
+      "title": "Nova instal·lació",
+      "editTitle": "Editar instal·lació",
+      "description": "Després hi podràs posar les hores d'obertura.",
+      "name": "Nom",
+      "namePlaceholder": "Piscina gran, Pista 1, Sala de fisio…",
+      "kind": "Tipus",
+      "capacity": "Aforament",
+      "capacityHint": "Opcional. Persones alhora.",
+      "descriptionField": "Descripció",
+      "submit": "Crear instal·lació",
+      "created": "Instal·lació creada.",
+      "saved": "Instal·lació desada."
+    },
+    "hours": {
+      "title": "Hores d'obertura",
+      "description": "Les franges en què la instal·lació està disponible. S'ombregen a l'ocupació.",
+      "none": "Sense franges d'obertura.",
+      "weekday": "Dia",
+      "opensAt": "Obre",
+      "closesAt": "Tanca",
+      "add": "Afegir franja",
+      "preset": "De dilluns a divendres",
+      "remove": "Treure franja",
+      "invalid": "Revisa les franges: cadascuna ha de tancar després d'obrir.",
+      "saved": "Hores d'obertura desades."
+    },
+    "week": {
+      "title": "Ocupació de la setmana",
+      "description": "De 8:00 a 23:00. Ombrejat: hores d'obertura. Taronja: solapaments.",
+      "previous": "Setmana anterior",
+      "next": "Setmana següent",
+      "today": "Avui",
+      "count": "{count, plural, =0 {Sense esdeveniments} one {# esdeveniment} other {# esdeveniments}}",
+      "conflicts": "{count, plural, one {# solapament} other {# solapaments}}",
+      "openAgenda": "Veure a l'agenda",
+      "loadError": "No s'ha pogut carregar l'ocupació."
+    }
+  },
+  "fees": {
+    "title": "Quotes",
+    "description": "Plans, càrrecs i cobraments del club.",
+    "newCharge": "Nou càrrec",
+    "tabs": {
+      "charges": "Càrrecs",
+      "plans": "Plans"
+    },
+    "charges": {
+      "caption": "Càrrecs del club",
+      "search": "Cerca",
+      "searchPlaceholder": "Persona, concepte o període",
+      "status": "Estat",
+      "allStatuses": "Tots els estats",
+      "loadError": "No s'han pogut carregar els càrrecs.",
+      "empty": "Encara no hi ha càrrecs.",
+      "emptyHint": "Crea un pla i genera els càrrecs del període, o crea un càrrec solt.",
+      "emptyFiltered": "Cap càrrec coincideix amb els filtres.",
+      "paidPart": "Pagat {paid}",
+      "recordPayment": "Cobrar",
+      "cancel": "Anul·lar",
+      "reactivate": "Reactivar",
+      "cancelled": "Càrrec anul·lat.",
+      "reactivated": "Càrrec reactivat.",
+      "confirmCancelTitle": "Anul·lar el càrrec?",
+      "confirmCancelBody": "«{concept}» de {name} deixa de comptar com a pendent. El podràs reactivar.",
+      "stats": {
+        "pending": "{count, plural, one {Pendent (# càrrec)} other {Pendent (# càrrecs)}}",
+        "overdue": "{count, plural, one {Vençut (# càrrec)} other {Vençut (# càrrecs)}}",
+        "paid": "Cobrat"
+      },
+      "table": {
+        "person": "Persona",
+        "concept": "Concepte",
+        "dueOn": "Venç",
+        "amount": "Import",
+        "status": "Estat"
+      }
+    },
+    "generate": {
+      "action": "Generar càrrecs",
+      "title": "Generar càrrecs d'un període",
+      "description": "Crea el càrrec del període per a totes les persones a qui aplica el pla. Qui ja el tingui, se salta.",
+      "plan": "Pla",
+      "choosePlan": "Tria un pla",
+      "planHint": "{count, plural, one {Aplica a # persona} other {Aplica a # persones}} · {amount} cadascuna.",
+      "periodLabel": "Període",
+      "periodLabelHint": "Com es diu el període al càrrec.",
+      "periodLabelPlaceholder": "Octubre 2026",
+      "dueOn": "Venç el",
+      "noPlans": "No hi ha plans actius. Crea'n un a la pestanya Plans.",
+      "submit": "Generar",
+      "done": "{created, plural, =0 {Cap càrrec nou} one {# càrrec creat} other {# càrrecs creats}}{skipped, plural, =0 {.} one { · # ja existia.} other { · # ja existien.}}"
+    },
+    "plans": {
+      "caption": "Plans de quota",
+      "new": "Nou pla",
+      "edit": "Editar",
+      "archive": "Arxivar",
+      "restore": "Recuperar",
+      "archived": "Pla arxivat.",
+      "restored": "Pla recuperat.",
+      "loadError": "No s'han pogut carregar els plans.",
+      "empty": "Encara no hi ha plans de quota.",
+      "emptyHint": "Un pla diu quant i cada quant: la quota de soci, la d'una secció…",
+      "targetAll": "Tot el club",
+      "targetType": "Socis: {name}",
+      "targetSection": "Secció: {name}",
+      "appliesToShort": "{count, plural, one {# persona} other {# persones}}",
+      "status": {
+        "active": "Actiu",
+        "archived": "Arxivat"
+      },
+      "table": {
+        "name": "Pla",
+        "amount": "Import",
+        "target": "A qui",
+        "appliesTo": "Persones",
+        "status": "Estat"
+      }
+    },
+    "planSheet": {
+      "title": "Nou pla de quota",
+      "editTitle": "Editar pla",
+      "description": "Quant, cada quant i a qui. Els càrrecs es generen des de la pestanya Càrrecs.",
+      "name": "Nom",
+      "namePlaceholder": "Quota de soci, Natació infantil…",
+      "amount": "Import",
+      "amountHint": "En euros, amb decimals si cal.",
+      "period": "Periodicitat",
+      "target": "A qui aplica",
+      "targetHint": "A tot el club, a un tipus de soci o als esportistes d'una secció.",
+      "targetAll": "Tot el club",
+      "targetTypes": "Tipus de soci",
+      "targetSections": "Seccions",
+      "descriptionField": "Descripció",
+      "submit": "Crear pla",
+      "created": "Pla creat.",
+      "saved": "Pla desat."
+    },
+    "payment": {
+      "title": "Registrar pagament",
+      "description": "{name} · {concept} · pendent {pending}",
+      "amount": "Import",
+      "amountHint": "Si el deixes buit, es cobra tot el pendent ({pending}).",
+      "method": "Forma de pagament",
+      "paidOn": "Data del pagament",
+      "note": "Nota",
+      "submit": "Registrar",
+      "saved": "Pagament registrat."
+    },
+    "charge": {
+      "title": "Nou càrrec",
+      "description": "Un càrrec solt per a una persona, amb pla o sense.",
+      "descriptionFor": "Un càrrec per a {name}, amb pla o sense.",
+      "person": "Persona",
+      "personHint": "Escriu almenys dues lletres del nom o de l'email.",
+      "plan": "Pla",
+      "planHint": "Opcional. Omple el concepte i l'import.",
+      "noPlan": "Sense pla",
+      "concept": "Concepte",
+      "amount": "Import",
+      "dueOn": "Venç el",
+      "periodLabel": "Període",
+      "submit": "Crear càrrec",
+      "saved": "Càrrec creat."
+    },
+    "mine": {
+      "title": "Les meves quotes",
+      "description": "El que la teva família o tu teniu pendent amb el club i el que ja està pagat.",
+      "owed": "{count, plural, =0 {Res pendent} one {Pendent (# càrrec)} other {Pendent (# càrrecs)}}",
+      "overdue": "Vençuts",
+      "manualHint": "El club apunta els pagaments a mà: paga per transferència o a secretaria i apareixerà aquí com a pagat.",
+      "loadError": "No s'han pogut carregar les teves quotes.",
+      "empty": "No tens quotes.",
+      "emptyHint": "Quan el club t'emeti un càrrec, el veuràs aquí.",
+      "dueOn": "Venç el {date}",
+      "paymentLine": "{amount} · {method} · {date}",
+      "pay": "Pagar",
+      "dismiss": "Tancar",
+      "checkoutSuccess": "Pagament rebut. Pot trigar uns segons a aparèixer com a pagat.",
+      "checkoutCancel": "Pagament cancel·lat. Pots tornar-ho a provar quan vulguis."
     }
   }
 }

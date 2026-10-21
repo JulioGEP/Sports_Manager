@@ -1,12 +1,13 @@
 import {
+  CategoriesResponseSchema,
   EligibleMembersResponseSchema,
   PlayersResponseSchema,
-  SeasonsResponseSchema,
-  SectionsResponseSchema,
+  TEAM_STAFF_ROLES,
   TeamDetailResponseSchema,
   playerDisplayName,
   type RosterEntry,
   type TeamDetailResponse,
+  type TeamStaffRole,
 } from "@sportsmanager/shared";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState, type FormEvent } from "react";
@@ -33,14 +34,16 @@ import {
   StatusChip,
   useToast,
 } from "@/ui";
-import { TeamSheet } from "./teams";
+import { TeamSheet } from "./section";
+import { ScheduleSheet } from "./team-schedule";
 
 type Staff = TeamDetailResponse["staff"][number];
 
 /** Ficha de un equipo: plantilla con dorsales y posiciones, y cuerpo técnico. */
 export function TeamPage() {
   const t = useT("team");
-  const tt = useT("teams");
+  const staffRoles = useT("teamStaffRoles");
+  const weekdays = useT("weekdays");
   const ps = useT("playerStatus");
   const c = useT("common");
   const errors = useT("errors");
@@ -60,16 +63,14 @@ export function TeamPage() {
     queryFn: () => apiFetch(`/api/org/teams/${id}`, { schema: TeamDetailResponseSchema }),
     retry: false,
   });
-  const sections = useQuery({
-    queryKey: ["org", slug, "sections", "all"],
-    queryFn: () => apiFetch("/api/org/sections", { schema: SectionsResponseSchema }),
-    enabled: canWrite,
+  const sectionId = detail.data?.team.section.id;
+  const categories = useQuery({
+    queryKey: ["org", slug, "categories", sectionId],
+    queryFn: () =>
+      apiFetch(`/api/org/categories?section=${sectionId}`, { schema: CategoriesResponseSchema }),
+    enabled: canWrite && Boolean(sectionId),
   });
-  const seasons = useQuery({
-    queryKey: ["org", slug, "seasons"],
-    queryFn: () => apiFetch("/api/org/seasons", { schema: SeasonsResponseSchema }),
-    enabled: canWrite,
-  });
+  const [schedule, setSchedule] = useState(false);
   const reload = () => client.invalidateQueries({ queryKey: ["org", slug] });
 
   const [editing, setEditing] = useState(false);
@@ -93,7 +94,8 @@ export function TeamPage() {
       </div>
     );
   }
-  const { team, roster, staff, access } = detail.data;
+  const { team, roster, staff, access, schedule: slots } = detail.data;
+  const activity = team.section.kind === "activity";
   /** Plantilla: quien escribe la estructura o, en este equipo, su cuerpo técnico (Bloque 13). */
   const canRoster = access.roster && canSeePlayers;
   const name = (p: RosterEntry) => playerDisplayName(p);
@@ -128,7 +130,7 @@ export function TeamPage() {
     <div className="flex flex-col gap-5">
       <div>
         <ButtonLink
-          to={paths.teams}
+          to={paths.section(team.section.id)}
           variant="tertiary"
           size="sm"
           icon={<Icon.ArrowLeft size={16} aria-hidden="true" />}
@@ -142,6 +144,11 @@ export function TeamPage() {
           <>
             {team.name}
             {team.category ? <StatusChip kind="club">{team.category}</StatusChip> : null}
+            {team.capacity !== null ? (
+              <StatusChip kind={team.playersCount >= team.capacity ? "warning" : "neutral"}>
+                {t("capacity", { count: team.playersCount, capacity: team.capacity })}
+              </StatusChip>
+            ) : null}
             {team.status === "archived" ? (
               <StatusChip kind="neutral">{t("archived")}</StatusChip>
             ) : null}
@@ -288,7 +295,9 @@ export function TeamPage() {
                   <Avatar name={s.name} />
                   <span className="flex min-w-0 flex-1 flex-col">
                     <span className="truncate font-medium text-ink">{s.name}</span>
-                    <span className="truncate text-secondary text-muted">{s.email}</span>
+                    <span className="truncate text-secondary text-muted">
+                      {staffRoles(s.roleInTeam)} · {s.email}
+                    </span>
                   </span>
                   {canWrite ? (
                     <Button variant="tertiary" size="sm" onClick={() => setRemovingStaff(s)}>
@@ -300,16 +309,70 @@ export function TeamPage() {
             </ul>
           )}
         </Card>
+
+        {/* Horario semanal (Bloque 16): de aquí salen los entrenamientos de la temporada. */}
+        <Card
+          title={t("schedule.title")}
+          description={activity ? t("schedule.descriptionActivity") : t("schedule.description")}
+          padded={false}
+          className="lg:col-start-2"
+          actions={
+            access.events ? (
+              <Button variant="secondary" size="sm" onClick={() => setSchedule(true)}>
+                {slots.length === 0 ? t("schedule.set") : t("schedule.edit")}
+              </Button>
+            ) : null
+          }
+        >
+          {slots.length === 0 ? (
+            <EmptyState
+              icon={<Icon.CalendarBlank weight="duotone" />}
+              title={t("schedule.empty")}
+            />
+          ) : (
+            <ul className="flex flex-col divide-y divide-line">
+              {slots.map((slot) => (
+                <li key={slot.id} className="flex min-h-12 items-center gap-3 px-5 py-2">
+                  <span className="w-24 shrink-0 font-medium text-ink">
+                    {weekdays(String(slot.weekday))}
+                  </span>
+                  <span className="font-mono text-ink">
+                    {slot.startsAt}–{slot.endsAt}
+                  </span>
+                  <span className="truncate text-secondary text-muted">
+                    {slot.facility?.name ?? t("schedule.noFacility")}
+                  </span>
+                </li>
+              ))}
+              <li className="px-5 py-3">
+                <Link to={`${paths.agenda}?team=${team.id}`} className="text-secondary font-medium">
+                  {t("schedule.openAgenda")}
+                </Link>
+              </li>
+            </ul>
+          )}
+        </Card>
       </div>
 
-      {canWrite && sections.data && seasons.data ? (
+      {canWrite && categories.data ? (
         <TeamSheet
           open={editing}
           team={team}
-          sections={sections.data.sections}
-          seasons={seasons.data.seasons}
-          defaultSeasonId={team.season.id}
+          sectionId={team.section.id}
+          categories={categories.data.categories}
+          defaultCategoryId={team.categoryId}
+          seasonId={team.season.id}
+          activity={activity}
           onClose={() => setEditing(false)}
+          onSaved={() => void reload()}
+        />
+      ) : null}
+      {access.events ? (
+        <ScheduleSheet
+          open={schedule}
+          teamId={id}
+          slots={slots}
+          onClose={() => setSchedule(false)}
           onSaved={() => void reload()}
         />
       ) : null}
@@ -361,7 +424,7 @@ export function TeamPage() {
         onConfirm={() => removingStaff && void removeStaff(removingStaff)}
         onCancel={() => setRemovingStaff(null)}
       />
-      <span className="sr-only">{tt("title")}</span>
+      <span className="sr-only">{t("srTitle")}</span>
     </div>
   );
 }
@@ -642,6 +705,8 @@ function AddStaffSheet({
   const toast = useToast();
   const { slug } = useReadyClub();
   const [userId, setUserId] = useState("");
+  const [roleInTeam, setRoleInTeam] = useState<TeamStaffRole>("head_coach");
+  const staffRoles = useT("teamStaffRoles");
   const [busy, setBusy] = useState(false);
   const members = useQuery({
     queryKey: ["org", slug, "team", teamId, "eligible-staff"],
@@ -661,7 +726,7 @@ function AddStaffSheet({
     try {
       await apiFetch(`/api/org/teams/${teamId}/staff`, {
         method: "POST",
-        body: { userId: selected.userId },
+        body: { userId: selected.userId, roleInTeam },
         schema: TeamDetailResponseSchema,
       });
       toast("success", tt("staffAdded", { name: selected.name }));
@@ -713,6 +778,21 @@ function AddStaffSheet({
             )}
           </Field>
         )}
+        <Field label={t("role")}>
+          {(id) => (
+            <Select
+              id={id}
+              value={roleInTeam}
+              onChange={(e) => setRoleInTeam(e.target.value as TeamStaffRole)}
+            >
+              {TEAM_STAFF_ROLES.map((code) => (
+                <option key={code} value={code}>
+                  {staffRoles(code)}
+                </option>
+              ))}
+            </Select>
+          )}
+        </Field>
       </form>
     </Sheet>
   );

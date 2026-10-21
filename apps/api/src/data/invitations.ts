@@ -67,8 +67,8 @@ const selection = {
   invitedByName: schema.users.name,
   invitedByUserId: schema.invitations.invitedBy,
   playerId: schema.players.id,
-  playerFirstName: schema.players.firstName,
-  playerLastName: schema.players.lastName,
+  playerFirstName: schema.people.firstName,
+  playerLastName: schema.people.lastName,
   relationship: schema.invitations.relationship,
   position: schema.invitations.position,
   teamId: schema.teams.id,
@@ -121,6 +121,7 @@ export function invitationsRepo(db: () => Database) {
       .from(schema.invitations)
       .leftJoin(schema.users, eq(schema.users.id, schema.invitations.invitedBy))
       .leftJoin(schema.players, eq(schema.players.id, schema.invitations.playerId))
+      .leftJoin(schema.people, eq(schema.people.id, schema.players.personId))
       .leftJoin(schema.teams, eq(schema.teams.id, schema.invitations.teamId));
 
   async function byId(scope: OrgScope, id: string): Promise<InvitationRecord | null> {
@@ -268,6 +269,7 @@ export function invitationsRepo(db: () => Database) {
         .innerJoin(schema.roles, eq(schema.roles.code, schema.invitations.roleCode))
         .leftJoin(schema.users, eq(schema.users.id, schema.invitations.invitedBy))
         .leftJoin(schema.players, eq(schema.players.id, schema.invitations.playerId))
+        .leftJoin(schema.people, eq(schema.people.id, schema.players.personId))
         .leftJoin(schema.teams, eq(schema.teams.id, schema.invitations.teamId))
         .where(eq(schema.invitations.tokenHash, hashInvitationToken(token)))
         .limit(1);

@@ -7,7 +7,9 @@
     "copy": "Copy link",
     "copied": "Copied",
     "remove": "Remove",
-    "open": "Open"
+    "open": "Open",
+    "current": "Current",
+    "edit": "Edit"
   },
   "nav": {
     "home": "Home",
@@ -26,10 +28,22 @@
     "supportLimited": "Platform support mode: you see the club's status and counts, no personal data.",
     "supportFull": "Platform support mode with the club's authorisation: full read access, no changes.",
     "clubNotFound": "This club does not exist or is not active.",
-    "teams": "Teams",
-    "players": "Players",
+    "players": "Athletes",
     "family": "My family",
-    "challenges": "Challenge"
+    "challenges": "Challenge",
+    "sections": "Sections",
+    "clubMembers": "Members",
+    "staff": "Staff",
+    "agenda": "Calendar",
+    "facilities": "Facilities",
+    "fees": "Fees",
+    "myFees": "My fees",
+    "more": "More",
+    "close": "Close",
+    "groupClub": "The club",
+    "groupActivity": "Activity",
+    "groupManagement": "Management",
+    "viewAs": "View the club as…"
   },
   "auth": {
     "login": {
@@ -94,115 +108,104 @@
     "admin": "Business administration"
   },
   "home": {
-    "greeting": "Hello, {name}",
-    "subtitle": "{club} dashboard.",
-    "stats": {
-      "members": "Members",
-      "pending": "Pending invitations",
-      "yourRole": "Your role in the club",
-      "teams": "Teams",
-      "players": "Players",
-      "guardians": "Families",
-      "season": "Current season",
-      "noSeason": "No season"
-    },
-    "support": {
-      "badge": "Platform support"
-    },
-    "firstSteps": {
-      "title": "First steps",
-      "description": "Get the club ready for its people.",
-      "logo": "Upload the club logo",
-      "logoAction": "Upload logo",
-      "colors": "Choose the brand colours",
-      "colorsAction": "Choose colours",
-      "invite": "Invite the first coach",
-      "inviteAction": "Invite",
-      "done": "Done",
-      "team": "Create the first team",
-      "teamAction": "Create team"
-    },
+    "greeting": "Hi, {name}",
     "hero": {
-      "sport": "Main sport: {sport}",
       "label": "{club} cover",
-      "members": "See members",
-      "teams": "See teams"
+      "meta": "{season} · {sections, plural, one {# section} other {# sections}} · {teams, plural, one {# team} other {# teams}}",
+      "noSeason": "No season",
+      "next": "Next: {title}, {when}",
+      "newPlayer": "New athlete",
+      "family": "My family",
+      "agenda": "See agenda"
     },
-    "structure": {
-      "title": "Club structure",
-      "description": "Sections, teams and players in the current season.",
-      "sections": "{count, plural, one {# section} other {# sections}}",
-      "teams": "{count, plural, one {# team} other {# teams}}",
-      "players": "{count, plural, one {# player} other {# players}}",
-      "guardians": "{count, plural, one {# family} other {# families}}",
-      "openTeams": "See teams",
-      "openPlayers": "See players",
-      "noSeasonTitle": "No season yet",
-      "noSeasonBody": "Create the first season to start building teams.",
-      "createSeason": "Create season"
+    "onboarding": {
+      "title": "Give the club its look",
+      "body": "Upload the crest and pick the brand colours: everyone in the club sees them on every screen.",
+      "action": "Go to settings"
     },
-    "family": {
-      "title": "Your family",
-      "description": "The players linked to your account.",
-      "open": "See my family",
-      "empty": "No player is linked to your account yet. Ask the club to link you.",
-      "challenge": "Challenge"
+    "today": {
+      "eyebrow": "Today at the club",
+      "week": "See the week",
+      "empty": "Nothing on the agenda today.",
+      "emptyHint": "Training sessions show up here once each team has a schedule."
+    },
+    "stats": {
+      "clubMembers": "Members",
+      "clubMembersJoined": "Members · {count, plural, one {# joined this month} other {# joined this month}}",
+      "players": "Athletes",
+      "teams": "Teams and groups",
+      "staff": "Staff",
+      "feesPending": "Pending fees",
+      "feesOverdue": "Pending fees · {count, plural, one {# overdue} other {# overdue}}"
+    },
+    "sections": {
+      "eyebrow": "Sections",
+      "title": "The club by sport",
+      "all": "See all",
+      "empty": "No sections yet.",
+      "emptyHint": "One section per sport or activity: football, basketball, yoga, swimming.",
+      "new": "New section"
     },
     "operations": {
       "eyebrow": "What needs doing today",
       "title": "Club alerts",
       "count": "{count, plural, =0 {All clear} one {# alert} other {# alerts}}",
       "allClear": "All clear.",
-      "allClearHint": "Nothing is pending in the club.",
+      "allClearHint": "Nothing pending in the club.",
       "go": "Go",
+      "teamsWithoutStaff": "{count, plural, one {# team without staff} other {# teams without staff}}",
+      "teamsWithoutStaffHint": "Assign someone from each team's page.",
       "pendingInvitations": "{count, plural, one {# pending invitation} other {# pending invitations}}",
-      "pendingInvitationsHint": "Resend or revoke the ones not accepted.",
-      "challengeSubmissionsPending": "{count, plural, one {# challenge entry to review} other {# challenge entries to review}}",
+      "pendingInvitationsHint": "Resend or revoke the ones that are not accepted.",
+      "feesOverdue": "{count, plural, one {# overdue fee} other {# overdue fees}}",
+      "feesOverdueHint": "Charges past their due date and unpaid.",
+      "challengeSubmissionsPending": "{count, plural, one {# challenge entry to validate} other {# challenge entries to validate}}",
       "challengeSubmissionsPendingHint": "Families are waiting for the club to validate.",
-      "objectivesOverdue": "{count, plural, one {# objective past its review date} other {# objectives past their review date}}",
-      "objectivesOverdueHint": "Review the progress and set the next date.",
-      "plansOverdue": "{count, plural, one {# development plan past its review date} other {# development plans past their review date}}",
+      "objectivesOverdue": "{count, plural, one {# objective with an overdue review} other {# objectives with an overdue review}}",
+      "objectivesOverdueHint": "Review progress and set the next date.",
+      "plansOverdue": "{count, plural, one {# development plan with an overdue review} other {# development plans with an overdue review}}",
       "plansOverdueHint": "Update the IDP and its next review.",
-      "playersWithoutTeam": "{count, plural, one {# player with no team this season} other {# players with no team this season}}",
-      "playersWithoutTeamHint": "Add them to a roster.",
-      "playersWithoutObjective": "{count, plural, one {# player without an individual objective} other {# players without an individual objective}}",
-      "playersWithoutObjectiveHint": "Set a priority for each record.",
-      "playersWithoutFamily": "{count, plural, one {# player without family access} other {# players without family access}}",
-      "playersWithoutFamilyHint": "Invite their family from the record.",
-      "playersWithoutPhoto": "{count, plural, one {# record without a photo} other {# records without a photo}}",
-      "playersWithoutPhotoHint": "The photo helps identify each player."
+      "playersWithoutTeam": "{count, plural, one {# athlete without a team this season} other {# athletes without a team this season}}",
+      "playersWithoutTeamHint": "Put them in a roster or group.",
+      "playersWithoutMembership": "{count, plural, one {# athlete without a membership} other {# athletes without a membership}}",
+      "playersWithoutMembershipHint": "Make them members to charge fees.",
+      "playersWithoutObjective": "{count, plural, one {# athlete without an individual objective} other {# athletes without an individual objective}}",
+      "playersWithoutObjectiveHint": "Set a priority for each profile.",
+      "playersWithoutFamily": "{count, plural, one {# athlete without family access} other {# athletes without family access}}",
+      "playersWithoutFamilyHint": "Invite their family from the profile.",
+      "playersWithoutPhoto": "{count, plural, one {# profile without a photo} other {# profiles without a photo}}",
+      "playersWithoutPhotoHint": "The photo helps identify each athlete.",
+      "facilitiesWithoutHours": "{count, plural, one {# facility without opening hours} other {# facilities without opening hours}}",
+      "facilitiesWithoutHoursHint": "Without hours, overlaps cannot be detected."
     },
     "readiness": {
       "eyebrow": "Data health",
-      "title": "Record readiness",
-      "description": "Seven checks per active player: photo, birth date, team, family, objective, indicators and IDP.",
-      "total": "{count, plural, one {# active player} other {# active players}}",
-      "progressLabel": "Records {percent} percent ready",
+      "title": "Profile readiness",
+      "description": "Seven checks per active athlete: photo, birth date, team, family, objective, indicators and IDP.",
+      "total": "{count, plural, one {# active athlete} other {# active athletes}}",
+      "progressLabel": "Profiles {percent} percent ready",
       "withPhoto": "With photo",
       "withBirthDate": "With birth date",
       "withTeam": "With team",
       "withFamily": "With family",
       "withObjective": "With objective",
       "withIndicators": "With indicators",
-      "withPlan": "With IDP"
+      "withPlan": "With IDP",
+      "bySection": "See by section"
     },
-    "quickActions": {
-      "title": "Quick actions",
-      "description": "The most common club tasks, one tap away.",
-      "newPlayer": "Register a player",
-      "newPlayerHint": "Create the record and assign a team.",
-      "newTeam": "Create a team",
-      "newTeamHint": "In a section of the current season.",
-      "inviteFamily": "Invite a family",
-      "inviteFamilyHint": "From their player's record.",
-      "challenge": "Open the challenge",
-      "challengeHint": "Tasks, reviews and participation."
+    "family": {
+      "title": "Your family",
+      "description": "The athletes linked to your account.",
+      "open": "See my family",
+      "empty": "No athlete is linked to your account yet. Ask the club to link you.",
+      "noTeam": "No team"
     },
     "activity": {
       "title": "Latest activity",
-      "description": "What has happened in the club lately.",
+      "toggle": "Show or hide",
       "empty": "No activity yet.",
-      "system": "System"
+      "system": "System",
+      "all": "See the full log"
     },
     "panel": {
       "rated": "{dimension}: {rated} of {total} rated",
@@ -265,15 +268,15 @@
     }
   },
   "members": {
-    "title": "Members",
-    "description": "Who belongs to the club and with which role.",
+    "title": "Club staff",
+    "description": "Who works at the club and in which role: management, coaches and staff. Families and members have their own screens.",
     "invite": "Invite",
     "tabs": {
-      "members": "Members",
+      "members": "Staff",
       "invitations": "Invitations"
     },
     "search": "Search by name or email",
-    "empty": "No members yet.",
+    "empty": "No staff at the club yet.",
     "emptyInvitations": "No pending invitations.",
     "table": {
       "name": "Person",
@@ -336,12 +339,17 @@
   },
   "settings": {
     "title": "Club settings",
-    "description": "Name, language, brand and logo. What you change here is seen by the whole club.",
+    "description": "Name, language, brand and logo; seasons, member types and payments. Whatever you change here, the whole club sees.",
     "forbidden": "You cannot edit this club's settings.",
     "tabs": {
       "general": "General",
       "brand": "Brand",
-      "logo": "Logo"
+      "logo": "Logo",
+      "seasons": "Seasons",
+      "memberTypes": "Member types",
+      "payments": "Payments",
+      "setup": "Getting started",
+      "activity": "Activity"
     },
     "general": {
       "title": "Club details",
@@ -350,7 +358,9 @@
       "defaultLocaleHint": "Language of emails and of the interface for anyone who has not chosen another.",
       "saved": "Changes saved.",
       "voice": "Club voice",
-      "voiceHint": "How the club talks to its people in everyday notices and messages. Money, departures and personal data always use a professional tone."
+      "voiceHint": "How the club talks to its people in everyday notices and messages. Money, departures and personal data always use a professional tone.",
+      "timezone": "Time zone",
+      "timezoneHint": "The agenda is shown in this zone, whatever the device's zone is."
     },
     "brand": {
       "title": "Brand colours",
@@ -379,6 +389,119 @@
       "removed": "Logo removed.",
       "confirmRemoveTitle": "Remove the club logo?",
       "confirmRemoveBody": "The header, login and club picker will show the initials again. You can upload another one whenever you want."
+    },
+    "seasons": {
+      "title": "Seasons",
+      "description": "Teams and rosters belong to a season. The current one is what the whole club sees.",
+      "caption": "Club seasons",
+      "new": "New season",
+      "current": "Current",
+      "edit": "Edit",
+      "makeCurrent": "Make current",
+      "madeCurrent": "{name} is now the current season.",
+      "loadError": "Seasons could not be loaded.",
+      "empty": "No seasons yet.",
+      "emptyHint": "Create the first one to be able to create sections and teams.",
+      "table": {
+        "name": "Season",
+        "range": "Dates",
+        "teams": "Teams"
+      },
+      "sheet": {
+        "title": "New season",
+        "editTitle": "Edit season",
+        "description": "Calendar dates without a time. A season usually runs from September to June.",
+        "name": "Name",
+        "nameHint": "For example, 2026-27.",
+        "startsOn": "Starts",
+        "endsOn": "Ends",
+        "isCurrent": "Make it the current season",
+        "isCurrentHint": "The previous one stops being current. New teams are created in the current season.",
+        "submit": "Create season",
+        "created": "Season created.",
+        "saved": "Season saved.",
+        "invalid": "Check the name and dates: it has to end after it starts.",
+        "duplicate": "There is already a season with that name."
+      }
+    },
+    "memberTypes": {
+      "title": "Member types",
+      "description": "The club's membership classes: full, family, youth, honorary… Each fee plan can target one type.",
+      "caption": "Member types",
+      "newTitle": "New type",
+      "newDescription": "A short name. You will see it when signing up members and in fee plans.",
+      "name": "Name",
+      "namePlaceholder": "Full member",
+      "add": "Add type",
+      "created": "Type “{name}” created.",
+      "duplicate": "There is already a type with that name.",
+      "rename": "Rename",
+      "renameTitle": "Rename “{name}”",
+      "renamed": "Type renamed.",
+      "archive": "Archive",
+      "restore": "Restore",
+      "archived": "Type “{name}” archived.",
+      "restored": "Type “{name}” restored.",
+      "loadError": "Member types could not be loaded.",
+      "empty": "No member types yet.",
+      "emptyHint": "Add the first one with the form next to this list.",
+      "membersCount": "{count, plural, one {# member} other {# members}}",
+      "status": {
+        "active": "Active",
+        "archived": "Archived"
+      },
+      "table": {
+        "name": "Type",
+        "members": "Members",
+        "status": "Status"
+      }
+    },
+    "payments": {
+      "title": "How the club collects fees",
+      "description": "Manually, the club records each payment. With Stripe, families and members pay from the app and the payment is recorded automatically.",
+      "provider": "Payment provider",
+      "providerHint": {
+        "manual": "Fees are paid by bank transfer or at the office and someone records them in the app.",
+        "stripe": "Every pending charge gets a pay button. The money goes to the club's Stripe account."
+      },
+      "stripeAccount": "Club's Stripe account",
+      "stripeAccountHint": "The “acct_…” identifier of the connected account. Stripe gives it when the club connects.",
+      "stripeNotConfigured": "Stripe is not configured on the platform yet. You can leave the account ready, but online payment will not activate until there are keys.",
+      "conflictPlatform": "Stripe is not configured on the platform yet. Until then, the club collects fees manually.",
+      "conflictAccount": "Collecting through Stripe needs the club's connected account (acct_…).",
+      "invalidAccount": "That account identifier does not look like a Stripe one (acct_…).",
+      "saved": "Payment settings saved.",
+      "statusTitle": "Status",
+      "currentProvider": "Current provider",
+      "platformKeys": "Stripe keys on the platform",
+      "ready": "Ready",
+      "missing": "Not configured",
+      "connectedAccount": "Connected account",
+      "notConnected": "Not connected",
+      "currency": "Currency",
+      "howItWorks": "Stripe is prepared the same way Resend is for email: without keys the club keeps collecting manually; with keys and a connected account, online payment activates when you pick Stripe."
+    },
+    "setup": {
+      "title": "Getting started",
+      "description": "{done} of {total} steps done. Get the club ready for its people.",
+      "done": "Done",
+      "logo": "Upload the club logo",
+      "logoAction": "Upload logo",
+      "colors": "Pick the brand colours",
+      "colorsAction": "Pick colours",
+      "season": "Create the current season",
+      "seasonAction": "Create season",
+      "section": "Create the first section",
+      "sectionAction": "Create section",
+      "invite": "Invite the first coach or staff member",
+      "inviteAction": "Invite"
+    },
+    "activity": {
+      "title": "Club activity",
+      "description": "The last hundred actions: who did what.",
+      "empty": "No activity yet.",
+      "system": "System",
+      "loadError": "Activity could not be loaded."
     }
   },
   "clubs": {
@@ -572,7 +695,8 @@
       "created": "Club created",
       "updated": "Club edited",
       "logo_updated": "Logo changed",
-      "logo_removed": "Logo removed"
+      "logo_removed": "Logo removed",
+      "payments_updated": "Payment settings changed"
     },
     "invitation": {
       "created": "Invitation sent",
@@ -602,7 +726,8 @@
       "roster_updated": "Roster edited",
       "roster_removed": "Player removed from roster",
       "staff_added": "Staff added",
-      "staff_removed": "Staff removed"
+      "staff_removed": "Staff removed",
+      "schedule_updated": "Team schedule changed"
     },
     "player": {
       "created": "Player registered",
@@ -626,90 +751,47 @@
       "submission_created": "Challenge entry submitted",
       "submission_removed": "Challenge entry withdrawn",
       "submission_reviewed": "Challenge entry reviewed"
-    }
-  },
-  "teams": {
-    "title": "Teams",
-    "description": "Sections, seasons and teams with their rosters.",
-    "tabs": {
-      "teams": "Teams",
-      "sections": "Sections",
-      "seasons": "Seasons"
     },
-    "season": "Season",
-    "current": "Current",
-    "newTeam": "New team",
-    "newSection": "New section",
-    "newSeason": "New season",
-    "empty": "No teams in this season yet.",
-    "emptySeason": "Without a season there are no teams. Create the first one in the Seasons tab.",
-    "emptySections": "No sections yet.",
-    "emptySeasons": "No seasons yet.",
-    "table": {
-      "team": "Team",
-      "category": "Category",
-      "players": "Players",
-      "staff": "Staff",
-      "section": "Section",
-      "status": "Status",
-      "teams": "Teams",
-      "dates": "Dates",
-      "name": "Name"
+    "category": {
+      "created": "Category created",
+      "updated": "Category edited"
     },
-    "noStaff": "No staff",
-    "noCategory": "No category",
-    "open": "Open",
-    "edit": "Edit",
-    "makeCurrent": "Make current",
-    "madeCurrent": "{name} is now the current season.",
-    "archive": "Archive",
-    "reactivate": "Reactivate",
-    "sectionStatus": {
-      "active": "Active",
-      "archived": "Archived"
+    "person": {
+      "updated": "Person details edited"
     },
-    "teamSheet": {
-      "title": "New team",
-      "editTitle": "Edit {name}",
-      "description": "A team lives in a section and a season.",
-      "name": "Team name",
-      "nameHint": "For example, U12 A.",
-      "category": "Category",
-      "categoryHint": "Free text: every club and federation names it differently.",
-      "section": "Section",
-      "season": "Season",
-      "submit": "Create team",
-      "save": "Save",
-      "created": "Team {name} created.",
-      "saved": "Team saved.",
-      "nameTaken": "There is already a team with that name in that section and season."
+    "club_member": {
+      "created": "Member signed up",
+      "updated": "Membership edited"
     },
-    "sectionSheet": {
-      "title": "New section",
-      "editTitle": "Edit section",
-      "description": "The layer between the club and its teams: by sport, by gender or however the club is organised.",
-      "name": "Section name",
-      "submit": "Create section",
-      "save": "Save",
-      "created": "Section {name} created.",
-      "saved": "Section saved.",
-      "nameTaken": "There is already a section with that name."
+    "member_type": {
+      "created": "Member type created",
+      "updated": "Member type edited"
     },
-    "seasonSheet": {
-      "title": "New season",
-      "editTitle": "Edit season",
-      "description": "Teams and rosters belong to a season, so history is kept.",
-      "name": "Name",
-      "nameHint": "For example, 2026-27.",
-      "startsOn": "Starts",
-      "endsOn": "Ends",
-      "isCurrent": "Mark as current season",
-      "submit": "Create season",
-      "save": "Save",
-      "created": "Season {name} created.",
-      "saved": "Season saved.",
-      "nameTaken": "There is already a season with that name.",
-      "dates": "The season has to end after it starts."
+    "facility": {
+      "created": "Facility created",
+      "updated": "Facility edited"
+    },
+    "event": {
+      "created": "Event created",
+      "updated": "Event edited",
+      "removed": "Event deleted"
+    },
+    "attendance": {
+      "recorded": "Attendance taken"
+    },
+    "fee_plan": {
+      "created": "Fee plan created",
+      "updated": "Fee plan edited"
+    },
+    "fee_charge": {
+      "created": "Charge created",
+      "updated": "Charge edited"
+    },
+    "payment": {
+      "recorded": "Payment recorded"
+    },
+    "view_as": {
+      "started": "Viewed the club as someone else"
     }
   },
   "team": {
@@ -751,7 +833,8 @@
       "description": "Club members with the coach or admin role.",
       "member": "Person",
       "empty": "Nobody available. Invite a coach from Members.",
-      "submit": "Add"
+      "submit": "Add",
+      "role": "Role in the team"
     },
     "addPlayerSheet": {
       "title": "Add player to {team}",
@@ -772,11 +855,38 @@
       "saved": "Changes saved."
     },
     "edit": "Edit team",
-    "archived": "Archived team"
+    "archived": "Archived team",
+    "srTitle": "Team page",
+    "capacity": "{count} of {capacity} places",
+    "schedule": {
+      "title": "Weekly schedule",
+      "description": "Fixed training sessions of the week. The season agenda is generated from them.",
+      "descriptionActivity": "Fixed sessions of the week. The season agenda is generated from them.",
+      "set": "Set schedule",
+      "edit": "Edit schedule",
+      "empty": "No schedule yet.",
+      "noFacility": "No facility",
+      "openAgenda": "See in the agenda"
+    },
+    "scheduleSheet": {
+      "title": "Weekly schedule",
+      "description": "One row per slot. When saving you can regenerate the agenda from today; sessions with attendance taken are kept.",
+      "weekday": "Day",
+      "startsAt": "Starts",
+      "endsAt": "Ends",
+      "facility": "Facility",
+      "noFacility": "No facility",
+      "addSlot": "Add slot",
+      "generate": "Generate the season agenda from today",
+      "generateHint": "Creates one session per slot and week until the season ends. Existing ones are not duplicated.",
+      "submit": "Save schedule",
+      "saved": "Schedule saved.",
+      "savedGenerated": "Schedule saved. {count, plural, =0 {Nothing needed generating} one {# session generated} other {# sessions generated}}."
+    }
   },
   "players": {
-    "title": "Players",
-    "description": "Everyone who plays in the club, with their team and family.",
+    "title": "Athletes",
+    "description": "Who trains at the club: profile, team or group, family and status.",
     "new": "New player",
     "search": "Search by name",
     "teamFilter": "Team",
@@ -788,7 +898,8 @@
       "age": "Age",
       "teams": "Teams",
       "family": "Family",
-      "status": "Status"
+      "status": "Status",
+      "member": "Member"
     },
     "noTeam": "No team",
     "sheet": {
@@ -811,9 +922,26 @@
       "photo": "no photo",
       "objective": "no objective",
       "team": "no team",
-      "family": "no family"
+      "family": "no family",
+      "member": "without membership"
     },
-    "pendingCount": "{count, plural, one {# pending invitation} other {# pending invitations}}"
+    "pendingCount": "{count, plural, one {# pending invitation} other {# pending invitations}}",
+    "tabs": {
+      "players": "Athletes",
+      "families": "Families"
+    },
+    "families": {
+      "empty": "No families yet.",
+      "emptyHint": "They are created when you invite a family from an athlete's profile.",
+      "person": "Person",
+      "since": "Since"
+    },
+    "sectionFilter": "Section",
+    "allSections": "All sections",
+    "categoryFilter": "Category",
+    "allCategories": "All categories",
+    "memberNumber": "No. {number}",
+    "notMember": "Not a member"
   },
   "playerStatus": {
     "active": "Active",
@@ -1062,6 +1190,18 @@
       "emotional": "Emotional",
       "habits": "Habits",
       "person": "Person"
+    },
+    "person": {
+      "gender": "Gender",
+      "genderNone": "Not set",
+      "email": "Email",
+      "emailHint": "The person's own, if any. Family members sign in with theirs.",
+      "phone": "Phone",
+      "nationalId": "ID document",
+      "member": "Member",
+      "memberNumber": "Member no. {number}",
+      "makeMember": "Make a member",
+      "notMember": "Not a member"
     }
   },
   "family": {
@@ -1345,6 +1485,714 @@
         "pending": "To review",
         "goal": "Goal"
       }
+    }
+  },
+  "viewAs": {
+    "title": "View the club as…",
+    "description": "See the club through someone else's eyes: their screens, their teams, their family. Your session does not change and changes stay in your name.",
+    "search": "Search by name or email",
+    "empty": "There is nobody else in the club.",
+    "error": "The list of people could not be loaded.",
+    "banner": "You are viewing the club as {name} ({role}).",
+    "exit": "Back to my view"
+  },
+  "sections": {
+    "title": "Sections",
+    "description": "The club by sport or activity: categories, teams and groups for the season.",
+    "new": "New section",
+    "season": "Season",
+    "current": "Current",
+    "noSeasonTitle": "No season yet",
+    "noSeasonBody": "Teams and groups belong to a season. Create the first one in Settings.",
+    "createSeason": "Create season",
+    "empty": "No sections yet.",
+    "emptyHint": "One per sport or activity. You can set up the categories when you create it.",
+    "archivedTitle": "Archived sections",
+    "archivedDescription": "Kept with their history. You can reactivate them from their page.",
+    "card": {
+      "competitionNums": "{categories, plural, one {# category} other {# categories}} · {teams, plural, one {# team} other {# teams}} · {players, plural, one {# athlete} other {# athletes}}",
+      "activityNums": "{categories, plural, one {# level} other {# levels}} · {teams, plural, one {# group} other {# groups}} · {players, plural, one {# athlete} other {# athletes}}",
+      "coordinator": "Coordinated by {name}",
+      "noCoordinator": "No coordinator",
+      "archived": "Archived",
+      "withoutStaff": "{count, plural, one {# team without staff} other {# teams without staff}}",
+      "noTeams": "No teams",
+      "ok": "Up to date"
+    },
+    "sheet": {
+      "title": "New section",
+      "editTitle": "Edit {name}",
+      "description": "A sport or activity of the club, and who coordinates it.",
+      "sport": "Sport",
+      "sportHint": "Sets the icon, the positions and the suggested categories.",
+      "sportPlaceholder": "Pick a sport",
+      "name": "Name",
+      "nameHint": "For example, Football or Yoga. Filled in from the sport.",
+      "kind": "Kind",
+      "coordinator": "Coordinator",
+      "coordinatorHint": "Who answers for the section. Any person in the club.",
+      "noCoordinator": "Unassigned",
+      "descriptionLabel": "Description",
+      "categories": "Starting categories",
+      "categoriesHint": "Suggested by the sport. Untick the ones you don't use; they can be edited later.",
+      "ages": "{from} to {to} years",
+      "agesFrom": "from {from} years",
+      "agesTo": "up to {to} years",
+      "submit": "Create section",
+      "save": "Save",
+      "created": "Section {name} created.",
+      "saved": "Section saved.",
+      "nameTaken": "There is already a section with that name."
+    }
+  },
+  "section": {
+    "back": "Sections",
+    "seasonLabel": "Season {season}",
+    "archived": "Archived",
+    "active": "Active",
+    "coordinator": "Coordinated by {name}",
+    "noCoordinator": "No coordinator",
+    "noCoordinatorAssign": "No coordinator · assign someone",
+    "edit": "Edit",
+    "newCategory": "New category",
+    "season": "Season",
+    "noSeason": "No teams without a season.",
+    "tabStaff": "Staff",
+    "staffDescription": "Who coordinates the section and the staff of its teams.",
+    "emptyStaff": "Nobody in this section yet.",
+    "emptyCategories": "No categories yet",
+    "emptyCategoriesHint": "Categories group teams by age or level.",
+    "table": {
+      "staff": "Staff",
+      "next": "Next",
+      "status": "Status"
+    },
+    "noStaff": "No staff",
+    "vs": "vs {opponent}",
+    "noNext": "Nothing scheduled",
+    "summary": {
+      "title": "Summary",
+      "guardians": "Families",
+      "readiness": "Profiles ready",
+      "staff": "Staff",
+      "eventsThisWeek": "Events this week"
+    },
+    "alerts": {
+      "title": "Alerts",
+      "allClear": "All clear in this section.",
+      "noCoordinator": "No coordinator",
+      "noCoordinatorHint": "Assign someone to answer for the section.",
+      "withoutStaffHint": "Assign the staff from each team."
+    },
+    "links": {
+      "title": "Shortcuts",
+      "agenda": "Section agenda"
+    },
+    "bornBetween": "born {from} to {to}",
+    "bornUntil": "born up to {to}",
+    "bornFrom": "born from {from}",
+    "genders": {
+      "male": "Male",
+      "female": "Female",
+      "mixed": "Mixed"
+    },
+    "competition": {
+      "newTeam": "New team",
+      "tabTeams": "Teams",
+      "addTeam": "Add team",
+      "emptyTeams": "No teams in this category.",
+      "table": {
+        "team": "Team",
+        "players": "Players"
+      },
+      "playersCount": "{count, plural, one {# player} other {# players}}",
+      "summary": {
+        "players": "Players"
+      },
+      "alerts": {
+        "withoutStaff": "{count, plural, one {# team without staff} other {# teams without staff}}",
+        "noPlayers": "No players in the section yet."
+      },
+      "links": {
+        "players": "Section players"
+      }
+    },
+    "activity": {
+      "newTeam": "New group",
+      "tabTeams": "Groups",
+      "addTeam": "Add group",
+      "emptyTeams": "No groups at this level.",
+      "table": {
+        "team": "Group",
+        "players": "Enrolled"
+      },
+      "playersCount": "{count, plural, one {# enrolled} other {# enrolled}}",
+      "summary": {
+        "players": "Enrolled"
+      },
+      "alerts": {
+        "withoutStaff": "{count, plural, one {# group without an instructor} other {# groups without an instructor}}",
+        "noPlayers": "Nobody enrolled in the section yet."
+      },
+      "links": {
+        "players": "Section enrolments"
+      }
+    },
+    "categorySheet": {
+      "title": "New category",
+      "editTitle": "Edit {name}",
+      "description": "Groups teams or groups by age, gender or level.",
+      "name": "Name",
+      "nameHint": "For example, U12, Senior or Beginners.",
+      "gender": "Gender",
+      "anyGender": "Any",
+      "birthYearFrom": "Born from",
+      "birthYearTo": "Born up to",
+      "yearsHint": "Birth years. Optional.",
+      "status": "Status",
+      "statusActive": "Active",
+      "statusArchived": "Archived",
+      "submit": "Create category",
+      "save": "Save",
+      "created": "Category {name} created.",
+      "saved": "Category saved.",
+      "nameTaken": "There is already a category with that name in the section."
+    },
+    "teamSheet": {
+      "editTitle": "Edit {name}",
+      "section": "Section",
+      "category": "Category",
+      "categoryHint": "From the section. Create categories from the section page.",
+      "categoryPlaceholder": "Pick a category",
+      "capacity": "Places",
+      "capacityHint": "Maximum enrolled. Leave empty for no limit.",
+      "status": "Status",
+      "statusActive": "Active",
+      "statusArchived": "Archived",
+      "save": "Save",
+      "created": "{name} created.",
+      "saved": "Saved.",
+      "nameTaken": "There is already one with that name in that category and season.",
+      "competition": {
+        "title": "New team",
+        "description": "A team lives in a category of the section and in a season.",
+        "name": "Team name",
+        "nameHint": "For example, U12 A.",
+        "submit": "Create team"
+      },
+      "activity": {
+        "title": "New group",
+        "description": "A group with a schedule and places within the activity.",
+        "name": "Group name",
+        "nameHint": "For example, Mon & Wed 19:00.",
+        "submit": "Create group"
+      }
+    }
+  },
+  "sectionKinds": {
+    "competition": "Competition",
+    "activity": "Activity",
+    "hint": {
+      "competition": "Teams by category that compete: matches, call-ups, opponents.",
+      "activity": "Groups with a schedule and places: yoga, swimming, school."
+    }
+  },
+  "teamStaffRoles": {
+    "head_coach": "Head coach",
+    "assistant": "Assistant coach",
+    "delegate": "Delegate",
+    "physio": "Physio",
+    "other": "Other"
+  },
+  "weekdays": {
+    "1": "Monday",
+    "2": "Tuesday",
+    "3": "Wednesday",
+    "4": "Thursday",
+    "5": "Friday",
+    "6": "Saturday",
+    "7": "Sunday"
+  },
+  "genders": {
+    "female": "Female",
+    "male": "Male",
+    "other": "Other"
+  },
+  "memberStatus": {
+    "active": "Up to date",
+    "pending": "Pending sign-up",
+    "suspended": "Suspended",
+    "left": "Left"
+  },
+  "feeStatus": {
+    "pending": "Pending",
+    "paid": "Paid",
+    "overdue": "Overdue",
+    "cancelled": "Cancelled"
+  },
+  "paymentMethods": {
+    "cash": "Cash",
+    "transfer": "Bank transfer",
+    "card": "Card",
+    "stripe": "Stripe",
+    "other": "Other"
+  },
+  "paymentProviders": {
+    "manual": "Manual (the club records payments)",
+    "stripe": "Stripe (online payment)"
+  },
+  "feePeriods": {
+    "monthly": "Monthly",
+    "quarterly": "Quarterly",
+    "yearly": "Yearly",
+    "once": "One-off"
+  },
+  "eventKinds": {
+    "training": "Training",
+    "match": "Match",
+    "activity": "Activity",
+    "meeting": "Meeting",
+    "booking": "Booking",
+    "other": "Other"
+  },
+  "facilityKinds": {
+    "pool": "Pool",
+    "court": "Court",
+    "field": "Field",
+    "room": "Room",
+    "gym": "Gym",
+    "other": "Other"
+  },
+  "attendance": {
+    "title": "Attendance",
+    "marked": "{marked} of {total} marked",
+    "present": "Present",
+    "absent": "Absent",
+    "excused": "Excused",
+    "excuse": "Excuse",
+    "unmarked": "Not marked",
+    "group": "Attendance for {name}",
+    "empty": "This event has no team, or the team has no roster.",
+    "readOnly": "Only the team's coaching staff can take attendance.",
+    "saved": "Attendance saved: {present} of {total} present."
+  },
+  "clubMembers": {
+    "title": "Members",
+    "description": "Who is a club member, of which type, and whether they are up to date.",
+    "new": "New member",
+    "search": "Search by name, email or number",
+    "statusFilter": "Status",
+    "typeFilter": "Type",
+    "allStatuses": "All statuses",
+    "allTypes": "All types",
+    "empty": "No members yet. Sign up the first one or create member types in Settings.",
+    "noResults": "Nobody matches the filters.",
+    "noType": "No type",
+    "numberShort": "No. {number}",
+    "upToDate": "Up to date",
+    "table": {
+      "number": "No.",
+      "person": "Person",
+      "type": "Type",
+      "roles": "Roles",
+      "status": "Status",
+      "fees": "Fees",
+      "since": "Since"
+    },
+    "roles": {
+      "player": "Athlete",
+      "staff": "Staff",
+      "guardianOf": "Family of {names}",
+      "none": "Member only"
+    },
+    "sheet": {
+      "title": "New member",
+      "description": "Someone already at the club (athlete, family, staff) or a new person.",
+      "mode": "Who?",
+      "modeNew": "New person",
+      "modeExisting": "Someone already at the club",
+      "person": "Person",
+      "personHint": "Type at least two letters of the name or email.",
+      "choosePerson": "Pick a person from the list.",
+      "noPeople": "Nobody matches. Try another name or add them as a new person.",
+      "isPlayer": "Athlete",
+      "isMember": "Already a member",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "birthDate": "Date of birth",
+      "gender": "Gender",
+      "noGender": "Not specified",
+      "email": "Email",
+      "phone": "Phone",
+      "memberType": "Member type",
+      "noType": "No type",
+      "memberNumber": "Member number",
+      "memberNumberHint": "Leave it empty and the club assigns the next one.",
+      "joinedOn": "Joined on",
+      "submit": "Sign up",
+      "created": "{name} is now a club member."
+    }
+  },
+  "clubMember": {
+    "back": "Members",
+    "eyebrow": "Member no. {number} · {type}",
+    "noType": "No type",
+    "editMember": "Edit membership",
+    "leave": "Remove membership",
+    "left": "{name} has left the club. Their history is kept.",
+    "confirmLeaveTitle": "Remove {name}'s membership?",
+    "confirmLeaveBody": "They stop counting as a member and get no new charges. The record and history are kept.",
+    "person": {
+      "title": "Person",
+      "edit": "Edit details",
+      "birthDate": "Born",
+      "age": "{age} years old",
+      "gender": "Gender",
+      "unknown": "Not specified",
+      "email": "Email",
+      "phone": "Phone",
+      "nationalId": "ID number",
+      "notes": "Notes",
+      "account": "Account",
+      "hasAccount": "Has app access",
+      "noAccount": "No app access"
+    },
+    "member": {
+      "title": "Membership",
+      "number": "Number",
+      "type": "Type",
+      "status": "Status",
+      "joinedOn": "Joined",
+      "leftOn": "Left"
+    },
+    "roles": {
+      "title": "Roles at the club",
+      "description": "What this person is, besides a member.",
+      "player": "Athlete",
+      "staff": "Club staff",
+      "guardianOf": "Family of {names}",
+      "none": "Member only: not an athlete, family or staff."
+    },
+    "fees": {
+      "title": "Fees",
+      "summary": "Pending {pending} · paid {paid}",
+      "newCharge": "New charge",
+      "concept": "Concept",
+      "dueOn": "Due",
+      "amount": "Amount",
+      "status": "Status",
+      "paid": "Paid",
+      "pay": "Record payment",
+      "empty": "No charges yet."
+    },
+    "personSheet": {
+      "title": "Personal details",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "birthDate": "Date of birth",
+      "gender": "Gender",
+      "noGender": "Not specified",
+      "email": "Email",
+      "phone": "Phone",
+      "nationalId": "ID number",
+      "notes": "Notes",
+      "saved": "Details saved."
+    },
+    "memberSheet": {
+      "title": "Membership",
+      "memberNumber": "Member number",
+      "memberType": "Member type",
+      "noType": "No type",
+      "status": "Status",
+      "joinedOn": "Joined on",
+      "leftOn": "Left on",
+      "saved": "Membership saved."
+    }
+  },
+  "agenda": {
+    "title": "Agenda",
+    "description": "This week's training sessions, matches, activities and bookings.",
+    "familyDescription": "What your children have this week.",
+    "new": "New event",
+    "today": "Today",
+    "prevWeek": "Previous week",
+    "nextWeek": "Next week",
+    "sectionFilter": "Section",
+    "teamFilter": "Team",
+    "facilityFilter": "Facility",
+    "allSections": "All sections",
+    "allTeams": "All teams",
+    "allFacilities": "All facilities",
+    "empty": "Nothing on the agenda this week.",
+    "emptyHint": "Create an event or generate training sessions from each team's schedule.",
+    "emptyFamily": "Nothing for your family this week.",
+    "free": "Free",
+    "conflict": "Overlap",
+    "attendance": "Take attendance",
+    "attendanceShort": "{present}/{total} present",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleteOne": "Delete this one only",
+    "deleteSeries": "Delete the whole series",
+    "removed": "Event deleted.",
+    "confirmDeleteTitle": "Delete “{title}”?",
+    "confirmDeleteBody": "It disappears from the agenda. If attendance was taken, it is lost.",
+    "confirmDeleteOneBody": "Only this event. The rest of the weekly series stays.",
+    "confirmDeleteSeriesBody": "This and every event in the same weekly series are deleted, past ones included.",
+    "homeAway": {
+      "home": "Home",
+      "away": "Away"
+    },
+    "detail": {
+      "section": "Section",
+      "team": "Team",
+      "facility": "Facility",
+      "location": "Location",
+      "opponent": "Opponent",
+      "attendance": "Attendance",
+      "series": "Repeats",
+      "seriesHint": "Part of a weekly series."
+    },
+    "sheet": {
+      "title": "New event",
+      "editTitle": "Edit event",
+      "description": "Times are in the club's time zone. If you pick a facility, we warn you when it is already taken.",
+      "kind": "Kind",
+      "eventTitle": "Title",
+      "section": "Section",
+      "noSection": "No section",
+      "team": "Team or group",
+      "noTeam": "No team",
+      "facility": "Facility",
+      "noFacility": "No facility",
+      "date": "Date",
+      "startTime": "Starts",
+      "endTime": "Ends",
+      "location": "Location",
+      "locationHint": "For away matches or places outside the club.",
+      "opponent": "Opponent",
+      "homeAwayLabel": "Home or away",
+      "homeAwayUnknown": "Not specified",
+      "notes": "Notes",
+      "repeatUntil": "Repeat weekly until",
+      "repeatUntilHint": "Optional. Creates one event per week up to and including that date.",
+      "submit": "Save event",
+      "saved": "Event saved.",
+      "created": "{count, plural, one {Event created.} other {# events created.}}",
+      "conflictWith": "Heads up: the facility already has “{title}” at that time. Saved anyway."
+    }
+  },
+  "facilities": {
+    "title": "Facilities",
+    "description": "The club's pool, courts and rooms, with opening hours and what occupies them.",
+    "new": "New facility",
+    "empty": "No facilities yet.",
+    "emptyHint": "Add the pool, courts or rooms to assign them to events and spot overlaps.",
+    "loadError": "Facilities could not be loaded.",
+    "notFound": "That facility does not exist or is gone.",
+    "backToList": "Back to facilities",
+    "archived": "Archived",
+    "capacityShort": "{count, plural, one {# place} other {# places}}",
+    "showArchived": "Show {count, plural, one {# archived} other {# archived}}",
+    "hideArchived": "Hide archived",
+    "card": {
+      "hours": "Opening",
+      "noHours": "No hours set",
+      "openDays": "{count, plural, one {# day a week} other {# days a week}}",
+      "thisWeek": "This week",
+      "events": "{count, plural, =0 {Free} one {# event} other {# events}}"
+    },
+    "detail": {
+      "edit": "Edit",
+      "archive": "Archive",
+      "restore": "Restore",
+      "archivedHint": "Archived facility: it cannot be picked for new events. You can restore it any time.",
+      "archivedToast": "Facility archived.",
+      "restoredToast": "Facility restored.",
+      "confirmArchiveTitle": "Archive {name}?",
+      "confirmArchiveBody": "It stops showing up when creating events. Events already using it are kept."
+    },
+    "sheet": {
+      "title": "New facility",
+      "editTitle": "Edit facility",
+      "description": "You can set its opening hours afterwards.",
+      "name": "Name",
+      "namePlaceholder": "Main pool, Court 1, Physio room…",
+      "kind": "Kind",
+      "capacity": "Capacity",
+      "capacityHint": "Optional. People at the same time.",
+      "descriptionField": "Description",
+      "submit": "Create facility",
+      "created": "Facility created.",
+      "saved": "Facility saved."
+    },
+    "hours": {
+      "title": "Opening hours",
+      "description": "The slots when the facility is available. They are shaded in the occupancy view.",
+      "none": "No opening hours set.",
+      "weekday": "Day",
+      "opensAt": "Opens",
+      "closesAt": "Closes",
+      "add": "Add slot",
+      "preset": "Monday to Friday",
+      "remove": "Remove slot",
+      "invalid": "Check the slots: each one has to close after it opens.",
+      "saved": "Opening hours saved."
+    },
+    "week": {
+      "title": "This week's occupancy",
+      "description": "From 8:00 to 23:00. Shaded: opening hours. Orange: overlaps.",
+      "previous": "Previous week",
+      "next": "Next week",
+      "today": "Today",
+      "count": "{count, plural, =0 {No events} one {# event} other {# events}}",
+      "conflicts": "{count, plural, one {# overlap} other {# overlaps}}",
+      "openAgenda": "Open in the agenda",
+      "loadError": "Occupancy could not be loaded."
+    }
+  },
+  "fees": {
+    "title": "Fees",
+    "description": "The club's plans, charges and payments.",
+    "newCharge": "New charge",
+    "tabs": {
+      "charges": "Charges",
+      "plans": "Plans"
+    },
+    "charges": {
+      "caption": "Club charges",
+      "search": "Search",
+      "searchPlaceholder": "Person, concept or period",
+      "status": "Status",
+      "allStatuses": "All statuses",
+      "loadError": "Charges could not be loaded.",
+      "empty": "No charges yet.",
+      "emptyHint": "Create a plan and generate the period's charges, or create a one-off charge.",
+      "emptyFiltered": "No charge matches the filters.",
+      "paidPart": "Paid {paid}",
+      "recordPayment": "Record payment",
+      "cancel": "Cancel charge",
+      "reactivate": "Reactivate",
+      "cancelled": "Charge cancelled.",
+      "reactivated": "Charge reactivated.",
+      "confirmCancelTitle": "Cancel the charge?",
+      "confirmCancelBody": "“{concept}” for {name} stops counting as pending. You can reactivate it.",
+      "stats": {
+        "pending": "{count, plural, one {Pending (# charge)} other {Pending (# charges)}}",
+        "overdue": "{count, plural, one {Overdue (# charge)} other {Overdue (# charges)}}",
+        "paid": "Collected"
+      },
+      "table": {
+        "person": "Person",
+        "concept": "Concept",
+        "dueOn": "Due",
+        "amount": "Amount",
+        "status": "Status"
+      }
+    },
+    "generate": {
+      "action": "Generate charges",
+      "title": "Generate a period's charges",
+      "description": "Creates the period's charge for everyone the plan applies to. Anyone who already has it is skipped.",
+      "plan": "Plan",
+      "choosePlan": "Pick a plan",
+      "planHint": "{count, plural, one {Applies to # person} other {Applies to # people}} · {amount} each.",
+      "periodLabel": "Period",
+      "periodLabelHint": "How the period is named on the charge.",
+      "periodLabelPlaceholder": "October 2026",
+      "dueOn": "Due on",
+      "noPlans": "No active plans. Create one in the Plans tab.",
+      "submit": "Generate",
+      "done": "{created, plural, =0 {No new charges} one {# charge created} other {# charges created}}{skipped, plural, =0 {.} one { · # already existed.} other { · # already existed.}}"
+    },
+    "plans": {
+      "caption": "Fee plans",
+      "new": "New plan",
+      "edit": "Edit",
+      "archive": "Archive",
+      "restore": "Restore",
+      "archived": "Plan archived.",
+      "restored": "Plan restored.",
+      "loadError": "Plans could not be loaded.",
+      "empty": "No fee plans yet.",
+      "emptyHint": "A plan says how much and how often: the membership fee, a section's fee…",
+      "targetAll": "Whole club",
+      "targetType": "Members: {name}",
+      "targetSection": "Section: {name}",
+      "appliesToShort": "{count, plural, one {# person} other {# people}}",
+      "status": {
+        "active": "Active",
+        "archived": "Archived"
+      },
+      "table": {
+        "name": "Plan",
+        "amount": "Amount",
+        "target": "Who",
+        "appliesTo": "People",
+        "status": "Status"
+      }
+    },
+    "planSheet": {
+      "title": "New fee plan",
+      "editTitle": "Edit plan",
+      "description": "How much, how often and for whom. Charges are generated from the Charges tab.",
+      "name": "Name",
+      "namePlaceholder": "Membership fee, Kids swimming…",
+      "amount": "Amount",
+      "amountHint": "In euros, with decimals if needed.",
+      "period": "Frequency",
+      "target": "Who it applies to",
+      "targetHint": "The whole club, one member type, or the athletes of a section.",
+      "targetAll": "Whole club",
+      "targetTypes": "Member types",
+      "targetSections": "Sections",
+      "descriptionField": "Description",
+      "submit": "Create plan",
+      "created": "Plan created.",
+      "saved": "Plan saved."
+    },
+    "payment": {
+      "title": "Record payment",
+      "description": "{name} · {concept} · pending {pending}",
+      "amount": "Amount",
+      "amountHint": "Leave it empty to record everything pending ({pending}).",
+      "method": "Payment method",
+      "paidOn": "Payment date",
+      "note": "Note",
+      "submit": "Record",
+      "saved": "Payment recorded."
+    },
+    "charge": {
+      "title": "New charge",
+      "description": "A one-off charge for a person, with or without a plan.",
+      "descriptionFor": "A charge for {name}, with or without a plan.",
+      "person": "Person",
+      "personHint": "Type at least two letters of the name or email.",
+      "plan": "Plan",
+      "planHint": "Optional. Fills in the concept and amount.",
+      "noPlan": "No plan",
+      "concept": "Concept",
+      "amount": "Amount",
+      "dueOn": "Due on",
+      "periodLabel": "Period",
+      "submit": "Create charge",
+      "saved": "Charge created."
+    },
+    "mine": {
+      "title": "My fees",
+      "description": "What you or your family owe the club, and what is already paid.",
+      "owed": "{count, plural, =0 {Nothing pending} one {Pending (# charge)} other {Pending (# charges)}}",
+      "overdue": "Overdue",
+      "manualHint": "The club records payments by hand: pay by bank transfer or at the office and it will show here as paid.",
+      "loadError": "Your fees could not be loaded.",
+      "empty": "You have no fees.",
+      "emptyHint": "When the club issues you a charge, it shows up here.",
+      "dueOn": "Due on {date}",
+      "paymentLine": "{amount} · {method} · {date}",
+      "pay": "Pay",
+      "dismiss": "Dismiss",
+      "checkoutSuccess": "Payment received. It may take a few seconds to show as paid.",
+      "checkoutCancel": "Payment cancelled. You can try again any time."
     }
   }
 }
