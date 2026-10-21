@@ -93,7 +93,9 @@ export function TeamPage() {
       </div>
     );
   }
-  const { team, roster, staff } = detail.data;
+  const { team, roster, staff, access } = detail.data;
+  /** Plantilla: quien escribe la estructura o, en este equipo, su cuerpo técnico (Bloque 13). */
+  const canRoster = access.roster && canSeePlayers;
   const name = (p: RosterEntry) => playerDisplayName(p);
 
   async function removePlayer(p: RosterEntry) {
@@ -156,7 +158,7 @@ export function TeamPage() {
                 {t("edit")}
               </Button>
             ) : null}
-            {canWrite && canSeePlayers ? (
+            {canRoster ? (
               <Button
                 icon={<Icon.Plus size={20} aria-hidden="true" />}
                 onClick={() => setAdding(true)}
@@ -188,7 +190,7 @@ export function TeamPage() {
                   icon={<Icon.PersonSimpleRun weight="duotone" />}
                   title={t("emptyRoster")}
                   action={
-                    canWrite ? (
+                    canRoster ? (
                       <Button variant="secondary" size="sm" onClick={() => setAdding(true)}>
                         {t("addPlayer")}
                       </Button>
@@ -243,7 +245,7 @@ export function TeamPage() {
               })}
               mobileActionsBelow
               actions={
-                canWrite
+                canRoster
                   ? (p) => (
                       <>
                         <Button variant="secondary" size="sm" onClick={() => setEntry(p)}>
@@ -311,12 +313,13 @@ export function TeamPage() {
           onSaved={() => void reload()}
         />
       ) : null}
-      {canWrite ? (
+      {canRoster ? (
         <AddPlayerSheet
           open={adding}
           teamId={id}
           teamName={team.name}
           excluded={roster.map((p) => p.playerId)}
+          canCreate={permissions.includes("org.players.write")}
           onClose={() => setAdding(false)}
           onAdded={() => void reload()}
           onNewPlayer={() => void navigate(`${paths.players}?new=1&team=${id}`)}
@@ -368,6 +371,7 @@ function AddPlayerSheet({
   teamId,
   teamName,
   excluded,
+  canCreate,
   onClose,
   onAdded,
   onNewPlayer,
@@ -376,6 +380,8 @@ function AddPlayerSheet({
   teamId: string;
   teamName: string;
   excluded: string[];
+  /** Dar de alta jugadores nuevos exige escribir jugadores; el cuerpo técnico solo añade de los que hay. */
+  canCreate: boolean;
   onClose: () => void;
   onAdded: () => void;
   onNewPlayer: () => void;
@@ -447,9 +453,11 @@ function AddPlayerSheet({
       description={t("description")}
       footer={
         <>
-          <Button variant="secondary" onClick={onNewPlayer}>
-            {tt("newPlayer")}
-          </Button>
+          {canCreate ? (
+            <Button variant="secondary" onClick={onNewPlayer}>
+              {tt("newPlayer")}
+            </Button>
+          ) : null}
           <Button type="submit" form="add-player-form" loading={busy} disabled={!selected}>
             {t("submit")}
           </Button>

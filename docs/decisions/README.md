@@ -42,3 +42,5 @@ Las decisiones no se editan una vez aceptadas. Si cambian, se escribe una nueva 
 | 0026 | Entrada propia del negocio y alta del primer administrador de plataforma | Aceptada |
 | 0027 | Front como SPA con Vite, React y Tailwind sobre el design system, y clubes por ruta | Aceptada |
 | 0028 | Estructura del club: temporadas, secciones, equipos, jugadores y familias | Aceptada |
+| 0029 | Ficha ampliada del jugador: foto, indicadores, objetivo, PDI y timeline | Aceptada |
+| 0030 | Personal con cargo, permisos por equipo, ficha para la familia, inicio operativo y reto por puntos | Aceptada |

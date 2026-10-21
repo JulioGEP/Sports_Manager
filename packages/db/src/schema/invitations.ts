@@ -1,11 +1,16 @@
-import { GUARDIAN_RELATIONSHIPS, INVITATION_STATUSES, LOCALES } from "@sportsmanager/shared";
+import {
+  GUARDIAN_RELATIONSHIPS,
+  INVITATION_STATUSES,
+  LOCALES,
+  STAFF_POSITIONS,
+} from "@sportsmanager/shared";
 import { sql } from "drizzle-orm";
 import { check, index, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 import { id, inList, timestamps } from "./_shared.ts";
 import { users } from "./auth.ts";
 import { organizations } from "./organizations.ts";
 import { roles } from "./roles.ts";
-import { players } from "./structure.ts";
+import { players, teams } from "./structure.ts";
 
 /**
  * Invitación a unirse a un club con un rol. Solo se guarda el hash del token; el token
@@ -33,6 +38,9 @@ export const invitations = pgTable(
     /** Invitación de familia (Bloque 11): jugador al que vincula al aceptarse, y con qué relación. */
     playerId: uuid("player_id").references(() => players.id, { onDelete: "set null" }),
     relationship: text("relationship"),
+    /** Bloque 13: cargo con el que entra el personal y equipo al que se une como cuerpo técnico. */
+    position: text("position"),
+    teamId: uuid("team_id").references(() => teams.id, { onDelete: "set null" }),
     ...timestamps,
   },
   (t) => [
@@ -47,6 +55,10 @@ export const invitations = pgTable(
     check(
       "invitations_relationship_check",
       sql`${t.relationship} is null or ${inList(t.relationship, GUARDIAN_RELATIONSHIPS)}`,
+    ),
+    check(
+      "invitations_position_check",
+      sql`${t.position} is null or ${inList(t.position, STAFF_POSITIONS)}`,
     ),
   ],
 );

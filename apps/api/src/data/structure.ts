@@ -666,7 +666,7 @@ export function teamsRepo(db: () => Database) {
       return rows.length > 0;
     },
 
-    /** Miembros con rol de entrenador, elegibles para el cuerpo técnico. */
+    /** Miembros con rol de entrenador, personal o administración, elegibles para el cuerpo técnico. */
     async eligibleStaff(scope: OrgScope): Promise<StaffRecord[]> {
       const rows = await db()
         .selectDistinct({
@@ -680,7 +680,7 @@ export function teamsRepo(db: () => Database) {
           and(
             eq(schema.memberships.organizationId, scope.organizationId),
             eq(schema.memberships.status, "active"),
-            inArray(schema.memberships.roleCode, ["coach", "org_admin"]),
+            inArray(schema.memberships.roleCode, ["coach", "staff", "org_admin"]),
           ),
         )
         .orderBy(asc(schema.users.name));

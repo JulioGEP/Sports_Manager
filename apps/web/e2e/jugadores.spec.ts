@@ -32,11 +32,12 @@ test.describe("jugadores y familias", () => {
 
     await page.getByRole("link", { name: "Clara Martí" }).click();
     await expect(page.getByRole("heading", { name: "Clara Martí" })).toBeVisible();
-    await expect(page.getByText("Laura Martí")).toBeVisible();
+    await expect(page.getByText("Laura Martí", { exact: true })).toBeVisible();
     await expect(page.getByText("Madre")).toBeVisible();
     await expect(page.getByRole("link", { name: "Alevín A" }).first()).toBeVisible();
     // La ficha ampliada llega sembrada: datos deportivos, indicadores, objetivo, PDI y timeline.
     await expect(page.getByText("Alevín · 2026-27")).toBeVisible();
+    await expect(page.getByText("4 años en el club")).toBeVisible();
     await expect(page.getByText("Pie derecho").first()).toBeVisible();
     await expect(page.getByText("142 cm")).toBeVisible();
     await expect(
@@ -112,12 +113,14 @@ test.describe("jugadores y familias", () => {
     await create.getByLabel("Nombre", { exact: true }).fill("Teo");
     await create.getByLabel("Apellidos").fill(`Prueba ${sfx}`);
     await create.getByLabel("Fecha de nacimiento").fill("2016-05-05");
+    await create.getByLabel("Alta en el club").fill("2024-09-01");
     await create.getByLabel("Equipo").selectOption({ label: "Alevín A" });
     await shot(page, "44-jugador-nuevo", info.project.name);
     await create.getByRole("button", { name: "Dar de alta" }).click();
     await expect(page.getByText(`Teo Prueba ${sfx} dado de alta.`)).toBeVisible();
     await expect(page.getByRole("heading", { name: `Teo Prueba ${sfx}` })).toBeVisible();
     await expect(page.getByRole("link", { name: "Alevín A" }).first()).toBeVisible();
+    await expect(page.getByText("2 años en el club")).toBeVisible();
     // Una ficha nueva lista lo que falta y aún no tiene indicadores.
     await expect(page.getByText("Añadir fotografía")).toBeVisible();
     await expect(page.getByText("Definir el objetivo individual")).toBeVisible();

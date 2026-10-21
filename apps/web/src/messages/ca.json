@@ -28,7 +28,8 @@
     "clubNotFound": "Aquest club no existeix o no està actiu.",
     "teams": "Equips",
     "players": "Jugadors",
-    "family": "La meva família"
+    "family": "La meva família",
+    "challenges": "Repte"
   },
   "auth": {
     "login": {
@@ -144,7 +145,123 @@
       "title": "La teva família",
       "description": "Els jugadors vinculats al teu compte.",
       "open": "Veure la meva família",
-      "empty": "Encara no hi ha cap jugador vinculat al teu compte. Demana al club que et vinculi."
+      "empty": "Encara no hi ha cap jugador vinculat al teu compte. Demana al club que et vinculi.",
+      "challenge": "Repte"
+    },
+    "operations": {
+      "eyebrow": "Què cal fer avui",
+      "title": "Alertes del club",
+      "count": "{count, plural, =0 {Tot al dia} one {# alerta} other {# alertes}}",
+      "allClear": "Tot al dia.",
+      "allClearHint": "No hi ha res pendent al club.",
+      "go": "Anar-hi",
+      "pendingInvitations": "{count, plural, one {# invitació pendent} other {# invitacions pendents}}",
+      "pendingInvitationsHint": "Reenvia o revoca les que no s'accepten.",
+      "challengeSubmissionsPending": "{count, plural, one {# registre del repte per validar} other {# registres del repte per validar}}",
+      "challengeSubmissionsPendingHint": "Les famílies esperen la validació del club.",
+      "objectivesOverdue": "{count, plural, one {# objectiu amb la revisió vençuda} other {# objectius amb la revisió vençuda}}",
+      "objectivesOverdueHint": "Revisa el progrés i fixa la data següent.",
+      "plansOverdue": "{count, plural, one {# pla de desenvolupament amb la revisió vençuda} other {# plans de desenvolupament amb la revisió vençuda}}",
+      "plansOverdueHint": "Actualitza el PDI i la propera revisió.",
+      "playersWithoutTeam": "{count, plural, one {# jugador sense equip aquesta temporada} other {# jugadors sense equip aquesta temporada}}",
+      "playersWithoutTeamHint": "Posa'ls en una plantilla.",
+      "playersWithoutObjective": "{count, plural, one {# jugador sense objectiu individual} other {# jugadors sense objectiu individual}}",
+      "playersWithoutObjectiveHint": "Defineix una prioritat per a cada fitxa.",
+      "playersWithoutFamily": "{count, plural, one {# jugador sense accés familiar} other {# jugadors sense accés familiar}}",
+      "playersWithoutFamilyHint": "Convida la seva família des de la fitxa.",
+      "playersWithoutPhoto": "{count, plural, one {# fitxa sense fotografia} other {# fitxes sense fotografia}}",
+      "playersWithoutPhotoHint": "La foto ajuda a identificar cada jugador."
+    },
+    "readiness": {
+      "eyebrow": "Salut de les dades",
+      "title": "Preparació de les fitxes",
+      "description": "Set comprovacions per jugador actiu: foto, naixement, equip, família, objectiu, indicadors i PDI.",
+      "total": "{count, plural, one {# jugador actiu} other {# jugadors actius}}",
+      "progressLabel": "Fitxes preparades al {percent} per cent",
+      "withPhoto": "Amb foto",
+      "withBirthDate": "Amb naixement",
+      "withTeam": "Amb equip",
+      "withFamily": "Amb família",
+      "withObjective": "Amb objectiu",
+      "withIndicators": "Amb indicadors",
+      "withPlan": "Amb PDI"
+    },
+    "quickActions": {
+      "title": "Accessos ràpids",
+      "description": "El que més es fa al club, a un toc.",
+      "newPlayer": "Donar d'alta un jugador",
+      "newPlayerHint": "Crear la fitxa i assignar-li equip.",
+      "newTeam": "Crear un equip",
+      "newTeamHint": "En una secció de la temporada actual.",
+      "inviteFamily": "Convidar una família",
+      "inviteFamilyHint": "Des de la fitxa del seu jugador.",
+      "challenge": "Obrir el repte",
+      "challengeHint": "Proves, validacions i participació."
+    },
+    "activity": {
+      "title": "Últims moviments",
+      "description": "Què ha passat al club aquests dies.",
+      "empty": "Encara no hi ha moviments.",
+      "system": "Sistema"
+    },
+    "panel": {
+      "rated": "{dimension}: {rated} de {total} valorats",
+      "players": "{total, plural, one {# jugador} other {# jugadors}}",
+      "openChallenges": "Obrir el repte",
+      "myTeams": "Els meus equips",
+      "noTeamsTitle": "Encara no portes cap equip",
+      "noTeamsBody": "Demana a qui administra el club que t'afegeixi al cos tècnic del teu equip.",
+      "allClear": "Ningú reclama atenció avui.",
+      "noTeam": "Sense equip",
+      "lastNote": "última anotació {date}",
+      "unrated": "Sense valorar",
+      "open": "Obrir",
+      "reasons": {
+        "lowScore": "xifra baixa",
+        "unrated": "sense valorar",
+        "noObjective": "sense objectiu",
+        "objectiveOverdue": "revisió de l'objectiu vençuda",
+        "noPlan": "sense PDI",
+        "planOverdue": "revisió del PDI vençuda",
+        "noPhysicalGoal": "sense objectiu físic al PDI",
+        "noEmotionalGoal": "sense objectiu emocional al PDI",
+        "noHeight": "sense alçada",
+        "noFamily": "sense accés familiar",
+        "noTeam": "sense equip",
+        "noPhoto": "sense foto"
+      },
+      "coach": {
+        "title": "Els meus jugadors",
+        "description": "Què cal a les fitxes dels teus equips."
+      },
+      "director": {
+        "title": "Seguiment del club",
+        "description": "Revisions vençudes, fitxes sense objectiu i plantilles incompletes."
+      },
+      "coordinator": {
+        "title": "Coordinació",
+        "description": "Objectius, plans de desenvolupament i indicadors que demanen revisió."
+      },
+      "delegate": {
+        "title": "Els meus equips",
+        "description": "Famílies sense accés i fitxes sense foto als teus equips."
+      },
+      "physio": {
+        "title": "Seguiment físic",
+        "description": "Jugadors amb el cos per sota del llindar o sense valorar."
+      },
+      "fitness": {
+        "title": "Preparació física",
+        "description": "Cos, alçada i objectiu físic del PDI de cada jugador."
+      },
+      "psychologist": {
+        "title": "Benestar",
+        "description": "Jugadors amb el benestar baix o sense valorar, i PDI sense objectiu emocional."
+      },
+      "scout": {
+        "title": "Observació",
+        "description": "Jugadors sense valoració esportiva i els que estan per sota del llindar."
+      }
     }
   },
   "members": {
@@ -161,7 +278,8 @@
     "table": {
       "name": "Persona",
       "roles": "Rols",
-      "since": "Des de"
+      "since": "Des de",
+      "teams": "Equips"
     },
     "roles": {
       "manage": "Rols",
@@ -172,8 +290,11 @@
       "hint": {
         "org_admin": "Gestiona membres, invitacions i configuració.",
         "coach": "Veurà la seva gent i, a la Fase 1, equips i jugadors.",
-        "guardian": "Família: a la Fase 1 veurà la informació dels seus fills."
-      }
+        "guardian": "Família: a la Fase 1 veurà la informació dels seus fills.",
+        "staff": "Personal del club amb un càrrec: direcció, coordinació, delegació, fisio, preparació física, psicologia o scout."
+      },
+      "position": "Càrrec",
+      "positionSaved": "Càrrec desat: {position}."
     },
     "inviteDrawer": {
       "title": "Convidar algú",
@@ -183,13 +304,18 @@
       "roleHint": {
         "org_admin": "Gestiona membres, invitacions i configuració.",
         "coach": "Entrenador o entrenadora del club.",
-        "guardian": "Mare, pare o tutor d'un jugador."
+        "guardian": "Mare, pare o tutor d'un jugador.",
+        "staff": "Personal del club que no entrena: entra amb un càrrec."
       },
       "language": "Idioma del correu",
       "submit": "Enviar la invitació",
       "sent": "Invitació enviada a {email}.",
       "failed": "Invitació creada per a {email}, però el correu no s'ha pogut enviar. Reenvia-la més tard.",
-      "linkHint": "Entorn de proves sense enviament de correus: comparteix aquest enllaç amb {email}."
+      "linkHint": "Entorn de proves sense enviament de correus: comparteix aquest enllaç amb {email}.",
+      "position": "Càrrec",
+      "team": "Equip",
+      "teamHint": "Opcional. En acceptar, entra al cos tècnic d'aquest equip.",
+      "noTeam": "Sense equip de moment"
     },
     "invitations": {
       "email": "Correu",
@@ -205,7 +331,8 @@
       "confirmRevokeTitle": "Revocar la invitació a {email}?",
       "confirmRevokeBody": "L’enllaç deixarà de funcionar. Podràs convidar de nou quan vulguis.",
       "player": "Família de {name}"
-    }
+    },
+    "noTeams": "Sense equip"
   },
   "settings": {
     "title": "Configuració del club",
@@ -403,7 +530,8 @@
   "roles": {
     "org_admin": "Administrador del club",
     "coach": "Entrenador",
-    "guardian": "Tutor"
+    "guardian": "Tutor",
+    "staff": "Personal del club"
   },
   "locales": {
     "label": "Idioma",
@@ -488,6 +616,16 @@
       "indicators_updated": "Indicadors de jugador valorats",
       "plan_updated": "Pla de desenvolupament desat",
       "note_added": "Registre afegit al jugador"
+    },
+    "challenge": {
+      "created": "Repte creat",
+      "updated": "Repte editat",
+      "task_created": "Prova del repte creada",
+      "task_updated": "Prova del repte editada",
+      "task_removed": "Prova del repte treta",
+      "submission_created": "Registre del repte enviat",
+      "submission_removed": "Registre del repte retirat",
+      "submission_reviewed": "Registre del repte validat"
     }
   },
   "teams": {
@@ -663,8 +801,19 @@
       "team": "Equip",
       "noTeam": "Sense equip per ara",
       "submit": "Donar d'alta",
-      "created": "{name} donat d'alta."
-    }
+      "created": "{name} donat d'alta.",
+      "joinedOn": "Alta al club",
+      "joinedOnHint": "Opcional. Si no s'indica, compta des d'avui."
+    },
+    "missingFilter": {
+      "label": "Falta",
+      "all": "Totes les fitxes",
+      "photo": "sense foto",
+      "objective": "sense objectiu",
+      "team": "sense equip",
+      "family": "sense família"
+    },
+    "pendingCount": "{count, plural, one {# invitació pendent} other {# invitacions pendents}}"
   },
   "playerStatus": {
     "active": "Actiu",
@@ -848,7 +997,8 @@
         "indicators_updated": "Indicadors actualitzats",
         "plan_updated": "Pla de desenvolupament {status, select, draft {en estructura inicial} active {en marxa} shared {compartit amb la família} other {actualitzat}}",
         "photo_updated": "Foto actualitzada",
-        "note": "{text}"
+        "note": "{text}",
+        "challenge_closed": "Repte {challenge} tancat amb {points} punts"
       },
       "sheet": {
         "title": "Afegir registre a {name}",
@@ -874,7 +1024,8 @@
     "quickActions": {
       "title": "Accions ràpides",
       "openTeam": "Obrir {team}",
-      "familyAccess": "Accessos familiars"
+      "familyAccess": "Accessos familiars",
+      "challenge": "Obrir el repte"
     },
     "plan": {
       "eyebrow": "Pla de desenvolupament individual",
@@ -924,7 +1075,8 @@
     "coaches": "Cos tècnic",
     "noCoaches": "Sense cos tècnic assignat",
     "number": "Dorsal {number}",
-    "inactive": "Fitxa de baixa"
+    "inactive": "Fitxa de baixa",
+    "openProfile": "Veure fitxa"
   },
   "relationships": {
     "mother": "Mare",
@@ -941,6 +1093,258 @@
       "cercana": "Una bona coordinadora de club: càlida, clara, explica el perquè.",
       "profesional": "La dada primer, zero adorns.",
       "vestuario": "Energia i argot de joc. Mai en els moments sensibles."
+    }
+  },
+  "positions": {
+    "director": "Director esportiu",
+    "coordinator": "Coordinació",
+    "delegate": "Delegació",
+    "physio": "Fisioteràpia",
+    "fitness": "Preparació física",
+    "psychologist": "Psicologia",
+    "scout": "Scout",
+    "hint": {
+      "director": "Veu tot el club: estructura, jugadors, valoracions i repte. No gestiona membres ni configuració.",
+      "coordinator": "Com la direcció esportiva: estructura, jugadors, valoracions i repte.",
+      "delegate": "Consulta equips, jugadors i repte. No canvia res.",
+      "physio": "Valora el cos de qualsevol jugador i deixa anotacions.",
+      "fitness": "Valora la preparació física i deixa anotacions.",
+      "psychologist": "Valora el benestar i deixa anotacions.",
+      "scout": "Valora l'esport i deixa anotacions d'observació."
+    }
+  },
+  "familyPlayer": {
+    "back": "La meva família",
+    "team": {
+      "title": "Equip",
+      "description": "Equip d'aquesta temporada i qui l'entrena."
+    },
+    "challenge": {
+      "eyebrow": "Repte en curs",
+      "title": "Repte",
+      "open": "Veure el repte",
+      "target": "objectiu {target}",
+      "progressLabel": "{points} de {target} punts del repte",
+      "min": "Mínim {min}",
+      "pending": "{points} per validar",
+      "none": "Ara mateix no hi ha cap repte actiu."
+    },
+    "objective": {
+      "empty": "El club encara no ha definit cap objectiu."
+    },
+    "plan": {
+      "description": "Sis àrees de treball. El veus quan el club el comparteix amb tu.",
+      "notShared": "El club encara no ha compartit el pla de desenvolupament.",
+      "notSharedHint": "Quan el comparteixi, el veuràs aquí amb les seves sis àrees."
+    }
+  },
+  "challenges": {
+    "title": "Reptes",
+    "description": "Reptes per punts: proves, registres de les famílies i validació del club.",
+    "new": "Nou repte",
+    "familiesNote": "Les famílies registren l'activitat dels seus jugadors i veuen només els seus punts. La participació per jugador és només per al personal.",
+    "empty": "Encara no hi ha reptes.",
+    "emptyHint": "Crea el primer amb el catàleg d'exemple i activa'l quan estigui a punt.",
+    "from": "des del {date}",
+    "until": "fins al {date}",
+    "noDates": "Sense dates",
+    "table": {
+      "challenge": "Repte",
+      "status": "Estat",
+      "points": "Mínim / objectiu",
+      "tasks": "Proves",
+      "participants": "Participants",
+      "pending": "Per validar"
+    },
+    "status": {
+      "draft": "Esborrany",
+      "active": "Actiu",
+      "closed": "Tancat"
+    },
+    "pendingCount": "{count, plural, one {# per validar} other {# per validar}}",
+    "noPending": "Res per validar",
+    "areas": {
+      "training": "Entrenament",
+      "technique": "Tècnica",
+      "habits": "Hàbits"
+    },
+    "kinds": {
+      "sessions": "Sessions",
+      "rating": "Valoració"
+    },
+    "submissionStatus": {
+      "submitted": "Per validar",
+      "approved": "Aprovat",
+      "rejected": "Rebutjat"
+    },
+    "pointsPerUnit": "{points, plural, one {# pt per unitat} other {# pts per unitat}}",
+    "maxPoints": "topall {points}",
+    "sheet": {
+      "title": "Nou repte",
+      "description": "Un període amb un catàleg de proves. Les famílies registren, el club valida.",
+      "submit": "Crear repte",
+      "name": "Nom",
+      "nameHint": "Per exemple, Repte d'estiu 2027.",
+      "descriptionLabel": "Descripció",
+      "startsOn": "Comença",
+      "endsOn": "Acaba",
+      "minPoints": "Punts mínims",
+      "minPointsHint": "Per donar el repte per complert.",
+      "targetPoints": "Punts objectiu",
+      "targetPointsHint": "Als quals aspirar.",
+      "season": "Temporada",
+      "noSeason": "Sense temporada",
+      "withDefaultTasks": "Començar amb el catàleg d'exemple",
+      "withDefaultTasksHint": "Deu proves d'entrenament, tècnica i hàbits. Es poden editar després.",
+      "activate": "Activar ja",
+      "activateHint": "Si no, queda en esborrany i les famílies no el veuen.",
+      "pointsOrder": "L'objectiu no pot ser menor que el mínim.",
+      "created": "Repte {name} creat.",
+      "editTitle": "Editar {name}",
+      "saved": "Repte desat."
+    }
+  },
+  "familyChallenge": {
+    "title": "Repte",
+    "description": "Registra l'activitat dels teus jugadors i segueix els seus punts. Només veus els teus.",
+    "noPlayers": "Encara no hi ha cap jugador vinculat al teu compte.",
+    "noPlayersHint": "Demana a qui administra el club que et vinculi des de la fitxa del jugador.",
+    "playerTabs": "Jugadors de la família",
+    "noChallenge": "Ara mateix no hi ha cap repte actiu.",
+    "noChallengeHint": "Quan el club l'activi, el veuràs aquí.",
+    "register": "Registrar activitat",
+    "target": "objectiu {target}",
+    "progressLabel": "{points} de {target} punts del repte",
+    "min": "Mínim {min}",
+    "targetChip": "Objectiu {target}",
+    "pending": "{points} per validar",
+    "submissions": "Registres",
+    "submissionsDescription": "El que has registrat i què ha validat el club.",
+    "noSubmissions": "Encara no hi ha registres.",
+    "quantity": "{count, plural, one {# unitat} other {# unitats}}",
+    "withdraw": "Retirar",
+    "removed": "Registre retirat.",
+    "confirmWithdrawTitle": "Vols retirar el registre de {task}?",
+    "confirmWithdrawBody": "Desapareix de la llista. Pots tornar a registrar-lo quan vulguis.",
+    "tasks": "Proves",
+    "tasksDescription": "El catàleg del repte i els seus punts.",
+    "sheet": {
+      "title": "Registrar activitat de {name}",
+      "description": "Tria la prova, quantes vegades i, si vols, una nota o un enllaç.",
+      "submit": "Afegir {points} punts",
+      "task": "Prova",
+      "rating": "Valoració",
+      "sessions": "Vegades",
+      "ratingHint": "D'1 a {max}: {points} punts per cada punt.",
+      "sessionsHint": "{points} punts per cada vegada.",
+      "date": "Data",
+      "dateHint": "Per defecte, avui.",
+      "note": "Nota o enllaç",
+      "noteHint": "Opcional: un vídeo, una foto o un comentari.",
+      "capHint": "Aquesta prova té un topall de {points} punts en tot el repte.",
+      "saved": "Activitat registrada. El club la validarà."
+    }
+  },
+  "challenge": {
+    "back": "Reptes",
+    "points": "Mínim {min} punts · objectiu {target}",
+    "edit": "Editar",
+    "activate": "Activar",
+    "close": "Tancar repte",
+    "closed": "Repte tancat.",
+    "activated": "Repte activat.",
+    "stats": {
+      "points": "Mínim / objectiu",
+      "participants": "Participants",
+      "pending": "Per validar"
+    },
+    "tabs": {
+      "tasks": "Proves",
+      "review": "Validació",
+      "standings": "Participació"
+    },
+    "tasks": {
+      "title": "Catàleg de proves",
+      "description": "Cada prova té una àrea, un tipus, punts per unitat i un topall en tot el repte.",
+      "new": "Nova prova",
+      "empty": "Encara no hi ha proves.",
+      "archived": "Arxivada",
+      "noMax": "Sense topall",
+      "edit": "Editar",
+      "remove": "Treure",
+      "removed": "Prova {name} treta.",
+      "confirmRemoveTitle": "Vols treure la prova {name}?",
+      "confirmRemoveBody": "Si ja té registres, s'arxiva i conserven els seus punts. Si no, s'esborra.",
+      "table": {
+        "task": "Prova",
+        "area": "Àrea",
+        "kind": "Tipus",
+        "points": "Punts",
+        "max": "Topall",
+        "submissions": "Registres"
+      },
+      "sheet": {
+        "title": "Nova prova",
+        "editTitle": "Editar {name}",
+        "description": "Nom, àrea, tipus i punts.",
+        "submit": "Crear prova",
+        "name": "Nom",
+        "area": "Àrea",
+        "kind": "Tipus",
+        "kindHint": {
+          "sessions": "Es compten vegades.",
+          "rating": "Es valora d'1 a 5."
+        },
+        "pointsPerUnit": "Punts per unitat",
+        "maxPoints": "Topall de punts",
+        "maxPointsHint": "Opcional. En tot el repte.",
+        "saved": "Prova desada.",
+        "created": "Prova {name} creada."
+      }
+    },
+    "confirmCloseTitle": "Vols tancar {name}?",
+    "confirmCloseBody": "No admetrà més registres ni validacions i no es torna a obrir. Cada jugador amb punts aprovats rep un registre al seu timeline.",
+    "review": {
+      "title": "Validació",
+      "ownScope": "Veus només els registres dels jugadors dels teus equips.",
+      "filter": "Estat",
+      "all": "Tots",
+      "empty": "No hi ha registres amb aquest estat.",
+      "approve": "Aprovar",
+      "reject": "Rebutjar",
+      "approved": "Registre de {name} aprovat: +{points}.",
+      "rejected": "Registre de {name} rebutjat.",
+      "quantity": "{count, plural, one {# unitat} other {# unitats}}",
+      "by": "per {name}",
+      "table": {
+        "player": "Jugador",
+        "task": "Prova",
+        "points": "Punts",
+        "date": "Data",
+        "status": "Estat"
+      },
+      "rejectSheet": {
+        "title": "Rebutjar el registre de {name}",
+        "description": "{task}. La família veurà el motiu.",
+        "submit": "Rebutjar",
+        "note": "Motiu",
+        "noteHint": "Opcional, en llenguatge planer."
+      }
+    },
+    "standings": {
+      "title": "Participació",
+      "ownScope": "Veus només els jugadors dels teus equips. Les famílies mai veuen aquesta llista.",
+      "staffOnly": "Només per al personal del club. Les famílies veuen únicament els punts dels seus.",
+      "empty": "Encara ningú ha registrat activitat.",
+      "reachedTarget": "Objectiu assolit",
+      "reachedMin": "Mínim complert",
+      "inProgress": "En marxa",
+      "table": {
+        "player": "Jugador",
+        "approved": "Aprovats",
+        "pending": "Per validar",
+        "goal": "Fita"
+      }
     }
   }
 }

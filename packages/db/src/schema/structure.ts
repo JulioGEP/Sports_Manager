@@ -117,6 +117,8 @@ export const players = pgTable(
     firstName: text("first_name").notNull(),
     lastName: text("last_name").notNull(),
     birthDate: date("birth_date"),
+    /** Fecha de alta en el club (Bloque 13). Nula: cuenta desde que se creó la ficha. */
+    joinedOn: date("joined_on"),
     status: text("status").notNull().default("active"),
     /** Ficha ampliada (Bloque 12, ADR 0029): foto en Netlify Blobs, pie dominante y altura. */
     photoBlobKey: text("photo_blob_key"),

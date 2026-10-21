@@ -3,10 +3,12 @@ import {
   ApiErrorSchema,
   DevelopmentPlanUpdateSchema,
   EligibleMembersResponseSchema,
+  FamilyPlayerDetailResponseSchema,
   FamilyResponseSchema,
   GuardianInviteSchema,
   GuardianLinkSchema,
   InvitationSentResponseSchema,
+  PLAYER_MISSING_FILTERS,
   PLAYER_PHOTO_CONTENT_TYPES,
   PLAYER_PHOTO_MAX_BYTES,
   PlayerCreateSchema,
@@ -15,10 +17,12 @@ import {
   PlayerNoteCreateSchema,
   PlayerObjectiveUpdateSchema,
   PlayerResponseSchema,
+  PlayersOverviewResponseSchema,
   PlayersResponseSchema,
   PlayerUpdateSchema,
   playerDisplayName,
   type Locale,
+  type PlayerEventKind,
 } from "@sportsmanager/shared";
 import type { ApiConfig } from "../config.ts";
 import {
@@ -31,7 +35,7 @@ import {
   type PlayerRow,
 } from "../data/index.ts";
 import { requireActor, requirePermission } from "../http/actor.ts";
-import type { AppEnv } from "../http/context.ts";
+import type { Actor, AppEnv } from "../http/context.ts";
 import {
   badRequest,
   conflict,
@@ -67,10 +71,14 @@ const playerDto = (p: PlayerRow, slug: string) => ({
   birthDate: p.birthDate,
   status: p.status,
   createdAt: p.createdAt.toISOString(),
+  joinedOn: p.joinedOn,
   photoUrl: playerPhotoUrlFor(p.photoBlobKey, slug, p.id),
   dominantFoot: p.dominantFoot,
   heightCm: p.heightCm,
 });
+
+/** El alta en el club: la fecha indicada o, si no la hay, la creación de la ficha. */
+const joinedOn = (p: PlayerRow) => p.joinedOn ?? p.createdAt.toISOString().slice(0, 10);
 
 const photoBody = Object.fromEntries(
   PLAYER_PHOTO_CONTENT_TYPES.map((type) => [
@@ -79,10 +87,23 @@ const photoBody = Object.fromEntries(
   ]),
 );
 
+/** Lo que una familia ve del timeline: nunca anotaciones del personal ni cambios de indicadores. */
+const FAMILY_EVENT_KINDS: readonly PlayerEventKind[] = [
+  "roster_added",
+  "roster_removed",
+  "status_changed",
+  "objective_updated",
+  "plan_updated",
+  "photo_updated",
+  "challenge_closed",
+];
+
 /**
- * Jugadores y familias (Fase 1, Bloque 11, ADR 0028) y ficha ampliada (Bloque 12, ADR 0029).
- * Datos de menores: lectura con `org.players.read`, cambios con `org.players.write`; una familia
- * solo ve lo suyo (`org.family.read`), incluida la foto de sus jugadores.
+ * Jugadores y familias (Fase 1, Bloque 11, ADR 0028), ficha ampliada (Bloque 12, ADR 0029) y,
+ * en el Bloque 13 (ADR 0030), permisos por equipo, ficha para la familia y vista de conjunto.
+ * Datos de menores: lectura con `org.players.read`, cambios con `org.players.write`; valoraciones
+ * con `org.players.assess` o, sobre los jugadores de los equipos propios, `org.players.assess_own`;
+ * una familia solo ve lo suyo (`org.family.read`) y cambia la foto de los suyos (`org.family.write`).
  */
 export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
   const app = new OpenAPIHono<AppEnv>();
@@ -95,9 +116,11 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
   app.use("/api/org/players", ...chain);
   app.use("/api/org/players/*", ...chain);
   app.use("/api/org/family", ...chain);
+  app.use("/api/org/family/*", ...chain);
 
   const read = requirePermission("org.players.read");
   const write = requirePermission("org.players.write");
+  const family = requirePermission("org.family.read");
 
   const scopeOf = (c: { get: (key: "tenant") => AppEnv["Variables"]["tenant"] }) => {
     const tenant = c.get("tenant");
@@ -120,13 +143,60 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
     });
 
   type Tenant = ReturnType<typeof scopeOf>;
-  const actorId = (c: { get: (key: "sessionUser") => AppEnv["Variables"]["sessionUser"] }) =>
-    c.get("sessionUser").id;
+  type Ctx = {
+    get: ((key: "sessionUser") => AppEnv["Variables"]["sessionUser"]) &
+      ((key: "actor") => Actor) &
+      ((key: "tenant") => AppEnv["Variables"]["tenant"]);
+  };
+  const actorId = (c: Ctx) => c.get("sessionUser").id;
 
-  async function detail(tenant: Tenant, player: PlayerRow) {
+  /**
+   * Valorar a un jugador (objetivo, indicadores, PDI, anotaciones): con permiso de club, o con el
+   * permiso "propio" si quien llama es cuerpo técnico de un equipo donde está el jugador esta temporada.
+   */
+  async function requireAssess(c: Ctx, tenant: Tenant, playerId: string) {
+    const actor = c.get("actor");
+    if (actor.permissions.has("org.players.assess")) return;
+    if (
+      actor.permissions.has("org.players.assess_own") &&
+      (await data.players.isStaffOf(tenant.scope, actorId(c), playerId))
+    )
+      return;
+    throw forbidden();
+  }
+
+  /** La foto la cambian quien escribe jugadores, su cuerpo técnico y su propia familia. */
+  async function requirePhotoWrite(c: Ctx, tenant: Tenant, playerId: string) {
+    const actor = c.get("actor");
+    if (actor.permissions.has("org.players.write")) return;
+    if (
+      actor.permissions.has("org.players.assess_own") &&
+      (await data.players.isStaffOf(tenant.scope, actorId(c), playerId))
+    )
+      return;
+    if (
+      actor.permissions.has("org.family.write") &&
+      (await data.players.isGuardianOf(tenant.scope, actorId(c), playerId))
+    )
+      return;
+    throw forbidden();
+  }
+
+  /** Qué puede hacer quien pregunta en la ficha: valorar y cambiar la foto. */
+  async function accessOf(c: Ctx, tenant: Tenant, playerId: string) {
+    const actor = c.get("actor");
+    const own =
+      actor.permissions.has("org.players.assess_own") &&
+      (await data.players.isStaffOf(tenant.scope, actorId(c), playerId));
+    const assess = actor.permissions.has("org.players.assess") || own;
+    const photo = actor.permissions.has("org.players.write") || own;
+    return { assess, photo };
+  }
+
+  async function detail(c: Ctx, tenant: Tenant, player: PlayerRow) {
     const scope = tenant.scope;
     const profile = data.playerProfile;
-    const [teams, guardians, invitations, objective, indicators, developmentPlan, events] =
+    const [teams, guardians, invitations, objective, indicators, developmentPlan, events, access] =
       await Promise.all([
         data.players.teamsOf(scope, player.id),
         data.players.guardiansOf(scope, player.id),
@@ -135,8 +205,10 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
         profile.indicatorsOf(scope, player.id),
         profile.planOf(scope, player.id),
         profile.eventsOf(scope, player.id),
+        accessOf(c, tenant, player.id),
       ]);
     return {
+      access,
       player: playerDto(player, tenant.organization.slug),
       teams,
       guardians,
@@ -154,13 +226,13 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
       developmentPlan: developmentPlan
         ? { ...developmentPlan, updatedAt: developmentPlan.updatedAt.toISOString() }
         : null,
-      // El alta en el club cierra siempre el timeline: sale de la fecha de creación, no se guarda.
+      // El alta en el club cierra siempre el timeline: sale de la fecha de alta, no se guarda.
       timeline: [
         ...events,
         {
           id: `joined-${player.id}`,
           kind: "joined" as const,
-          happenedOn: player.createdAt.toISOString().slice(0, 10),
+          happenedOn: joinedOn(player),
           details: {},
           actorName: null,
         },
@@ -190,7 +262,7 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
       tags: ["Jugadores"],
       summary: "Los jugadores de la familia de la sesión, con su equipo y quién lo entrena",
       security: [{ sessionCookie: [] }],
-      middleware: [requirePermission("org.family.read")],
+      middleware: [family],
       responses: { 200: json("Familia", FamilyResponseSchema), ...errors },
     }),
     async (c) => {
@@ -214,6 +286,72 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
     },
   );
 
+  app.openapi(
+    createRoute({
+      method: "get",
+      path: "/api/org/family/players/{id}",
+      tags: ["Jugadores"],
+      summary:
+        "Ficha de uno de los suyos, vista por la familia: foto, equipo, objetivo, PDI si está compartido, movimientos y puntos del reto. Sin indicadores ni comparativas",
+      security: [{ sessionCookie: [] }],
+      middleware: [family],
+      request: { params: idParam },
+      responses: { 200: json("Jugador", FamilyPlayerDetailResponseSchema), ...errors },
+    }),
+    async (c) => {
+      const tenant = scopeOf(c);
+      const { id } = c.req.valid("param");
+      const player = await data.players.familyPlayer(tenant.scope, actorId(c), id);
+      if (!player) throw notFound("Ese jugador no está vinculado a tu cuenta.");
+      const scope = tenant.scope;
+      const [objective, plan, events, challenge] = await Promise.all([
+        data.playerProfile.objectiveOf(scope, id),
+        data.playerProfile.planOf(scope, id),
+        data.playerProfile.eventsOf(scope, id, { kinds: FAMILY_EVENT_KINDS }),
+        data.challenges.active(scope),
+      ]);
+      const totals = challenge ? await data.challenges.totalsFor(scope, challenge.id, id) : null;
+      return c.json(
+        {
+          player: {
+            ...playerDto(player, tenant.organization.slug),
+            relationship: player.relationship,
+          },
+          teams: player.teams,
+          objective: objective
+            ? { ...objective, updatedAt: objective.updatedAt.toISOString() }
+            : null,
+          developmentPlan:
+            plan && plan.status === "shared"
+              ? { ...plan, updatedAt: plan.updatedAt.toISOString() }
+              : null,
+          timeline: [
+            ...events,
+            {
+              id: `joined-${player.id}`,
+              kind: "joined" as const,
+              happenedOn: joinedOn(player),
+              details: {},
+              actorName: null,
+            },
+          ],
+          challenge:
+            challenge && totals
+              ? {
+                  id: challenge.id,
+                  name: challenge.name,
+                  minPoints: challenge.minPoints,
+                  targetPoints: challenge.targetPoints,
+                  approvedPoints: totals.approved,
+                  pendingPoints: totals.pending,
+                }
+              : null,
+        },
+        200,
+      );
+    },
+  );
+
   // --- Jugadores ---
   app.openapi(
     createRoute({
@@ -227,14 +365,16 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
         query: z.object({
           q: z.string().max(80).optional(),
           team: z.string().uuid().optional(),
+          /** Lo que falta en la ficha: foto, objetivo, equipo o familia (alertas del inicio). */
+          missing: z.enum(PLAYER_MISSING_FILTERS).optional(),
         }),
       },
       responses: { 200: json("Jugadores", PlayersResponseSchema), ...errors },
     }),
     async (c) => {
       const tenant = scopeOf(c);
-      const { q, team } = c.req.valid("query");
-      const players = await data.players.list(tenant.scope, { query: q, teamId: team });
+      const { q, team, missing } = c.req.valid("query");
+      const players = await data.players.list(tenant.scope, { query: q, teamId: team, missing });
       return c.json(
         {
           players: players.map((p) => ({
@@ -245,7 +385,51 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
             status: p.status,
             teams: p.teams,
             guardiansCount: p.guardiansCount,
+            pendingInvitationsCount: p.pendingInvitationsCount,
             photoUrl: playerPhotoUrlFor(p.photoBlobKey, tenant.organization.slug, p.id),
+          })),
+        },
+        200,
+      );
+    },
+  );
+
+  app.openapi(
+    createRoute({
+      method: "get",
+      path: "/api/org/players/overview",
+      tags: ["Jugadores"],
+      summary:
+        "Vista de conjunto para los paneles del personal: indicadores, objetivo y plan de cada jugador activo. Con `scope=own`, solo los equipos propios",
+      security: [{ sessionCookie: [] }],
+      middleware: [read],
+      request: { query: z.object({ scope: z.enum(["club", "own"]).optional() }) },
+      responses: { 200: json("Jugadores", PlayersOverviewResponseSchema), ...errors },
+    }),
+    async (c) => {
+      const tenant = scopeOf(c);
+      const { scope: requested } = c.req.valid("query");
+      const own = requested === "own";
+      const teamIds = own ? await data.memberships.ownTeamIds(tenant.scope, actorId(c)) : undefined;
+      const players = await data.players.overview(tenant.scope, { teamIds });
+      return c.json(
+        {
+          scope: own ? ("own" as const) : ("club" as const),
+          players: players.map((p) => ({
+            id: p.id,
+            firstName: p.firstName,
+            lastName: p.lastName,
+            status: p.status,
+            photoUrl: playerPhotoUrlFor(p.photoBlobKey, tenant.organization.slug, p.id),
+            birthDate: p.birthDate,
+            heightCm: p.heightCm,
+            dominantFoot: p.dominantFoot,
+            teams: p.teams,
+            guardiansCount: p.guardiansCount,
+            indicators: p.indicators,
+            objective: p.objective,
+            plan: p.plan,
+            lastNoteOn: p.lastNoteOn,
           })),
         },
         200,
@@ -293,7 +477,7 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
       await audit(c, tenant, "player.created", playerDisplayName(player), {
         teamId: body.teamId ?? null,
       });
-      return c.json(await detail(tenant, player), 201);
+      return c.json(await detail(c, tenant, player), 201);
     },
   );
 
@@ -312,7 +496,7 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
       const tenant = scopeOf(c);
       const { id } = c.req.valid("param");
       const player = await playerOr404(tenant, id);
-      return c.json(await detail(tenant, player), 200);
+      return c.json(await detail(c, tenant, player), 200);
     },
   );
 
@@ -403,7 +587,7 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
         userId,
         relationship,
       });
-      return c.json(await detail(tenant, player), 200);
+      return c.json(await detail(c, tenant, player), 200);
     },
   );
 
@@ -426,7 +610,7 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
       const ok = await data.players.unlinkGuardian(tenant.scope, id, userId);
       if (!ok) throw notFound("Esa persona no está vinculada a este jugador.");
       await audit(c, tenant, "player.guardian_unlinked", playerDisplayName(player), { userId });
-      return c.json(await detail(tenant, player), 200);
+      return c.json(await detail(c, tenant, player), 200);
     },
   );
 
@@ -508,7 +692,7 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
     },
   );
 
-  // --- Ficha ampliada (Bloque 12, ADR 0029) ---
+  // --- Ficha ampliada (Bloque 12, ADR 0029): valorar con permiso de club o sobre los propios ---
 
   app.openapi(
     createRoute({
@@ -516,9 +700,9 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
       path: "/api/org/players/{id}/eligible-staff",
       tags: ["Jugadores"],
       summary:
-        "Miembros con rol de entrenador o administración, para responsable del objetivo o del PDI",
+        "Miembros con rol de entrenador, personal o administración, para responsable del objetivo o del PDI",
       security: [{ sessionCookie: [] }],
-      middleware: [write],
+      middleware: [read],
       request: { params: idParam },
       responses: { 200: json("Miembros", EligibleMembersResponseSchema), ...errors },
     }),
@@ -535,7 +719,7 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
       tags: ["Jugadores"],
       summary: "Fija el objetivo individual vigente del jugador (sustituye al anterior)",
       security: [{ sessionCookie: [] }],
-      middleware: [write],
+      middleware: [read],
       request: {
         params: idParam,
         body: {
@@ -554,6 +738,7 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
       const { id } = c.req.valid("param");
       const body = c.req.valid("json");
       const player = await playerOr404(tenant, id);
+      await requireAssess(c, tenant, id);
       await requireMember(tenant, body.ownerUserId);
       const objective = await data.playerProfile.setObjective(tenant.scope, id, body);
       await data.playerProfile.recordEvent(tenant.scope, {
@@ -566,7 +751,7 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
         title: objective.title,
         progress: objective.progress,
       });
-      return c.json(await detail(tenant, player), 200);
+      return c.json(await detail(c, tenant, player), 200);
     },
   );
 
@@ -577,7 +762,7 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
       tags: ["Jugadores"],
       summary: "Quita el objetivo individual vigente",
       security: [{ sessionCookie: [] }],
-      middleware: [write],
+      middleware: [read],
       request: { params: idParam },
       responses: { 200: json("Jugador", PlayerDetailResponseSchema), ...errors },
     }),
@@ -585,11 +770,12 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
       const tenant = scopeOf(c);
       const { id } = c.req.valid("param");
       const player = await playerOr404(tenant, id);
+      await requireAssess(c, tenant, id);
       const removed = await data.playerProfile.clearObjective(tenant.scope, id);
       if (removed) {
         await audit(c, tenant, "player.objective_removed", playerDisplayName(player));
       }
-      return c.json(await detail(tenant, player), 200);
+      return c.json(await detail(c, tenant, player), 200);
     },
   );
 
@@ -601,7 +787,7 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
       summary:
         "Valora una o varias dimensiones del jugador (deporte, cuerpo, bienestar, compromiso)",
       security: [{ sessionCookie: [] }],
-      middleware: [write],
+      middleware: [read],
       request: {
         params: idParam,
         body: {
@@ -616,6 +802,7 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
       const { id } = c.req.valid("param");
       const body = c.req.valid("json");
       const player = await playerOr404(tenant, id);
+      await requireAssess(c, tenant, id);
       await data.playerProfile.setIndicators(tenant.scope, id, body, actorId(c));
       await data.playerProfile.recordEvent(tenant.scope, {
         playerId: id,
@@ -623,7 +810,7 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
         actorUserId: actorId(c),
       });
       await audit(c, tenant, "player.indicators_updated", playerDisplayName(player), body);
-      return c.json(await detail(tenant, player), 200);
+      return c.json(await detail(c, tenant, player), 200);
     },
   );
 
@@ -635,7 +822,7 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
       summary:
         "Guarda el plan de desarrollo individual: una línea por área, coordinación, estado y revisión",
       security: [{ sessionCookie: [] }],
-      middleware: [write],
+      middleware: [read],
       request: {
         params: idParam,
         body: {
@@ -654,6 +841,7 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
       const { id } = c.req.valid("param");
       const body = c.req.valid("json");
       const player = await playerOr404(tenant, id);
+      await requireAssess(c, tenant, id);
       await requireMember(tenant, body.coordinatorUserId);
       const plan = await data.playerProfile.setPlan(tenant.scope, id, body);
       await data.playerProfile.recordEvent(tenant.scope, {
@@ -665,7 +853,7 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
       await audit(c, tenant, "player.plan_updated", playerDisplayName(player), {
         status: plan.status,
       });
-      return c.json(await detail(tenant, player), 200);
+      return c.json(await detail(c, tenant, player), 200);
     },
   );
 
@@ -676,7 +864,7 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
       tags: ["Jugadores"],
       summary: "Añade una anotación al timeline del jugador",
       security: [{ sessionCookie: [] }],
-      middleware: [write],
+      middleware: [read],
       request: {
         params: idParam,
         body: {
@@ -691,6 +879,7 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
       const { id } = c.req.valid("param");
       const body = c.req.valid("json");
       const player = await playerOr404(tenant, id);
+      await requireAssess(c, tenant, id);
       await data.playerProfile.recordEvent(tenant.scope, {
         playerId: id,
         kind: "note",
@@ -699,7 +888,7 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
         actorUserId: actorId(c),
       });
       await audit(c, tenant, "player.note_added", playerDisplayName(player));
-      return c.json(await detail(tenant, player), 201);
+      return c.json(await detail(c, tenant, player), 201);
     },
   );
 
@@ -716,8 +905,7 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
     const actor = c.get("actor");
     if (!actor.permissions.has("org.players.read")) {
       if (!actor.permissions.has("org.family.read")) throw forbidden();
-      const guardians = await data.players.guardiansOf(tenant.scope, id);
-      if (!guardians.some((g) => g.userId === actorId(c))) throw forbidden();
+      if (!(await data.players.isGuardianOf(tenant.scope, actorId(c), id))) throw forbidden();
     }
     const photo = await data.playerProfile.readPhoto(tenant.scope, id);
     if (!photo) throw notFound("Este jugador no tiene foto.");
@@ -730,17 +918,22 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
     });
   });
 
+  /** La familia ve la ficha reducida tras cambiar la foto; el personal, la completa. */
+  async function photoResponse(c: Ctx, tenant: Tenant, player: PlayerRow) {
+    if (c.get("actor").permissions.has("org.players.read")) return detail(c, tenant, player);
+    return { player: playerDto(player, tenant.organization.slug) };
+  }
+
   app.openapi(
     createRoute({
       method: "put",
       path: "/api/org/players/{id}/photo",
       tags: ["Jugadores"],
-      summary: `Sube la foto del jugador (cuerpo binario, ${PLAYER_PHOTO_CONTENT_TYPES.join(", ")}, máximo ${PLAYER_PHOTO_MAX_BYTES} bytes)`,
+      summary: `Sube la foto del jugador (cuerpo binario, ${PLAYER_PHOTO_CONTENT_TYPES.join(", ")}, máximo ${PLAYER_PHOTO_MAX_BYTES} bytes). Quien escribe jugadores, su cuerpo técnico o su familia`,
       security: [{ sessionCookie: [] }],
-      middleware: [write],
       request: { params: idParam, body: { content: photoBody, required: true } },
       responses: {
-        200: json("Jugador", PlayerDetailResponseSchema),
+        200: json("Jugador", z.union([PlayerDetailResponseSchema, PlayerResponseSchema])),
         413: error("Demasiado grande"),
         415: error("Formato no admitido"),
         ...errors,
@@ -749,6 +942,7 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
     async (c) => {
       const tenant = scopeOf(c);
       const { id } = c.req.valid("param");
+      await requirePhotoWrite(c, tenant, id);
       const player = await playerOr404(tenant, id);
       const declared =
         (c.req.header("content-type") ?? "").split(";")[0]?.trim().toLowerCase() ?? "";
@@ -770,7 +964,7 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
         actorUserId: actorId(c),
       });
       await audit(c, tenant, "player.photo_updated", playerDisplayName(player));
-      return c.json(await detail(tenant, { ...player, photoBlobKey: key }), 200);
+      return c.json(await photoResponse(c, tenant, { ...player, photoBlobKey: key }), 200);
     },
   );
 
@@ -781,19 +975,22 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
       tags: ["Jugadores"],
       summary: "Quita la foto del jugador",
       security: [{ sessionCookie: [] }],
-      middleware: [write],
       request: { params: idParam },
-      responses: { 200: json("Jugador", PlayerDetailResponseSchema), ...errors },
+      responses: {
+        200: json("Jugador", z.union([PlayerDetailResponseSchema, PlayerResponseSchema])),
+        ...errors,
+      },
     }),
     async (c) => {
       const tenant = scopeOf(c);
       const { id } = c.req.valid("param");
+      await requirePhotoWrite(c, tenant, id);
       const player = await playerOr404(tenant, id);
       const removed = await data.playerProfile.removePhoto(tenant.scope, id, {
         cleanup: c.env?.context?.deploy?.context === "production",
       });
       if (removed) await audit(c, tenant, "player.photo_removed", playerDisplayName(player));
-      return c.json(await detail(tenant, { ...player, photoBlobKey: null }), 200);
+      return c.json(await photoResponse(c, tenant, { ...player, photoBlobKey: null }), 200);
     },
   );
 

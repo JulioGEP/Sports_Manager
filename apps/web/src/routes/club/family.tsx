@@ -1,10 +1,11 @@
 import { FamilyResponseSchema, playerDisplayName } from "@sportsmanager/shared";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router";
 import { apiFetch, errorKey } from "@/lib/api";
-import { useReadyClub } from "@/lib/club";
+import { clubPaths, useReadyClub } from "@/lib/club";
 import { useDates } from "@/lib/dates";
 import { useT } from "@/lib/intl";
-import { Alert, Avatar, Card, EmptyState, Icon, PageHeader, StatusChip } from "@/ui";
+import { Alert, Avatar, ButtonLink, Card, EmptyState, Icon, PageHeader, StatusChip } from "@/ui";
 
 /** Lo que ve una familia: sus jugadores, su equipo de esta temporada y quién lo entrena. */
 export function FamilyPage() {
@@ -15,6 +16,7 @@ export function FamilyPage() {
   const errors = useT("errors");
   const dates = useDates();
   const { slug } = useReadyClub();
+  const paths = clubPaths(slug);
   const family = useQuery({
     queryKey: ["org", slug, "family"],
     queryFn: () => apiFetch("/api/org/family", { schema: FamilyResponseSchema }),
@@ -45,16 +47,23 @@ export function FamilyPage() {
               title={
                 <span className="flex items-center gap-3">
                   <Avatar name={playerDisplayName(p)} src={p.photoUrl} />
-                  {playerDisplayName(p)}
+                  <Link to={paths.familyPlayer(p.id)} className="text-ink">
+                    {playerDisplayName(p)}
+                  </Link>
                 </span>
               }
               description={`${t("relationship", { relationship: rel(p.relationship).toLowerCase() })}${
                 age === null ? "" : ` · ${tt("age", { age })}`
               }`}
               actions={
-                p.status === "inactive" ? (
-                  <StatusChip kind="neutral">{t("inactive")}</StatusChip>
-                ) : null
+                <>
+                  {p.status === "inactive" ? (
+                    <StatusChip kind="neutral">{t("inactive")}</StatusChip>
+                  ) : null}
+                  <ButtonLink to={paths.familyPlayer(p.id)} variant="secondary" size="sm">
+                    {t("openProfile")}
+                  </ButtonLink>
+                </>
               }
               padded={false}
             >

@@ -28,7 +28,8 @@
     "clubNotFound": "This club does not exist or is not active.",
     "teams": "Teams",
     "players": "Players",
-    "family": "My family"
+    "family": "My family",
+    "challenges": "Challenge"
   },
   "auth": {
     "login": {
@@ -144,7 +145,123 @@
       "title": "Your family",
       "description": "The players linked to your account.",
       "open": "See my family",
-      "empty": "No player is linked to your account yet. Ask the club to link you."
+      "empty": "No player is linked to your account yet. Ask the club to link you.",
+      "challenge": "Challenge"
+    },
+    "operations": {
+      "eyebrow": "What needs doing today",
+      "title": "Club alerts",
+      "count": "{count, plural, =0 {All clear} one {# alert} other {# alerts}}",
+      "allClear": "All clear.",
+      "allClearHint": "Nothing is pending in the club.",
+      "go": "Go",
+      "pendingInvitations": "{count, plural, one {# pending invitation} other {# pending invitations}}",
+      "pendingInvitationsHint": "Resend or revoke the ones not accepted.",
+      "challengeSubmissionsPending": "{count, plural, one {# challenge entry to review} other {# challenge entries to review}}",
+      "challengeSubmissionsPendingHint": "Families are waiting for the club to validate.",
+      "objectivesOverdue": "{count, plural, one {# objective past its review date} other {# objectives past their review date}}",
+      "objectivesOverdueHint": "Review the progress and set the next date.",
+      "plansOverdue": "{count, plural, one {# development plan past its review date} other {# development plans past their review date}}",
+      "plansOverdueHint": "Update the IDP and its next review.",
+      "playersWithoutTeam": "{count, plural, one {# player with no team this season} other {# players with no team this season}}",
+      "playersWithoutTeamHint": "Add them to a roster.",
+      "playersWithoutObjective": "{count, plural, one {# player without an individual objective} other {# players without an individual objective}}",
+      "playersWithoutObjectiveHint": "Set a priority for each record.",
+      "playersWithoutFamily": "{count, plural, one {# player without family access} other {# players without family access}}",
+      "playersWithoutFamilyHint": "Invite their family from the record.",
+      "playersWithoutPhoto": "{count, plural, one {# record without a photo} other {# records without a photo}}",
+      "playersWithoutPhotoHint": "The photo helps identify each player."
+    },
+    "readiness": {
+      "eyebrow": "Data health",
+      "title": "Record readiness",
+      "description": "Seven checks per active player: photo, birth date, team, family, objective, indicators and IDP.",
+      "total": "{count, plural, one {# active player} other {# active players}}",
+      "progressLabel": "Records {percent} percent ready",
+      "withPhoto": "With photo",
+      "withBirthDate": "With birth date",
+      "withTeam": "With team",
+      "withFamily": "With family",
+      "withObjective": "With objective",
+      "withIndicators": "With indicators",
+      "withPlan": "With IDP"
+    },
+    "quickActions": {
+      "title": "Quick actions",
+      "description": "The most common club tasks, one tap away.",
+      "newPlayer": "Register a player",
+      "newPlayerHint": "Create the record and assign a team.",
+      "newTeam": "Create a team",
+      "newTeamHint": "In a section of the current season.",
+      "inviteFamily": "Invite a family",
+      "inviteFamilyHint": "From their player's record.",
+      "challenge": "Open the challenge",
+      "challengeHint": "Tasks, reviews and participation."
+    },
+    "activity": {
+      "title": "Latest activity",
+      "description": "What has happened in the club lately.",
+      "empty": "No activity yet.",
+      "system": "System"
+    },
+    "panel": {
+      "rated": "{dimension}: {rated} of {total} rated",
+      "players": "{total, plural, one {# player} other {# players}}",
+      "openChallenges": "Open the challenge",
+      "myTeams": "My teams",
+      "noTeamsTitle": "You are not on any team's staff yet",
+      "noTeamsBody": "Ask the club admin to add you to your team's staff.",
+      "allClear": "Nobody needs attention today.",
+      "noTeam": "No team",
+      "lastNote": "last note {date}",
+      "unrated": "Unrated",
+      "open": "Open",
+      "reasons": {
+        "lowScore": "low score",
+        "unrated": "unrated",
+        "noObjective": "no objective",
+        "objectiveOverdue": "objective review overdue",
+        "noPlan": "no IDP",
+        "planOverdue": "IDP review overdue",
+        "noPhysicalGoal": "no physical goal in the IDP",
+        "noEmotionalGoal": "no emotional goal in the IDP",
+        "noHeight": "no height",
+        "noFamily": "no family access",
+        "noTeam": "no team",
+        "noPhoto": "no photo"
+      },
+      "coach": {
+        "title": "My players",
+        "description": "What the records of your teams need."
+      },
+      "director": {
+        "title": "Club follow-up",
+        "description": "Overdue reviews, records without an objective and incomplete rosters."
+      },
+      "coordinator": {
+        "title": "Coordination",
+        "description": "Objectives, development plans and indicators that need a review."
+      },
+      "delegate": {
+        "title": "My teams",
+        "description": "Families without access and records without a photo in your teams."
+      },
+      "physio": {
+        "title": "Physical follow-up",
+        "description": "Players whose body score is below the threshold or unrated."
+      },
+      "fitness": {
+        "title": "Fitness",
+        "description": "Body, height and the physical goal of each player's IDP."
+      },
+      "psychologist": {
+        "title": "Wellbeing",
+        "description": "Players with low or unrated wellbeing, and IDPs without an emotional goal."
+      },
+      "scout": {
+        "title": "Observation",
+        "description": "Players without a sport rating and those below the threshold."
+      }
     }
   },
   "members": {
@@ -161,7 +278,8 @@
     "table": {
       "name": "Person",
       "roles": "Roles",
-      "since": "Since"
+      "since": "Since",
+      "teams": "Teams"
     },
     "roles": {
       "manage": "Roles",
@@ -172,8 +290,11 @@
       "hint": {
         "org_admin": "Manages members, invitations and settings.",
         "coach": "Will see their people and, in Phase 1, teams and players.",
-        "guardian": "Family: in Phase 1 they will see their children's information."
-      }
+        "guardian": "Family: in Phase 1 they will see their children's information.",
+        "staff": "Club staff with a position: director, coordinator, delegate, physio, fitness, psychologist or scout."
+      },
+      "position": "Position",
+      "positionSaved": "Position saved: {position}."
     },
     "inviteDrawer": {
       "title": "Invite someone",
@@ -183,13 +304,18 @@
       "roleHint": {
         "org_admin": "Manages members, invitations and settings.",
         "coach": "A coach of the club.",
-        "guardian": "A player's parent or guardian."
+        "guardian": "A player's parent or guardian.",
+        "staff": "Club staff who do not coach: they join with a position."
       },
       "language": "Email language",
       "submit": "Send invitation",
       "sent": "Invitation sent to {email}.",
       "failed": "Invitation created for {email}, but the email could not be sent. Resend it later.",
-      "linkHint": "Test environment without email delivery: share this link with {email}."
+      "linkHint": "Test environment without email delivery: share this link with {email}.",
+      "position": "Position",
+      "team": "Team",
+      "teamHint": "Optional. On accepting, they join that team's staff.",
+      "noTeam": "No team for now"
     },
     "invitations": {
       "email": "Email",
@@ -205,7 +331,8 @@
       "confirmRevokeTitle": "Revoke the invitation to {email}?",
       "confirmRevokeBody": "The link will stop working. You can invite again whenever you want.",
       "player": "Family of {name}"
-    }
+    },
+    "noTeams": "No team"
   },
   "settings": {
     "title": "Club settings",
@@ -403,7 +530,8 @@
   "roles": {
     "org_admin": "Club admin",
     "coach": "Coach",
-    "guardian": "Guardian"
+    "guardian": "Guardian",
+    "staff": "Club staff"
   },
   "locales": {
     "label": "Language",
@@ -488,6 +616,16 @@
       "indicators_updated": "Player indicators rated",
       "plan_updated": "Development plan saved",
       "note_added": "Entry added to player"
+    },
+    "challenge": {
+      "created": "Challenge created",
+      "updated": "Challenge edited",
+      "task_created": "Challenge task created",
+      "task_updated": "Challenge task edited",
+      "task_removed": "Challenge task removed",
+      "submission_created": "Challenge entry submitted",
+      "submission_removed": "Challenge entry withdrawn",
+      "submission_reviewed": "Challenge entry reviewed"
     }
   },
   "teams": {
@@ -663,8 +801,19 @@
       "team": "Team",
       "noTeam": "No team for now",
       "submit": "Register",
-      "created": "{name} registered."
-    }
+      "created": "{name} registered.",
+      "joinedOn": "Joined the club on",
+      "joinedOnHint": "Optional. If left empty, it counts from today."
+    },
+    "missingFilter": {
+      "label": "Missing",
+      "all": "All records",
+      "photo": "no photo",
+      "objective": "no objective",
+      "team": "no team",
+      "family": "no family"
+    },
+    "pendingCount": "{count, plural, one {# pending invitation} other {# pending invitations}}"
   },
   "playerStatus": {
     "active": "Active",
@@ -848,7 +997,8 @@
         "indicators_updated": "Indicators updated",
         "plan_updated": "Development plan {status, select, draft {in initial structure} active {in progress} shared {shared with the family} other {updated}}",
         "photo_updated": "Photo updated",
-        "note": "{text}"
+        "note": "{text}",
+        "challenge_closed": "Challenge {challenge} closed with {points} points"
       },
       "sheet": {
         "title": "Add an entry for {name}",
@@ -874,7 +1024,8 @@
     "quickActions": {
       "title": "Quick actions",
       "openTeam": "Open {team}",
-      "familyAccess": "Family access"
+      "familyAccess": "Family access",
+      "challenge": "Open the challenge"
     },
     "plan": {
       "eyebrow": "Individual development plan",
@@ -924,7 +1075,8 @@
     "coaches": "Staff",
     "noCoaches": "No staff assigned",
     "number": "Number {number}",
-    "inactive": "Inactive record"
+    "inactive": "Inactive record",
+    "openProfile": "View record"
   },
   "relationships": {
     "mother": "Mother",
@@ -941,6 +1093,258 @@
       "cercana": "A good club coordinator: warm, clear, explains why.",
       "profesional": "Data first, no frills.",
       "vestuario": "Energy and game slang. Never in sensitive moments."
+    }
+  },
+  "positions": {
+    "director": "Sporting director",
+    "coordinator": "Coordinator",
+    "delegate": "Team delegate",
+    "physio": "Physiotherapist",
+    "fitness": "Fitness coach",
+    "psychologist": "Psychologist",
+    "scout": "Scout",
+    "hint": {
+      "director": "Sees the whole club: structure, players, assessments and challenge. Does not manage members or settings.",
+      "coordinator": "Like the sporting director: structure, players, assessments and challenge.",
+      "delegate": "Views teams, players and the challenge. Changes nothing.",
+      "physio": "Rates the body of any player and leaves notes.",
+      "fitness": "Rates physical preparation and leaves notes.",
+      "psychologist": "Rates wellbeing and leaves notes.",
+      "scout": "Rates the sport dimension and leaves observation notes."
+    }
+  },
+  "familyPlayer": {
+    "back": "My family",
+    "team": {
+      "title": "Team",
+      "description": "This season's team and who coaches it."
+    },
+    "challenge": {
+      "eyebrow": "Current challenge",
+      "title": "Challenge",
+      "open": "View the challenge",
+      "target": "target {target}",
+      "progressLabel": "{points} of {target} challenge points",
+      "min": "Minimum {min}",
+      "pending": "{points} awaiting review",
+      "none": "There is no active challenge right now."
+    },
+    "objective": {
+      "empty": "The club has not set an objective yet."
+    },
+    "plan": {
+      "description": "Six areas of work. You see it when the club shares it with you.",
+      "notShared": "The club has not shared the development plan yet.",
+      "notSharedHint": "When it does, you will see it here with its six areas."
+    }
+  },
+  "challenges": {
+    "title": "Challenges",
+    "description": "Point challenges: tasks, family entries and club validation.",
+    "new": "New challenge",
+    "familiesNote": "Families log their players' activity and see only their points. Participation by player is for staff only.",
+    "empty": "No challenges yet.",
+    "emptyHint": "Create the first one with the sample catalogue and activate it when ready.",
+    "from": "from {date}",
+    "until": "until {date}",
+    "noDates": "No dates",
+    "table": {
+      "challenge": "Challenge",
+      "status": "Status",
+      "points": "Minimum / target",
+      "tasks": "Tasks",
+      "participants": "Participants",
+      "pending": "To review"
+    },
+    "status": {
+      "draft": "Draft",
+      "active": "Active",
+      "closed": "Closed"
+    },
+    "pendingCount": "{count, plural, one {# to review} other {# to review}}",
+    "noPending": "Nothing to review",
+    "areas": {
+      "training": "Training",
+      "technique": "Technique",
+      "habits": "Habits"
+    },
+    "kinds": {
+      "sessions": "Sessions",
+      "rating": "Rating"
+    },
+    "submissionStatus": {
+      "submitted": "To review",
+      "approved": "Approved",
+      "rejected": "Rejected"
+    },
+    "pointsPerUnit": "{points, plural, one {# pt per unit} other {# pts per unit}}",
+    "maxPoints": "cap {points}",
+    "sheet": {
+      "title": "New challenge",
+      "description": "A period with a catalogue of tasks. Families log, the club validates.",
+      "submit": "Create challenge",
+      "name": "Name",
+      "nameHint": "For example, Summer challenge 2027.",
+      "descriptionLabel": "Description",
+      "startsOn": "Starts",
+      "endsOn": "Ends",
+      "minPoints": "Minimum points",
+      "minPointsHint": "To count the challenge as completed.",
+      "targetPoints": "Target points",
+      "targetPointsHint": "To aim for.",
+      "season": "Season",
+      "noSeason": "No season",
+      "withDefaultTasks": "Start with the sample catalogue",
+      "withDefaultTasksHint": "Ten training, technique and habit tasks. Editable afterwards.",
+      "activate": "Activate now",
+      "activateHint": "Otherwise it stays a draft and families do not see it.",
+      "pointsOrder": "The target cannot be lower than the minimum.",
+      "created": "Challenge {name} created.",
+      "editTitle": "Edit {name}",
+      "saved": "Challenge saved."
+    }
+  },
+  "familyChallenge": {
+    "title": "Challenge",
+    "description": "Log your players' activity and follow their points. You only see yours.",
+    "noPlayers": "No player is linked to your account yet.",
+    "noPlayersHint": "Ask the club admin to link you from the player's record.",
+    "playerTabs": "Family players",
+    "noChallenge": "There is no active challenge right now.",
+    "noChallengeHint": "When the club activates one, you will see it here.",
+    "register": "Log activity",
+    "target": "target {target}",
+    "progressLabel": "{points} of {target} challenge points",
+    "min": "Minimum {min}",
+    "targetChip": "Target {target}",
+    "pending": "{points} awaiting review",
+    "submissions": "Entries",
+    "submissionsDescription": "What you have logged and what the club has validated.",
+    "noSubmissions": "No entries yet.",
+    "quantity": "{count, plural, one {# unit} other {# units}}",
+    "withdraw": "Withdraw",
+    "removed": "Entry withdrawn.",
+    "confirmWithdrawTitle": "Withdraw the {task} entry?",
+    "confirmWithdrawBody": "It disappears from the list. You can log it again whenever you want.",
+    "tasks": "Tasks",
+    "tasksDescription": "The challenge catalogue and its points.",
+    "sheet": {
+      "title": "Log activity for {name}",
+      "description": "Choose the task, how many times and, if you like, a note or a link.",
+      "submit": "Add {points} points",
+      "task": "Task",
+      "rating": "Rating",
+      "sessions": "Times",
+      "ratingHint": "From 1 to {max}: {points} points per point.",
+      "sessionsHint": "{points} points each time.",
+      "date": "Date",
+      "dateHint": "Today by default.",
+      "note": "Note or link",
+      "noteHint": "Optional: a video, a photo or a comment.",
+      "capHint": "This task is capped at {points} points for the whole challenge.",
+      "saved": "Activity logged. The club will validate it."
+    }
+  },
+  "challenge": {
+    "back": "Challenges",
+    "points": "Minimum {min} points · target {target}",
+    "edit": "Edit",
+    "activate": "Activate",
+    "close": "Close challenge",
+    "closed": "Challenge closed.",
+    "activated": "Challenge activated.",
+    "stats": {
+      "points": "Minimum / target",
+      "participants": "Participants",
+      "pending": "To review"
+    },
+    "tabs": {
+      "tasks": "Tasks",
+      "review": "Review",
+      "standings": "Participation"
+    },
+    "tasks": {
+      "title": "Task catalogue",
+      "description": "Each task has an area, a kind, points per unit and a cap for the whole challenge.",
+      "new": "New task",
+      "empty": "No tasks yet.",
+      "archived": "Archived",
+      "noMax": "No cap",
+      "edit": "Edit",
+      "remove": "Remove",
+      "removed": "Task {name} removed.",
+      "confirmRemoveTitle": "Remove the task {name}?",
+      "confirmRemoveBody": "If it already has entries, it is archived and they keep their points. Otherwise it is deleted.",
+      "table": {
+        "task": "Task",
+        "area": "Area",
+        "kind": "Kind",
+        "points": "Points",
+        "max": "Cap",
+        "submissions": "Entries"
+      },
+      "sheet": {
+        "title": "New task",
+        "editTitle": "Edit {name}",
+        "description": "Name, area, kind and points.",
+        "submit": "Create task",
+        "name": "Name",
+        "area": "Area",
+        "kind": "Kind",
+        "kindHint": {
+          "sessions": "Times are counted.",
+          "rating": "Rated from 1 to 5."
+        },
+        "pointsPerUnit": "Points per unit",
+        "maxPoints": "Points cap",
+        "maxPointsHint": "Optional. For the whole challenge.",
+        "saved": "Task saved.",
+        "created": "Task {name} created."
+      }
+    },
+    "confirmCloseTitle": "Close {name}?",
+    "confirmCloseBody": "It will accept no more entries or reviews and cannot be reopened. Every player with approved points gets an entry in their timeline.",
+    "review": {
+      "title": "Review",
+      "ownScope": "You only see entries from the players of your teams.",
+      "filter": "Status",
+      "all": "All",
+      "empty": "No entries with that status.",
+      "approve": "Approve",
+      "reject": "Reject",
+      "approved": "Entry for {name} approved: +{points}.",
+      "rejected": "Entry for {name} rejected.",
+      "quantity": "{count, plural, one {# unit} other {# units}}",
+      "by": "by {name}",
+      "table": {
+        "player": "Player",
+        "task": "Task",
+        "points": "Points",
+        "date": "Date",
+        "status": "Status"
+      },
+      "rejectSheet": {
+        "title": "Reject the entry for {name}",
+        "description": "{task}. The family will see the reason.",
+        "submit": "Reject",
+        "note": "Reason",
+        "noteHint": "Optional, in plain words."
+      }
+    },
+    "standings": {
+      "title": "Participation",
+      "ownScope": "You only see the players of your teams. Families never see this list.",
+      "staffOnly": "Staff only. Families see only their own players' points.",
+      "empty": "Nobody has logged activity yet.",
+      "reachedTarget": "Target reached",
+      "reachedMin": "Minimum reached",
+      "inProgress": "In progress",
+      "table": {
+        "player": "Player",
+        "approved": "Approved",
+        "pending": "To review",
+        "goal": "Goal"
+      }
     }
   }
 }

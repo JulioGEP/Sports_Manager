@@ -98,7 +98,8 @@ export type DevelopmentPlanUpdate = z.infer<typeof DevelopmentPlanUpdateSchema>;
 
 /**
  * Registros del jugador. Los genera la API al pasar algo (plantilla, estado, objetivo, PDI,
- * foto) y el personal puede añadir anotaciones. `joined` no se guarda: sale de la fecha de alta.
+ * foto, cierre de un reto) y el personal puede añadir anotaciones. `joined` no se guarda: sale
+ * de la fecha de alta (`joined_on`, o la creación de la ficha si no se indicó).
  */
 export const PLAYER_EVENT_KINDS = [
   "joined",
@@ -110,6 +111,8 @@ export const PLAYER_EVENT_KINDS = [
   "plan_updated",
   "photo_updated",
   "note",
+  /** Reto cerrado con los puntos aprobados del jugador (Bloque 13). */
+  "challenge_closed",
 ] as const;
 export type PlayerEventKind = (typeof PLAYER_EVENT_KINDS)[number];
 

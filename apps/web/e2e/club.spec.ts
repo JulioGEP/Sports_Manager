@@ -42,7 +42,16 @@ test.describe("espacio del club", () => {
   });
 
   test("ajustes: general, marca y logo", async ({ page }, info) => {
-    await page.getByRole("link", { name: "Ajustes" }).first().click();
+    // En móvil la barra inferior admite cinco destinos: los ajustes viven en el menú de persona.
+    // La navegación se pinta cuando llega la sesión: se espera a un destino presente en ambas barras.
+    await expect(page.getByRole("link", { name: "Miembros" }).first()).toBeVisible();
+    const settingsLink = page.getByRole("link", { name: "Ajustes" }).first();
+    if (await settingsLink.isVisible()) {
+      await settingsLink.click();
+    } else {
+      await page.getByRole("button", { name: /menú de usuario|user menu/i }).click();
+      await page.getByRole("menuitem", { name: "Ajustes" }).click();
+    }
     await expect(page.getByRole("heading", { name: "Ajustes del club" })).toBeVisible();
     await expect(page.getByLabel("Nombre del club")).toHaveValue("Club de demostración");
     await shot(page, "20-ajustes-general", info.project.name);

@@ -1,4 +1,4 @@
-import type { Locale, Permission, RoleCode } from "@sportsmanager/shared";
+import type { Locale, Permission, RoleCode, StaffPosition } from "@sportsmanager/shared";
 import type { OrganizationRow, OrgScope } from "../data/index.ts";
 
 /** Contexto que Netlify pasa a la función. En tests puede no existir. */
@@ -25,7 +25,14 @@ export interface SessionUser {
 
 /** Resultado de la etapa 3: qué puede hacer dentro del club del host. */
 export type Actor =
-  | { kind: "member"; userId: string; roles: RoleCode[]; permissions: ReadonlySet<Permission> }
+  | {
+      kind: "member";
+      userId: string;
+      roles: RoleCode[];
+      /** Cargo del personal (Bloque 13), si tiene el rol `staff`. */
+      position: StaffPosition | null;
+      permissions: ReadonlySet<Permission>;
+    }
   | {
       kind: "platform_support";
       userId: string;

@@ -29,6 +29,8 @@ describe("estructura del club y familias", () => {
   let clubB: { id: string; slug: string };
   let adminA: Seeded;
   let coachA: Seeded;
+  /** Entrenadora sin equipo: no es cuerpo técnico de nadie. */
+  let coachFreeA: Seeded;
   let adminB: Seeded;
   let platform: Seeded;
   const cookies = new Map<string, string>();
@@ -105,6 +107,11 @@ describe("estructura del club y familias", () => {
       email: "caro@club-a.test",
       password: PASSWORD,
     });
+    coachFreeA = await seeder.user({
+      name: "Lola Libre",
+      email: "lola@club-a.test",
+      password: PASSWORD,
+    });
     adminB = await seeder.user({
       name: "Bruno Admin",
       email: "bruno@club-b.test",
@@ -117,9 +124,10 @@ describe("estructura del club y familias", () => {
     });
     await seeder.membership(clubA.id, adminA.id, "org_admin");
     await seeder.membership(clubA.id, coachA.id, "coach");
+    await seeder.membership(clubA.id, coachFreeA.id, "coach");
     await seeder.membership(clubB.id, adminB.id, "org_admin");
     await seeder.platformAdmin(platform.id);
-    for (const u of [adminA, coachA, adminB, platform])
+    for (const u of [adminA, coachA, coachFreeA, adminB, platform])
       cookies.set(u.email, await signIn(u.email, A));
   });
 
@@ -472,7 +480,8 @@ describe("estructura del club y familias", () => {
       (await request("PATCH", base, A, { cookie: as(adminA), body: { heightCm: 300 } })).status,
     ).toBe(400);
 
-    // Objetivo: el responsable tiene que ser miembro del club; la entrenadora no escribe.
+    // Objetivo: el responsable tiene que ser miembro del club. La entrenadora del equipo valora
+    // (Bloque 13, ADR 0030); una entrenadora sin ese equipo, no.
     expect(
       (
         await request("PUT", `${base}/objective`, A, {
@@ -484,11 +493,25 @@ describe("estructura del club y familias", () => {
     expect(
       (
         await request("PUT", `${base}/objective`, A, {
-          cookie: as(coachA),
+          cookie: as(coachFreeA),
           body: { title: "Conducción", progress: 45 },
         })
       ).status,
     ).toBe(403);
+    const byCoach = await json<Detail & { access: { assess: boolean; photo: boolean } }>(
+      await request("PUT", `${base}/objective`, A, {
+        cookie: as(coachA),
+        body: { title: "Conducción", progress: 10 },
+      }),
+      200,
+    );
+    expect(byCoach.objective?.title).toBe("Conducción");
+    expect(byCoach.access).toEqual({ assess: true, photo: true });
+    const seenByFree = await json<{ access: { assess: boolean; photo: boolean } }>(
+      await request("GET", base, A, { cookie: as(coachFreeA) }),
+      200,
+    );
+    expect(seenByFree.access).toEqual({ assess: false, photo: false });
     const withObjective = await json<Detail>(
       await request("PUT", `${base}/objective`, A, {
         cookie: as(adminA),
@@ -594,11 +617,12 @@ describe("estructura del club y familias", () => {
       actorName: "Ana Admin",
     });
 
-    // Foto: la sube el personal; la ven el personal y la propia familia; otro club, no.
+    // Foto: la suben quien escribe jugadores y el cuerpo técnico del jugador (Bloque 13); la ven
+    // el personal y la propia familia; otro club, no.
     expect(
       (
         await request("PUT", `${base}/photo`, A, {
-          cookie: as(coachA),
+          cookie: as(coachFreeA),
           raw: PNG,
           contentType: "image/png",
         })

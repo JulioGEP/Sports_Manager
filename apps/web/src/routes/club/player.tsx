@@ -149,6 +149,7 @@ export function PlayerPage() {
   const permissions = org.actor.permissions;
   const canWrite = permissions.includes("org.players.write");
   const canInvite = permissions.includes("org.members.invite");
+  const canChallenges = permissions.includes("org.challenges.read");
 
   const detail = useQuery({
     queryKey: ["org", slug, "player", id],
@@ -183,6 +184,9 @@ export function PlayerPage() {
   const { player, teams, guardians, pendingInvitations, objective, indicators, developmentPlan } =
     detail.data;
   const timeline = detail.data.timeline;
+  /** Valorar y cambiar la foto: lo decide la API (permiso de club o cuerpo técnico del jugador). */
+  const canAssess = detail.data.access.assess;
+  const canPhoto = detail.data.access.photo;
   const name = playerDisplayName(player);
   const age = dates.age(player.birthDate);
   const current = teams.find((x) => x.seasonIsCurrent) ?? null;
@@ -276,21 +280,25 @@ export function PlayerPage() {
 
   /** Lo que la ficha necesita hoy, deducido de lo que falta. Sin datos de más, sin red. */
   const pending: { key: string; onClick?: () => void; to?: string; external?: boolean }[] = [];
-  if (!player.photoUrl) pending.push({ key: "photo", onClick: () => photoInput.current?.click() });
-  if (!player.birthDate) pending.push({ key: "birthDate", onClick: () => setSheet("edit") });
+  // Cada acción lleva su atajo solo si quien mira puede hacerla; si no, queda como aviso.
+  const photoAction = canPhoto ? { onClick: () => photoInput.current?.click() } : {};
+  const editAction = canWrite ? { onClick: () => setSheet("edit") } : {};
+  const assessAction = (sheet: SheetName) => (canAssess ? { onClick: () => setSheet(sheet) } : {});
+  if (!player.photoUrl) pending.push({ key: "photo", ...photoAction });
+  if (!player.birthDate) pending.push({ key: "birthDate", ...editAction });
   if (player.heightCm === null || player.dominantFoot === null)
-    pending.push({ key: "sportsData", onClick: () => setSheet("edit") });
+    pending.push({ key: "sportsData", ...editAction });
   if (guardians.length === 0 && !pendingInvitations.some((i) => i.state === "pending"))
     pending.push({ key: "family", to: `#${FAMILY_ANCHOR}`, external: true });
   if (!current) pending.push({ key: "team", to: paths.teams });
-  if (!objective) pending.push({ key: "objective", onClick: () => setSheet("objective") });
+  if (!objective) pending.push({ key: "objective", ...assessAction("objective") });
   else if (objective.reviewOn && objective.reviewOn < today)
-    pending.push({ key: "objectiveReview", onClick: () => setSheet("objective") });
+    pending.push({ key: "objectiveReview", ...assessAction("objective") });
   if (indicators.length < PLAYER_INDICATOR_DIMENSIONS.length)
-    pending.push({ key: "indicators", onClick: () => setSheet("indicators") });
-  if (!developmentPlan) pending.push({ key: "plan", onClick: () => setSheet("plan") });
+    pending.push({ key: "indicators", ...assessAction("indicators") });
+  if (!developmentPlan) pending.push({ key: "plan", ...assessAction("plan") });
   else if (developmentPlan.nextReviewOn && developmentPlan.nextReviewOn < today)
-    pending.push({ key: "planReview", onClick: () => setSheet("plan") });
+    pending.push({ key: "planReview", ...assessAction("plan") });
 
   const indicatorBy = new Map(indicators.map((i) => [i.dimension, i] as const));
   const eventText = (e: PlayerEvent) =>
@@ -327,7 +335,7 @@ export function PlayerPage() {
               src={player.photoUrl}
               alt={player.photoUrl ? t("photo.alt", { name }) : undefined}
             />
-            {canWrite ? (
+            {canPhoto ? (
               <>
                 <input
                   ref={photoInput}
@@ -369,7 +377,11 @@ export function PlayerPage() {
             <p className="text-body text-muted">{headline}</p>
             <div className="flex flex-wrap gap-2 pt-1">
               {age !== null ? <InfoChip>{t("chips.age", { age })}</InfoChip> : null}
-              <InfoChip>{t("chips.yearsAtClub", { count: yearsSince(player.createdAt) })}</InfoChip>
+              <InfoChip>
+                {t("chips.yearsAtClub", {
+                  count: yearsSince(player.joinedOn ?? player.createdAt),
+                })}
+              </InfoChip>
               {player.dominantFoot ? (
                 <InfoChip>{t(`dominantFoot.${player.dominantFoot}`)}</InfoChip>
               ) : null}
@@ -403,7 +415,7 @@ export function PlayerPage() {
         title={t("indicators.title")}
         description={t("indicators.description")}
         actions={
-          canWrite ? (
+          canAssess ? (
             <Button variant="secondary" size="sm" onClick={() => setSheet("indicators")}>
               {t("indicators.rate")}
             </Button>
@@ -458,7 +470,7 @@ export function PlayerPage() {
             </span>
           }
           actions={
-            canWrite ? (
+            canAssess ? (
               <>
                 {objective ? (
                   <Button variant="tertiary" size="sm" onClick={() => setRemovingObjective(true)}>
@@ -504,7 +516,7 @@ export function PlayerPage() {
               title={t("objective.empty")}
               description={t("objective.emptyHint")}
               action={
-                canWrite ? (
+                canAssess ? (
                   <Button variant="secondary" size="sm" onClick={() => setSheet("objective")}>
                     {t("objective.define")}
                   </Button>
@@ -553,7 +565,7 @@ export function PlayerPage() {
                     >
                       {t("actions.go")}
                     </ButtonLink>
-                  ) : canWrite && item.onClick ? (
+                  ) : item.onClick ? (
                     <Button
                       variant="tertiary"
                       size="sm"
@@ -584,7 +596,7 @@ export function PlayerPage() {
               <StatusChip kind="neutral">
                 {t("timeline.count", { count: timeline.length })}
               </StatusChip>
-              {canWrite ? (
+              {canAssess ? (
                 <Button variant="secondary" size="sm" onClick={() => setSheet("note")}>
                   {t("timeline.add")}
                 </Button>
@@ -673,6 +685,11 @@ export function PlayerPage() {
               <ButtonLink to={`#${FAMILY_ANCHOR}`} external variant="secondary">
                 {t("quickActions.familyAccess")}
               </ButtonLink>
+              {canChallenges ? (
+                <ButtonLink to={paths.challenges} variant="secondary">
+                  {t("quickActions.challenge")}
+                </ButtonLink>
+              ) : null}
             </div>
           </Card>
         </div>
@@ -694,7 +711,7 @@ export function PlayerPage() {
                 {t(`planStatus.${developmentPlan.status}`)}
               </StatusChip>
             ) : null}
-            {canWrite ? (
+            {canAssess ? (
               <Button variant="secondary" size="sm" onClick={() => setSheet("plan")}>
                 {developmentPlan ? t("plan.edit") : t("plan.create")}
               </Button>
@@ -740,7 +757,7 @@ export function PlayerPage() {
             title={t("plan.empty")}
             description={t("plan.emptyHint")}
             action={
-              canWrite ? (
+              canAssess ? (
                 <Button variant="secondary" size="sm" onClick={() => setSheet("plan")}>
                   {t("plan.create")}
                 </Button>
@@ -756,7 +773,10 @@ export function PlayerPage() {
             items={[
               { term: t("born"), detail: player.birthDate ? dates.day(player.birthDate) : "–" },
               { term: t("age"), detail: age === null ? "–" : String(age) },
-              { term: t("since"), detail: dates.day(player.createdAt.slice(0, 10)) },
+              {
+                term: t("since"),
+                detail: dates.day(player.joinedOn ?? player.createdAt.slice(0, 10)),
+              },
             ]}
           />
         </Card>
@@ -1007,6 +1027,7 @@ function EditPlayerSheet({
   const [firstName, setFirstName] = useState(player.firstName);
   const [lastName, setLastName] = useState(player.lastName);
   const [birthDate, setBirthDate] = useState(player.birthDate ?? "");
+  const [joinedOn, setJoinedOn] = useState(player.joinedOn ?? "");
   const [dominantFoot, setDominantFoot] = useState<DominantFoot | "">(player.dominantFoot ?? "");
   const [heightCm, setHeightCm] = useState(player.heightCm === null ? "" : String(player.heightCm));
   const [busy, setBusy] = useState(false);
@@ -1021,6 +1042,7 @@ function EditPlayerSheet({
           firstName,
           lastName,
           birthDate: birthDate || null,
+          joinedOn: joinedOn || null,
           dominantFoot: dominantFoot || null,
           heightCm: heightCm.trim() === "" ? null : Number(heightCm),
         },
@@ -1078,16 +1100,28 @@ function EditPlayerSheet({
             )}
           </Field>
         </div>
-        <Field label={tp("birthDate")} hint={tp("birthDateHint")}>
-          {(id) => (
-            <Input
-              id={id}
-              type="date"
-              value={birthDate}
-              onChange={(e) => setBirthDate(e.target.value)}
-            />
-          )}
-        </Field>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label={tp("birthDate")} hint={tp("birthDateHint")}>
+            {(id) => (
+              <Input
+                id={id}
+                type="date"
+                value={birthDate}
+                onChange={(e) => setBirthDate(e.target.value)}
+              />
+            )}
+          </Field>
+          <Field label={tp("joinedOn")} hint={tp("joinedOnHint")}>
+            {(id) => (
+              <Input
+                id={id}
+                type="date"
+                value={joinedOn}
+                onChange={(e) => setJoinedOn(e.target.value)}
+              />
+            )}
+          </Field>
+        </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label={t("foot")}>
             {(id) => (

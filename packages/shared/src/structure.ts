@@ -98,6 +98,8 @@ export const PlayerCreateSchema = z.object({
   firstName: ShortName,
   lastName: z.string().trim().min(1).max(80),
   birthDate: DateOnlySchema.nullable().optional(),
+  /** Fecha de alta en el club (Bloque 13). Sin ella, cuenta desde que se creó la ficha. */
+  joinedOn: DateOnlySchema.nullable().optional(),
   /** Si viene, el jugador entra en la plantilla de ese equipo al crearse. */
   teamId: z.string().uuid().optional(),
 });
@@ -120,6 +122,7 @@ export const PlayerUpdateSchema = z.object({
   firstName: ShortName.optional(),
   lastName: z.string().trim().min(1).max(80).optional(),
   birthDate: DateOnlySchema.nullable().optional(),
+  joinedOn: DateOnlySchema.nullable().optional(),
   status: z.enum(PLAYER_STATUSES).optional(),
   dominantFoot: DominantFootSchema.nullable().optional(),
   heightCm: PlayerHeightSchema.nullable().optional(),

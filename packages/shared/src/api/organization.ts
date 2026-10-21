@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { LocaleSchema, LocalizedTextSchema } from "../locales.ts";
 import { ORGANIZATION_STATUSES } from "../organizations.ts";
-import { PERMISSIONS, ROLE_CODES, RoleCodeSchema } from "../roles.ts";
+import { PERMISSIONS, ROLE_CODES, RoleCodeSchema, StaffPositionSchema } from "../roles.ts";
 import { ClubVoiceSchema } from "../structure.ts";
 
 /** Quién hace la petición dentro de un club, tal como lo resolvió la API. */
@@ -9,6 +9,8 @@ export const ActorSchema = z.discriminatedUnion("kind", [
   z.object({
     kind: z.literal("member"),
     roles: z.array(RoleCodeSchema),
+    /** Cargo del personal (Bloque 13), si tiene el rol `staff`. */
+    position: StaffPositionSchema.nullable(),
     permissions: z.array(z.enum(PERMISSIONS)),
   }),
   z.object({
@@ -64,16 +66,30 @@ export const MemberSchema = z.object({
   name: z.string(),
   email: z.string(),
   roles: z.array(RoleCodeSchema),
+  /** Cargo del personal (Bloque 13), si tiene el rol `staff`. */
+  position: StaffPositionSchema.nullable(),
+  /** Equipos de la temporada actual en los que está como cuerpo técnico. */
+  teams: z.array(z.object({ teamId: z.string(), teamName: z.string() })),
   memberSince: z.string(),
 });
 export const MembersResponseSchema = z.object({ members: z.array(MemberSchema) });
 export type MembersResponse = z.infer<typeof MembersResponseSchema>;
 
-export const AssignRoleBodySchema = z.object({ roleCode: RoleCodeSchema });
+export const AssignRoleBodySchema = z
+  .object({
+    roleCode: RoleCodeSchema,
+    /** Con el rol `staff`: el cargo. Si ya tenía el rol, solo cambia el cargo. */
+    position: StaffPositionSchema.nullable().optional(),
+  })
+  .refine((v) => !v.position || v.roleCode === "staff", {
+    message: "El cargo solo va con el rol de personal del club.",
+    path: ["position"],
+  });
 export const AssignRoleResponseSchema = z.object({
   userId: z.string(),
   roleCode: RoleCodeSchema,
   roles: z.array(RoleCodeSchema),
+  position: StaffPositionSchema.nullable(),
 });
 
 /** Respuesta de `PATCH /api/org`: la vista completa del club ya actualizada. */
