@@ -31,7 +31,7 @@ import {
   type MatchRecord,
   type MatchSquadRecord,
 } from "../data/index.ts";
-import { requireActor, requirePermission } from "../http/actor.ts";
+import { accessScopeOf, requireActor, requirePermission } from "../http/actor.ts";
 import type { Actor, AppEnv } from "../http/context.ts";
 import { badRequest, conflict, forbidden, notFound } from "../http/errors.ts";
 import { requireSession } from "../http/session.ts";
@@ -125,6 +125,30 @@ export function createMatchRoutes(config: ApiConfig, data: DataLayer) {
       details,
     });
 
+  /**
+   * Ámbito de quien pregunta (ADR 0033): fuera de él, una sección, un equipo o un jugador no
+   * existen. La familia no lleva ámbito: ve a los suyos por el vínculo.
+   */
+  type RouteCtx = Parameters<typeof accessScopeOf>[1];
+  async function restrictedOf(c: RouteCtx) {
+    const access = await accessScopeOf(data, c);
+    return access.kind === "restricted" ? access : null;
+  }
+  async function requireSectionVisible(c: RouteCtx, sectionId: string) {
+    const restricted = await restrictedOf(c);
+    if (restricted && !restricted.sectionIds.includes(sectionId))
+      throw notFound("Esa sección no existe.");
+  }
+  async function requireTeamVisible(c: RouteCtx, teamId: string) {
+    const restricted = await restrictedOf(c);
+    if (restricted && !restricted.teamIds.includes(teamId)) throw notFound("Ese equipo no existe.");
+  }
+  async function requirePlayerVisible(c: RouteCtx, tenant: Tenant, playerId: string) {
+    const access = await accessScopeOf(data, c);
+    if (!(await data.access.isPlayerVisible(tenant.scope, access, playerId)))
+      throw notFound("Ese jugador no existe.");
+  }
+
   /** Registrar en un equipo: en cualquiera con `write`, en los propios con `write_own`. */
   async function canWrite(c: Ctx, tenant: Tenant, teamId: string): Promise<boolean> {
     const actor = c.get("actor");
@@ -183,9 +207,12 @@ export function createMatchRoutes(config: ApiConfig, data: DataLayer) {
   });
   const eventDto = (e: MatchEventRecord) => ({ ...e, createdAt: e.createdAt.toISOString() });
 
-  async function matchOr404(tenant: Tenant, id: string): Promise<MatchRecord> {
+  async function matchOr404(c: RouteCtx, tenant: Tenant, id: string): Promise<MatchRecord> {
     const match = await data.matches.byId(tenant.scope, id);
     if (!match) throw notFound("Ese partido no existe.");
+    const restricted = await restrictedOf(c);
+    if (restricted && !restricted.teamIds.includes(match.team.id))
+      throw notFound("Ese partido no existe.");
     return match;
   }
 
@@ -283,6 +310,7 @@ export function createMatchRoutes(config: ApiConfig, data: DataLayer) {
     async (c) => {
       const tenant = scopeOf(c);
       const { id } = c.req.valid("param");
+      await requireSectionVisible(c, id);
       return c.json(await configResponse(c, tenant, id), 200);
     },
   );
@@ -308,6 +336,7 @@ export function createMatchRoutes(config: ApiConfig, data: DataLayer) {
       const tenant = scopeOf(c);
       const { id } = c.req.valid("param");
       const body = c.req.valid("json");
+      await requireSectionVisible(c, id);
       if (body.resetToSport) {
         if (!(await data.matches.resetToSport(tenant.scope, id, localeOf(c, tenant))))
           throw notFound("Esa sección no existe.");
@@ -346,6 +375,7 @@ export function createMatchRoutes(config: ApiConfig, data: DataLayer) {
       const tenant = scopeOf(c);
       const { id } = c.req.valid("param");
       const body = c.req.valid("json");
+      await requireSectionVisible(c, id);
       const result = await data.matches.createType(tenant.scope, id, body);
       if (result === "not_found") throw notFound("Esa sección no existe.");
       if (result === "code_taken") throw conflict("Ya hay una acción con esa clave en la sección.");
@@ -377,6 +407,7 @@ export function createMatchRoutes(config: ApiConfig, data: DataLayer) {
       const tenant = scopeOf(c);
       const { id, actionId } = c.req.valid("param");
       const body = c.req.valid("json");
+      await requireSectionVisible(c, id);
       const updated = await data.matches.updateType(tenant.scope, id, actionId, body);
       if (!updated) throw notFound("Esa acción no existe.");
       await audit(c, tenant, "match_action.updated", updated.name, body);
@@ -398,6 +429,7 @@ export function createMatchRoutes(config: ApiConfig, data: DataLayer) {
     async (c) => {
       const tenant = scopeOf(c);
       const { id, actionId } = c.req.valid("param");
+      await requireSectionVisible(c, id);
       const outcome = await data.matches.removeType(tenant.scope, id, actionId);
       if (outcome === "not_found") throw notFound("Esa acción no existe.");
       await audit(c, tenant, "match_action.removed", actionId, { outcome });
@@ -424,6 +456,7 @@ export function createMatchRoutes(config: ApiConfig, data: DataLayer) {
       const { id } = c.req.valid("param");
       const team = await data.teams.byId(tenant.scope, id);
       if (!team) throw notFound("Ese equipo no existe.");
+      await requireTeamVisible(c, id);
       const [matches, upcoming, write] = await Promise.all([
         data.matches.listForTeam(tenant.scope, id),
         data.matches.upcomingEventsOf(tenant.scope, id, new Date()),
@@ -463,6 +496,7 @@ export function createMatchRoutes(config: ApiConfig, data: DataLayer) {
       const tenant = scopeOf(c);
       const { id } = c.req.valid("param");
       const body = c.req.valid("json");
+      await requireTeamVisible(c, id);
       await requireWrite(c, tenant, id);
       const result = await data.matches.create(
         tenant.scope,
@@ -497,6 +531,7 @@ export function createMatchRoutes(config: ApiConfig, data: DataLayer) {
       const { id } = c.req.valid("param");
       const team = await data.teams.byId(tenant.scope, id);
       if (!team) throw notFound("Ese equipo no existe.");
+      await requireTeamVisible(c, id);
       const [history, actionTypes] = await Promise.all([
         data.matches.historyOf(tenant.scope, id),
         data.matches.listTypes(tenant.scope, team.section.id),
@@ -557,7 +592,7 @@ export function createMatchRoutes(config: ApiConfig, data: DataLayer) {
     async (c) => {
       const tenant = scopeOf(c);
       const { id } = c.req.valid("param");
-      const match = await matchOr404(tenant, id);
+      const match = await matchOr404(c, tenant, id);
       return c.json(await detailResponse(c, tenant, match), 200);
     },
   );
@@ -585,7 +620,7 @@ export function createMatchRoutes(config: ApiConfig, data: DataLayer) {
       const tenant = scopeOf(c);
       const { id } = c.req.valid("param");
       const body = c.req.valid("json");
-      const before = await matchOr404(tenant, id);
+      const before = await matchOr404(c, tenant, id);
       await requireWrite(c, tenant, before.team.id);
       const result = await data.matches.update(tenant.scope, id, body);
       if (result === "not_found") throw notFound("Ese partido no existe.");
@@ -617,7 +652,7 @@ export function createMatchRoutes(config: ApiConfig, data: DataLayer) {
     async (c) => {
       const tenant = scopeOf(c);
       const { id } = c.req.valid("param");
-      const match = await matchOr404(tenant, id);
+      const match = await matchOr404(c, tenant, id);
       await requireWrite(c, tenant, match.team.id);
       await data.matches.remove(tenant.scope, id);
       await audit(c, tenant, "match.removed", `${match.team.name} · ${match.opponent}`);
@@ -647,7 +682,7 @@ export function createMatchRoutes(config: ApiConfig, data: DataLayer) {
       const tenant = scopeOf(c);
       const { id } = c.req.valid("param");
       const body = c.req.valid("json");
-      const match = await matchOr404(tenant, id);
+      const match = await matchOr404(c, tenant, id);
       await requireWrite(c, tenant, match.team.id);
       const squad = await data.matches.setSquad(tenant.scope, id, body.players);
       if (squad === "unknown_player") throw badRequest("Algún jugador no es de este club.");
@@ -691,7 +726,7 @@ export function createMatchRoutes(config: ApiConfig, data: DataLayer) {
       const tenant = scopeOf(c);
       const { id } = c.req.valid("param");
       const body = c.req.valid("json");
-      const match = await matchOr404(tenant, id);
+      const match = await matchOr404(c, tenant, id);
       await requireWrite(c, tenant, match.team.id);
       if (match.status === "finished")
         throw conflict("El partido está acabado: reábrelo para registrar.");
@@ -723,7 +758,7 @@ export function createMatchRoutes(config: ApiConfig, data: DataLayer) {
     async (c) => {
       const tenant = scopeOf(c);
       const { id, eventId } = c.req.valid("param");
-      const match = await matchOr404(tenant, id);
+      const match = await matchOr404(c, tenant, id);
       await requireWrite(c, tenant, match.team.id);
       if (!(await data.matches.removeEvent(tenant.scope, id, eventId)))
         throw notFound("Ese evento no existe.");
@@ -755,6 +790,7 @@ export function createMatchRoutes(config: ApiConfig, data: DataLayer) {
       const tenant = scopeOf(c);
       const { id } = c.req.valid("param");
       if (!c.get("actor").permissions.has("org.players.read")) throw forbidden();
+      await requirePlayerVisible(c, tenant, id);
       return c.json(await playerMatches(tenant, id), 200);
     },
   );

@@ -292,12 +292,7 @@ function StatsView({
   return (
     <div className="flex flex-col gap-5">
       <div>
-        <ButtonLink
-          to={back}
-          variant="tertiary"
-          size="sm"
-          icon={<Icon.ArrowLeft size={16} aria-hidden="true" />}
-        >
+        <ButtonLink to={back} variant="tertiary" size="sm" action="back">
           {t("back", { team: match.team.name })}
         </ButtonLink>
       </div>
@@ -320,11 +315,7 @@ function StatsView({
         actions={
           <>
             {match.status !== "finished" && access.write ? (
-              <ButtonLink
-                to={live}
-                variant="secondary"
-                icon={<Icon.Play size={18} aria-hidden="true" />}
-              >
+              <ButtonLink to={live} variant="secondary" action="back">
                 {t("backToLive")}
               </ButtonLink>
             ) : null}

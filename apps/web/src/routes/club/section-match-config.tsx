@@ -142,12 +142,7 @@ export function SectionMatchConfigPage() {
   return (
     <div className="flex flex-col gap-5">
       <div>
-        <ButtonLink
-          to={paths.section(id)}
-          variant="tertiary"
-          size="sm"
-          icon={<Icon.ArrowLeft size={16} aria-hidden="true" />}
-        >
+        <ButtonLink to={paths.section(id)} variant="tertiary" size="sm" action="back">
           {t("back", { section: section.name })}
         </ButtonLink>
       </div>
@@ -157,11 +152,7 @@ export function SectionMatchConfigPage() {
         description={t("description")}
         actions={
           canWrite ? (
-            <Button
-              variant="secondary"
-              icon={<Icon.ArrowCounterClockwise size={18} aria-hidden="true" />}
-              onClick={() => setResetting(true)}
-            >
+            <Button action="restore" variant="secondary" onClick={() => setResetting(true)}>
               {t("reset")}
             </Button>
           ) : null
@@ -182,11 +173,7 @@ export function SectionMatchConfigPage() {
         padded={false}
         actions={
           canWrite ? (
-            <Button
-              size="sm"
-              icon={<Icon.Plus size={18} aria-hidden="true" />}
-              onClick={() => setActionSheet("new")}
-            >
+            <Button action="add" size="sm" onClick={() => setActionSheet("new")}>
               {t("actions.new")}
             </Button>
           ) : null
@@ -246,10 +233,20 @@ export function SectionMatchConfigPage() {
             canWrite
               ? (a) => (
                   <>
-                    <Button variant="secondary" size="sm" onClick={() => setActionSheet(a)}>
+                    <Button
+                      action="edit"
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => setActionSheet(a)}
+                    >
                       {c("edit")}
                     </Button>
-                    <Button variant="danger" size="sm" onClick={() => setRemoving(a)}>
+                    <Button
+                      action="delete"
+                      variant="danger"
+                      size="sm"
+                      onClick={() => setRemoving(a)}
+                    >
                       {c("remove")}
                     </Button>
                   </>
@@ -302,6 +299,7 @@ export function SectionMatchConfigPage() {
         title={t("actions.confirmRemoveTitle", { name: removing?.name ?? "" })}
         body={t("actions.confirmRemoveBody")}
         confirmLabel={c("remove")}
+        confirmAction="delete"
         cancelLabel={c("cancel")}
         onConfirm={() => removing && void remove(removing)}
         onCancel={() => setRemoving(null)}
@@ -311,6 +309,7 @@ export function SectionMatchConfigPage() {
         title={t("confirmResetTitle")}
         body={t("confirmResetBody")}
         confirmLabel={t("reset")}
+        confirmAction="restore"
         cancelLabel={c("cancel")}
         onConfirm={() => void reset()}
         onCancel={() => setResetting(false)}
@@ -379,7 +378,7 @@ function SettingsCard({
       description={customized ? t("customized") : t("fromSport")}
       footer={
         canWrite ? (
-          <Button type="submit" form="match-settings-form" loading={busy}>
+          <Button action="save" type="submit" form="match-settings-form" loading={busy}>
             {c("save")}
           </Button>
         ) : null
@@ -610,7 +609,13 @@ function ActionSheet({
           <Button variant="secondary" onClick={onClose}>
             {c("cancel")}
           </Button>
-          <Button type="submit" form="action-form" loading={busy} disabled={!name.trim()}>
+          <Button
+            action={action ? "save" : "add"}
+            type="submit"
+            form="action-form"
+            loading={busy}
+            disabled={!name.trim()}
+          >
             {action ? c("save") : t("submit")}
           </Button>
         </>

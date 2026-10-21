@@ -335,15 +335,11 @@ export function TeamPage() {
             className="lg:col-start-1"
             actions={
               <>
-                <ButtonLink to={paths.teamMatches(id)} variant="secondary" size="sm">
+                <ButtonLink to={paths.teamMatches(id)} variant="secondary" size="sm" action="open">
                   {t("matches.all")}
                 </ButtonLink>
                 {matches.data?.access.write ? (
-                  <ButtonLink
-                    to={`${paths.teamMatches(id)}?new=1`}
-                    size="sm"
-                    icon={<Icon.Play size={16} weight="fill" aria-hidden="true" />}
-                  >
+                  <ButtonLink to={`${paths.teamMatches(id)}?new=1`} size="sm" action="add">
                     {t("matches.new")}
                   </ButtonLink>
                 ) : null}

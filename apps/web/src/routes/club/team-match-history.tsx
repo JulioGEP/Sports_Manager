@@ -318,12 +318,7 @@ function HistoryView({
   return (
     <div className="flex flex-col gap-5">
       <div>
-        <ButtonLink
-          to={back}
-          variant="tertiary"
-          size="sm"
-          icon={<Icon.ArrowLeft size={16} aria-hidden="true" />}
-        >
+        <ButtonLink to={back} variant="tertiary" size="sm" action="back">
           {t("back")}
         </ButtonLink>
       </div>
