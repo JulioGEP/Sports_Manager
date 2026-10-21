@@ -321,6 +321,7 @@ export function StaffPage() {
                 canManage
                   ? (m) => (
                       <Button
+                        iconOnly
                         action="edit"
                         variant="secondary"
                         size="sm"
@@ -412,6 +413,7 @@ export function StaffPage() {
                 i.state === "pending" || i.state === "expired" ? (
                   <>
                     <Button
+                      iconOnly
                       action="send"
                       variant="secondary"
                       size="sm"
@@ -420,6 +422,7 @@ export function StaffPage() {
                       {t("invitations.resend")}
                     </Button>
                     <Button
+                      iconOnly
                       action="delete"
                       variant="danger"
                       size="sm"
@@ -781,6 +784,7 @@ function RolesSheet({
                 ) : null}
               </span>
               <Button
+                iconOnly
                 action={has ? "delete" : "add"}
                 variant={has ? "danger" : "secondary"}
                 size="sm"

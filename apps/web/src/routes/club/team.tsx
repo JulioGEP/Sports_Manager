@@ -261,6 +261,7 @@ export function TeamPage() {
                     ? (p) => (
                         <>
                           <Button
+                            iconOnly
                             action="edit"
                             variant="secondary"
                             size="sm"
@@ -269,6 +270,7 @@ export function TeamPage() {
                             {t("editEntry")}
                           </Button>
                           <Button
+                            iconOnly
                             action="delete"
                             variant="danger"
                             size="sm"
@@ -383,6 +385,7 @@ export function TeamPage() {
                     </span>
                     {canWrite ? (
                       <Button
+                        iconOnly
                         action="delete"
                         variant="danger"
                         size="sm"

@@ -137,7 +137,13 @@ export function PlatformClubsPage() {
             trailing: <StatusChip kind={statusKind[o.status]}>{statuses(o.status)}</StatusChip>,
           })}
           actions={(o) => (
-            <ButtonLink action="open" to={`/admin/clubs/${o.slug}`} variant="secondary" size="sm">
+            <ButtonLink
+              iconOnly
+              action="open"
+              to={`/admin/clubs/${o.slug}`}
+              variant="secondary"
+              size="sm"
+            >
               {t("manage")}
             </ButtonLink>
           )}

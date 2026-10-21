@@ -295,10 +295,11 @@ function ChargesTab({ canWrite }: { canWrite: boolean }) {
                 <span className="flex flex-wrap justify-end gap-2">
                   {ch.status === "pending" || ch.status === "overdue" ? (
                     <>
-                      <Button action="pay" size="sm" onClick={() => setPaying(ch)}>
+                      <Button iconOnly action="pay" size="sm" onClick={() => setPaying(ch)}>
                         {t("recordPayment")}
                       </Button>
                       <Button
+                        iconOnly
                         action="suspend"
                         size="sm"
                         variant="danger"
@@ -310,6 +311,7 @@ function ChargesTab({ canWrite }: { canWrite: boolean }) {
                   ) : null}
                   {ch.status === "cancelled" ? (
                     <Button
+                      iconOnly
                       action="restore"
                       size="sm"
                       variant="secondary"
@@ -575,11 +577,18 @@ function PlansTab({ canWrite }: { canWrite: boolean }) {
           canWrite
             ? (p) => (
                 <span className="flex flex-wrap justify-end gap-2">
-                  <Button action="edit" size="sm" variant="secondary" onClick={() => setEditing(p)}>
+                  <Button
+                    iconOnly
+                    action="edit"
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => setEditing(p)}
+                  >
                     {t("edit")}
                   </Button>
                   {p.status === "active" ? (
                     <Button
+                      iconOnly
                       action="archive"
                       size="sm"
                       variant="danger"
@@ -589,6 +598,7 @@ function PlansTab({ canWrite }: { canWrite: boolean }) {
                     </Button>
                   ) : (
                     <Button
+                      iconOnly
                       action="restore"
                       size="sm"
                       variant="secondary"

@@ -269,6 +269,7 @@ Un botón se reconoce antes de leerse. Por eso **toda acción que tenga icono en
 Reglas:
 
 - **El icono va delante del verbo**, a 18 px (16 px en el botón compacto de 40 px). Solo `open` lo lleva detrás: la flecha señala hacia dónde se va.
+- **Espacio ajustado: solo el icono.** En las acciones de fila (tablas, listas y filas de un formulario) el botón va cuadrado y sin verbo (`iconOnly`): una rueda dentada y un cubo rojo por fila, nunca "Editar" y "Quitar" escritos nueve veces. El verbo sigue existiendo como nombre accesible y como `title`, así el lector de pantalla y el tooltip dicen lo mismo que antes. Solo vale para acciones con icono; un verbo sin icono ("Hacer actual") se escribe. Cabeceras de pantalla y de tarjeta, pies de panel y portada llevan icono y verbo: ahí hay sitio y el verbo da el contexto.
 - **El icono hereda el color del botón.** Eliminar, quitar y archivar van en la variante `danger` (o `danger-solid` en la confirmación), y así el cubo de basura sale en rojo sin configurar nada. Un botón que solo lleva el icono de eliminar (franja de un horario) lleva `text-danger`.
 - **Cancelar y Cerrar no llevan icono.** Son la salida de un panel o un diálogo, no una acción, y la X ya está en la cabecera del panel. Tampoco llevan icono los botones de fecha ("Hoy", semana anterior y siguiente) ni los atajos de un formulario ("De lunes a viernes").
 - **El icono de una acción es decorativo** (`aria-hidden="true"`): el verbo ya dice qué hace. Un botón solo con icono sigue llevando `aria-label`.
@@ -293,12 +294,13 @@ Referencia de implementación en `src/components/`. Los que no tienen código a�
 
 Deshabilitado: `bg-raised text-muted`. El texto es siempre un verbo.
 
-Props: `action` pone el icono del catálogo (8.1) y es obligatoria cuando la acción está en él; `icon` admite un icono propio para una acción que no está; `size="sm"` es el botón compacto de 40 px para filas de tabla y cabeceras de tarjeta; `cta` es la acción fija inferior (9.2). `buttonClassName` y `ButtonContent` sirven para dar aspecto de botón a un enlace sin duplicar estilos.
+Props: `action` pone el icono del catálogo (8.1) y es obligatoria cuando la acción está en él; `icon` admite un icono propio para una acción que no está; `size="sm"` es el botón compacto de 40 px para filas de tabla y cabeceras de tarjeta; `iconOnly` deja solo el icono en las acciones de fila, con el verbo como nombre accesible y `title`; `cta` es la acción fija inferior (9.2). `buttonClassName` y `ButtonContent` sirven para dar aspecto de botón a un enlace sin duplicar estilos.
 
 ```tsx
 <Button action="add">Añadir jugador</Button>
 <Button action="edit" variant="secondary" size="sm">Editar</Button>
 <Button action="delete" variant="danger" size="sm">Quitar</Button>
+<Button action="delete" variant="danger" size="sm" iconOnly>Quitar</Button> // en una fila
 ```
 
 ### 9.2 Acción fija inferior
@@ -336,7 +338,7 @@ Fila cápsula de 64 px: avatar de 40 px, nombre (16 px, 500), dato secundario (1
 
 - **Pestañas:** subrayado de 2 px en `club-fill` y recuento en Geist Mono.
 - **Barra de filtros:** búsqueda (280 px), desplegables con etiqueta incluida ("Equipo: Todos"), y a la derecha "Exportar" (secundario) y la acción principal.
-- **Tabla:** filas de 52 px, línea fina `line`, cabecera de 44 px en `text-label`. Casilla de selección a la izquierda. Cifras alineadas a la derecha en Geist Mono. Acciones de fila como botones compactos con su icono de acción (8.1), "Editar" y "Quitar", o en un menú (botón de 44 px con `aria-label`) si son más de dos. Fila seleccionada con fondo `club-soft`. Tablas anchas con desplazamiento horizontal dentro de su caja.
+- **Tabla:** filas de 52 px, línea fina `line`, cabecera de 44 px en `text-label`. Casilla de selección a la izquierda. Cifras alineadas a la derecha en Geist Mono. Acciones de fila como botones compactos solo con el icono de acción (8.1, `iconOnly`): rueda dentada para editar, cubo rojo para quitar, con el verbo en el nombre accesible y el `title`; en un menú (botón de 44 px con `aria-label`) si son más de tres. Fila seleccionada con fondo `club-soft`. Tablas anchas con desplazamiento horizontal dentro de su caja.
 - **Paginación:** texto de rango a la izquierda ("1–6 de 128") y botones anterior y siguiente.
 
 ### 9.9 Tarjeta de evento
