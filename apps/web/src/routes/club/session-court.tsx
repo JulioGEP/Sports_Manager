@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
 import {
   ContentChips,
-  DrillBoard,
+  DrillAnimationPlayer,
   RestrictionTags,
   useLoadFormat,
   useShortDate,
@@ -94,8 +94,10 @@ function Court({ data }: { data: SessionDetailResponse }) {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "ArrowRight") go(index + 1);
-      else if (e.key === "ArrowLeft") go(index - 1);
+      // Las flechas sobre la línea de tiempo de la pizarra la mueven a ella, no cambian de tarea.
+      const inControl = (e.target as HTMLElement).closest("input, select, textarea");
+      if (e.key === "ArrowRight" && !inControl) go(index + 1);
+      else if (e.key === "ArrowLeft" && !inControl) go(index - 1);
       else if (e.key === " " && !(e.target as HTMLElement).closest("button, a, input, select")) {
         e.preventDefault();
         setRunning((r) => !r && remaining > 0);
@@ -152,7 +154,13 @@ function Court({ data }: { data: SessionDetailResponse }) {
           <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[3fr_2fr]">
             <div className="flex flex-col gap-3">
               {item.diagram ? (
-                <DrillBoard diagram={item.diagram} label={item.title} className="max-h-[60vh]" />
+                <DrillAnimationPlayer
+                  key={item.id}
+                  diagram={item.diagram}
+                  audioUrl={item.audioUrl}
+                  label={item.title}
+                  className="max-h-[60vh]"
+                />
               ) : (
                 <div className="grid aspect-[2/1] place-items-center rounded-field bg-raised text-muted [&_svg]:size-12">
                   <Icon.SportIcons.Pista aria-hidden="true" />

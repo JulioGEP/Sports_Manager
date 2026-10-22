@@ -24,6 +24,7 @@ import {
 import type { Context, MiddlewareHandler } from "hono";
 import type { ApiConfig } from "../config.ts";
 import {
+  drillAudioUrlFor,
   instantOf,
   localDate,
   plannedOf,
@@ -284,7 +285,7 @@ export function sessionSummaryDto(
   };
 }
 
-export const itemDto = (i: SessionItemRecord) => ({
+export const itemDto = (i: SessionItemRecord, slug: string) => ({
   id: i.id,
   block: i.block,
   sortOrder: i.sortOrder,
@@ -304,6 +305,7 @@ export const itemDto = (i: SessionItemRecord) => ({
   description: i.description,
   coachingPoints: i.coachingPoints,
   diagram: i.diagram,
+  audioUrl: i.drillId ? drillAudioUrlFor(i.audioBlobKey, slug, i.drillId) : null,
 });
 
 // --- Partidos, MD y carga de partido ---

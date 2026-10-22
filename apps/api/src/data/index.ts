@@ -8,6 +8,7 @@ import { challengesRepo } from "./challenges.ts";
 import { createAuth, type Auth } from "./auth/index.ts";
 import { createResetPasswordSender } from "./auth/reset-password.ts";
 import { createLazyDb } from "./db.ts";
+import { createNetlifyDrillAudioStore, drillAudioRepo } from "./drill-audio.ts";
 export { isUniqueViolation } from "./db.ts";
 import { emailOutboxRepo } from "./email/outbox.ts";
 import { attendanceRepo, eventsRepo, facilitiesRepo, schedulesRepo } from "./events.ts";
@@ -38,6 +39,7 @@ import { trainingRepo } from "./training.ts";
 import { usersRepo } from "./users.ts";
 
 export type { OrgScope } from "./scope.ts";
+export { drillAudioUrlFor } from "./drill-audio.ts";
 export type {
   CreateOrganizationResult,
   OrganizationCounts,
@@ -157,6 +159,8 @@ export interface DataLayerOptions {
   logoStore?: BlobStore;
   /** Almacén de fotos de jugador (Bloque 12). Mismo criterio que los logos. */
   photoStore?: BlobStore;
+  /** Almacén de la voz de la pizarra animada (ADR 0040). Mismo criterio que los logos. */
+  audioStore?: BlobStore;
 }
 
 export function createDataLayer(options: DataLayerOptions) {
@@ -228,6 +232,13 @@ export function createDataLayer(options: DataLayerOptions) {
         (options.config.logoStore === "memory"
           ? createMemoryBlobStore()
           : createNetlifyPhotoStore()),
+    ),
+    drillAudio: drillAudioRepo(
+      db,
+      options.audioStore ??
+        (options.config.logoStore === "memory"
+          ? createMemoryBlobStore()
+          : createNetlifyDrillAudioStore()),
     ),
     email,
 

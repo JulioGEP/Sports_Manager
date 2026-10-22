@@ -890,7 +890,9 @@
     "drill": {
       "created": "Drill created",
       "updated": "Drill edited",
-      "removed": "Drill removed"
+      "removed": "Drill removed",
+      "audio_updated": "Board voice recorded",
+      "audio_removed": "Board voice removed"
     },
     "training_plan": {
       "updated": "Season plan edited"
@@ -2961,7 +2963,33 @@
     "eraseHint": "Tap a piece or an arrow to remove it.",
     "summary": "Board with {pieces} pieces and {arrows} arrows",
     "elements": "Board elements",
-    "removeElement": "Remove {element}"
+    "removeElement": "Remove {element}",
+    "dragHint": "Drag any piece to move it.",
+    "keyboardHint": "With the keyboard: pick a piece from the list and move it with the arrow keys (hold Shift to go faster).",
+    "selectElement": "{element}: select it and move it with the arrow keys",
+    "movement": "Movement",
+    "recordIntro": "Record the play: press “Record movement” and move the pieces. With “With voice”, your explanation is recorded at the same time.",
+    "record": "Record movement",
+    "recordMore": "Record another layer",
+    "stop": "Stop",
+    "recording": "Recording {time}",
+    "preparingMic": "Getting the microphone ready…",
+    "recordHint": "Move the pieces: what you do is recorded. What was recorded before plays at the same time, so you can build it up in layers.",
+    "withVoice": "With voice",
+    "micDenied": "The microphone couldn't be used: only the movement is recorded.",
+    "nothingRecorded": "You didn't move any piece: there is nothing to keep.",
+    "duration": "{seconds}-second play.",
+    "clearAnimation": "Delete movement",
+    "voiceRecorded": "Voice recorded.",
+    "voicePending": "New voice: it is saved with the drill.",
+    "removeVoice": "Remove voice",
+    "player": "Play controls",
+    "play": "Play",
+    "pause": "Pause",
+    "restart": "From the start",
+    "timeline": "Point in the play",
+    "animated": "Animated",
+    "animatedVoice": "Animated, with voice"
   },
   "load": {
     "ua": "{value} AU",

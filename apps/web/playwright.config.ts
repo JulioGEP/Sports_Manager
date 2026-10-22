@@ -23,7 +23,13 @@ export default defineConfig({
     screenshot: "only-on-failure",
     // Todo va a localhost: nunca por el proxy del sistema (el entorno de desarrollo puede tener uno).
     launchOptions: {
-      args: ["--no-proxy-server", ...(process.getuid?.() === 0 ? ["--no-sandbox"] : [])],
+      // Micrófono simulado (tono de prueba) sin preguntar: la pizarra graba voz (ADR 0040).
+      args: [
+        "--no-proxy-server",
+        "--use-fake-ui-for-media-stream",
+        "--use-fake-device-for-media-stream",
+        ...(process.getuid?.() === 0 ? ["--no-sandbox"] : []),
+      ],
       ...(chromiumPath ? { executablePath: chromiumPath } : {}),
     },
   },

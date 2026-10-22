@@ -17,13 +17,13 @@ import { useIntl } from "react-intl";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router";
 import {
   ContentChips,
-  DrillBoard,
+  DrillAnimationPlayer,
   DrillBoardEditor,
   EMPTY_DIAGRAM,
   RestrictionTags,
   useLoadFormat,
 } from "@/components/training-ui";
-import { ApiClientError, apiFetch, errorKey } from "@/lib/api";
+import { ApiClientError, apiFetch, errorKey, uploadFile } from "@/lib/api";
 import { clubPaths, useReadyClub } from "@/lib/club";
 import { useDates } from "@/lib/dates";
 import { useT } from "@/lib/intl";
@@ -296,7 +296,11 @@ function DrillView({
         <div className="flex min-w-0 flex-col gap-5">
           <Card title={t("cards.board")}>
             {drill.diagram ? (
-              <DrillBoard diagram={drill.diagram} label={t("boardOf", { name: drill.name })} />
+              <DrillAnimationPlayer
+                diagram={drill.diagram}
+                audioUrl={drill.audioUrl}
+                label={t("boardOf", { name: drill.name })}
+              />
             ) : (
               <EmptyState icon={<Icon.Target aria-hidden="true" />} title={t("noBoard")} />
             )}
@@ -530,6 +534,11 @@ function DrillEditor({
   });
   const [saving, setSaving] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
+  /** Voz de la pizarra (ADR 0040): la recién grabada se sube al guardar; `removed`, se quita. */
+  const [voice, setVoice] = useState<{ blob: Blob | null; removed: boolean }>({
+    blob: null,
+    removed: false,
+  });
   const set = <K extends keyof DrillForm>(key: K, value: DrillForm[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
 
@@ -582,6 +591,27 @@ function DrillEditor({
     );
   }
 
+  /**
+   * La voz va aparte de la tarea y después de guardarla: la API la acepta solo si la pizarra ya
+   * tiene movimiento. Sin movimiento, la propia API la quita al guardar.
+   */
+  async function saveVoice(saved: DrillDetail) {
+    if (!saved.diagram?.animation) return;
+    if (voice.blob) {
+      const type = voice.blob.type || "audio/webm";
+      await uploadFile(
+        `/api/org/drills/${saved.id}/audio`,
+        new File([voice.blob], "voz", { type }),
+        DrillResponseSchema,
+      );
+    } else if (voice.removed && saved.audioUrl) {
+      await apiFetch(`/api/org/drills/${saved.id}/audio`, {
+        method: "DELETE",
+        schema: DrillResponseSchema,
+      });
+    }
+  }
+
   async function submit(e: FormEvent) {
     e.preventDefault();
     const int = (value: string) => (value.trim() === "" ? null : Number.parseInt(value, 10));
@@ -621,11 +651,12 @@ function DrillEditor({
             ? { scope: form.scope, ...(form.scope === "team" ? { teamId: form.teamId } : {}) }
             : {}),
         };
-        await apiFetch(`/api/org/drills/${drill.id}`, {
+        const saved = await apiFetch(`/api/org/drills/${drill.id}`, {
           method: "PATCH",
           body,
           schema: DrillResponseSchema,
         });
+        await saveVoice(saved.drill);
         toast("success", t("saved"));
         void client.invalidateQueries({ queryKey: ["org", slug] });
         onDone?.();
@@ -642,6 +673,7 @@ function DrillEditor({
           body,
           schema: DrillResponseSchema,
         });
+        await saveVoice(res.drill);
         toast("success", t("created"));
         void client.invalidateQueries({ queryKey: ["org", slug] });
         void navigate(paths.drill(res.drill.id), { replace: true });
@@ -872,6 +904,11 @@ function DrillEditor({
             <DrillBoardEditor
               value={form.diagram}
               onChange={(diagram) => set("diagram", diagram)}
+              audio={{
+                blob: voice.blob,
+                url: voice.removed ? null : (drill?.audioUrl ?? null),
+              }}
+              onAudioChange={(blob) => setVoice({ blob, removed: blob === null })}
             />
           </Card>
 

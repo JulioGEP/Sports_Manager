@@ -86,6 +86,8 @@ export const AUDIT_ACTIONS = [
   "drill.created",
   "drill.updated",
   "drill.removed",
+  "drill.audio_updated",
+  "drill.audio_removed",
   "training_plan.updated",
   "training_cycle.created",
   "training_cycle.updated",

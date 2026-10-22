@@ -53,3 +53,4 @@ Las decisiones no se editan una vez aceptadas. Si cambian, se escribe una nueva 
 | 0037 | Consola del partido a pantalla completa, en tres zonas y con el banquillo arrastrable | Aceptada |
 | 0038 | Acciones del partido: un cuarto ámbito del catálogo, y los catálogos del equipo, del partido y del rival a la vista | Aceptada |
 | 0039 | Entrenamiento, carga, salud y recomendaciones explicables | Aceptada |
+| 0040 | Pizarra animada: arrastrar, grabar el movimiento por capas y la voz | Aceptada |

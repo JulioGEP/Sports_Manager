@@ -83,6 +83,8 @@ export const DrillSummarySchema = z.object({
     z.object({ id: z.string(), name: z.string(), kind: z.enum(TRAINING_CONTENT_KINDS) }),
   ),
   diagram: DrillDiagramSchema.nullable(),
+  /** Voz grabada con el movimiento de la pizarra (ADR 0040); empieza con la animación. */
+  audioUrl: z.string().nullable(),
   status: z.enum(DRILL_STATUSES),
   /** Uso: sesiones en las que está, última vez y valoración media (1 a 3). */
   uses: z.number().int().nonnegative(),
@@ -222,6 +224,7 @@ export const SessionItemSchema = z.object({
   description: z.string().nullable(),
   coachingPoints: z.string().nullable(),
   diagram: DrillDiagramSchema.nullable(),
+  audioUrl: z.string().nullable(),
 });
 export type SessionItem = z.infer<typeof SessionItemSchema>;
 
