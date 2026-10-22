@@ -430,13 +430,17 @@ Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negoci
 
 ![Convocatoria](escritorio-104b-partido-convocatoria.png)
 
-### La consola en la banda, a pantalla completa y en tres zonas: el partido arriba (marcador, faltas, cronómetro, deshacer y menú), nuestro equipo (pista, banquillo arrastrable y bandeja del jugador tocado) y el rival con las últimas acciones
+### La consola en la banda, a pantalla completa y en tres zonas: el partido arriba (marcador, faltas, cronómetro, deshacer y menú), nuestro equipo (pista, banquillo arrastrable y bandeja del jugador tocado; sin nadie tocado, media bandeja del equipo y media del partido) y el rival entero con las últimas acciones en pequeño
 
 ![Partido en directo](escritorio-105-partido-en-directo.png)
 
 ### La zona del gol se toca sobre la propia pista: la mitad de ataque en nueve, la propia oscurecida
 
 ![Zona del gol](escritorio-105b-partido-zona.png)
+
+### Sin nadie seleccionado, la bandeja se parte: media de acciones del equipo y media de acciones del partido, con el rival entero a la derecha
+
+![Bandeja del equipo y del partido](escritorio-105d-partido-bandeja-equipo-y-partido.png)
 
 ### Lo que ve la familia: los partidos de su hija, solo su línea
 

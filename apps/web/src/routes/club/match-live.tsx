@@ -200,7 +200,7 @@ function Console({
   const [zonePick, setZonePick] = useState<{ type: MatchActionType; playerId: string } | null>(
     null,
   );
-  const [moreFor, setMoreFor] = useState<"player" | "team" | "opponent" | null>(null);
+  const [moreOpen, setMoreOpen] = useState(false);
   const [lineupOpen, setLineupOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [finishing, setFinishing] = useState(false);
@@ -235,6 +235,9 @@ function Console({
   );
   const active = useMemo(() => actionTypes.filter((a) => a.status === "active"), [actionTypes]);
   const byScope = (scope: MatchActionType["scope"]) => active.filter((a) => a.scope === scope);
+  /** Todo el catálogo de un ámbito, las de la bandeja rápida primero y el resto en su orden. */
+  const quickFirst = (types: MatchActionType[]) =>
+    [...types].sort((a, b) => Number(b.quick) - Number(a.quick));
   const selected = selection ? (squad.find((p) => p.playerId === selection.id) ?? null) : null;
   const clockShown =
     settings.clock === "down" ? Math.max(0, settings.periodMinutes * 60_000 - elapsed) : elapsed;
@@ -1101,7 +1104,7 @@ function Console({
                     (a) => a.quick && (!a.keeperOnly || selected.isGoalkeeper),
                   )}
                   onPick={(type) => record(type, selected.playerId)}
-                  more={() => setMoreFor("player")}
+                  more={() => setMoreOpen(true)}
                   moreLabel={t("more")}
                 />
               </>
@@ -1122,31 +1125,36 @@ function Console({
                       : t("tapPlayerHint")}
                   </span>
                 </div>
-                {byScope("team").length > 0 ? (
-                  <div className="flex flex-col gap-1">
-                    <span className="text-label uppercase tracking-wide text-muted">
-                      {t("teamActions")}
-                    </span>
-                    <ActionButtons
-                      layout="tray"
-                      types={byScope("team").filter((a) => a.quick)}
-                      onPick={(type) => record(type, null)}
-                      more={() => setMoreFor("team")}
-                      moreLabel={t("more")}
-                      disabled={!canWrite}
-                    />
-                  </div>
-                ) : null}
+                <div className="grid grid-cols-2 gap-3 compact:gap-2">
+                  {(["team", "match"] as const).map((scope) => (
+                    <div key={scope} className="flex min-w-0 flex-col gap-1">
+                      <span className="text-label uppercase tracking-wide text-muted">
+                        {scope === "team" ? t("teamActions") : t("matchActions")}
+                      </span>
+                      {byScope(scope).length === 0 ? (
+                        <p className="text-secondary text-muted">{t("noActions")}</p>
+                      ) : (
+                        <ActionButtons
+                          layout="half"
+                          types={quickFirst(byScope(scope))}
+                          onPick={(type) => record(type, null)}
+                          moreLabel={t("more")}
+                          disabled={!canWrite}
+                        />
+                      )}
+                    </div>
+                  ))}
+                </div>
               </>
             )}
           </div>
         </section>
 
         <aside className="flex min-h-0 flex-col gap-3 portrait:shrink-0 lg:gap-4 compact:gap-2">
-          {/* Rival */}
+          {/* Rival: todo su catálogo a la vista */}
           <section
             aria-label={t("opponentActions")}
-            className="flex shrink-0 flex-col gap-2 rounded-card bg-surface p-3 shadow-card precisa:border precisa:border-border compact:gap-1 compact:p-2"
+            className="flex min-h-0 flex-col gap-2 rounded-card bg-surface p-3 shadow-card precisa:border precisa:border-border portrait:shrink-0 landscape:flex-1 landscape:overflow-y-auto compact:gap-1 compact:p-2"
           >
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
               <Eyebrow>{t("opponent")}</Eyebrow>
@@ -1157,20 +1165,23 @@ function Console({
                 <StatusChip kind={foulKind(foulsOpp)}>{t("fouls", { count: foulsOpp })}</StatusChip>
               </span>
             </div>
-            <ActionButtons
-              layout="side"
-              types={byScope("opponent").filter((a) => a.quick)}
-              onPick={(type) => record(type, null)}
-              more={byScope("opponent").length > 0 ? () => setMoreFor("opponent") : undefined}
-              moreLabel={t("more")}
-              disabled={!canWrite}
-            />
+            {byScope("opponent").length === 0 ? (
+              <p className="text-secondary text-muted">{t("noActions")}</p>
+            ) : (
+              <ActionButtons
+                layout="side"
+                types={quickFirst(byScope("opponent"))}
+                onPick={(type) => record(type, null)}
+                moreLabel={t("more")}
+                disabled={!canWrite}
+              />
+            )}
           </section>
 
-          {/* Partido: últimas acciones */}
+          {/* Partido: últimas acciones, en pequeño */}
           <section
             aria-label={t("feed")}
-            className="flex min-h-0 flex-1 flex-col gap-2 rounded-card bg-surface p-3 shadow-card precisa:border precisa:border-border compact:gap-1 compact:p-2"
+            className="flex shrink-0 flex-col gap-1 rounded-card bg-surface p-3 shadow-card precisa:border precisa:border-border compact:p-2"
           >
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
               <Eyebrow>{t("match")}</Eyebrow>
@@ -1179,16 +1190,16 @@ function Console({
             {events.length === 0 ? (
               <p className="text-secondary text-muted">{t("feedEmpty")}</p>
             ) : (
-              <ol className="flex min-h-0 flex-1 flex-col divide-y divide-line overflow-y-auto">
+              <ol className="flex max-h-36 flex-col divide-y divide-line overflow-y-auto compact:max-h-24">
                 {[...events]
                   .reverse()
-                  .slice(0, 12)
+                  .slice(0, 8)
                   .map((e) => (
-                    <li key={e.id} className="flex items-center gap-2 py-1.5">
+                    <li key={e.id} className="flex items-center gap-2 py-1">
                       <span className="font-mono text-label text-muted">
                         {formatClock(e.clockMs)}
                       </span>
-                      <span className="min-w-0 flex-1 truncate text-secondary text-ink">
+                      <span className="min-w-0 flex-1 truncate text-label font-medium text-ink">
                         {eventText(e)}
                       </span>
                       {e.ownScoreDelta > 0 || e.opponentScoreDelta > 0 ? (
@@ -1217,28 +1228,20 @@ function Console({
       ) : null}
 
       {/* Catálogo completo de acciones */}
-      {moreFor ? (
+      {moreOpen && selected ? (
         <Sheet
           open
-          onClose={() => setMoreFor(null)}
+          onClose={() => setMoreOpen(false)}
           closeLabel={c("close")}
-          title={
-            moreFor === "player"
-              ? (selected?.name ?? "")
-              : moreFor === "team"
-                ? t("teamActions")
-                : t("opponentActions")
-          }
+          title={selected.name}
           description={t("moreDescription")}
         >
           <ActionButtons
             layout="sheet"
-            types={byScope(moreFor).filter(
-              (a) => moreFor !== "player" || !a.keeperOnly || (selected?.isGoalkeeper ?? false),
-            )}
+            types={byScope("player").filter((a) => !a.keeperOnly || selected.isGoalkeeper)}
             onPick={(type) => {
-              setMoreFor(null);
-              record(type, moreFor === "player" ? (selected?.playerId ?? null) : null);
+              setMoreOpen(false);
+              record(type, selected.playerId);
             }}
             moreLabel={t("more")}
           />
@@ -1562,6 +1565,8 @@ const layoutClass = {
   tray: "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 compact:grid-cols-6",
   /** Columna del rival. */
   side: "grid-cols-2",
+  /** Media bandeja: las del equipo a un lado y las del partido al otro. */
+  half: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 compact:grid-cols-3",
   /** Catálogo completo en el panel. */
   sheet: "grid-cols-2 sm:grid-cols-3",
 };

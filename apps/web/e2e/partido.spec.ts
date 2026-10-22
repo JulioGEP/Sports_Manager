@@ -155,6 +155,14 @@ test.describe("partido en directo", () => {
     // Oriol sigue seleccionado para encadenar acciones: se suelta con otro toque.
     await page.getByRole("button", { name: "Oriol Mateu", exact: true }).click();
     await expect(page.getByText("Toca un jugador", { exact: true })).toBeVisible();
+    // Sin nadie seleccionado, la bandeja se parte: acciones del equipo y acciones del partido.
+    await expect(page.getByText("Acciones del equipo", { exact: true })).toBeVisible();
+    await expect(page.getByText("Acciones del partido", { exact: true })).toBeVisible();
+    await shot(page, "105d-partido-bandeja-equipo-y-partido", info.project.name);
+    await page.getByRole("button", { name: "Decisión arbitral" }).click();
+    await expect(
+      page.getByRole("region", { name: "Últimas acciones" }).getByText("Decisión arbitral"),
+    ).toBeVisible();
 
     // Cambio en dos toques: entra Mia por Berta. Y deshacer.
     const bench = page.getByRole("region", { name: "Banquillo" });
