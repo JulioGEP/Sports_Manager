@@ -188,7 +188,7 @@ function useInsightValues() {
       out.tags = values.tags
         .split(",")
         .filter(Boolean)
-        .map((tag) => r(tag))
+        .map((tag) => r(tag).toLocaleLowerCase(intl.locale))
         .join(", ");
     if (typeof values.status === "string") out.status = a(`inline.${values.status}`);
     if (typeof values.zone === "string")

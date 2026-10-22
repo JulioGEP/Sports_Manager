@@ -40,7 +40,8 @@ describe("diccionarios de la web", () => {
       );
       for (const [id, text] of Object.entries(messages)) {
         // Un valor para cada argumento: 1 vale como número (plural), texto y opción (select → other).
-        const values = Object.fromEntries([...text.matchAll(/\{\s*(\w+)/g)].map((m) => [m[1], 1]));
+        const values: Record<string, number> = {};
+        for (const m of text.matchAll(/\{\s*(\w+)/g)) if (m[1]) values[m[1]] = 1;
         intl.formatMessage({ id }, values);
       }
       expect(errors).toEqual([]);

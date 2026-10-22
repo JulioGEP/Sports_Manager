@@ -695,7 +695,8 @@ function RosterCard({ data }: { data: SessionDetailResponse }) {
           {roster.map((r) => (
             <li key={r.playerId} className="flex min-h-14 flex-wrap items-center gap-3 py-2">
               <Avatar name={r.name} size="sm" src={r.photoUrl} />
-              <span className="flex min-w-0 flex-1 flex-col">
+              {/* El nombre no baja de 10rem: en móvil, los chips pasan a la línea de abajo. */}
+              <span className="flex min-w-40 flex-1 flex-col">
                 <Link
                   to={paths.playerPerformance(r.playerId)}
                   className="truncate font-medium text-ink no-underline hover:underline"
