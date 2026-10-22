@@ -23,6 +23,7 @@ Comprobaciones: `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:isolation
 | ------------------------------- | ------------------------------------------------------------------------------ |
 | `docs/plan-fase-0.md`           | Plan de la Fase 0: bloques, decisiones, riesgos y preguntas con sus respuestas |
 | `docs/propuesta-club-completo.md` | Propuesta de replanteo del panel del administrador: secciones, personas, agenda e instalaciones (bloques 14 a 18) |
+| `docs/propuesta-planificacion-entrenamientos.md` | Propuesta de planificación de entrenamientos, carga, salud y recomendaciones para el cuerpo técnico (bloques 21 a 26) |
 | `docs/dominio.md`               | Conocimiento de negocio extraído del prototipo                                 |
 | `docs/informe-sportsmanager.md` | Auditoría del prototipo y propuesta de arquitectura                            |
 | `docs/dominio-y-dns.md`         | Subdominios por club, parche local y pasos para el dominio definitivo          |
