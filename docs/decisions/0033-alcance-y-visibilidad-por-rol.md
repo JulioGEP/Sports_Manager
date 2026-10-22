@@ -1,6 +1,6 @@
 # 0033. Alcance por cargo y visibilidad por rol gestionada desde "Personal"
 
-Estado: aceptada. Fecha: 2026-10-21. Fase 1, Bloque 19.
+Estado: aceptada; dónde se gestionan las exclusiones por persona lo concreta la 0035. Fecha: 2026-10-21. Fase 1, Bloque 19.
 
 ## Contexto
 

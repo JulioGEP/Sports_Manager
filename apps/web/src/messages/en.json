@@ -308,11 +308,7 @@
       "sectionsHint": "Directors and coordinators only see the ticked sections. Sections they already coordinate count even if unticked.",
       "sectionsEmpty": "The club has no sections yet.",
       "sectionsSaved": "Sections for {name} saved.",
-      "coordinates": "Coordinates",
-      "exclusions": "Special exclusions",
-      "exclusionsHint": "Areas this person does not see even though their role does. Admins cannot be excluded.",
-      "exclusionsSaved": "Exclusions for {name} saved.",
-      "exclude": "Does not see {area}"
+      "coordinates": "Coordinates"
     },
     "inviteDrawer": {
       "title": "Invite someone",
@@ -380,10 +376,28 @@
       "saved": "Access for {profile} saved.",
       "adminNote": "Club admins see everything and cannot be excluded. Families only see what belongs to their athletes: agenda, challenge and fees.",
       "exclusionsTitle": "Exclusions per person",
-      "exclusionsDescription": "People who do not see an area even though their role does. Change them from each person's roles.",
+      "exclusionsDescription": "People who do not see an area even though their role does. Add, change and remove them here.",
       "exclusionsEmpty": "Nobody has exclusions.",
-      "excluded": "Does not see: {areas}",
-      "error": "Could not load access by role."
+      "error": "Could not load access by role.",
+      "exclusionsEmptyHint": "Add a staff member and tick what they should not see.",
+      "addExclusion": "Add exclusion",
+      "editExclusion": "Edit",
+      "removeExclusion": "Remove",
+      "excludedArea": "No {area}",
+      "removed": "{name} no longer has exclusions: they see what their role sees.",
+      "confirmRemoveTitle": "Remove the exclusions for {name}?",
+      "confirmRemoveBody": "They will see everything their role sees again.",
+      "exclusionSheet": {
+        "titleNew": "New exclusion",
+        "titleEdit": "Exclusions for {name}",
+        "description": "Tick what this person does not see even though their role does. Club admins cannot be excluded.",
+        "person": "Person",
+        "areas": "What they do not see",
+        "exclude": "Does not see {area}",
+        "none": "Tick at least one area.",
+        "empty": "There is no staff to exclude: admins cannot be excluded and families already see only their own.",
+        "saved": "Exclusions for {name} saved."
+      }
     }
   },
   "settings": {

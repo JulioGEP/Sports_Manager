@@ -308,11 +308,7 @@
       "sectionsHint": "Dirección y coordinación ven solo las secciones marcadas. Las que ya coordina cuentan aunque no se marquen.",
       "sectionsEmpty": "Todavía no hay secciones en el club.",
       "sectionsSaved": "Secciones de {name} guardadas.",
-      "coordinates": "Coordina",
-      "exclusions": "Exclusiones especiales",
-      "exclusionsHint": "Áreas que esta persona no ve aunque su rol sí. La administración no se excluye.",
-      "exclusionsSaved": "Exclusiones de {name} guardadas.",
-      "exclude": "No ve {area}"
+      "coordinates": "Coordina"
     },
     "inviteDrawer": {
       "title": "Invitar a alguien",
@@ -380,10 +376,28 @@
       "saved": "Acceso de {profile} guardado.",
       "adminNote": "La administración del club lo ve todo y no se puede excluir. Las familias ven solo lo de sus deportistas: agenda, reto y cuotas.",
       "exclusionsTitle": "Exclusiones por persona",
-      "exclusionsDescription": "Personas que no ven algún área aunque su rol sí. Se cambian desde los roles de cada persona.",
+      "exclusionsDescription": "Personas que no ven algún área aunque su rol sí. Se añaden, se cambian y se quitan aquí.",
       "exclusionsEmpty": "Nadie tiene exclusiones.",
-      "excluded": "No ve: {areas}",
-      "error": "No se ha podido cargar el acceso por rol."
+      "error": "No se ha podido cargar el acceso por rol.",
+      "exclusionsEmptyHint": "Añade a alguien del personal y marca lo que no debe ver.",
+      "addExclusion": "Añadir exclusión",
+      "editExclusion": "Editar",
+      "removeExclusion": "Quitar",
+      "excludedArea": "Sin {area}",
+      "removed": "{name} ya no tiene exclusiones: ve lo que ve su rol.",
+      "confirmRemoveTitle": "¿Quitar las exclusiones de {name}?",
+      "confirmRemoveBody": "Volverá a ver todo lo que ve su rol.",
+      "exclusionSheet": {
+        "titleNew": "Nueva exclusión",
+        "titleEdit": "Exclusiones de {name}",
+        "description": "Marca lo que esta persona no ve aunque su rol sí. La administración del club no se puede excluir.",
+        "person": "Persona",
+        "areas": "Qué no ve",
+        "exclude": "No ve {area}",
+        "none": "Marca al menos un área.",
+        "empty": "No hay personal al que excluir: la administración no se excluye y las familias ya solo ven lo suyo.",
+        "saved": "Exclusiones de {name} guardadas."
+      }
     }
   },
   "settings": {
