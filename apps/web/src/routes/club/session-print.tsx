@@ -10,7 +10,8 @@ import {
 import { clubPaths, useReadyClub } from "@/lib/club";
 import { useT } from "@/lib/intl";
 import { BackLink, Button, Icon } from "@/ui";
-import { SessionGate, useClubTimezone, useItemFacts, useSessionDetail } from "./session";
+import { SessionGate, useItemFacts, useSessionDetail } from "./session";
+import { useClubTimezone } from "./team-training";
 
 /**
  * En papel solo sale la hoja: lo demás de la página se oculta y la hoja se pone arriba del todo,

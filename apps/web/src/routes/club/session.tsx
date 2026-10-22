@@ -56,6 +56,7 @@ import {
   useToast,
   type StatusKind,
 } from "@/ui";
+import { useClubTimezone } from "./team-training";
 
 // --- Piezas comunes de la sesión (editor, modo pista e impresión) ---
 
@@ -67,12 +68,6 @@ export function useSessionDetail(id: string) {
     queryFn: () => apiFetch(`/api/org/sessions/${id}`, { schema: SessionDetailResponseSchema }),
     retry: false,
   });
-}
-
-/** Zona horaria del club para las horas de la agenda. */
-export function useClubTimezone() {
-  const { org } = useReadyClub();
-  return org.organization.view === "full" ? org.organization.timezone : "Europe/Madrid";
 }
 
 /** Tareas en el orden de la sesión: bloque a bloque y, dentro, como las dejó el cuerpo técnico. */
