@@ -9,6 +9,7 @@ import {
   ApiErrorSchema,
   AssignRoleBodySchema,
   AssignRoleResponseSchema,
+  canHaveOverrides,
   CONFIGURABLE_PROFILES,
   ConfigurableProfileSchema,
   defaultPermissionsOf,
@@ -16,8 +17,8 @@ import {
   isAreaVisible,
   LOGO_CONTENT_TYPES,
   LOGO_MAX_BYTES,
-  MemberExclusionsResponseSchema,
-  MemberExclusionsUpdateSchema,
+  MemberAccessResponseSchema,
+  MemberAccessUpdateSchema,
   MemberSectionsResponseSchema,
   MemberSectionsUpdateSchema,
   membershipOfProfile,
@@ -26,9 +27,12 @@ import {
   OrganizationResponseSchema,
   OrganizationUpdateResponseSchema,
   OrganizationUpdateSchema,
+  overridesFor,
   PROFILE_SCOPE,
   RoleCodeSchema,
+  roleVisibleAreas,
   summarizeScope,
+  type AccessArea,
   type AccessProfileRow,
   type AccessRule,
   type AccessScope,
@@ -217,16 +221,16 @@ export function createOrgRoutes(config: ApiConfig, data: DataLayer) {
       if (tenant.kind !== "organization") throw notFound();
       const members = await data.memberships.listMembers(tenant.scope);
       const ids = members.map((m) => m.userId);
-      const [sections, exclusions] = await Promise.all([
+      const [sections, overrides] = await Promise.all([
         data.access.sectionsByUser(tenant.scope, ids),
-        data.access.exclusionsByUser(tenant.scope, ids),
+        data.access.overridesByUser(tenant.scope, ids),
       ]);
       return c.json(
         {
           members: members.map((m) => ({
             ...m,
             sections: sections.get(m.userId) ?? [],
-            excludedAreas: exclusions.get(m.userId) ?? [],
+            accessOverrides: overrides.get(m.userId) ?? { allow: [], deny: [] },
             memberSince: m.memberSince.toISOString(),
           })),
         },
@@ -242,7 +246,7 @@ export function createOrgRoutes(config: ApiConfig, data: DataLayer) {
       path: "/api/org/access",
       tags: ["Club"],
       summary:
-        "Qué área ve cada rol o cargo, por defecto y con las reglas del club, y las exclusiones por persona",
+        "Qué área ve cada rol o cargo, por defecto y con las reglas del club, y las excepciones por persona",
       security: [{ sessionCookie: [] }],
       middleware: [requirePermission("org.members.manage")],
       responses: {
@@ -259,17 +263,31 @@ export function createOrgRoutes(config: ApiConfig, data: DataLayer) {
       const rules = await data.access.listRules(tenant.scope);
       const byUser = new Map<
         string,
-        { userId: string; name: string; areas: (typeof ACCESS_AREAS)[number][] }
+        { userId: string; name: string; allow: AccessArea[]; deny: AccessArea[] }
       >();
       for (const u of rules.users) {
-        const entry = byUser.get(u.userId) ?? { userId: u.userId, name: u.name, areas: [] };
-        entry.areas.push(u.area);
+        const entry = byUser.get(u.userId) ?? {
+          userId: u.userId,
+          name: u.name,
+          allow: [],
+          deny: [],
+        };
+        entry[u.effect].push(u.area);
         byUser.set(u.userId, entry);
       }
+      const people = await Promise.all(
+        [...byUser.values()].map(async (person) => {
+          const memberships = await data.memberships.membershipsFor(tenant.scope, person.userId);
+          return memberships.length === 0
+            ? null
+            : { ...person, byRole: roleVisibleAreas(memberships, rules.profiles) };
+        }),
+      );
       return c.json(
         {
           profiles: CONFIGURABLE_PROFILES.map((profile) => profileRow(profile, rules.profiles)),
-          exclusions: [...byUser.values()],
+          // Quien ya no es miembro no cuenta: sus reglas no le afectan en este club.
+          people: people.filter((p) => p !== null),
         },
         200,
       );
@@ -326,23 +344,23 @@ export function createOrgRoutes(config: ApiConfig, data: DataLayer) {
       path: "/api/org/access/members/{userId}",
       tags: ["Club"],
       summary:
-        "Exclusiones de una persona: las áreas que no ve aunque su rol sí. Sustituye la lista. La administración no se excluye",
+        "Lo que ve una persona concreta (ADR 0036): se guarda como excepciones a lo que ve su rol, en los dos sentidos. Solo personal y cuerpo técnico; la administración lo ve todo",
       security: [{ sessionCookie: [] }],
       middleware: [requirePermission("org.members.manage")],
       request: {
         params: z.object({ userId: z.string().uuid() }),
         body: {
-          content: { "application/json": { schema: MemberExclusionsUpdateSchema } },
+          content: { "application/json": { schema: MemberAccessUpdateSchema } },
           required: true,
         },
       },
       responses: {
         200: {
-          description: "Exclusiones guardadas",
-          content: { "application/json": { schema: MemberExclusionsResponseSchema } },
+          description: "Excepciones guardadas",
+          content: { "application/json": { schema: MemberAccessResponseSchema } },
         },
         409: {
-          description: "Es administración del club",
+          description: "Es administración del club o no es personal ni cuerpo técnico",
           content: { "application/json": { schema: ApiErrorSchema } },
         },
         ...errorResponses,
@@ -352,20 +370,59 @@ export function createOrgRoutes(config: ApiConfig, data: DataLayer) {
       const tenant = c.get("tenant");
       if (tenant.kind !== "organization") throw notFound();
       const { userId } = c.req.valid("param");
-      const { areas } = c.req.valid("json");
-      const roles = await data.memberships.rolesFor(tenant.scope, userId);
-      if (roles.length === 0) throw notFound("Esa persona no es miembro de este club.");
-      if (roles.includes("org_admin") && areas.length > 0)
-        throw conflict("La administración del club no se puede excluir de ninguna área.");
-      const saved = await data.access.setUserExclusions(tenant.scope, userId, areas);
+      const { visible } = c.req.valid("json");
+      const [memberships, rules] = await Promise.all([
+        data.memberships.membershipsFor(tenant.scope, userId),
+        data.access.rulesFor(tenant.scope, userId),
+      ]);
+      if (memberships.length === 0) throw notFound("Esa persona no es miembro de este club.");
+      if (!canHaveOverrides(memberships.map((m) => m.roleCode)))
+        throw conflict(
+          "Solo el personal y el cuerpo técnico tienen excepciones; la administración lo ve todo.",
+        );
+      const byRole = roleVisibleAreas(memberships, rules);
+      const overrides = overridesFor(byRole, visible);
+      await data.access.setUserOverrides(tenant.scope, userId, overrides);
       await data.audit.record({
         actorUserId: c.get("sessionUser").id,
         organizationId: tenant.organization.id,
         action: "membership.access_updated",
         target: userId,
-        details: { excludedAreas: saved },
+        details: overrides,
       });
-      return c.json({ userId, areas: saved }, 200);
+      return c.json({ userId, byRole, ...overrides }, 200);
+    },
+  );
+
+  app.openapi(
+    createRoute({
+      method: "delete",
+      path: "/api/org/access/members/{userId}",
+      tags: ["Club"],
+      summary: "Quita las excepciones de una persona: vuelve a ver lo que ve su rol",
+      security: [{ sessionCookie: [] }],
+      middleware: [requirePermission("org.members.manage")],
+      request: { params: z.object({ userId: z.string().uuid() }) },
+      responses: {
+        204: { description: "Sin excepciones" },
+        ...errorResponses,
+      },
+    }),
+    async (c) => {
+      const tenant = c.get("tenant");
+      if (tenant.kind !== "organization") throw notFound();
+      const { userId } = c.req.valid("param");
+      const roles = await data.memberships.rolesFor(tenant.scope, userId);
+      if (roles.length === 0) throw notFound("Esa persona no es miembro de este club.");
+      await data.access.setUserOverrides(tenant.scope, userId, { allow: [], deny: [] });
+      await data.audit.record({
+        actorUserId: c.get("sessionUser").id,
+        organizationId: tenant.organization.id,
+        action: "membership.access_updated",
+        target: userId,
+        details: { allow: [], deny: [] },
+      });
+      return c.body(null, 204);
     },
   );
 

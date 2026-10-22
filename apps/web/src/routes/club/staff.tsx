@@ -634,7 +634,7 @@ function RolesSheet({
 
   /**
    * Alcance (Bloque 19): dirección y coordinación llevan secciones; las que ya coordina cuentan
-   * solas. Las exclusiones por persona no se tocan aquí: viven solo en la pestaña "Acceso".
+   * solas. Las excepciones por persona no se tocan aquí: viven solo en la pestaña "Acceso".
    */
   const withSections =
     current.includes("staff") && (position === "director" || position === "coordinator");

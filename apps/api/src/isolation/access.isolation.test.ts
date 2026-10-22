@@ -605,7 +605,7 @@ describe("alcance y visibilidad por rol", () => {
         scope: string;
         areas: { area: string; default: boolean; visible: boolean }[];
       }[];
-      exclusions: unknown[];
+      people: unknown[];
     }>(await request("GET", "/api/org/access", A, { cookie: as(adminA) }), 200);
     expect(overview.profiles.map((p) => p.profile)).toEqual([
       "coach",
@@ -629,7 +629,7 @@ describe("alcance y visibilidad por rol", () => {
       default: true,
       visible: true,
     });
-    expect(overview.exclusions).toEqual([]);
+    expect(overview.people).toEqual([]);
 
     // Incluir los socios para el cuerpo técnico.
     const included = await json<{ areas: { area: string; visible: boolean }[] }>(
@@ -707,39 +707,35 @@ describe("alcance y visibilidad por rol", () => {
     ).toBe(400);
   });
 
-  it("las exclusiones a una persona mandan sobre su rol; la administración no se excluye", async () => {
-    expect(
-      await status(
-        await request("PUT", `/api/org/access/members/${coachA.id}`, A, {
-          cookie: as(directorA),
-          body: { areas: ["agenda"] },
-        }),
-      ),
-    ).toBe(403);
-    expect(
-      await status(
-        await request("PUT", `/api/org/access/members/${adminA.id}`, A, {
-          cookie: as(adminA),
-          body: { areas: ["fees"] },
-        }),
-      ),
-    ).toBe(409);
-    expect(
-      await status(
-        await request("PUT", `/api/org/access/members/${adminB.id}`, A, {
-          cookie: as(adminA),
-          body: { areas: ["fees"] },
-        }),
-      ),
-    ).toBe(404);
-    const saved = await json<{ userId: string; areas: string[] }>(
-      await request("PUT", `/api/org/access/members/${coachA.id}`, A, {
-        cookie: as(adminA),
-        body: { areas: ["agenda", "agenda", "facilities"] },
-      }),
+  it("las excepciones de una persona mandan sobre su rol en los dos sentidos; la administración y la familia no tienen", async () => {
+    const coachByRole = ["sections", "players", "agenda", "facilities", "challenges"];
+    // Ve socios (su rol no) y deja de ver la agenda y las instalaciones (su rol sí).
+    const wanted = ["sections", "players", "challenges", "club_members", "club_members"];
+    const put = (user: Seeded, visible: string[], cookie = as(adminA), host = A) =>
+      request("PUT", `/api/org/access/members/${user.id}`, host, { cookie, body: { visible } });
+
+    expect(await status(await put(coachA, wanted, as(directorA)))).toBe(403);
+    expect(await status(await put(adminA, []))).toBe(409);
+    expect(await status(await put(adminB, []))).toBe(404);
+    // La familia tiene el club entero como ámbito: no se le abre nada por persona.
+    const parent = await seeder.user({
+      name: "Pau Padre",
+      email: "pau@club-a.test",
+      password: PASSWORD,
+    });
+    await seeder.membership(clubA.id, parent.id, "guardian");
+    expect(await status(await put(parent, ["players"]))).toBe(409);
+
+    const saved = await json<{ userId: string; byRole: string[]; allow: string[]; deny: string[] }>(
+      await put(coachA, wanted),
       200,
     );
-    expect(saved).toEqual({ userId: coachA.id, areas: ["agenda", "facilities"] });
+    expect(saved).toEqual({
+      userId: coachA.id,
+      byRole: coachByRole,
+      allow: ["club_members"],
+      deny: ["agenda", "facilities"],
+    });
     expect(
       await status(
         await request("GET", `/api/org/events?from=${at(0, 0)}&to=${at(7, 0)}`, A, {
@@ -750,35 +746,80 @@ describe("alcance y visibilidad por rol", () => {
     expect(
       await status(await request("GET", "/api/org/facilities", A, { cookie: as(coachA) })),
     ).toBe(403);
+    expect(
+      await status(await request("GET", "/api/org/club-members", A, { cookie: as(coachA) })),
+    ).toBe(200);
     expect(await playerNames(coachA)).toEqual(["Clara"]);
     const actor = await actorOf(coachA);
     expect(actor.permissions).not.toContain("org.events.write_own");
     expect(actor.permissions).not.toContain("org.attendance.write_own");
+    expect(actor.permissions).toContain("org.club_members.read");
+    expect(actor.permissions).not.toContain("org.club_members.write");
+    // Las del resto del cuerpo técnico no cambian.
+    expect(
+      await status(await request("GET", "/api/org/club-members", A, { cookie: as(physioA) })),
+    ).toBe(403);
 
     const overview = await json<{
-      exclusions: { userId: string; name: string; areas: string[] }[];
+      people: { userId: string; name: string; byRole: string[]; allow: string[]; deny: string[] }[];
     }>(await request("GET", "/api/org/access", A, { cookie: as(adminA) }), 200);
-    expect(overview.exclusions).toEqual([
-      { userId: coachA.id, name: "Caro Coach", areas: ["agenda", "facilities"] },
+    expect(overview.people).toEqual([
+      {
+        userId: coachA.id,
+        name: "Caro Coach",
+        byRole: coachByRole,
+        allow: ["club_members"],
+        deny: ["agenda", "facilities"],
+      },
     ]);
-    const members = await json<{ members: { userId: string; excludedAreas: string[] }[] }>(
-      await request("GET", "/api/org/members", A, { cookie: as(adminA) }),
-      200,
-    );
-    expect(members.members.find((m) => m.userId === coachA.id)?.excludedAreas).toEqual([
-      "agenda",
-      "facilities",
-    ]);
+    const members = await json<{
+      members: { userId: string; accessOverrides: { allow: string[]; deny: string[] } }[];
+    }>(await request("GET", "/api/org/members", A, { cookie: as(adminA) }), 200);
+    expect(members.members.find((m) => m.userId === coachA.id)?.accessOverrides).toEqual({
+      allow: ["club_members"],
+      deny: ["agenda", "facilities"],
+    });
 
-    // Sin exclusiones, vuelve lo de su rol.
-    await json(
-      await request("PUT", `/api/org/access/members/${coachA.id}`, A, {
-        cookie: as(adminA),
-        body: { areas: [] },
-      }),
-      200,
-    );
+    // Lo mismo que su rol no guarda nada.
+    expect(await json(await put(coachA, coachByRole), 200)).toEqual({
+      userId: coachA.id,
+      byRole: coachByRole,
+      allow: [],
+      deny: [],
+    });
     expect(await facilityNames(coachA)).toEqual(["Pista 1"]);
+
+    // Quitar las excepciones: vuelve lo de su rol.
+    await json(await put(coachA, wanted), 200);
+    expect(
+      await status(
+        await request("DELETE", `/api/org/access/members/${coachA.id}`, A, {
+          cookie: as(directorA),
+        }),
+      ),
+    ).toBe(403);
+    expect(
+      await status(
+        await request("DELETE", `/api/org/access/members/${adminB.id}`, A, { cookie: as(adminA) }),
+      ),
+    ).toBe(404);
+    expect(
+      await status(
+        await request("DELETE", `/api/org/access/members/${coachA.id}`, A, { cookie: as(adminA) }),
+      ),
+    ).toBe(204);
+    expect(await facilityNames(coachA)).toEqual(["Pista 1"]);
+    expect(
+      await status(await request("GET", "/api/org/club-members", A, { cookie: as(coachA) })),
+    ).toBe(403);
+    expect(
+      (
+        await json<{ people: unknown[] }>(
+          await request("GET", "/api/org/access", A, { cookie: as(adminA) }),
+          200,
+        )
+      ).people,
+    ).toEqual([]);
   });
 
   it("otro club ni ve ni hereda las reglas, las secciones ni el personal asignado", async () => {
@@ -793,13 +834,13 @@ describe("alcance y visibilidad por rol", () => {
     expect(await playerNames(coachA)).toEqual(["Clara"]);
     const overviewB = await json<{
       profiles: { profile: string; areas: { area: string; visible: boolean }[] }[];
-      exclusions: unknown[];
+      people: unknown[];
     }>(await request("GET", "/api/org/access", B, { cookie: as(adminB) }), 200);
     expect(
       overviewB.profiles.find((p) => p.profile === "coach")?.areas.find((a) => a.area === "players")
         ?.visible,
     ).toBe(false);
-    expect(overviewB.exclusions).toEqual([]);
+    expect(overviewB.people).toEqual([]);
     // Ni las secciones ni el personal asignado del A existen desde el B.
     expect(
       await status(
@@ -821,8 +862,13 @@ describe("alcance y visibilidad por rol", () => {
       await status(
         await request("PUT", `/api/org/access/members/${coachA.id}`, B, {
           cookie: as(adminB),
-          body: { areas: ["agenda"] },
+          body: { visible: ["agenda"] },
         }),
+      ),
+    ).toBe(404);
+    expect(
+      await status(
+        await request("DELETE", `/api/org/access/members/${coachA.id}`, B, { cookie: as(adminB) }),
       ),
     ).toBe(404);
   });

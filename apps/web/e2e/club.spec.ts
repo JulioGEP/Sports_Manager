@@ -49,38 +49,53 @@ test.describe("espacio del club", () => {
     await shot(page, "14-personal-acceso", info.project.name);
     await expectLegibleButtons(page);
 
-    // Exclusiones por persona: se añaden, se ven y se quitan aquí mismo, y en ningún otro sitio.
-    const exclusions = page.getByRole("list", { name: "Exclusiones por persona" });
-    await expect(page.getByText("Nadie tiene exclusiones.")).toBeVisible();
-    await page.getByRole("button", { name: "Añadir exclusión" }).click();
-    const exclusionSheet = page.getByRole("dialog");
-    await expect(exclusionSheet.getByRole("heading", { name: "Nueva exclusión" })).toBeVisible();
-    await exclusionSheet
+    // Excepciones por persona (ADR 0036): se añaden, se ven y se quitan aquí mismo, y en ningún
+    // otro sitio. Todas las áreas se editan: ver algo que su rol no ve, o no ver algo que sí.
+    const overrides = page.getByRole("list", { name: "Excepciones por persona" });
+    await expect(page.getByText("Nadie tiene excepciones.")).toBeVisible();
+    await page.getByRole("button", { name: "Añadir excepción" }).click();
+    const overrideSheet = page.getByRole("dialog");
+    await expect(overrideSheet.getByRole("heading", { name: "Nueva excepción" })).toBeVisible();
+    await overrideSheet
       .getByLabel("Persona", { exact: true })
       .selectOption({ label: "Carla Vidal · Entrenador" });
-    // Lo que trae su rol: el alcance, y lo que su rol ya no ve, marcado y bloqueado.
-    await expect(exclusionSheet.getByText("Lo que trae su rol: Entrenador")).toBeVisible();
-    await expect(exclusionSheet.getByText("Alcance: Sus equipos.")).toBeVisible();
-    const hiddenByRole = exclusionSheet.getByRole("checkbox", { name: "No ve Socios" });
-    await expect(hiddenByRole).toBeChecked();
-    await expect(hiddenByRole).toBeDisabled();
-    await expect(exclusionSheet.getByText("Por su rol", { exact: true })).toHaveCount(4);
-    const facilities = exclusionSheet.getByRole("checkbox", { name: "No ve Instalaciones" });
-    await expect(facilities).toBeEnabled();
-    await facilities.check();
-    await shot(page, "14b-personal-exclusion", info.project.name);
-    await exclusionSheet.getByRole("button", { name: "Guardar" }).click();
-    await expect(page.getByText("Exclusiones de Carla Vidal guardadas.")).toBeVisible();
-    await expect(exclusions.getByText("Carla Vidal · Entrenador")).toBeVisible();
-    await expect(exclusions.getByText("Sin Instalaciones")).toBeVisible();
-    await exclusions.getByRole("button", { name: "Quitar" }).click();
+    // Se parte de lo que trae su rol: el alcance, lo que ve marcado y lo que no, sin marcar.
+    await expect(overrideSheet.getByText("Lo que trae su rol: Entrenador")).toBeVisible();
+    await expect(overrideSheet.getByText(/^Alcance: Sus equipos\./)).toBeVisible();
+    const members = overrideSheet.getByRole("checkbox", { name: "Socios", exact: true });
+    const facilities = overrideSheet.getByRole("checkbox", { name: "Instalaciones", exact: true });
+    await expect(members).not.toBeChecked();
+    await expect(members).toBeEnabled();
+    await expect(facilities).toBeChecked();
+    await expect(overrideSheet.getByText("Su rol no lo ve")).toHaveCount(4);
+    await expect(overrideSheet.getByText("Excepción", { exact: true })).toHaveCount(0);
+    await members.check();
+    await facilities.uncheck();
+    await expect(overrideSheet.getByText("Excepción", { exact: true })).toHaveCount(2);
+    await shot(page, "14b-personal-excepcion", info.project.name);
+    await overrideSheet.getByRole("button", { name: "Guardar" }).click();
+    await expect(page.getByText("Excepciones de Carla Vidal guardadas.")).toBeVisible();
+    await expect(overrides.getByText("Carla Vidal · Entrenador")).toBeVisible();
+    await expect(overrides.getByText("Ve Socios")).toBeVisible();
+    await expect(overrides.getByText("Sin Instalaciones")).toBeVisible();
+    // Al editarla, la hoja recuerda sus excepciones.
+    await overrides.getByRole("button", { name: "Editar" }).click();
+    await expect(
+      page.getByRole("dialog").getByRole("checkbox", { name: "Socios", exact: true }),
+    ).toBeChecked();
+    await expect(
+      page.getByRole("dialog").getByRole("checkbox", { name: "Instalaciones", exact: true }),
+    ).not.toBeChecked();
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("dialog")).toBeHidden();
+    await overrides.getByRole("button", { name: "Quitar" }).click();
     await page.getByRole("dialog").getByRole("button", { name: "Quitar" }).click();
-    await expect(page.getByText("Nadie tiene exclusiones.")).toBeVisible();
+    await expect(page.getByText("Nadie tiene excepciones.")).toBeVisible();
 
-    // La hoja de roles ya no las lleva.
+    // La hoja de roles no las lleva.
     await page.getByRole("tab", { name: /^Personal/ }).click();
     await page.getByRole("button", { name: "Roles" }).first().click();
-    await expect(page.getByRole("dialog").getByText(/Exclusiones/)).toHaveCount(0);
+    await expect(page.getByRole("dialog").getByText(/Excepciones|Exclusiones/)).toHaveCount(0);
     await page.keyboard.press("Escape");
   });
 

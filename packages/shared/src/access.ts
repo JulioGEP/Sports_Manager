@@ -185,8 +185,9 @@ export const ACCESS_EFFECTS = ["allow", "deny"] as const;
 export type AccessEffect = (typeof ACCESS_EFFECTS)[number];
 
 /**
- * Una regla: por perfil (incluir o excluir un área para todo el que tenga ese rol o cargo) o
- * por persona (solo excluir: las "exclusiones especiales"). La administración nunca se ve afectada.
+ * Una regla: por perfil (incluir o excluir un área para todo el que tenga ese rol o cargo) o por
+ * persona (las excepciones de una persona concreta, ADR 0036: que vea un área que su rol no ve, o
+ * que no vea una que su rol sí). La administración nunca se ve afectada.
  */
 export interface AccessRule {
   profile: AccessProfile | null;
@@ -218,7 +219,8 @@ export function visibleAreas(
 /**
  * Permisos efectivos de una persona: por cada pertenencia, los del rol y el cargo con las reglas
  * de su perfil aplicadas (excluir quita todo lo del área, incluir da su lectura); la unión de
- * todas; y al final las exclusiones de la persona. Quien administra no pierde nada.
+ * todas; y al final las excepciones de la persona, con el mismo criterio. Quien administra no
+ * pierde ni gana nada por reglas.
  */
 export function effectivePermissions(
   memberships: Iterable<MembershipRole>,
@@ -242,9 +244,47 @@ export function effectivePermissions(
   }
   if (!admin) {
     for (const rule of rules) {
-      if (rule.userId === null || rule.effect !== "deny") continue;
-      for (const p of AREA_PERMISSIONS[rule.area].all) result.delete(p);
+      if (rule.userId === null) continue;
+      if (rule.effect === "deny") for (const p of AREA_PERMISSIONS[rule.area].all) result.delete(p);
+      else for (const p of AREA_PERMISSIONS[rule.area].reads) result.add(p);
     }
   }
   return result;
+}
+
+/**
+ * Lo que una persona ve por su rol: sus pertenencias con las reglas de sus perfiles, sin sus
+ * excepciones. Es el punto de partida de la hoja de excepciones.
+ */
+export function roleVisibleAreas(
+  memberships: Iterable<MembershipRole>,
+  rules: readonly AccessRule[],
+): AccessArea[] {
+  return visibleAreas(
+    effectivePermissions(
+      memberships,
+      rules.filter((r) => r.userId === null),
+    ),
+  );
+}
+
+/**
+ * Las excepciones que hacen falta para que una persona vea exactamente `wanted`: `allow` lo que su
+ * rol no ve y ella sí, `deny` lo que su rol ve y ella no. Lo que coincide con su rol no se guarda.
+ */
+export function overridesFor(
+  byRole: readonly AccessArea[],
+  wanted: readonly AccessArea[],
+): { allow: AccessArea[]; deny: AccessArea[] } {
+  const role = new Set(byRole);
+  const want = new Set(wanted);
+  return {
+    allow: ACCESS_AREAS.filter((a) => want.has(a) && !role.has(a)),
+    deny: ACCESS_AREAS.filter((a) => role.has(a) && !want.has(a)),
+  };
+}
+
+/** Quién puede tener excepciones: el personal y el cuerpo técnico que no administran el club. */
+export function canHaveOverrides(roles: readonly string[]): boolean {
+  return !roles.includes("org_admin") && roles.some((r) => r === "coach" || r === "staff");
 }

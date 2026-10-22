@@ -3,13 +3,16 @@ import {
   ACCESS_AREAS,
   ACCESS_PROFILES,
   AREA_PERMISSIONS,
+  canHaveOverrides,
   CONFIGURABLE_PROFILES,
   defaultPermissionsOf,
   effectivePermissions,
   isAreaVisible,
   membershipOfProfile,
+  overridesFor,
   profileOf,
   PROFILE_SCOPE,
+  roleVisibleAreas,
   scopeKindsOf,
   summarizeScope,
   visibleAreas,
@@ -94,16 +97,22 @@ describe("ámbito y áreas de acceso (Bloque 19)", () => {
     expect(physio.has("org.club_members.read")).toBe(false);
   });
 
-  it("las exclusiones de una persona mandan sobre su rol, pero nunca sobre la administración", () => {
+  it("las excepciones de una persona mandan sobre su rol en los dos sentidos, pero nunca sobre la administración", () => {
     const rules: AccessRule[] = [
       { profile: null, userId: "u1", area: "agenda", effect: "deny" },
+      { profile: null, userId: "u1", area: "club_members", effect: "allow" },
       { profile: "org_admin", userId: null, area: "fees", effect: "deny" },
+      { profile: "coach", userId: null, area: "club_members", effect: "deny" },
     ];
     const coach = effectivePermissions([{ roleCode: "coach", position: null }], rules);
     expect(coach.has("org.events.read")).toBe(false);
     expect(coach.has("org.events.write_own")).toBe(false);
     expect(coach.has("org.attendance.write_own")).toBe(false);
     expect(coach.has("org.players.read")).toBe(true);
+    // Ve socios aunque su rol no: la excepción de la persona va después de la regla del perfil.
+    expect(isAreaVisible(coach, "club_members")).toBe(true);
+    for (const p of AREA_PERMISSIONS.club_members.all)
+      if (!AREA_PERMISSIONS.club_members.reads.includes(p)) expect(coach.has(p)).toBe(false);
 
     const admin = effectivePermissions(
       [
@@ -114,6 +123,29 @@ describe("ámbito y áreas de acceso (Bloque 19)", () => {
     );
     expect(admin.has("org.events.read")).toBe(true);
     expect(admin.has("org.fees.read")).toBe(true);
+  });
+
+  it("lo que ve por su rol ignora sus excepciones; las excepciones son la diferencia con lo que se quiere", () => {
+    const rules: AccessRule[] = [
+      { profile: "coach", userId: null, area: "facilities", effect: "deny" },
+      { profile: null, userId: "u1", area: "agenda", effect: "deny" },
+    ];
+    const byRole = roleVisibleAreas([{ roleCode: "coach", position: null }], rules);
+    expect(byRole).toContain("agenda");
+    expect(byRole).not.toContain("facilities");
+    expect(byRole).not.toContain("club_members");
+
+    const wanted = [...byRole.filter((a) => a !== "players"), "club_members" as const];
+    expect(overridesFor(byRole, wanted)).toEqual({ allow: ["club_members"], deny: ["players"] });
+    expect(overridesFor(byRole, byRole)).toEqual({ allow: [], deny: [] });
+  });
+
+  it("solo el personal y el cuerpo técnico que no administran tienen excepciones", () => {
+    expect(canHaveOverrides(["coach"])).toBe(true);
+    expect(canHaveOverrides(["staff"])).toBe(true);
+    expect(canHaveOverrides(["guardian", "coach"])).toBe(true);
+    expect(canHaveOverrides(["guardian"])).toBe(false);
+    expect(canHaveOverrides(["org_admin", "coach"])).toBe(false);
   });
 
   it("con varios roles, los permisos son la unión después de aplicar las reglas de cada perfil", () => {
