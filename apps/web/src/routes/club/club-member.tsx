@@ -24,7 +24,6 @@ import {
   Alert,
   Avatar,
   Button,
-  ButtonLink,
   Card,
   ConfirmDialog,
   DataList,
@@ -38,6 +37,7 @@ import {
   Sheet,
   StatusChip,
   useToast,
+  type RowAction,
 } from "@/ui";
 import { memberStatusKind } from "./club-members";
 
@@ -115,12 +115,9 @@ export function ClubMemberPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <div>
-        <ButtonLink action="back" to={paths.clubMembers} variant="tertiary" size="sm">
-          {t("back")}
-        </ButtonLink>
-      </div>
       <PageHeader
+        backTo={paths.clubMembers}
+        backLabel={t("back")}
         eyebrow={t("eyebrow", {
           number: member.memberNumber,
           type: member.memberType?.name ?? t("noType"),
@@ -324,21 +321,20 @@ export function ClubMemberPage() {
                 subtitle: `${dates.day(ch.dueOn)} · ${money(ch.amountCents)}`,
                 trailing: <FeeStatusChip status={ch.status} />,
               })}
-              mobileActionsBelow
-              actions={
+              rowActions={
                 canFeesWrite
-                  ? (ch) =>
-                      ch.status === "pending" || ch.status === "overdue" ? (
-                        <Button
-                          iconOnly
-                          action="pay"
-                          variant="secondary"
-                          size="sm"
-                          onClick={() => setPaying(ch)}
-                        >
-                          {t("fees.pay")}
-                        </Button>
-                      ) : null
+                  ? (ch): RowAction[] =>
+                      ch.status === "pending" || ch.status === "overdue"
+                        ? [
+                            {
+                              key: "pay",
+                              label: t("fees.pay"),
+                              action: "pay",
+                              tone: "primary",
+                              onClick: () => setPaying(ch),
+                            },
+                          ]
+                        : []
                   : undefined
               }
             />

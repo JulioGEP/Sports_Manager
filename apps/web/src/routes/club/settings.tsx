@@ -55,6 +55,7 @@ import {
   Tabs,
   useToast,
   type ActionKind,
+  type RowAction,
 } from "@/ui";
 
 const TABS = [
@@ -615,24 +616,20 @@ function SeasonsTab() {
             subtitle: range(s.startsOn, s.endsOn),
             trailing: s.isCurrent ? <StatusChip kind="club">{t("current")}</StatusChip> : null,
           })}
-          actions={(s) => (
-            <span className="flex flex-wrap justify-end gap-2">
-              <Button
-                iconOnly
-                action="edit"
-                size="sm"
-                variant="secondary"
-                onClick={() => setEditing(s)}
-              >
-                {t("edit")}
-              </Button>
-              {!s.isCurrent ? (
-                <Button size="sm" variant="tertiary" onClick={() => void makeCurrent(s)}>
-                  {t("makeCurrent")}
-                </Button>
-              ) : null}
-            </span>
-          )}
+          rowActions={(s): RowAction[] => [
+            { key: "edit", label: t("edit"), action: "edit", onClick: () => setEditing(s) },
+            ...(!s.isCurrent
+              ? [
+                  {
+                    key: "current",
+                    label: t("makeCurrent"),
+                    action: "current" as const,
+                    tone: "primary" as const,
+                    onClick: () => void makeCurrent(s),
+                  },
+                ]
+              : []),
+          ]}
           empty={
             <EmptyState
               icon={<Icon.CalendarBlank weight="duotone" />}
@@ -898,40 +895,23 @@ function MemberTypesTab() {
                 <StatusChip kind="neutral">{t("status.archived")}</StatusChip>
               ) : null,
           })}
-          actions={(m) => (
-            <span className="flex flex-wrap justify-end gap-2">
-              <Button
-                iconOnly
-                action="edit"
-                size="sm"
-                variant="secondary"
-                onClick={() => setRenaming(m)}
-              >
-                {t("rename")}
-              </Button>
-              {m.status === "active" ? (
-                <Button
-                  iconOnly
-                  action="archive"
-                  size="sm"
-                  variant="danger"
-                  onClick={() => void setStatus(m, "archived")}
-                >
-                  {t("archive")}
-                </Button>
-              ) : (
-                <Button
-                  iconOnly
-                  action="restore"
-                  size="sm"
-                  variant="secondary"
-                  onClick={() => void setStatus(m, "active")}
-                >
-                  {t("restore")}
-                </Button>
-              )}
-            </span>
-          )}
+          rowActions={(m): RowAction[] => [
+            { key: "rename", label: t("rename"), action: "edit", onClick: () => setRenaming(m) },
+            m.status === "active"
+              ? {
+                  key: "archive",
+                  label: t("archive"),
+                  action: "archive",
+                  tone: "danger",
+                  onClick: () => void setStatus(m, "archived"),
+                }
+              : {
+                  key: "restore",
+                  label: t("restore"),
+                  action: "restore",
+                  onClick: () => void setStatus(m, "active"),
+                },
+          ]}
           empty={
             <EmptyState
               icon={<Icon.IdentificationCard weight="duotone" />}

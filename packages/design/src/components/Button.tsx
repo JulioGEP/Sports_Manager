@@ -8,6 +8,8 @@ import { ActionIcon, trailingActions, type ActionKind } from "../icons/actions";
  * - tertiary: acciones de bajo peso, como "Cancelar" en línea.
  * - danger: acciones delicadas en su primer paso (abre la confirmación).
  * - danger-solid: solo dentro del diálogo de confirmación.
+ * - ghost y ghost-danger: acciones silenciosas de fila, sin borde ni fondo hasta pasar el ratón.
+ *   Siempre solo con icono (`iconOnly`): no compiten con el contenido de la fila.
  * La forma (píldora o radio 8) y la altura (48 o 44 px) las pone el contexto data-shape.
  * El texto del botón es siempre un verbo: "Pagar", "Guardar asistencia", nunca "Aceptar".
  * Toda acción reconocible lleva su icono del catálogo (`action`), siempre el mismo en toda la app.
@@ -15,7 +17,8 @@ import { ActionIcon, trailingActions, type ActionKind } from "../icons/actions";
  * el verbo pasa a texto solo para lectores de pantalla y al `title`, así el nombre accesible no cambia.
  */
 
-export type ButtonVariant = "primary" | "secondary" | "tertiary" | "danger" | "danger-solid";
+export type ButtonVariant =
+  "primary" | "secondary" | "tertiary" | "danger" | "danger-solid" | "ghost" | "ghost-danger";
 export type ButtonSize = "md" | "sm";
 
 export interface ButtonStyleOptions {
@@ -69,7 +72,10 @@ const variants: Record<ButtonVariant, string> = {
   tertiary: "bg-transparent text-club-text",
   danger: "border border-danger-border bg-surface text-danger",
   "danger-solid": "bg-danger-solid text-white",
+  ghost: "bg-transparent text-muted hover:bg-raised hover:text-ink",
+  "ghost-danger": "bg-transparent text-danger hover:bg-danger-soft",
 };
+const quiet = new Set<ButtonVariant>(["tertiary", "ghost", "ghost-danger"]);
 
 /** Clases del botón, también para enlaces con aspecto de botón. */
 export function buttonClassName({
@@ -77,8 +83,13 @@ export function buttonClassName({
   cta = false,
   size = "md",
 }: ButtonStyleOptions = {}): string {
-  const padding =
-    variant === "tertiary" ? (size === "sm" ? "px-2" : "px-3") : size === "sm" ? "px-4" : "px-5";
+  const padding = quiet.has(variant)
+    ? size === "sm"
+      ? "px-2"
+      : "px-3"
+    : size === "sm"
+      ? "px-4"
+      : "px-5";
   const measure = cta
     ? "h-13 w-full text-body font-semibold envolvente:shadow-float"
     : size === "sm"

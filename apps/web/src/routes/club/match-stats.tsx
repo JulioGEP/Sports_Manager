@@ -291,12 +291,9 @@ function StatsView({
 
   return (
     <div className="flex flex-col gap-5">
-      <div>
-        <ButtonLink to={back} variant="tertiary" size="sm" action="back">
-          {t("back", { team: match.team.name })}
-        </ButtonLink>
-      </div>
       <PageHeader
+        backTo={back}
+        backLabel={t("back", { team: match.team.name })}
         eyebrow={`${match.team.name} · ${dayOf(match.playedOn)} · ${match.homeAway === "home" ? tm("home") : tm("away")}`}
         title={
           <>

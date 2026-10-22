@@ -30,6 +30,7 @@ import {
   Icon,
   StatusChip,
   useToast,
+  BackLink,
 } from "@/ui";
 
 function Eyebrow({ children }: { children: ReactNode }) {
@@ -161,11 +162,7 @@ export function FamilyPlayerPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <div>
-        <ButtonLink action="back" to={paths.family} variant="tertiary" size="sm">
-          {t("back")}
-        </ButtonLink>
-      </div>
+      <BackLink to={paths.family}>{t("back")}</BackLink>
 
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex min-w-0 flex-wrap gap-4">

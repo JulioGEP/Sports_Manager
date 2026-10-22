@@ -22,7 +22,6 @@ import {
   Alert,
   Avatar,
   Button,
-  ButtonLink,
   Card,
   DataList,
   EmptyState,
@@ -269,17 +268,7 @@ export function ClubMembersPage() {
             }`,
             trailing: <StatusChip kind={memberStatusKind[m.status]}>{ms(m.status)}</StatusChip>,
           })}
-          actions={(m) => (
-            <ButtonLink
-              iconOnly
-              action="open"
-              to={paths.clubMember(m.id)}
-              variant="secondary"
-              size="sm"
-            >
-              {c("open")}
-            </ButtonLink>
-          )}
+          href={(m) => paths.clubMember(m.id)}
         />
       </Card>
       {canWrite ? (

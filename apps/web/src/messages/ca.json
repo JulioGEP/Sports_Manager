@@ -9,7 +9,8 @@
     "remove": "Treure",
     "open": "Obrir",
     "current": "Actual",
-    "edit": "Editar"
+    "edit": "Editar",
+    "moreActions": "Més accions"
   },
   "nav": {
     "home": "Inici",
@@ -947,6 +948,11 @@
       "empty": "Encara no hi ha partits registrats.",
       "live": "En directe",
       "scheduled": "Sense començar"
+    },
+    "view": {
+      "label": "Vista de la plantilla",
+      "board": "Tauler",
+      "list": "Llista"
     }
   },
   "players": {
@@ -2704,5 +2710,39 @@
     "rating": "Valoració",
     "starter": "titular",
     "bench": "banqueta"
+  },
+  "palette": {
+    "open": "Cerca o fes",
+    "placeholder": "Cerca persones, equips, pantalles o accions",
+    "empty": "Res que coincideixi amb «{query}».",
+    "hint": "Prem {keys} a qualsevol pantalla",
+    "groups": {
+      "recent": "Recents",
+      "actions": "Accions",
+      "go": "Anar a",
+      "players": "Esportistes",
+      "teams": "Equips",
+      "sections": "Seccions",
+      "staff": "Personal",
+      "clubMembers": "Socis",
+      "facilities": "Instal·lacions",
+      "family": "La meva família"
+    },
+    "actions": {
+      "newPlayer": "Nou esportista",
+      "newSection": "Nova secció",
+      "newClubMember": "Nou soci",
+      "newFacility": "Nova instal·lació",
+      "invite": "Convidar algú",
+      "newChallenge": "Nou repte",
+      "newSeason": "Nova temporada"
+    },
+    "keys": {
+      "move": "moure's",
+      "open": "obrir",
+      "close": "tancar"
+    },
+    "noTeam": "Sense equip",
+    "memberNumber": "Soci núm. {number}"
   }
 }

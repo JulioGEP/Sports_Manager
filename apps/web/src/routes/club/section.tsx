@@ -331,17 +331,7 @@ export function SectionPage() {
                           : t("noStaff")
                       }`,
                     })}
-                    actions={(team) => (
-                      <ButtonLink
-                        iconOnly
-                        action="open"
-                        to={paths.team(team.id)}
-                        variant="secondary"
-                        size="sm"
-                      >
-                        {c("open")}
-                      </ButtonLink>
-                    )}
+                    href={(team) => paths.team(team.id)}
                   />
                 </Card>
               ))

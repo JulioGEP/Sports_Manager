@@ -96,7 +96,7 @@ test.describe("reto por puntos y paneles del personal", () => {
 
     // Sin equipo por medio (desde la vista de conjunto), la validación es de toda la sección.
     await page.goto(`${CLUB}/challenges`);
-    await page.getByRole("link", { name: "Abrir" }).first().click();
+    await page.getByRole("link", { name: "Reto de hábitos 2026-27" }).first().click();
     await page.getByRole("tab", { name: /Validación/ }).click();
     await page.getByLabel("Estado").selectOption("");
     await expect(page.getByText("Marc Martí").first()).toBeVisible();

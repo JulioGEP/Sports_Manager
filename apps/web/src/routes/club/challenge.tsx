@@ -32,7 +32,6 @@ import {
   Alert,
   Avatar,
   Button,
-  ButtonLink,
   Card,
   ConfirmDialog,
   DataList,
@@ -46,6 +45,7 @@ import {
   StatusChip,
   Tabs,
   useToast,
+  type RowAction,
 } from "@/ui";
 import {
   ScopeFields,
@@ -169,21 +169,15 @@ export function ChallengePage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <div>
-        <ButtonLink
-          action="back"
-          to={backTeam ? paths.team(backTeam.id) : paths.section(challenge.section.id)}
-          variant="tertiary"
-          size="sm"
-        >
-          {backTeam
+      <PageHeader
+        backTo={backTeam ? paths.team(backTeam.id) : paths.section(challenge.section.id)}
+        backLabel={
+          backTeam
             ? backTeam.name
               ? t("backTeam", { team: backTeam.name })
               : t("backTeamShort")
-            : t("backSection", { section: challenge.section.name })}
-        </ButtonLink>
-      </div>
-      <PageHeader
+            : t("backSection", { section: challenge.section.name })
+        }
         eyebrow={`${scopeLabel(challenge)} · ${challenge.season ? `${challenge.season.name} · ` : ""}${period}`}
         title={
           <>
@@ -345,33 +339,27 @@ export function ChallengePage() {
                   <StatusChip kind="neutral">{t("tasks.archived")}</StatusChip>
                 ) : undefined,
             })}
-            mobileActionsBelow
-            actions={
+            rowActions={
               editable
-                ? (task) => (
-                    <>
-                      <Button
-                        iconOnly
-                        action="edit"
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => setTaskSheet(task)}
-                      >
-                        {t("tasks.edit")}
-                      </Button>
-                      {task.status === "active" ? (
-                        <Button
-                          iconOnly
-                          action="delete"
-                          variant="danger"
-                          size="sm"
-                          onClick={() => setRemovingTask(task)}
-                        >
-                          {t("tasks.remove")}
-                        </Button>
-                      ) : null}
-                    </>
-                  )
+                ? (task): RowAction[] => [
+                    {
+                      key: "edit",
+                      label: t("tasks.edit"),
+                      action: "edit",
+                      onClick: () => setTaskSheet(task),
+                    },
+                    ...(task.status === "active"
+                      ? [
+                          {
+                            key: "remove",
+                            label: t("tasks.remove"),
+                            action: "delete" as const,
+                            tone: "danger" as const,
+                            onClick: () => setRemovingTask(task),
+                          },
+                        ]
+                      : []),
+                  ]
                 : undefined
             }
           />
@@ -580,31 +568,29 @@ function ReviewTab({
               </StatusChip>
             ),
           })}
-          mobileActionsBelow
-          actions={
+          rowActions={
             closed
               ? undefined
-              : (s) =>
-                  s.status === "submitted" ? (
-                    <>
-                      <Button
-                        action="approve"
-                        size="sm"
-                        loading={busy === s.id}
-                        onClick={() => void review(s, "approved")}
-                      >
-                        {t("approve")}
-                      </Button>
-                      <Button
-                        action="reject"
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => setRejecting(s)}
-                      >
-                        {t("reject")}
-                      </Button>
-                    </>
-                  ) : null
+              : (s): RowAction[] =>
+                  s.status === "submitted"
+                    ? [
+                        {
+                          key: "approve",
+                          label: t("approve"),
+                          action: "approve",
+                          tone: "primary",
+                          loading: busy === s.id,
+                          onClick: () => void review(s, "approved"),
+                        },
+                        {
+                          key: "reject",
+                          label: t("reject"),
+                          action: "reject",
+                          tone: "danger",
+                          onClick: () => setRejecting(s),
+                        },
+                      ]
+                    : []
           }
         />
       </Card>

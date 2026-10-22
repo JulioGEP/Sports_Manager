@@ -3,6 +3,8 @@ import {
   EligibleMembersResponseSchema,
   MatchesResponseSchema,
   PlayersResponseSchema,
+  SectionsResponseSchema,
+  SportCatalogResponseSchema,
   TEAM_STAFF_ROLES,
   TeamDetailResponseSchema,
   playerDisplayName,
@@ -16,7 +18,7 @@ import { Link, useNavigate, useParams } from "react-router";
 import { ApiClientError, apiFetch, errorKey } from "@/lib/api";
 import { clubPaths, useReadyClub } from "@/lib/club";
 import { useDates } from "@/lib/dates";
-import { useT } from "@/lib/intl";
+import { useLocale, useT } from "@/lib/intl";
 import {
   Alert,
   Avatar,
@@ -30,16 +32,37 @@ import {
   Icon,
   Input,
   PageHeader,
+  Segmented,
   Select,
   Sheet,
   StatusChip,
   useToast,
+  type RowAction,
 } from "@/ui";
 import { ChallengesCard } from "./challenges-card";
+import { RosterBoard } from "./roster-board";
 import { TeamSheet } from "./section";
 import { ScheduleSheet } from "./team-schedule";
 
 type Staff = TeamDetailResponse["staff"][number];
+type RosterView = "board" | "list";
+
+/** Cómo prefiere ver la plantilla quien usa este navegador: tablero por posición o lista. */
+const ROSTER_VIEW_KEY = "sm.rosterView";
+function readRosterView(): RosterView {
+  try {
+    return localStorage.getItem(ROSTER_VIEW_KEY) === "list" ? "list" : "board";
+  } catch {
+    return "board";
+  }
+}
+function storeRosterView(view: RosterView) {
+  try {
+    localStorage.setItem(ROSTER_VIEW_KEY, view);
+  } catch {
+    /* sin almacenamiento: la preferencia dura lo que dura la página */
+  }
+}
 
 /** Ficha de un equipo: plantilla con dorsales y posiciones, y cuerpo técnico. */
 export function TeamPage() {
@@ -55,6 +78,7 @@ export function TeamPage() {
   const dates = useDates();
   const { id = "" } = useParams();
   const { org, slug } = useReadyClub();
+  const { locale } = useLocale();
   const paths = clubPaths(slug);
   const permissions = org.actor.permissions;
   const canWrite = permissions.includes("org.structure.write");
@@ -73,6 +97,29 @@ export function TeamPage() {
       apiFetch(`/api/org/categories?section=${sectionId}`, { schema: CategoriesResponseSchema }),
     enabled: canWrite && Boolean(sectionId),
   });
+  const [view, setView] = useState<RosterView>(readRosterView);
+  function changeView(next: RosterView) {
+    setView(next);
+    storeRosterView(next);
+  }
+  /** El orden de las posiciones lo da el deporte de la sección (portero, cierre, ala, pívot). */
+  const sections = useQuery({
+    queryKey: ["org", slug, "sections"],
+    queryFn: () => apiFetch("/api/org/sections", { schema: SectionsResponseSchema }),
+    enabled: canSeePlayers && view === "board",
+    retry: false,
+  });
+  const sports = useQuery({
+    queryKey: ["org", slug, "sports"],
+    queryFn: () => apiFetch("/api/org/sports", { schema: SportCatalogResponseSchema }),
+    enabled: canSeePlayers && view === "board",
+    retry: false,
+  });
+  const positionsOrder = useMemo(() => {
+    const code = sections.data?.sections.find((sec) => sec.id === sectionId)?.sport.code;
+    const sport = sports.data?.sports.find((sp) => sp.code === code);
+    return sport?.config.positions.map((pos) => pos[locale]) ?? [];
+  }, [sections.data, sports.data, sectionId, locale]);
   const [schedule, setSchedule] = useState(false);
   const reload = () => client.invalidateQueries({ queryKey: ["org", slug] });
   /** Partidos del equipo (Bloque 20): los últimos y la entrada al partido en directo. */
@@ -138,12 +185,9 @@ export function TeamPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <div>
-        <ButtonLink action="back" to={paths.section(team.section.id)} variant="tertiary" size="sm">
-          {t("back")}
-        </ButtonLink>
-      </div>
       <PageHeader
+        backTo={paths.section(team.section.id)}
+        backLabel={t("back")}
         eyebrow={`${team.section.name} · ${team.season.name}`}
         title={
           <>
@@ -181,11 +225,44 @@ export function TeamPage() {
             title={t("roster")}
             description={t("rosterDescription", { count: roster.length })}
             padded={false}
+            actions={
+              canSeePlayers && roster.length > 0 ? (
+                <Segmented<RosterView>
+                  label={t("view.label")}
+                  value={view}
+                  onChange={changeView}
+                  options={[
+                    {
+                      key: "board",
+                      label: t("view.board"),
+                      icon: <Icon.SquaresFour size={16} aria-hidden="true" />,
+                    },
+                    {
+                      key: "list",
+                      label: t("view.list"),
+                      icon: <Icon.Rows size={16} aria-hidden="true" />,
+                    },
+                  ]}
+                />
+              ) : null
+            }
           >
             {!canSeePlayers ? (
               <div className="px-5 pb-5">
                 <Alert kind="info">{t("rosterHidden")}</Alert>
               </div>
+            ) : view === "board" && roster.length > 0 ? (
+              <RosterBoard
+                roster={roster}
+                positionsOrder={positionsOrder}
+                name={name}
+                ageOf={ageOf}
+                href={(p) => paths.player(p.playerId)}
+                statusLabel={(status) => ps(status)}
+                canEdit={canRoster}
+                onEdit={(p) => setEntry(p)}
+                onRemove={(p) => setRemoving(p)}
+              />
             ) : (
               <DataList<RosterEntry>
                 caption={t("roster")}
@@ -255,31 +332,24 @@ export function TeamPage() {
                   title: <Link to={paths.player(p.playerId)}>{name(p)}</Link>,
                   subtitle: `${p.position ?? t("noPosition")} · ${ageOf(p)}`,
                 })}
-                mobileActionsBelow
-                actions={
+                href={(p) => paths.player(p.playerId)}
+                rowActions={
                   canRoster
-                    ? (p) => (
-                        <>
-                          <Button
-                            iconOnly
-                            action="edit"
-                            variant="secondary"
-                            size="sm"
-                            onClick={() => setEntry(p)}
-                          >
-                            {t("editEntry")}
-                          </Button>
-                          <Button
-                            iconOnly
-                            action="delete"
-                            variant="danger"
-                            size="sm"
-                            onClick={() => setRemoving(p)}
-                          >
-                            {t("remove")}
-                          </Button>
-                        </>
-                      )
+                    ? (p): RowAction[] => [
+                        {
+                          key: "edit",
+                          label: t("editEntry"),
+                          action: "edit",
+                          onClick: () => setEntry(p),
+                        },
+                        {
+                          key: "remove",
+                          label: t("remove"),
+                          action: "delete",
+                          tone: "danger",
+                          onClick: () => setRemoving(p),
+                        },
+                      ]
                     : undefined
                 }
               />

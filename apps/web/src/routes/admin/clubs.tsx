@@ -18,7 +18,6 @@ import { useLocale, useT } from "@/lib/intl";
 import {
   Alert,
   Button,
-  ButtonLink,
   Card,
   Crest,
   DataList,
@@ -136,17 +135,7 @@ export function PlatformClubsPage() {
             subtitle: `/${o.slug}`,
             trailing: <StatusChip kind={statusKind[o.status]}>{statuses(o.status)}</StatusChip>,
           })}
-          actions={(o) => (
-            <ButtonLink
-              iconOnly
-              action="open"
-              to={`/admin/clubs/${o.slug}`}
-              variant="secondary"
-              size="sm"
-            >
-              {t("manage")}
-            </ButtonLink>
-          )}
+          href={(o) => `/admin/clubs/${o.slug}`}
         />
       </Card>
       <CreateSheet open={createOpen} onClose={() => setCreateOpen(false)} />

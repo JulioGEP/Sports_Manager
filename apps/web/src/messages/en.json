@@ -9,7 +9,8 @@
     "remove": "Remove",
     "open": "Open",
     "current": "Current",
-    "edit": "Edit"
+    "edit": "Edit",
+    "moreActions": "More actions"
   },
   "nav": {
     "home": "Home",
@@ -947,6 +948,11 @@
       "empty": "No matches recorded yet.",
       "live": "Live",
       "scheduled": "Not started"
+    },
+    "view": {
+      "label": "Roster view",
+      "board": "Board",
+      "list": "List"
     }
   },
   "players": {
@@ -2704,5 +2710,39 @@
     "rating": "Rating",
     "starter": "starter",
     "bench": "bench"
+  },
+  "palette": {
+    "open": "Search or do",
+    "placeholder": "Search people, teams, screens or actions",
+    "empty": "Nothing matches “{query}”.",
+    "hint": "Press {keys} on any screen",
+    "groups": {
+      "recent": "Recent",
+      "actions": "Actions",
+      "go": "Go to",
+      "players": "Athletes",
+      "teams": "Teams",
+      "sections": "Sections",
+      "staff": "Staff",
+      "clubMembers": "Members",
+      "facilities": "Facilities",
+      "family": "My family"
+    },
+    "actions": {
+      "newPlayer": "New athlete",
+      "newSection": "New section",
+      "newClubMember": "New member",
+      "newFacility": "New facility",
+      "invite": "Invite someone",
+      "newChallenge": "New challenge",
+      "newSeason": "New season"
+    },
+    "keys": {
+      "move": "move",
+      "open": "open",
+      "close": "close"
+    },
+    "noTeam": "No team",
+    "memberNumber": "Member no. {number}"
   }
 }

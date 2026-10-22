@@ -39,7 +39,7 @@ test.describe("club completo", () => {
     await page
       .locator("tr, li")
       .filter({ hasText: "Laura Martí" })
-      .getByRole("link", { name: "Abrir" })
+      .getByRole("link", { name: "Laura Martí" })
       .first()
       .click();
     await expect(page.getByRole("heading", { name: "Laura Martí" })).toBeVisible();

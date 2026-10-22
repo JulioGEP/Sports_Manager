@@ -44,6 +44,7 @@ import {
   StatusChip,
   Tabs,
   useToast,
+  type RowAction,
 } from "@/ui";
 
 /**
@@ -289,39 +290,36 @@ function ChargesTab({ canWrite }: { canWrite: boolean }) {
             </span>
           ),
         })}
-        actions={
+        rowActions={
           canWrite
-            ? (ch) => (
-                <span className="flex flex-wrap justify-end gap-2">
-                  {ch.status === "pending" || ch.status === "overdue" ? (
-                    <>
-                      <Button iconOnly action="pay" size="sm" onClick={() => setPaying(ch)}>
-                        {t("recordPayment")}
-                      </Button>
-                      <Button
-                        iconOnly
-                        action="suspend"
-                        size="sm"
-                        variant="danger"
-                        onClick={() => setCancelling(ch)}
-                      >
-                        {t("cancel")}
-                      </Button>
-                    </>
-                  ) : null}
-                  {ch.status === "cancelled" ? (
-                    <Button
-                      iconOnly
-                      action="restore"
-                      size="sm"
-                      variant="secondary"
-                      onClick={() => void setChargeStatus(ch, "pending")}
-                    >
-                      {t("reactivate")}
-                    </Button>
-                  ) : null}
-                </span>
-              )
+            ? (ch): RowAction[] =>
+                ch.status === "pending" || ch.status === "overdue"
+                  ? [
+                      {
+                        key: "pay",
+                        label: t("recordPayment"),
+                        action: "pay",
+                        tone: "primary",
+                        onClick: () => setPaying(ch),
+                      },
+                      {
+                        key: "cancel",
+                        label: t("cancel"),
+                        action: "suspend",
+                        tone: "danger",
+                        onClick: () => setCancelling(ch),
+                      },
+                    ]
+                  : ch.status === "cancelled"
+                    ? [
+                        {
+                          key: "reactivate",
+                          label: t("reactivate"),
+                          action: "restore",
+                          onClick: () => void setChargeStatus(ch, "pending"),
+                        },
+                      ]
+                    : []
             : undefined
         }
         empty={
@@ -573,42 +571,25 @@ function PlansTab({ canWrite }: { canWrite: boolean }) {
           subtitle: `${target(p)} · ${t("appliesToShort", { count: p.appliesTo })}`,
           trailing: <span className="font-mono text-body text-ink">{money(p.amountCents)}</span>,
         })}
-        actions={
+        rowActions={
           canWrite
-            ? (p) => (
-                <span className="flex flex-wrap justify-end gap-2">
-                  <Button
-                    iconOnly
-                    action="edit"
-                    size="sm"
-                    variant="secondary"
-                    onClick={() => setEditing(p)}
-                  >
-                    {t("edit")}
-                  </Button>
-                  {p.status === "active" ? (
-                    <Button
-                      iconOnly
-                      action="archive"
-                      size="sm"
-                      variant="danger"
-                      onClick={() => void setStatus(p, "archived")}
-                    >
-                      {t("archive")}
-                    </Button>
-                  ) : (
-                    <Button
-                      iconOnly
-                      action="restore"
-                      size="sm"
-                      variant="secondary"
-                      onClick={() => void setStatus(p, "active")}
-                    >
-                      {t("restore")}
-                    </Button>
-                  )}
-                </span>
-              )
+            ? (p): RowAction[] => [
+                { key: "edit", label: t("edit"), action: "edit", onClick: () => setEditing(p) },
+                p.status === "active"
+                  ? {
+                      key: "archive",
+                      label: t("archive"),
+                      action: "archive",
+                      tone: "danger",
+                      onClick: () => void setStatus(p, "archived"),
+                    }
+                  : {
+                      key: "restore",
+                      label: t("restore"),
+                      action: "restore",
+                      onClick: () => void setStatus(p, "active"),
+                    },
+              ]
             : undefined
         }
         empty={

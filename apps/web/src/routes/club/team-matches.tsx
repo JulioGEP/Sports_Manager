@@ -30,6 +30,7 @@ import {
   StatusChip,
   useToast,
   type StatusKind,
+  type RowAction,
 } from "@/ui";
 
 const statusKind: Record<MatchSummary["status"], StatusKind> = {
@@ -97,12 +98,9 @@ export function TeamMatchesPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <div>
-        <ButtonLink to={paths.team(id)} variant="tertiary" size="sm" action="back">
-          {t("backToTeam")}
-        </ButtonLink>
-      </div>
       <PageHeader
+        backTo={paths.team(id)}
+        backLabel={t("backToTeam")}
         eyebrow={team.name}
         title={t("title")}
         description={t("description")}
@@ -229,31 +227,37 @@ export function TeamMatchesPage() {
                 <StatusChip kind={statusKind[m.status]}>{t(`status.${m.status}`)}</StatusChip>
               ),
           })}
-          mobileActionsBelow
-          actions={(m) => (
-            <>
-              {m.status !== "finished" ? (
-                <ButtonLink
-                  to={paths.match(m.id)}
-                  size="sm"
-                  action="open"
-                  variant={m.status === "live" ? "primary" : "secondary"}
-                >
-                  {m.status === "live" ? t("continue") : t("open")}
-                </ButtonLink>
-              ) : null}
-              {m.eventsCount > 0 ? (
-                <ButtonLink to={paths.matchStats(m.id)} size="sm" variant="secondary">
-                  {t("stats")}
-                </ButtonLink>
-              ) : null}
-              {access.write ? (
-                <Button action="delete" variant="danger" size="sm" onClick={() => setRemoving(m)}>
-                  {t("remove")}
-                </Button>
-              ) : null}
-            </>
-          )}
+          href={(m) => (m.status === "finished" ? paths.matchStats(m.id) : paths.match(m.id))}
+          rowActions={(m): RowAction[] => [
+            ...(m.eventsCount > 0 && m.status !== "finished"
+              ? [
+                  {
+                    key: "stats",
+                    label: t("stats"),
+                    icon: <Icon.ChartBar size={16} aria-hidden="true" />,
+                    to: paths.matchStats(m.id),
+                  },
+                ]
+              : []),
+            ...(access.write
+              ? [
+                  {
+                    key: "remove",
+                    label: t("remove"),
+                    action: "delete" as const,
+                    tone: "danger" as const,
+                    onClick: () => setRemoving(m),
+                  },
+                ]
+              : []),
+          ]}
+          actions={(m) =>
+            m.status === "live" ? (
+              <ButtonLink to={paths.match(m.id)} size="sm" action="open">
+                {t("continue")}
+              </ButtonLink>
+            ) : null
+          }
         />
       </Card>
 
