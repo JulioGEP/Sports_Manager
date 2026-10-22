@@ -84,6 +84,8 @@ export function TeamPage() {
   const canWrite = permissions.includes("org.structure.write");
   const canSeePlayers = permissions.includes("org.players.read");
   const canSeeChallenges = permissions.includes("org.challenges.read");
+  const canSeeTraining = permissions.includes("org.training.read");
+  const canSeeLoad = permissions.includes("org.load.read");
 
   const detail = useQuery({
     queryKey: ["org", slug, "team", id],
@@ -411,6 +413,30 @@ export function TeamPage() {
                   ))}
                 </ul>
               )}
+            </Card>
+          ) : null}
+
+          {/* Entrenamiento (ADR 0038): la semana, la temporada, la carga y los tests del equipo. */}
+          {canSeeTraining ? (
+            <Card title={t("training.title")} description={t("training.description")}>
+              <div className="flex flex-wrap gap-2">
+                <ButtonLink to={paths.teamTraining(id)} size="sm" action="open">
+                  {t("training.week")}
+                </ButtonLink>
+                <ButtonLink to={paths.teamTrainingSeason(id)} variant="secondary" size="sm">
+                  {t("training.season")}
+                </ButtonLink>
+                {canSeeLoad ? (
+                  <>
+                    <ButtonLink to={paths.teamLoad(id)} variant="secondary" size="sm">
+                      {t("training.load")}
+                    </ButtonLink>
+                    <ButtonLink to={paths.teamTests(id)} variant="secondary" size="sm">
+                      {t("training.tests")}
+                    </ButtonLink>
+                  </>
+                ) : null}
+              </div>
             </Card>
           ) : null}
 

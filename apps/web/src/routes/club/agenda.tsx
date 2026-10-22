@@ -2,10 +2,12 @@ import {
   AttendanceResponseSchema,
   EVENT_KINDS,
   EventResponseSchema,
+  EventSessionResponseSchema,
   EventsResponseSchema,
   FacilitiesResponseSchema,
   HOME_AWAY,
   SectionsResponseSchema,
+  SessionDetailResponseSchema,
   TeamsResponseSchema,
   type AttendanceStatus,
   type EventKind,
@@ -15,7 +17,7 @@ import {
 import { AttendanceToggle } from "@sportsmanager/design";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState, type FormEvent } from "react";
-import { Link, useSearchParams } from "react-router";
+import { Link, useNavigate, useSearchParams } from "react-router";
 import { apiFetch, errorKey } from "@/lib/api";
 import {
   addDays,
@@ -35,6 +37,7 @@ import {
   Alert,
   Avatar,
   Button,
+  ButtonLink,
   Card,
   ConfirmDialog,
   Definitions,
@@ -531,8 +534,68 @@ function EventDetailSheet({
           ]}
         />
         {event.notes ? <p className="text-body text-ink">{event.notes}</p> : null}
+        {event.kind === "training" && event.team ? (
+          <TrainingSessionLink eventId={event.id} teamId={event.team.id} />
+        ) : null}
       </div>
     </Sheet>
+  );
+}
+
+/**
+ * La sesión de un entrenamiento (ADR 0038): si está planificada, se abre; si no, quien planifica
+ * ese equipo la crea desde aquí. La API decide si puede (403 o 404 si no es de los suyos).
+ */
+function TrainingSessionLink({ eventId, teamId }: { eventId: string; teamId: string }) {
+  const t = useT("agenda.session");
+  const errors = useT("errors");
+  const toast = useToast();
+  const navigate = useNavigate();
+  const { org, slug } = useReadyClub();
+  const paths = clubPaths(slug);
+  const permissions = org.actor.permissions;
+  const canRead = permissions.includes("org.training.read");
+  const canPlan =
+    permissions.includes("org.training.write") || permissions.includes("org.training.write_own");
+  const [busy, setBusy] = useState(false);
+  const session = useQuery({
+    queryKey: ["org", slug, "event", eventId, "session"],
+    queryFn: () =>
+      apiFetch(`/api/org/events/${eventId}/session`, { schema: EventSessionResponseSchema }),
+    enabled: canRead,
+    retry: false,
+  });
+  if (!canRead || !session.data) return null;
+  const sessionId = session.data.sessionId;
+
+  async function plan() {
+    setBusy(true);
+    try {
+      const created = await apiFetch(`/api/org/teams/${teamId}/sessions`, {
+        method: "POST",
+        body: { eventId },
+        schema: SessionDetailResponseSchema,
+      });
+      void navigate(paths.session(created.session.id));
+    } catch (err) {
+      toast("error", errors(errorKey(err)));
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-field bg-raised px-4 py-3">
+      <span className="text-secondary text-ink">{sessionId ? t("planned") : t("notPlanned")}</span>
+      {sessionId ? (
+        <ButtonLink to={paths.session(sessionId)} size="sm" action="open">
+          {t("open")}
+        </ButtonLink>
+      ) : canPlan ? (
+        <Button size="sm" action="add" loading={busy} onClick={() => void plan()}>
+          {t("plan")}
+        </Button>
+      ) : null}
+    </div>
   );
 }
 

@@ -43,7 +43,9 @@
     "groupClub": "The club",
     "groupActivity": "Activity",
     "groupManagement": "Management",
-    "viewAs": "View the club as…"
+    "viewAs": "View the club as…",
+    "training": "Training",
+    "athlete": "My wellbeing"
   },
   "auth": {
     "login": {
@@ -264,7 +266,9 @@
       "scout": {
         "title": "Observation",
         "description": "Players without a sport rating and those below the threshold."
-      }
+      },
+      "openTraining": "Training",
+      "openInfirmary": "Medical room"
     },
     "scope": {
       "restricted": "You see your part of the club: {sections, plural, =0 {no sections} one {# section} other {# sections}}, {teams, plural, =0 {no teams} one {# team} other {# teams}} and {players, plural, =0 {no individual athletes} one {# individual athlete} other {# individual athletes}}.",
@@ -369,13 +373,15 @@
         "facilities": "Facilities",
         "challenges": "Challenge",
         "fees": "Fees",
-        "activity": "Activity"
+        "activity": "Activity",
+        "training": "Training",
+        "health": "Health"
       },
       "toggle": "{area} for {profile}",
       "changed": "Changed from the default",
       "reset": "Back to the default",
       "saved": "Access for {profile} saved.",
-      "adminNote": "Club admins see everything and have no exceptions. Families only see what belongs to their athletes: agenda, challenge and fees.",
+      "adminNote": "Club administrators see everything except Health, which is only opened as an exception to whoever needs it. Families only see what concerns their athletes: calendar, challenge and fees.",
       "overridesTitle": "Exceptions per person",
       "overridesDescription": "People who see something different from their role: one area more or one less. Add, change and remove them here.",
       "overridesEmpty": "Nobody has exceptions.",
@@ -392,19 +398,20 @@
       "overrideSheet": {
         "titleNew": "New exception",
         "titleEdit": "Exceptions for {name}",
-        "description": "Tick what this person sees. It starts from what their role sees; whatever you change stays as an exception for them only. Club admins see everything and have no exceptions.",
+        "description": "Tick what this person sees. It starts from what their role sees; whatever you change stays as an exception just for them. Administrators can only be given Health.",
         "person": "Person",
         "areas": "What they see",
         "roleSees": "Their role sees it",
         "roleHides": "Their role hides it",
         "exceptionChip": "Exception",
         "none": "Change at least one area from their role.",
-        "empty": "There is no staff who can have exceptions: admins see everything and families see only their own.",
+        "empty": "There is nobody who can have exceptions: families only see their own.",
         "saved": "Exceptions for {name} saved.",
         "byRoleTitle": "What their role brings: {roles}",
         "scope": "Scope: {scope}. Exceptions do not change it.",
         "hides": "Their role does not see {areas}.",
-        "seesAll": "Their role sees every area."
+        "seesAll": "Their role sees every area.",
+        "adminHealth": "Club administrator: sees everything except Health. Only Health can be opened, and every time they view it is audited."
       }
     }
   },
@@ -815,7 +822,8 @@
       "plan_updated": "Development plan saved",
       "note_added": "Entry added to player",
       "staff_assigned": "Staff assigned to athlete",
-      "staff_unassigned": "Staff removed from athlete"
+      "staff_unassigned": "Staff removed from athlete",
+      "focus_updated": "Player focus contents changed"
     },
     "challenge": {
       "created": "Challenge created",
@@ -870,6 +878,75 @@
     },
     "access": {
       "rule_updated": "Access by role changed"
+    },
+    "training_config": {
+      "updated": "Training settings edited"
+    },
+    "training_content": {
+      "created": "Training content created",
+      "updated": "Training content edited",
+      "removed": "Training content removed"
+    },
+    "drill": {
+      "created": "Drill created",
+      "updated": "Drill edited",
+      "removed": "Drill removed"
+    },
+    "training_plan": {
+      "updated": "Season plan edited"
+    },
+    "training_cycle": {
+      "created": "Cycle created",
+      "updated": "Cycle edited",
+      "removed": "Cycle removed"
+    },
+    "microcycle_template": {
+      "created": "Week template created",
+      "updated": "Week template edited",
+      "removed": "Week template removed"
+    },
+    "training_week": {
+      "copied": "Training week copied",
+      "template_applied": "Week template applied"
+    },
+    "session": {
+      "created": "Session planned",
+      "updated": "Session edited",
+      "block_updated": "Session block edited",
+      "closed": "Session closed",
+      "copied": "Session copied",
+      "removed": "Session removed"
+    },
+    "load": {
+      "recorded": "Load recorded"
+    },
+    "match": {
+      "loads_updated": "Match load recorded"
+    },
+    "wellness": {
+      "recorded": "Wellbeing recorded"
+    },
+    "availability": {
+      "updated": "Availability changed"
+    },
+    "insight": {
+      "answered": "Recommendation answered"
+    },
+    "health": {
+      "viewed": "Health record viewed",
+      "consent_updated": "Health consent recorded",
+      "consent_revoked": "Health consent withdrawn"
+    },
+    "injury": {
+      "created": "Injury recorded",
+      "updated": "Injury edited",
+      "phases_updated": "Rehab phases edited",
+      "removed": "Injury removed"
+    },
+    "physical_test": {
+      "created": "Physical test created",
+      "updated": "Physical test edited",
+      "results_recorded": "Test results recorded"
     }
   },
   "team": {
@@ -974,6 +1051,14 @@
       "label": "Roster view",
       "board": "Board",
       "list": "List"
+    },
+    "training": {
+      "title": "Training",
+      "description": "The week, the season, the squad's load and the tests.",
+      "week": "Week",
+      "season": "Season",
+      "load": "Load",
+      "tests": "Tests"
     }
   },
   "players": {
@@ -1310,7 +1395,8 @@
         "submit": "Assign",
         "empty": "No other staff available."
       }
-    }
+    },
+    "performance": "Performance"
   },
   "family": {
     "title": "My family",
@@ -1842,7 +1928,9 @@
     "assistant": "Assistant coach",
     "delegate": "Delegate",
     "physio": "Physio",
-    "other": "Other"
+    "other": "Other",
+    "goalkeeper_coach": "Goalkeeper coach",
+    "fitness": "Fitness coach"
   },
   "weekdays": {
     "1": "Monday",
@@ -2120,6 +2208,12 @@
       "saved": "Event saved.",
       "created": "{count, plural, one {Event created.} other {# events created.}}",
       "conflictWith": "Heads up: the facility already has “{title}” at that time. Saved anyway."
+    },
+    "session": {
+      "planned": "This training has a planned session.",
+      "notPlanned": "No session planned yet.",
+      "open": "Open the session",
+      "plan": "Plan"
     }
   },
   "facilities": {
@@ -2763,7 +2857,9 @@
       "newFacility": "New facility",
       "invite": "Invite someone",
       "newChallenge": "New challenge",
-      "newSeason": "New season"
+      "newSeason": "New season",
+      "drills": "Drill library",
+      "infirmary": "Medical room"
     },
     "keys": {
       "move": "move",
@@ -2772,5 +2868,239 @@
     },
     "noTeam": "No team",
     "memberNumber": "Member no. {number}"
+  },
+  "availability": {
+    "status": {
+      "available": "Available",
+      "limited": "Limited",
+      "rehab": "Rehab",
+      "out": "Out"
+    },
+    "inline": {
+      "available": "available",
+      "limited": "limited",
+      "rehab": "in rehab",
+      "out": "out"
+    },
+    "maxMinutes": "max {minutes} min"
+  },
+  "restrictions": {
+    "contact": "No contact",
+    "jumps": "No jumping",
+    "shooting": "No shooting",
+    "direction_changes": "No changes of direction",
+    "high_intensity": "No high intensity"
+  },
+  "tags": {
+    "contact": "Contact",
+    "jumps": "Jumps",
+    "shooting": "Shooting",
+    "direction_changes": "Changes of direction",
+    "high_intensity": "High intensity"
+  },
+  "contentKinds": {
+    "technical": "Technical",
+    "tactical": "Tactical",
+    "physical": "Physical",
+    "set_piece": "Set pieces",
+    "goalkeeper": "Goalkeeper",
+    "psychological": "Psychological"
+  },
+  "sessionBlocks": {
+    "warmup": "Warm-up",
+    "main": "Main part",
+    "goalkeepers": "Goalkeepers",
+    "rehab": "Rehab",
+    "cooldown": "Cool-down"
+  },
+  "sessionStatus": {
+    "draft": "Draft",
+    "planned": "Planned",
+    "done": "Done",
+    "cancelled": "Cancelled"
+  },
+  "zones": {
+    "r1c1": "left side near the box",
+    "r1c2": "centre near the box",
+    "r1c3": "right side near the box",
+    "r2c1": "left side, mid-range",
+    "r2c2": "centre, mid-range",
+    "r2c3": "right side, mid-range",
+    "r3c1": "left side, long range",
+    "r3c2": "centre, long range",
+    "r3c3": "right side, long range"
+  },
+  "board": {
+    "toolbar": "Board tools",
+    "tools": {
+      "own": "Player",
+      "rival": "Opponent",
+      "keeper": "Goalkeeper",
+      "ball": "Ball",
+      "cone": "Cone",
+      "goal": "Goal",
+      "pass": "Pass",
+      "dribble": "Dribble",
+      "run": "Run",
+      "erase": "Erase"
+    },
+    "field": "Space",
+    "fields": {
+      "full": "Full court",
+      "half": "Half court",
+      "free": "Free"
+    },
+    "clear": "Clear",
+    "pieceHint": "Tap the court to place the piece.",
+    "arrowStart": "Tap where the arrow starts.",
+    "arrowEnd": "Now tap where it ends.",
+    "eraseHint": "Tap a piece or an arrow to remove it.",
+    "summary": "Board with {pieces} pieces and {arrows} arrows",
+    "elements": "Board elements",
+    "removeElement": "Remove {element}"
+  },
+  "load": {
+    "ua": "{value} AU",
+    "minutes": "{value} min",
+    "noRatio": "Not enough history",
+    "sources": {
+      "session": "Session",
+      "match": "Match",
+      "extra": "Extra"
+    }
+  },
+  "insights": {
+    "title": "Things to consider",
+    "description": "Explainable recommendations: what is detected, with which figure and what is proposed. The coaching staff decides.",
+    "empty": "Nothing to flag right now.",
+    "levels": {
+      "alert": "Alert",
+      "attention": "Attention",
+      "info": "Info"
+    },
+    "proposal": "Proposal",
+    "groups": {
+      "recovery": "Recovery",
+      "compensatory": "Compensatory"
+    },
+    "apply": "Applied",
+    "dismiss": "Dismiss",
+    "applied": "Done. It won't come up again for a few weeks.",
+    "dismissed": "Dismissed. It won't come up again for two weeks.",
+    "showAll": "See all {count}",
+    "showLess": "See fewer",
+    "openMatch": "Open the match",
+    "openPlayer": "Open their performance",
+    "zoneHint": " Start with the least accurate zone: {zone}.",
+    "reviewHint": " Review on {date}.",
+    "rules": {
+      "finishing_drop": {
+        "title": "Shooting accuracy is dropping",
+        "evidence": "{recent}% accuracy in the last {matches} matches against {season}% across the season.",
+        "suggestion": "More finishing work this week.{zone}"
+      },
+      "turnovers_up": {
+        "title": "More turnovers",
+        "evidence": "{recent} turnovers per match in the last {matches} against a season average of {season}.",
+        "suggestion": "Playing out under pressure and overloads in the build-up."
+      },
+      "early_fouls": {
+        "title": "Reaching the foul limit too early",
+        "evidence": "In {matches} of the last {of} matches the team reached {limit} fouls before minute {minute} of a half.",
+        "suggestion": "Defending without fouling and 1v1 defending: past the limit, every foul is a 10-metre penalty."
+      },
+      "late_goals": {
+        "title": "Conceding late in each half",
+        "evidence": "{late} of {total} goals conceded ({share}%) came in the last {minutes} minutes of a half, over {matches} matches.",
+        "suggestion": "Intermittent endurance on MD-3 and review the late rotations."
+      },
+      "corners_no_goal": {
+        "title": "Corners are not producing goals",
+        "evidence": "{corners} corners in {matches} matches and no goal in the following ten seconds.",
+        "suggestion": "Rehearse attacking set pieces with signalled variations."
+      },
+      "known_opponent": {
+        "title": "We have played {opponent} before",
+        "evidence": "On {playedOn} it finished {own}–{against}. The next match is on {date}.",
+        "suggestion": "Review that match's comparison and shot zones."
+      },
+      "md_plus_one": {
+        "title": "Day after the match against {opponent}",
+        "evidence": "{recovery} players with {recoveryMinutes} minutes or more and {compensatory} with fewer than {compensatoryMinutes}.",
+        "suggestion": "Two groups: recovery for those who played a lot and a compensatory session for the rest."
+      },
+      "double_match_week": {
+        "title": "Two matches this week",
+        "evidence": "{matches} matches in the week of {week}.",
+        "suggestion": "Less volume: apply the two-match week template if you have one."
+      },
+      "weekly_load": {
+        "title": "{direction, select, high {A heavier week than usual} other {A lighter week than usual}}",
+        "evidence": "Planned load of {planned} AU against an average of {baseline} AU over the previous four weeks ({ratio} times).",
+        "suggestion": "{direction, select, high {Review the volume or spread the intensity.} other {Unless it is a deload week, add some volume.}}"
+      },
+      "content_gap": {
+        "title": "No minutes of {content}",
+        "evidence": "It is a focus of the cycle and has not been worked on in the last {days} days.",
+        "suggestion": "Add a {content} drill to the next session."
+      },
+      "drill_low_rating": {
+        "title": "“{task}” is not working",
+        "evidence": "Rated “didn't work” {low} of {uses} times over the last four weeks.",
+        "suggestion": "Try another drill with the same content."
+      },
+      "restriction_conflict": {
+        "title": "{name} can't do the whole session",
+        "evidence": "{kind, select, tags {They are {status} ({tags}) and {task} requires it.} minutes {They have a maximum of {max} minutes and the session adds up to {minutes}.} other {They are {status} and appear in {task}.}}",
+        "suggestion": "{kind, select, tags {A variation without {tags}, or the rehab group.} minutes {Drop a drill or move them to a separate group.} other {Take them out of the drill.}}"
+      },
+      "wellness_drop": {
+        "title": "{name} isn't feeling good today",
+        "evidence": "{kind, select, soreness {Muscle soreness at {soreness} out of 5 (5 means no soreness).} other {Wellbeing of {score} out of 25 two days in a row, against an average of {mean}.}}",
+        "suggestion": "Let the physio know and ease their load today."
+      },
+      "acwr": {
+        "title": "{direction, select, high {{name}: high acute load} other {{name}: load below their usual}}",
+        "evidence": "Acute:chronic ratio of {ratio} ({acute} AU in seven days against a weekly average of {chronic} AU). The club threshold is {limit}.",
+        "suggestion": "{direction, select, high {Adjust their load this week. It's a warning, not an injury prediction.} other {Unless it's on purpose, build their load up gradually.}}"
+      },
+      "return_progression": {
+        "title": "{name} is returning from time out",
+        "evidence": "Since {since}. This week they are at {acute} AU; the recommended cap is {cap} AU, 110% of their previous weekly load.",
+        "suggestion": "{over, plural, =1 {They are above the cap: lower their load.} other {Increase the load progressively without going over the cap.}}"
+      },
+      "rpe_above_target": {
+        "title": "{name} is feeling it more than planned",
+        "evidence": "RPE of {rpe} in the last two sessions, with {target} planned.",
+        "suggestion": "Talk to the player and the fitness coach."
+      },
+      "focus_gap": {
+        "title": "{name}'s objective is not being worked on",
+        "evidence": "{minutes} minutes of their contents in three weeks (club minimum: {target}). Objective: {objective}.{review}",
+        "suggestion": "Add a drill or a variation with those contents."
+      },
+      "strength": {
+        "title": "{name} stands out in {action}",
+        "evidence": "{rate} per 40 minutes over the last {matches} matches; the team median is {median}.",
+        "suggestion": "Use them as a reference in drills, give them a role and recognise it."
+      },
+      "low_attendance": {
+        "title": "{name}'s attendance is low",
+        "evidence": "{present} of {total} training sessions in four weeks ({percent}%). The club minimum is {min}%.",
+        "suggestion": "Talk to the player or their family."
+      },
+      "minutes_balance": {
+        "title": "{name} is barely playing",
+        "evidence": "{minutes} minutes in the last {matches} matches, against a team average of {mean}.",
+        "suggestion": "In youth football, sharing minutes is an objective too."
+      }
+    }
+  },
+  "session": {
+    "rating": {
+      "1": "Didn't work",
+      "2": "So-so",
+      "3": "Worked"
+    }
   }
 }

@@ -5,6 +5,7 @@ import {
   DrillResponseSchema,
   DrillsResponseSchema,
   DrillUpdateSchema,
+  EventSessionResponseSchema,
   InsightFeedbackSchema,
   MethodologyResponseSchema,
   MicrocycleTemplateResponseSchema,
@@ -1472,7 +1473,7 @@ export function createTrainingRoutes(config: ApiConfig, data: DataLayer) {
       security: [{ sessionCookie: [] }],
       middleware: [read],
       request: { params: idParam },
-      responses: { 200: json("Sesión", z.object({ sessionId: z.string().nullable() })), ...errors },
+      responses: { 200: json("Sesión", EventSessionResponseSchema), ...errors },
     }),
     async (c) => {
       const tenant = tenantOf(c);

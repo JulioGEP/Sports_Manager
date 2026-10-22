@@ -2,11 +2,11 @@ import {
   ACCESS_AREAS,
   AccessOverviewResponseSchema,
   AccessProfileRowSchema,
-  canHaveOverrides,
   defaultPermissionsOf,
   isAreaVisible,
   MemberAccessResponseSchema,
   MembersResponseSchema,
+  overridableAreas,
   overridesFor,
   profileOf,
   scopeKindsOf,
@@ -347,7 +347,10 @@ function OverrideSheet({
     queryKey: ["org", slug, "members"],
     queryFn: () => apiFetch("/api/org/members", { schema: MembersResponseSchema }),
   });
-  const candidates = (members.data?.members ?? []).filter((m) => canHaveOverrides(m.roles));
+  // El personal y el cuerpo técnico admiten excepciones en todo; la administración, solo en Salud.
+  const candidates = (members.data?.members ?? []).filter(
+    (m) => overridableAreas(m.roles).length > 0,
+  );
   const [userId, setUserId] = useState(editing?.userId ?? "");
   const selectedId = editing?.userId ?? (userId || candidates[0]?.userId || "");
   const selected = (members.data?.members ?? []).find((m) => m.userId === selectedId) ?? null;
@@ -364,6 +367,8 @@ function OverrideSheet({
   const areaLabel = (a: AccessArea) => t(`areas.${a}`);
 
   const byRole = selected ? areasByRole(selected, profiles) : null;
+  const allowed = selected ? overridableAreas(selected.roles) : ACCESS_AREAS;
+  const adminSelected = selected?.roles.includes("org_admin") ?? false;
   const current = selected?.accessOverrides ?? { allow: [], deny: [] };
   const visible =
     touched ??
@@ -483,6 +488,9 @@ function OverrideSheet({
                 ? ts("seesAll")
                 : ts("hides", { areas: hiddenByRole.map(areaLabel).join(", ") })}
             </p>
+            {adminSelected ? (
+              <p className="text-secondary text-muted">{ts("adminHealth")}</p>
+            ) : null}
           </section>
         ) : null}
 
@@ -502,7 +510,7 @@ function OverrideSheet({
                       aria-label={areaLabel(area)}
                       aria-describedby={hint}
                       checked={visible.has(area)}
-                      disabled={busy || byRole === null}
+                      disabled={busy || byRole === null || !allowed.includes(area)}
                       onChange={(e) => toggle(area, e.target.checked)}
                     />
                     <span className="flex min-w-0 flex-1 flex-col">

@@ -158,6 +158,9 @@ export function PlayerPage() {
   const canWrite = permissions.includes("org.players.write");
   const canInvite = permissions.includes("org.members.invite");
   const canChallenges = permissions.includes("org.challenges.read");
+  /** Rendimiento (ADR 0038): disponibilidad, carga, bienestar, tests y, con acceso, la salud. */
+  const canSeePerformance =
+    permissions.includes("org.load.read") || permissions.includes("org.health.read");
 
   const detail = useQuery({
     queryKey: ["org", slug, "player", id],
@@ -407,6 +410,15 @@ export function PlayerPage() {
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
+          {canSeePerformance ? (
+            <ButtonLink
+              to={paths.playerPerformance(id)}
+              variant="secondary"
+              icon={<Icon.Heartbeat size={18} aria-hidden="true" />}
+            >
+              {t("performance")}
+            </ButtonLink>
+          ) : null}
           {canWrite ? (
             <Button action="edit" variant="secondary" onClick={() => setSheet("edit")}>
               {t("editProfile")}

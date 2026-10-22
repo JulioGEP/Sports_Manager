@@ -272,6 +272,9 @@ export const SessionDetailResponseSchema = z.object({
 });
 export type SessionDetailResponse = z.infer<typeof SessionDetailResponseSchema>;
 
+/** Si un entrenamiento de la agenda tiene sesión planificada (y quien pregunta llega a ella). */
+export const EventSessionResponseSchema = z.object({ sessionId: z.string().nullable() });
+
 export const TeamWeekResponseSchema = z.object({
   team: Ref.extend({
     section: z.object({ id: z.string(), name: z.string(), sportCode: z.string() }),

@@ -119,6 +119,17 @@ function ClubFrame({ children }: { children: ReactNode }) {
         has("org.facilities.read")
           ? { to: paths.facilities, label: t("facilities"), icon: Icon.Buildings, end: false }
           : null,
+        // Entrenamiento (ADR 0038): una sola entrada; la biblioteca, la carga y la enfermería
+        // cuelgan de su portada.
+        has("org.training.read")
+          ? { to: paths.training, label: t("training"), icon: Icon.SportIcons.Silbato, end: false }
+          : null,
+        // El deportista adulto con su cuenta responde su bienestar y su RPE.
+        state.kind === "ready" &&
+        state.org.actor.kind === "member" &&
+        state.org.actor.athletePlayerId
+          ? { to: paths.athlete, label: t("athlete"), icon: Icon.Heartbeat, end: false }
+          : null,
         // El reto no va en la barra (ADR 0032): vive en la ficha de cada equipo y de cada sección,
         // y para la familia en la ficha de cada uno de los suyos.
       ].filter((l): l is NavLinkItem => l !== null),
