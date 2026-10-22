@@ -10,9 +10,38 @@ test.describe("estructura del club", () => {
     await login(page);
   });
 
+  test("la paleta de mandos lleva a una persona, un equipo o una acción con dos letras", async ({
+    page,
+  }, info) => {
+    // ⌘K (Ctrl K) desde el inicio: buscar sin acentos ("alev" encuentra "Alevín A") y abrir con retorno.
+    await expect(page.getByRole("button", { name: "Buscar o hacer" }).first()).toBeVisible();
+    await page.keyboard.press("Control+k");
+    const palette = page.getByRole("dialog", { name: "Buscar o hacer" });
+    await expect(palette.getByRole("combobox")).toBeFocused();
+    await expect(palette.getByText("Nuevo deportista")).toBeVisible();
+    await palette.getByRole("combobox").fill("alev");
+    await expect(palette.getByRole("option", { name: /Alevín A/ }).first()).toBeVisible();
+    await shot(page, "03d-paleta", info.project.name);
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("heading", { name: "Alevín A" })).toBeVisible();
+    // Por el botón de la barra, una persona: la ficha de Clara Martí.
+    await page.getByRole("button", { name: "Buscar o hacer" }).first().click();
+    await palette.getByRole("combobox").fill("clara mar");
+    await palette
+      .getByRole("option", { name: /Clara Martí/ })
+      .first()
+      .click();
+    await expect(page.getByRole("heading", { name: "Clara Martí" })).toBeVisible();
+    // Escape cierra; la paleta recuerda lo último abierto.
+    await page.keyboard.press("Control+k");
+    await expect(palette.getByText("Recientes")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(palette).toBeHidden();
+  });
+
   test("secciones, ficha de sección, categoría y equipo nuevos", async ({ page }, info) => {
     const sfx = suffix(info.project.name);
-    await page.getByRole("link", { name: "Secciones" }).first().click();
+    await page.getByRole("link", { name: "Secciones", exact: true }).first().click();
     await expect(page.getByRole("heading", { name: "Secciones" })).toBeVisible();
     await expect(page.getByRole("link", { name: /Fútbol sala/ })).toBeVisible();
     await expect(page.getByRole("link", { name: /Baloncesto/ })).toBeVisible();
@@ -33,7 +62,7 @@ test.describe("estructura del club", () => {
     // Al crearla se abre su ficha, con las categorías que propuso el deporte.
     await expect(page.getByRole("heading", { name: new RegExp(`Pádel ${sfx}`) })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Resumen" })).toBeVisible();
-    await page.getByRole("link", { name: "Secciones" }).first().click();
+    await page.getByRole("link", { name: "Secciones", exact: true }).first().click();
     await expect(page.getByRole("link", { name: new RegExp(`Pádel ${sfx}`) })).toBeVisible();
 
     // Ficha de la sección de fútbol sala: categorías con sus equipos, personal y resumen.

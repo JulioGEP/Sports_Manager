@@ -59,6 +59,7 @@ import {
   StatusChip,
   useToast,
   type StatusKind,
+  BackLink,
 } from "@/ui";
 
 type Player = PlayerDetailResponse["player"];
@@ -333,11 +334,7 @@ export function PlayerPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <div>
-        <ButtonLink action="back" to={paths.players} variant="tertiary" size="sm">
-          {t("back")}
-        </ButtonLink>
-      </div>
+      <BackLink to={paths.players}>{t("back")}</BackLink>
 
       {/* Cabecera: foto, equipo y temporada, nombre, estado, dorsal y posición, y lecturas rápidas. */}
       <header className="flex flex-wrap items-start justify-between gap-4">
@@ -916,6 +913,7 @@ export function PlayerPage() {
                     <StatusChip kind="club">{rel(g.relationship)}</StatusChip>
                     {canWrite ? (
                       <Button
+                        iconOnly
                         action="unlink"
                         variant="tertiary"
                         size="sm"

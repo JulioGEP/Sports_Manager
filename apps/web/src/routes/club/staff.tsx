@@ -43,6 +43,7 @@ import {
   Tabs,
   useToast,
   type StatusKind,
+  type RowAction,
 } from "@/ui";
 
 type Member = MembersResponse["members"][number];
@@ -314,18 +315,16 @@ export function StaffPage() {
                   .filter(Boolean)
                   .join(" · "),
               })}
-              actions={
+              rowActions={
                 canManage
-                  ? (m) => (
-                      <Button
-                        action="edit"
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => setRolesFor(m)}
-                      >
-                        {t("roles.manage")}
-                      </Button>
-                    )
+                  ? (m): RowAction[] => [
+                      {
+                        key: "roles",
+                        label: t("roles.manage"),
+                        action: "edit",
+                        onClick: () => setRolesFor(m),
+                      },
+                    ]
                   : undefined
               }
             />
@@ -404,28 +403,24 @@ export function StaffPage() {
                 subtitle: `${i.player ? t("invitations.player", { name: i.player.name }) : i.position ? positions(i.position) : roles(i.roleCode)}${i.team ? ` · ${i.team.name}` : ""} · ${date(i.expiresAt)}`,
                 trailing: <StatusChip kind={stateKind[i.state]}>{states(i.state)}</StatusChip>,
               })}
-              mobileActionsBelow
-              actions={(i) =>
-                i.state === "pending" || i.state === "expired" ? (
-                  <>
-                    <Button
-                      action="send"
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => void resend(i.id)}
-                    >
-                      {t("invitations.resend")}
-                    </Button>
-                    <Button
-                      action="delete"
-                      variant="danger"
-                      size="sm"
-                      onClick={() => setRevoking(i)}
-                    >
-                      {t("invitations.revoke")}
-                    </Button>
-                  </>
-                ) : null
+              rowActions={(i): RowAction[] =>
+                i.state === "pending" || i.state === "expired"
+                  ? [
+                      {
+                        key: "resend",
+                        label: t("invitations.resend"),
+                        action: "send",
+                        onClick: () => void resend(i.id),
+                      },
+                      {
+                        key: "revoke",
+                        label: t("invitations.revoke"),
+                        action: "delete",
+                        tone: "danger",
+                        onClick: () => setRevoking(i),
+                      },
+                    ]
+                  : []
               }
             />
           </Card>
@@ -757,6 +752,7 @@ function RolesSheet({
                 ) : null}
               </span>
               <Button
+                iconOnly
                 action={has ? "delete" : "add"}
                 variant={has ? "danger" : "secondary"}
                 size="sm"

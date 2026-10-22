@@ -19,6 +19,7 @@ import {
   Prohibit,
   SignIn,
   SignOut,
+  Star,
   ThumbsDown,
   ThumbsUp,
   Trash,
@@ -92,6 +93,8 @@ export const actionIcons = {
   signIn: SignIn,
   /** Cerrar sesión. */
   signOut: SignOut,
+  /** Hacer actual, marcar como la temporada o el plan en vigor. */
+  current: Star,
 } satisfies Record<string, Icon>;
 
 export type ActionKind = keyof typeof actionIcons;

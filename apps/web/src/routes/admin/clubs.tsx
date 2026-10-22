@@ -18,7 +18,6 @@ import { useLocale, useT } from "@/lib/intl";
 import {
   Alert,
   Button,
-  ButtonLink,
   Card,
   Crest,
   DataList,
@@ -132,15 +131,11 @@ export function PlatformClubsPage() {
           ]}
           mobileRow={(o) => ({
             leading: <Crest name={o.name} logoUrl={o.logoUrl} />,
-            title: o.name,
+            title: <Link to={`/admin/clubs/${o.slug}`}>{o.name}</Link>,
             subtitle: `/${o.slug}`,
             trailing: <StatusChip kind={statusKind[o.status]}>{statuses(o.status)}</StatusChip>,
           })}
-          actions={(o) => (
-            <ButtonLink action="open" to={`/admin/clubs/${o.slug}`} variant="secondary" size="sm">
-              {t("manage")}
-            </ButtonLink>
-          )}
+          href={(o) => `/admin/clubs/${o.slug}`}
         />
       </Card>
       <CreateSheet open={createOpen} onClose={() => setCreateOpen(false)} />

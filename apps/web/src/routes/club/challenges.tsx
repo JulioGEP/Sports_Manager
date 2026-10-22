@@ -15,7 +15,7 @@ import {
 } from "@sportsmanager/shared";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState, type FormEvent } from "react";
-import { Navigate, useNavigate, useParams, useSearchParams } from "react-router";
+import { Link, Navigate, useNavigate, useParams, useSearchParams } from "react-router";
 import { apiFetch, errorKey } from "@/lib/api";
 import { clubPaths, useReadyClub } from "@/lib/club";
 import { useDates } from "@/lib/dates";
@@ -24,7 +24,6 @@ import {
   Alert,
   Avatar,
   Button,
-  ButtonLink,
   Card,
   ConfirmDialog,
   DataList,
@@ -169,14 +168,9 @@ function StaffChallengesPage() {
               header: t("table.challenge"),
               cell: (ch) => (
                 <span className="flex min-w-0 flex-col">
-                  <ButtonLink
-                    to={paths.challenge(ch.id)}
-                    variant="tertiary"
-                    size="sm"
-                    className="!px-0 justify-start"
-                  >
+                  <Link to={paths.challenge(ch.id)} className="font-medium text-ink">
                     {ch.name}
-                  </ButtonLink>
+                  </Link>
                   <span className="text-secondary text-ink">{scopeLabel(ch)}</span>
                   <span className="text-secondary text-muted">
                     {ch.season ? `${ch.season.name} · ` : ""}
@@ -219,7 +213,7 @@ function StaffChallengesPage() {
             },
           ]}
           mobileRow={(ch) => ({
-            title: ch.name,
+            title: <Link to={paths.challenge(ch.id)}>{ch.name}</Link>,
             subtitle: `${scopeLabel(ch)} · ${period(ch)} · ${t("table.points")}: ${ch.minPoints} / ${ch.targetPoints}`,
             trailing: (
               <StatusChip kind={ch.pendingCount > 0 ? "warning" : challengeKind[ch.status]}>
@@ -229,11 +223,7 @@ function StaffChallengesPage() {
               </StatusChip>
             ),
           })}
-          actions={(ch) => (
-            <ButtonLink to={paths.challenge(ch.id)} variant="secondary" size="sm">
-              {c("open")}
-            </ButtonLink>
-          )}
+          href={(ch) => paths.challenge(ch.id)}
         />
       </Card>
       {canManage ? (
@@ -318,12 +308,9 @@ export function FamilyPlayerChallengesPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <div>
-        <ButtonLink action="back" to={paths.familyPlayer(playerId)} variant="tertiary" size="sm">
-          {player ? t("back", { name: playerDisplayName(player) }) : t("backShort")}
-        </ButtonLink>
-      </div>
       <PageHeader
+        backTo={paths.familyPlayer(playerId)}
+        backLabel={player ? t("back", { name: playerDisplayName(player) }) : t("backShort")}
         eyebrow={player ? playerDisplayName(player) : undefined}
         title={t("title")}
         description={t("description")}
@@ -469,7 +456,13 @@ export function FamilyPlayerChallengesPage() {
                         {tc(`submissionStatus.${s.status}`)}
                       </StatusChip>
                       {canWrite && s.status === "submitted" ? (
-                        <Button variant="tertiary" size="sm" onClick={() => setRemoving(s)}>
+                        <Button
+                          iconOnly
+                          action="delete"
+                          variant="ghost-danger"
+                          size="sm"
+                          onClick={() => setRemoving(s)}
+                        >
                           {t("withdraw")}
                         </Button>
                       ) : null}

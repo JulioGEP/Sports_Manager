@@ -10,6 +10,8 @@ Reglas que no se negocian:
 4. Todo estado lleva texto. El color nunca va solo.
 5. Botones con verbo. Nunca "Aceptar" ni "Enviar" a secas.
 5b. Toda acción del catálogo (`DESIGN.md` 8.1) lleva su icono por `action`: `add`, `edit` (rueda dentada), `delete` (cubo de basura, en `danger` para que salga rojo), `save`, `open`… Siempre el mismo icono para la misma acción; "Cancelar" y "Cerrar" sin icono. Si una acción se repite y no está en el catálogo, se amplía el catálogo, no se inventa un icono en la pantalla.
+5c. Una lista es `DataList` con `href` (la fila se abre tocándola) y `rowActions` (iconos `ghost` solo con icono, verbo como `label`). Nunca un botón "Abrir" ni botones con texto o borde dentro de una fila. En móvil, una acción es un icono y varias un menú "⋯": nunca una segunda línea de botones.
+5d. Toda pantalla con ficha propia entra en la paleta de mandos (`DESIGN.md` 9.17). El enlace de volver va dentro de `PageHeader` (`backTo`), no como botón suelto.
 6. Acciones delicadas (bajas, borrar, cobros, cuotas, comunicados a todas las familias): siempre `ConfirmDialog`. Marcar asistencia: nunca.
 7. Textos visibles siempre desde `src/i18n/`. Respeta la voz del club y el bloqueo de momentos sensibles.
 8. Sin emojis. Sin marca del producto dentro de la app de un club.

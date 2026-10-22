@@ -21,7 +21,6 @@ import {
   Alert,
   Avatar,
   Button,
-  ButtonLink,
   Card,
   DataList,
   EmptyState,
@@ -383,11 +382,7 @@ export function PlayersPage() {
                 <StatusChip kind="neutral">{ps(p.status)}</StatusChip>
               ) : undefined,
           })}
-          actions={(p) => (
-            <ButtonLink action="open" to={paths.player(p.id)} variant="secondary" size="sm">
-              {c("open")}
-            </ButtonLink>
-          )}
+          href={(p) => paths.player(p.id)}
         />
       </Card>
 

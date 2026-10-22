@@ -11,7 +11,7 @@ test.describe("familia y entrenadora", () => {
     await shot(page, "46-familia-inicio", info.project.name);
     await expectLegibleButtons(page);
     await expect(page.getByRole("link", { name: "Deportistas" })).toHaveCount(0);
-    await expect(page.getByRole("link", { name: "Secciones" })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Secciones", exact: true })).toHaveCount(0);
 
     await page.getByRole("link", { name: "Mi familia" }).first().click();
     await expect(page.getByRole("heading", { name: "Mi familia" })).toBeVisible();
@@ -61,7 +61,7 @@ test.describe("familia y entrenadora", () => {
     await expect(page.getByRole("heading", { name: "Mis jugadores" })).toBeVisible();
     await expect(page.getByRole("link", { name: /Alevín A/ }).first()).toBeVisible();
     await shot(page, "48b-entrenadora-inicio", info.project.name);
-    await page.getByRole("link", { name: "Secciones" }).first().click();
+    await page.getByRole("link", { name: "Secciones", exact: true }).first().click();
     await page.getByRole("link", { name: /Fútbol sala/ }).click();
     await page.getByRole("link", { name: "Alevín A" }).click();
     await expect(page.getByRole("heading", { name: "Alevín A" })).toBeVisible();

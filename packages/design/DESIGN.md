@@ -1,6 +1,6 @@
 # Design System · [NOMBRE DEL PRODUCTO]
 
-SaaS de gestión de clubes deportivos · Versión 1.1 · 21 de octubre de 2026
+SaaS de gestión de clubes deportivos · Versión 1.2 · 22 de octubre de 2026
 
 Este documento es la fuente de verdad del diseño. Todo lo que se construya en la app debe salir de aquí. Si algo no está definido, se pregunta antes de inventarlo.
 
@@ -18,7 +18,9 @@ Este documento es la fuente de verdad del diseño. Todo lo que se construya en l
 8. **Las cifras van en Geist Mono o con números tabulares.**
 9. **Los botones dicen un verbo.** "Pagar", "Guardar asistencia". Nunca "Aceptar".
 10. **Toda acción reconocible lleva su icono, y siempre el mismo.** Editar es una rueda dentada, eliminar un cubo de basura en rojo, añadir un más. El catálogo está en 8.1.
-11. **Cuidamos al menor.** Ningún chat privado entre adultos del club y jugadores menores. Las familias solo ven los datos de sus hijos.
+11. **La fila es el objeto.** Se abre tocándola en cualquier punto. Sus acciones son iconos silenciosos que no compiten con el contenido; en una fila nunca hay un botón con texto.
+12. **Dos letras y una tecla.** Desde cualquier pantalla, ⌘K abre la paleta: una persona, un equipo, una pantalla o una acción sin pasar por menús.
+13. **Cuidamos al menor.** Ningún chat privado entre adultos del club y jugadores menores. Las familias solo ven los datos de sus hijos.
 
 ---
 
@@ -33,6 +35,10 @@ Este documento es la fuente de verdad del diseño. Todo lo que se construya en l
 **Cada toque cuenta.** Un entrenador que pasa lista a catorce jugadores no debería confirmar nada. Equivocarse en lo cotidiano cuesta un toque. Equivocarse en lo delicado cuesta una confirmación.
 
 **Cuidar al menor.** La protección de la infancia condiciona el chat, las gráficas y los datos que ve cada rol.
+
+**El contenido manda; el cromo se aparta.** Lo que se mira (nombres, cifras, estados) tiene peso y color; lo que se hace (editar, quitar, abrir) espera en gris hasta que hace falta. Si al mirar una pantalla lo primero que se ve son botones, la pantalla está mal.
+
+**Se usa, no se navega.** Quien gestiona 80 deportistas no debería recorrer tres menús para llegar a uno. La paleta (⌘K), las filas que se abren y los tableros que se leen de un vistazo convierten la gestión en gestos, no en rutas.
 
 ---
 
@@ -269,6 +275,7 @@ Un botón se reconoce antes de leerse. Por eso **toda acción que tenga icono en
 Reglas:
 
 - **El icono va delante del verbo**, a 18 px (16 px en el botón compacto de 40 px). Solo `open` lo lleva detrás: la flecha señala hacia dónde se va.
+- **En una fila, solo el icono y sin borde.** Las acciones de fila (tablas, listas, tarjetas de un tablero, filas de un formulario) son botones `ghost` cuadrados y solo con icono: gris en reposo, con fondo al pasar el ratón, rojo (`ghost-danger`) si eliminan. Nunca "Editar" y "Quitar" escritos nueve veces, nunca nueve bordes. El verbo sigue existiendo como nombre accesible y como `title`, así el lector de pantalla y el tooltip dicen lo mismo que antes. Cabeceras de pantalla y de tarjeta, pies de panel y portada llevan icono y verbo: ahí hay sitio y el verbo da el contexto.
 - **El icono hereda el color del botón.** Eliminar, quitar y archivar van en la variante `danger` (o `danger-solid` en la confirmación), y así el cubo de basura sale en rojo sin configurar nada. Un botón que solo lleva el icono de eliminar (franja de un horario) lleva `text-danger`.
 - **Cancelar y Cerrar no llevan icono.** Son la salida de un panel o un diálogo, no una acción, y la X ya está en la cabecera del panel. Tampoco llevan icono los botones de fecha ("Hoy", semana anterior y siguiente) ni los atajos de un formulario ("De lunes a viernes").
 - **El icono de una acción es decorativo** (`aria-hidden="true"`): el verbo ya dice qué hace. Un botón solo con icono sigue llevando `aria-label`.
@@ -290,16 +297,21 @@ Referencia de implementación en `src/components/`. Los que no tienen código a�
 | `tertiary` | Solo texto `text-club-text` | Acciones de poco peso |
 | `danger` | `border-danger-border text-danger` | Primer paso de una acción delicada |
 | `danger-solid` | `bg-danger-solid text-white` | Solo dentro de la confirmación |
+| `ghost` | Sin borde ni fondo; `text-muted`, `bg-raised` al pasar | Acciones de fila, siempre solo con icono |
+| `ghost-danger` | Sin borde; `text-danger`, `bg-danger-soft` al pasar | Eliminar en una fila |
 
 Deshabilitado: `bg-raised text-muted`. El texto es siempre un verbo.
 
-Props: `action` pone el icono del catálogo (8.1) y es obligatoria cuando la acción está en él; `icon` admite un icono propio para una acción que no está; `size="sm"` es el botón compacto de 40 px para filas de tabla y cabeceras de tarjeta; `cta` es la acción fija inferior (9.2). `buttonClassName` y `ButtonContent` sirven para dar aspecto de botón a un enlace sin duplicar estilos.
+Props: `action` pone el icono del catálogo (8.1) y es obligatoria cuando la acción está en él; `icon` admite un icono propio para una acción que no está; `size="sm"` es el botón compacto de 40 px para filas de tabla y cabeceras de tarjeta; `iconOnly` deja solo el icono en las acciones de fila, con el verbo como nombre accesible y `title`; `cta` es la acción fija inferior (9.2). `buttonClassName` y `ButtonContent` sirven para dar aspecto de botón a un enlace sin duplicar estilos.
 
 ```tsx
 <Button action="add">Añadir jugador</Button>
 <Button action="edit" variant="secondary" size="sm">Editar</Button>
 <Button action="delete" variant="danger" size="sm">Quitar</Button>
+<Button action="delete" variant="ghost-danger" size="sm" iconOnly>Quitar</Button> // en una fila
 ```
+
+En una lista no se escriben los botones a mano: `DataList` recibe `rowActions` (verbo, acción del catálogo y tono) y los pinta como toca en cada forma (9.8).
 
 ### 9.2 Acción fija inferior
 
@@ -330,13 +342,17 @@ Botones de 44 px con `aria-pressed`. Seleccionado: `bg-ink text-white`. Sin sele
 
 ### 9.7 Filas y listas (móvil)
 
-Fila cápsula de 64 px: avatar de 40 px, nombre (16 px, 500), dato secundario (14 px), acción a la derecha. Separación de 10 px entre filas. Mensajes no leídos: punto de 8 px en `club-fill`.
+Fila cápsula de 64 px: avatar de 40 px, nombre (16 px, 500), dato secundario (14 px), estado y chevron a la derecha. Separación de 10 px entre filas. Mensajes no leídos: punto de 8 px en `club-fill`.
+
+- **La fila entera se toca** y abre la ficha; el chevron `CaretRight` de 16 px lo anuncia. El nombre sigue siendo un enlace para el teclado y el lector de pantalla.
+- **Una acción, un icono; varias, un menú "⋯".** Nunca una segunda línea de botones debajo de la fila.
+- Las acciones a medida con verbo visible (un "Continuar" en un partido en directo) son la excepción y van solas.
 
 ### 9.8 Gestión en escritorio
 
 - **Pestañas:** subrayado de 2 px en `club-fill` y recuento en Geist Mono.
 - **Barra de filtros:** búsqueda (280 px), desplegables con etiqueta incluida ("Equipo: Todos"), y a la derecha "Exportar" (secundario) y la acción principal.
-- **Tabla:** filas de 52 px, línea fina `line`, cabecera de 44 px en `text-label`. Casilla de selección a la izquierda. Cifras alineadas a la derecha en Geist Mono. Acciones de fila como botones compactos con su icono de acción (8.1), "Editar" y "Quitar", o en un menú (botón de 44 px con `aria-label`) si son más de dos. Fila seleccionada con fondo `club-soft`. Tablas anchas con desplazamiento horizontal dentro de su caja.
+- **Tabla:** filas de 52 px, línea fina `line`, cabecera de 44 px en `text-label`. Casilla de selección a la izquierda. Cifras alineadas a la derecha en Geist Mono. **La fila se abre tocándola** (`href`), con fondo `page` al pasar el ratón y un chevron al final si no tiene acciones. **Acciones de fila** (`rowActions`): iconos `ghost` solo con icono (8.1), rueda dentada para editar, cubo rojo para quitar, estrella para hacer actual; el verbo en el nombre accesible y el `title`; con más de tres, menú. Nunca un botón "Abrir": abrir es tocar la fila. Fila seleccionada con fondo `club-soft`. Tablas anchas con desplazamiento horizontal dentro de su caja.
 - **Paginación:** texto de rango a la izquierda ("1–6 de 128") y botones anterior y siguiente.
 
 ### 9.9 Tarjeta de evento
@@ -347,9 +363,9 @@ Etiqueta del tipo de evento (`club`), fecha a la derecha, título (18 px, 600) c
 
 Flotante, 64 px, radio 28 px, margen de 16 px y sombra `float`. Máximo cinco destinos: Inicio, Calendario, Equipo, Mensajes, Perfil. Icono de 22 px con etiqueta de 12 px. El contenido de la pantalla deja 96 px libres abajo para que la barra no lo tape.
 
-### 9.11 Cabecera de pantalla
+### 9.11 Cabecera de pantalla · `PageHeader`
 
-Botón de volver de 48 px, título (Título 1) y subtítulo de contexto (14 px). Fondo `surface` y línea inferior.
+Enlace de vuelta discreto (`BackLink`: flecha de 16 px y texto secundario en `text-muted`, dentro de la cabecera, nunca un botón flotando encima), línea de contexto, título (Título 1) con sus etiquetas, descripción de una frase y las acciones a la derecha: una principal en color del club y las demás secundarias. En móvil, fondo `surface` y línea inferior.
 
 ### 9.12 Confirmación · `ConfirmDialog`
 
@@ -388,6 +404,24 @@ Zona de subida con borde discontinuo: "Haz una foto o elige un archivo", formato
 - Confirmación de lectura en Geist Mono ("leído por 12").
 
 Contexto legal: la Ley Orgánica 8/2021, de 4 de junio (LOPIVI), artículo 48, obliga a las entidades que realizan actividades deportivas con menores de forma habitual a designar un delegado o delegada de protección. Validad con asesoría legal cómo encaja el chat en el protocolo de cada club.
+
+### 9.17 Paleta de mandos · `CommandPalette`
+
+"Buscar o hacer". Se abre con ⌘K (Ctrl K fuera de Mac), con el campo de la barra lateral en escritorio o con la lupa de la cabecera en móvil. Es la forma rápida de usar el club; la navegación queda para descubrir.
+
+- **Qué encuentra:** deportistas, equipos, secciones, personal, socios, instalaciones y, para una familia, sus hijos; las pantallas a las que esa persona tiene acceso; y las acciones directas ("Nuevo deportista", "Invitar a alguien", "Nueva temporada"), solo las que sus permisos permiten.
+- **Cómo busca:** sin acentos ni mayúsculas ("pivot" encuentra "Pívot"); cada palabra tiene que aparecer; manda el principio del nombre, luego el principio de una palabra, luego cualquier parte, y por último el subtítulo. Seis resultados por grupo.
+- **Vacía** muestra los recientes de esa persona en ese club (seis, en el navegador), las acciones y las pantallas.
+- **Teclado:** flechas para moverse, retorno para abrir, escape para cerrar. El pie lo recuerda en escritorio con teclas `kbd`.
+- **Aspecto:** diálogo de 36 rem como máximo a un 12 % de la parte superior en escritorio (6 % en móvil), campo de 56 px sin borde, grupos en `text-label`, resultado activo en `club-soft`. `role="combobox"` en el campo y `role="listbox"` con `aria-activedescendant`.
+
+### 9.18 Tablero de plantilla · `RosterBoard`
+
+La plantilla de un equipo como la piensa su entrenador: **por posición y con el dorsal a la vista**, no como una tabla. Las posiciones siguen el orden del deporte (portero, cierre, ala, pívot); las que el club haya escrito a su manera van después, por orden alfabético, y "Sin posición" al final.
+
+- Ficha de 72 px: foto o iniciales de 56 px con el dorsal en una insignia `bg-club` de 24 px en Geist Mono, nombre (16 px, 500), edad y familia en secundario, y etiqueta de estado si no está activo.
+- La ficha entera se toca y abre al jugador. Editar y quitar son `ghost` solo con icono que aparecen al pasar el ratón; en pantallas táctiles están siempre.
+- Dos o tres columnas en escritorio, una en móvil. Un control segmentado (9.3) alterna **Tablero** y **Lista**; la elección se recuerda en el navegador. Tablero por defecto.
 
 ---
 
@@ -503,6 +537,9 @@ Reglas:
 | `tailwind/preset.cjs` | Preset para Tailwind v3 |
 | `src/components/*.tsx` | Componentes de referencia |
 | `src/icons/actions.tsx` | Catálogo de iconos de acción (8.1): `actionIcons`, `ActionIcon` |
+| `apps/web/src/ui/data-list.tsx` | Lista de datos con fila que se abre y acciones de fila (9.7 y 9.8) |
+| `apps/web/src/components/command-palette.tsx` | Paleta de mandos (9.17) |
+| `apps/web/src/routes/club/roster-board.tsx` | Tablero de plantilla (9.18) |
 | `src/i18n/voice.ts` · `*.json` | Voz del club, textos e idiomas |
 | `icons/sport/*.svg` | Iconos de deporte propios |
 
@@ -558,6 +595,7 @@ Antes de crear o cambiar cualquier interfaz:
 2. Usa solo clases del tema. Si necesitas un color, tamaño o radio que no existe, para y pregunta.
 3. Si un componente ya existe en `src/components/`, úsalo. No crees uno parecido.
 3b. Todo botón cuya acción esté en el catálogo (8.1) lleva `action`: `add`, `edit`, `delete`, `save`… Nunca un icono distinto para la misma acción. Si la acción se repite y no está, amplía el catálogo.
+3c. Una lista es un `DataList` con `href` (la fila se abre) y `rowActions` (iconos silenciosos). Nunca un botón "Abrir" ni botones con texto dentro de una fila. Toda ficha nueva entra en la paleta (9.17) si tiene pantalla propia.
 4. Todo texto visible sale de `src/i18n/`. Si falta una clave, créala en castellano en la voz que toque y márcala para traducir.
 5. Comprueba zona táctil, contraste y foco antes de dar algo por terminado.
 6. No pongas la marca del producto dentro de la app de un club.
@@ -578,6 +616,9 @@ Antes de crear o cambiar cualquier interfaz:
 | 4. Forma | Asistencia con dos botones | Un toque alterna; todos presentes por defecto | Claridad del estado en cada fila |
 | 5. Iconos | Duotono de club | Lineal fino, relleno al activar | Identidad del club también en los iconos |
 | 8. Iconos | Icono fijo por acción en todos los botones: rueda dentada para editar, cubo de basura en rojo para eliminar, más para añadir | Botones solo con texto; icono a gusto de cada pantalla | Se reconocen sin leer y la misma acción se ve igual en toda la app |
+| 9. Filas | La fila es el objeto: se abre tocándola; acciones `ghost` solo con icono, menú "⋯" en móvil | Botón "Abrir" por fila; "Editar" y "Quitar" con borde y texto en cada fila | El contenido manda y el cromo se aparta; nueve filas no son dieciocho botones |
+| 9. Uso | Paleta de mandos ⌘K con personas, equipos, pantallas y acciones | Solo navegación por menús | Gestionar 80 deportistas son gestos, no rutas; es lo que no tiene ninguna otra plataforma de clubes |
+| 9. Plantilla | Tablero por posición con el dorsal a la vista, lista como alternativa | Solo tabla | Es como un entrenador piensa su equipo; una tabla es como lo piensa una base de datos |
 | 5. Interacción | Confirmar siempre las acciones delicadas | Deshacer siempre | Seguridad en dinero, bajas y comunicados |
 | 6. Gráficas | Evolución para familias, comparativa para entrenadores | Radar | Lectura honesta y protección del menor |
 | 6. Chat | Canales de equipo y 1:1 familia-entrenador, visibles para la coordinación | Sin chat | Comunicación real con protección del menor |

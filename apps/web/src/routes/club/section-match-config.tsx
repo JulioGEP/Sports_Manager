@@ -22,7 +22,6 @@ import { useT } from "@/lib/intl";
 import {
   Alert,
   Button,
-  ButtonLink,
   Card,
   ConfirmDialog,
   DataList,
@@ -36,6 +35,7 @@ import {
   StatusChip,
   useToast,
   type StatusKind,
+  type RowAction,
 } from "@/ui";
 
 const categoryKind: Record<MatchActionCategory, StatusKind> = {
@@ -141,12 +141,9 @@ export function SectionMatchConfigPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <div>
-        <ButtonLink to={paths.section(id)} variant="tertiary" size="sm" action="back">
-          {t("back", { section: section.name })}
-        </ButtonLink>
-      </div>
       <PageHeader
+        backTo={paths.section(id)}
+        backLabel={t("back", { section: section.name })}
         eyebrow={section.name}
         title={t("title")}
         description={t("description")}
@@ -228,29 +225,23 @@ export function SectionMatchConfigPage() {
             title: a.name,
             subtitle: `${t(`scopes.${a.scope}`)} · ${flags(a) || t("actions.noFlags")} · ${a.weight}`,
           })}
-          mobileActionsBelow
-          actions={
+          rowActions={
             canWrite
-              ? (a) => (
-                  <>
-                    <Button
-                      action="edit"
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => setActionSheet(a)}
-                    >
-                      {c("edit")}
-                    </Button>
-                    <Button
-                      action="delete"
-                      variant="danger"
-                      size="sm"
-                      onClick={() => setRemoving(a)}
-                    >
-                      {c("remove")}
-                    </Button>
-                  </>
-                )
+              ? (a): RowAction[] => [
+                  {
+                    key: "edit",
+                    label: c("edit"),
+                    action: "edit",
+                    onClick: () => setActionSheet(a),
+                  },
+                  {
+                    key: "remove",
+                    label: c("remove"),
+                    action: "delete",
+                    tone: "danger",
+                    onClick: () => setRemoving(a),
+                  },
+                ]
               : undefined
           }
         />

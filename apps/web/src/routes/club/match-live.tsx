@@ -34,6 +34,7 @@ import {
   Sheet,
   StatusChip,
   useToast,
+  BackLink,
 } from "@/ui";
 
 type Selection = { id: string; where: "court" | "bench" } | null;
@@ -499,14 +500,9 @@ function Console({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <ButtonLink
-          to={paths.teamMatches(match.team.id)}
-          variant="tertiary"
-          size="sm"
-          action="back"
-        >
+        <BackLink to={paths.teamMatches(match.team.id)}>
           {t("back", { team: match.team.name })}
-        </ButtonLink>
+        </BackLink>
         <div className="flex flex-wrap gap-2">
           {canWrite ? (
             <Button

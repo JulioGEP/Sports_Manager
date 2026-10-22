@@ -17,7 +17,7 @@ import { useDates } from "@/lib/dates";
 import { useT } from "@/lib/intl";
 import { formatRating, statsOf, statsTypesOf } from "@/lib/matches";
 import { downloadXlsx, type Sheet } from "@/lib/xlsx";
-import { Alert, Button, ButtonLink, Card, Field, Icon, PageHeader, Select, Stat } from "@/ui";
+import { Alert, Button, Card, Field, Icon, PageHeader, Select, Stat } from "@/ui";
 import { zoneCells } from "./match-stats";
 
 type Metric = { key: string; label: string; of: (r: PlayerRow) => number };
@@ -317,12 +317,9 @@ function HistoryView({
 
   return (
     <div className="flex flex-col gap-5">
-      <div>
-        <ButtonLink to={back} variant="tertiary" size="sm" action="back">
-          {t("back")}
-        </ButtonLink>
-      </div>
       <PageHeader
+        backTo={back}
+        backLabel={t("back")}
         eyebrow={`${team.name} · ${season.name}`}
         title={t("title")}
         description={t("description")}

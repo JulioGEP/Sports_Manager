@@ -1,5 +1,6 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router";
+import { CommandPalette, PaletteButton, usePaletteShortcut } from "@/components/command-palette";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { ViewAsBanner, ViewAsSheet } from "@/components/view-as";
 import { ClubProvider, clubPaths, useClub, type ClubState } from "@/lib/club";
@@ -62,6 +63,10 @@ function ClubFrame({ children }: { children: ReactNode }) {
     state.kind === "ready" && state.org.actor.kind === "member" && state.org.actor.canViewAs;
   const [viewAsOpen, setViewAsOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
+  /** Paleta de mandos (DESIGN.md 9.17): ⌘K desde cualquier pantalla. */
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const togglePalette = useCallback(() => setPaletteOpen((v) => !v), []);
+  usePaletteShortcut(togglePalette);
 
   /**
    * Navegación del club (Bloque 14): la sección es la unidad de gestión. En escritorio, barra lateral
@@ -140,6 +145,14 @@ function ClubFrame({ children }: { children: ReactNode }) {
   /** La barra inferior admite cinco destinos (DESIGN.md 9.10): los cuatro primeros y "Más". */
   const mobileLinks = links.length > 5 ? links.slice(0, 4) : links;
   const moreLinks = links.length > 5 ? links.slice(4) : [];
+  const palette =
+    state.kind === "ready" ? (
+      <CommandPalette
+        open={paletteOpen}
+        onClose={() => setPaletteOpen(false)}
+        links={links.map((l) => ({ to: l.to, label: l.label }))}
+      />
+    ) : null;
 
   async function onSignOut() {
     await signOut();
@@ -208,6 +221,7 @@ function ClubFrame({ children }: { children: ReactNode }) {
             <Crest name={clubName || "SM"} logoUrl={branding?.logoUrl} />
             <span className="truncate text-body font-semibold text-ink">{clubName}</span>
           </Link>
+          {state.kind === "ready" ? <PaletteButton onClick={togglePalette} /> : null}
           <nav className="flex flex-col gap-4 overflow-y-auto" aria-label={t("mainNav")}>
             {groups.map((g) => (
               <div key={g.key} className="flex flex-col gap-1">
@@ -247,6 +261,7 @@ function ClubFrame({ children }: { children: ReactNode }) {
         {state.kind === "ready" && canViewAs ? (
           <ViewAsSheet open={viewAsOpen} onClose={() => setViewAsOpen(false)} />
         ) : null}
+        {palette}
       </div>
     );
   }
@@ -262,7 +277,10 @@ function ClubFrame({ children }: { children: ReactNode }) {
           <Crest name={clubName || "SM"} logoUrl={branding?.logoUrl} />
           <span className="truncate text-body font-semibold text-ink">{clubName}</span>
         </Link>
-        {userMenu}
+        <div className="flex items-center gap-1">
+          {state.kind === "ready" ? <PaletteButton compact onClick={togglePalette} /> : null}
+          {userMenu}
+        </div>
       </header>
       <main className="flex-1 px-5 py-5 pb-28">
         <div className="flex flex-col gap-5">
@@ -317,6 +335,7 @@ function ClubFrame({ children }: { children: ReactNode }) {
           ) : null}
         </nav>
       ) : null}
+      {palette}
       {moreLinks.length > 0 ? (
         <Sheet
           open={moreOpen}

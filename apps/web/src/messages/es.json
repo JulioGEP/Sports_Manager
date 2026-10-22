@@ -9,7 +9,8 @@
     "remove": "Quitar",
     "open": "Abrir",
     "current": "Actual",
-    "edit": "Editar"
+    "edit": "Editar",
+    "moreActions": "Más acciones"
   },
   "nav": {
     "home": "Inicio",
@@ -968,6 +969,11 @@
       "empty": "Todavía no hay partidos registrados.",
       "live": "En directo",
       "scheduled": "Sin empezar"
+    },
+    "view": {
+      "label": "Vista de la plantilla",
+      "board": "Tablero",
+      "list": "Lista"
     }
   },
   "players": {
@@ -2725,5 +2731,39 @@
     "rating": "Valoración",
     "starter": "titular",
     "bench": "banquillo"
+  },
+  "palette": {
+    "open": "Buscar o hacer",
+    "placeholder": "Busca personas, equipos, pantallas o acciones",
+    "empty": "Nada que coincida con «{query}».",
+    "hint": "Pulsa {keys} en cualquier pantalla",
+    "groups": {
+      "recent": "Recientes",
+      "actions": "Acciones",
+      "go": "Ir a",
+      "players": "Deportistas",
+      "teams": "Equipos",
+      "sections": "Secciones",
+      "staff": "Personal",
+      "clubMembers": "Socios",
+      "facilities": "Instalaciones",
+      "family": "Mi familia"
+    },
+    "actions": {
+      "newPlayer": "Nuevo deportista",
+      "newSection": "Nueva sección",
+      "newClubMember": "Nuevo socio",
+      "newFacility": "Nueva instalación",
+      "invite": "Invitar a alguien",
+      "newChallenge": "Nuevo reto",
+      "newSeason": "Nueva temporada"
+    },
+    "keys": {
+      "move": "moverse",
+      "open": "abrir",
+      "close": "cerrar"
+    },
+    "noTeam": "Sin equipo",
+    "memberNumber": "Socio nº {number}"
   }
 }

@@ -246,6 +246,7 @@ export function SectionPage() {
                   actions={
                     access.write ? (
                       <Button
+                        iconOnly
                         action="edit"
                         variant="tertiary"
                         size="sm"
@@ -330,16 +331,7 @@ export function SectionPage() {
                           : t("noStaff")
                       }`,
                     })}
-                    actions={(team) => (
-                      <ButtonLink
-                        action="open"
-                        to={paths.team(team.id)}
-                        variant="secondary"
-                        size="sm"
-                      >
-                        {c("open")}
-                      </ButtonLink>
-                    )}
+                    href={(team) => paths.team(team.id)}
                   />
                 </Card>
               ))
