@@ -414,9 +414,11 @@ export function CommandPalette({
   }, [items, tokens.join(" "), recent]);
   const flat = results.flatMap((g) => g.items);
 
+  // El activo vuelve al primero cuando cambia el texto o llegan resultados nuevos: el ratón solo
+  // elige si se mueve (`onMouseMove`), nunca porque la lista se haya repintado debajo del puntero.
   useEffect(() => {
     setActive(0);
-  }, [query]);
+  }, [query, flat.length]);
   useEffect(() => {
     const el = listRef.current?.querySelector<HTMLElement>(`[data-index="${active}"]`);
     el?.scrollIntoView({ block: "nearest" });
@@ -516,7 +518,9 @@ export function CommandPalette({
                           data-index={i}
                           role="option"
                           aria-selected={selected}
-                          onMouseEnter={() => setActive(i)}
+                          onMouseMove={() => {
+                            if (active !== i) setActive(i);
+                          }}
                           onMouseDown={(e) => e.preventDefault()}
                           onClick={() => choose(it)}
                           className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-field px-3 py-1.5 transition-colors ${
