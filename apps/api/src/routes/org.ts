@@ -9,7 +9,7 @@ import {
   ApiErrorSchema,
   AssignRoleBodySchema,
   AssignRoleResponseSchema,
-  canHaveOverrides,
+  overridableAreas,
   CONFIGURABLE_PROFILES,
   ConfigurableProfileSchema,
   defaultPermissionsOf,
@@ -88,7 +88,11 @@ export function brandingDto(org: OrganizationRow) {
   };
 }
 
-function actorDto(actor: Actor, scope: AccessScope): ActorDto {
+function actorDto(
+  actor: Actor,
+  scope: AccessScope,
+  athletePlayerId: string | null = null,
+): ActorDto {
   return actor.kind === "member"
     ? {
         kind: "member",
@@ -98,6 +102,7 @@ function actorDto(actor: Actor, scope: AccessScope): ActorDto {
         viewingAs: actor.viewingAs,
         canViewAs: actor.canViewAs,
         scope: summarizeScope(scope),
+        athletePlayerId,
       }
     : { kind: "platform_support", hasGrant: actor.hasGrant, permissions: [...actor.permissions] };
 }
@@ -196,7 +201,12 @@ export function createOrgRoutes(config: ApiConfig, data: DataLayer) {
           counts,
         };
       }
-      return c.json({ organization, actor: actorDto(actor, await accessScopeOf(data, c)) }, 200);
+      const athlete =
+        actor.kind === "member" ? await data.load.athleteOf(tenant.scope, actor.userId) : null;
+      return c.json(
+        { organization, actor: actorDto(actor, await accessScopeOf(data, c), athlete?.id ?? null) },
+        200,
+      );
     },
   );
 
@@ -376,12 +386,18 @@ export function createOrgRoutes(config: ApiConfig, data: DataLayer) {
         data.access.rulesFor(tenant.scope, userId),
       ]);
       if (memberships.length === 0) throw notFound("Esa persona no es miembro de este club.");
-      if (!canHaveOverrides(memberships.map((m) => m.roleCode)))
+      // La administración solo admite la excepción de Salud (ADR 0038); la familia, ninguna.
+      const allowed = overridableAreas(memberships.map((m) => m.roleCode));
+      if (allowed.length === 0)
         throw conflict(
           "Solo el personal y el cuerpo técnico tienen excepciones; la administración lo ve todo.",
         );
       const byRole = roleVisibleAreas(memberships, rules);
       const overrides = overridesFor(byRole, visible);
+      if ([...overrides.allow, ...overrides.deny].some((a) => !allowed.includes(a)))
+        throw conflict(
+          "A la administración solo se le abre Salud por excepción; el resto lo ve todo.",
+        );
       await data.access.setUserOverrides(tenant.scope, userId, overrides);
       await data.audit.record({
         actorUserId: c.get("sessionUser").id,

@@ -148,7 +148,16 @@ export const RosterUpdateSchema = RosterAddSchema.omit({ playerId: true });
 export type RosterUpdate = z.infer<typeof RosterUpdateSchema>;
 
 /** Papel de cada persona en el cuerpo técnico de un equipo (Bloque 14). */
-export const TEAM_STAFF_ROLES = ["head_coach", "assistant", "delegate", "physio", "other"] as const;
+/** Papel en el equipo. Preparación física y porteros (ADR 0038) deciden qué bloques de la sesión editan. */
+export const TEAM_STAFF_ROLES = [
+  "head_coach",
+  "assistant",
+  "goalkeeper_coach",
+  "fitness",
+  "delegate",
+  "physio",
+  "other",
+] as const;
 export type TeamStaffRole = (typeof TEAM_STAFF_ROLES)[number];
 export const TeamStaffRoleSchema = z.enum(TEAM_STAFF_ROLES);
 

@@ -38,6 +38,8 @@ describe("roles y permisos", () => {
       "org.facilities.read",
       "org.family.read",
       "org.family.write",
+      "org.load.read",
+      "org.load.write_own",
       "org.matches.read",
       "org.matches.write_own",
       "org.players.assess_own",
@@ -45,7 +47,13 @@ describe("roles y permisos", () => {
       "org.roster.write_own",
       "org.settings.read",
       "org.structure.read",
+      "org.training.read",
+      "org.training.write_own",
     ]);
+    // Salud es un área aparte (ADR 0038): ni el cuerpo técnico ni la administración la ven por defecto.
+    expect(hasPermission(["coach"], "org.health.read")).toBe(false);
+    expect(hasPermission(["org_admin"], "org.health.read")).toBe(false);
+    expect(hasPermission(["org_admin"], "org.availability.write")).toBe(true);
     expect(hasPermission(["guardian"], "org.players.read")).toBe(false);
     expect(hasPermission(["coach"], "org.players.write")).toBe(false);
     expect(hasPermission(["coach"], "org.players.assess")).toBe(false);

@@ -86,6 +86,25 @@ export const PERMISSIONS = [
   "org.matches.write",
   "org.matches.write_own",
   "org.matches.configure",
+  /**
+   * Entrenamiento (bloques 21 a 26, ADR 0038): planificación, sesiones, biblioteca, disponibilidad
+   * sin diagnóstico y recomendaciones (`read`); planificar en cualquier equipo del ámbito
+   * (`write`) o en los propios (`write_own`, por bloques según el papel en el equipo); la
+   * biblioteca del club y la metodología (`library`).
+   */
+  "org.training.read",
+  "org.training.write",
+  "org.training.write_own",
+  "org.training.library",
+  /** Carga y bienestar: verlos; registrar RPE, bienestar y tests en cualquier equipo o en los propios. */
+  "org.load.read",
+  "org.load.write",
+  "org.load.write_own",
+  /** Poner la disponibilidad y las restricciones de un deportista. */
+  "org.availability.write",
+  /** Salud: lesiones con diagnóstico, readaptación y consentimiento. Área aparte (decisión 2). */
+  "org.health.read",
+  "org.health.write",
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
 
@@ -102,6 +121,8 @@ const CLUB_READ: readonly Permission[] = [
   "org.events.read",
   "org.attendance.read",
   "org.matches.read",
+  "org.training.read",
+  "org.load.read",
 ];
 
 /**
@@ -119,6 +140,7 @@ const STAFF_READ: readonly Permission[] = [
   "org.events.read",
   "org.attendance.read",
   "org.matches.read",
+  "org.training.read",
 ];
 
 /** Permisos que otorga cada rol de club. */
@@ -141,6 +163,12 @@ export const ROLE_PERMISSIONS: Record<RoleCode, readonly Permission[]> = {
     "org.view_as",
     "org.matches.write",
     "org.matches.configure",
+    "org.training.write",
+    "org.training.library",
+    "org.load.write",
+    // Un club sin fisioterapia también tiene que poder decir quién no está disponible.
+    "org.availability.write",
+    // Salud no: la administración no la ve por defecto (ADR 0038); se le abre por excepción.
   ],
   staff: [...STAFF_READ],
   coach: [
@@ -152,6 +180,9 @@ export const ROLE_PERMISSIONS: Record<RoleCode, readonly Permission[]> = {
     "org.events.write_own",
     "org.attendance.write_own",
     "org.matches.write_own",
+    "org.training.write_own",
+    "org.load.read",
+    "org.load.write_own",
   ],
   guardian: ["org.settings.read", "org.family.read", "org.family.write"],
 };
@@ -175,6 +206,10 @@ export const STAFF_POSITION_PERMISSIONS: Record<StaffPosition, readonly Permissi
     "org.events.write",
     "org.matches.write",
     "org.matches.configure",
+    "org.training.write",
+    "org.training.library",
+    "org.load.read",
+    "org.load.write",
   ],
   coordinator: [
     "org.members.invite",
@@ -186,10 +221,28 @@ export const STAFF_POSITION_PERMISSIONS: Record<StaffPosition, readonly Permissi
     "org.events.write",
     "org.matches.write",
     "org.matches.configure",
+    "org.training.write",
+    "org.training.library",
+    "org.load.read",
+    "org.load.write",
   ],
   delegate: ["org.events.write_own", "org.attendance.write_own", "org.matches.write_own"],
-  physio: ["org.players.assess"],
-  fitness: ["org.players.assess"],
+  physio: [
+    "org.players.assess",
+    "org.training.write_own",
+    "org.load.read",
+    "org.availability.write",
+    "org.health.read",
+    "org.health.write",
+  ],
+  fitness: [
+    "org.players.assess",
+    "org.training.write_own",
+    "org.load.read",
+    "org.load.write",
+    "org.availability.write",
+    "org.health.read",
+  ],
   psychologist: ["org.players.assess"],
   scout: ["org.players.assess"],
 };
@@ -213,6 +266,8 @@ export const SUPPORT_GRANT_PERMISSIONS: readonly Permission[] = [
   "org.events.read",
   "org.fees.read",
   "org.matches.read",
+  "org.training.read",
+  "org.load.read",
 ];
 
 /** Una pertenencia: el rol y, si es `staff`, su cargo. */

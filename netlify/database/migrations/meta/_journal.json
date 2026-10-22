@@ -92,6 +92,13 @@
       "when": 1792616501376,
       "tag": "20261021210141_live_match",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1792669475423,
+      "tag": "20261022114435_training_planning",
+      "breakpoints": true
     }
   ]
 }

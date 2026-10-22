@@ -18,3 +18,4 @@ export * from "./player-profile.ts";
 export * from "./challenges.ts";
 export * from "./matches.ts";
 export * from "./access.ts";
+export * from "./training.ts";

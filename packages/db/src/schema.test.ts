@@ -516,8 +516,9 @@ describe("esquema del Bloque 2 (Postgres embebido con todas las migraciones)", (
          (select count(*) from team_staff ts join users u on u.id = ts.user_id where u.email = 'entrenador@demo.test') as staff,
          (select count(*) from player_guardians pg join users u on u.id = pg.user_id where u.email = 'familia@demo.test') as guardians`,
     );
-    expect(Number(rows[0]!.teams)).toBe(11);
-    expect(Number(rows[0]!.players)).toBe(83);
+    // Doce equipos y 95 jugadores: el Sénior A de fútbol sala llega con el entrenamiento (ADR 0038).
+    expect(Number(rows[0]!.teams)).toBe(12);
+    expect(Number(rows[0]!.players)).toBe(95);
     expect(Number(rows[0]!.staff)).toBe(1);
     expect(Number(rows[0]!.guardians)).toBe(2);
     const { rows: seasons } = await client.query<{ is_current: boolean }>(
@@ -565,10 +566,10 @@ describe("esquema del Bloque 2 (Postgres embebido con todas las migraciones)", (
     );
     expect(Number(rows[0]!.orphans)).toBe(0);
     expect(Number(rows[0]!.sections)).toBe(4);
-    expect(Number(rows[0]!.categories)).toBe(12);
+    expect(Number(rows[0]!.categories)).toBe(13);
     expect(Number(rows[0]!.members)).toBeGreaterThan(40);
     expect(Number(rows[0]!.facilities)).toBe(4);
-    expect(Number(rows[0]!.matches)).toBe(8);
+    expect(Number(rows[0]!.matches)).toBe(14);
     expect(Number(rows[0]!.paid)).toBeGreaterThan(0);
     expect(Number(rows[0]!.family_person)).toBe(1);
 
@@ -628,6 +629,50 @@ describe("esquema del Bloque 2 (Postgres embebido con todas las migraciones)", (
         [facility[0]!.organization_id],
       ),
     ).toBe(CHECK_VIOLATION);
+  });
+
+  it("el entrenamiento del demo (ADR 0038): biblioteca, sesiones con carga, salud con consentimiento y restricciones", async () => {
+    const { rows } = await client.query<Record<string, string>>(
+      `select
+         (select count(*) from training_contents c join organizations o on o.id = c.organization_id where o.slug = 'demo') as contents,
+         (select count(*) from drills d join organizations o on o.id = d.organization_id where o.slug = 'demo' and d.seed_key is not null) as drills,
+         (select count(*) from training_sessions s join teams t on t.id = s.team_id where t.name = 'Sénior A' and s.status = 'done') as done,
+         (select count(*) from player_loads l join organizations o on o.id = l.organization_id where o.slug = 'demo') as loads,
+         (select count(*) from injuries i join organizations o on o.id = i.organization_id where o.slug = 'demo') as injuries,
+         (select count(*) from health_consents h join organizations o on o.id = h.organization_id where o.slug = 'demo') as consents,
+         (select count(*) from player_availability a join organizations o on o.id = a.organization_id where o.slug = 'demo' and a.ended_on is null) as open_periods`,
+    );
+    expect(Number(rows[0]!.contents)).toBe(17);
+    expect(Number(rows[0]!.drills)).toBe(14);
+    expect(Number(rows[0]!.done)).toBe(15);
+    expect(Number(rows[0]!.loads)).toBeGreaterThan(150);
+    expect(Number(rows[0]!.injuries)).toBe(1);
+    expect(Number(rows[0]!.consents)).toBe(2);
+    expect(Number(rows[0]!.open_periods)).toBe(2);
+
+    // Un periodo abierto por jugador; una carga por entrenamiento y jugador; RPE de 0 a 10.
+    const { rows: open } = await client.query<{ organization_id: string; player_id: string }>(
+      "select organization_id, player_id from player_availability where ended_on is null limit 1",
+    );
+    expect(
+      await errorCode(
+        client,
+        "insert into player_availability (organization_id, player_id, status, from_on) values ($1, $2, 'out', current_date)",
+        [open[0]!.organization_id, open[0]!.player_id],
+      ),
+    ).toBe(UNIQUE_VIOLATION);
+    expect(
+      await errorCode(client, "update player_loads set rpe = 11 where source = 'session'"),
+    ).toBe(CHECK_VIOLATION);
+    expect(
+      await errorCode(
+        client,
+        "update training_sessions set md_label = 'MD-9' where status = 'done'",
+      ),
+    ).toBe(CHECK_VIOLATION);
+    expect(await errorCode(client, "update wellness_entries set soreness = 0")).toBe(
+      CHECK_VIOLATION,
+    );
   });
 
   it("borrar un club arrastra pertenencias e invitaciones; borrar un usuario deja en nulo quién invitó", async () => {

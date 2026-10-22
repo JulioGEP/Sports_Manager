@@ -3,12 +3,14 @@ import {
   ACCESS_AREAS,
   ACCESS_PROFILES,
   AREA_PERMISSIONS,
+  ADMIN_EXCEPTION_AREAS,
   canHaveOverrides,
   CONFIGURABLE_PROFILES,
   defaultPermissionsOf,
   effectivePermissions,
   isAreaVisible,
   membershipOfProfile,
+  overridableAreas,
   overridesFor,
   profileOf,
   PROFILE_SCOPE,
@@ -67,6 +69,7 @@ describe("ámbito y áreas de acceso (Bloque 19)", () => {
       "agenda",
       "facilities",
       "challenges",
+      "training",
     ]);
     expect(visibleAreas(defaultPermissionsOf("director"))).toEqual([
       "sections",
@@ -74,8 +77,16 @@ describe("ámbito y áreas de acceso (Bloque 19)", () => {
       "agenda",
       "facilities",
       "challenges",
+      "training",
     ]);
-    expect(visibleAreas(defaultPermissionsOf("org_admin"))).toEqual([...ACCESS_AREAS]);
+    // Todo menos Salud (ADR 0038): la administración no ve diagnósticos por defecto.
+    expect(visibleAreas(defaultPermissionsOf("org_admin"))).toEqual(
+      ACCESS_AREAS.filter((a) => a !== "health"),
+    );
+    expect(isAreaVisible(defaultPermissionsOf("physio"), "health")).toBe(true);
+    expect(isAreaVisible(defaultPermissionsOf("fitness"), "health")).toBe(true);
+    expect(defaultPermissionsOf("fitness").has("org.health.write")).toBe(false);
+    expect(isAreaVisible(defaultPermissionsOf("coach"), "health")).toBe(false);
     expect(isAreaVisible(defaultPermissionsOf("guardian"), "players")).toBe(false);
   });
 
@@ -146,6 +157,37 @@ describe("ámbito y áreas de acceso (Bloque 19)", () => {
     expect(canHaveOverrides(["guardian", "coach"])).toBe(true);
     expect(canHaveOverrides(["guardian"])).toBe(false);
     expect(canHaveOverrides(["org_admin", "coach"])).toBe(false);
+    expect(overridableAreas(["coach"])).toEqual(ACCESS_AREAS);
+    expect(overridableAreas(["org_admin", "coach"])).toEqual(ADMIN_EXCEPTION_AREAS);
+    expect(overridableAreas(["guardian"])).toEqual([]);
+  });
+
+  it("a la administración solo se le abre Salud por excepción, y nada más le cambia", () => {
+    const rules: AccessRule[] = [
+      { profile: null, userId: "a1", area: "health", effect: "allow" },
+      { profile: null, userId: "a1", area: "agenda", effect: "deny" },
+    ];
+    const admin = effectivePermissions([{ roleCode: "org_admin", position: null }], rules);
+    expect(admin.has("org.health.read")).toBe(true);
+    expect(admin.has("org.health.write")).toBe(false);
+    expect(admin.has("org.events.read")).toBe(true);
+    const plain = effectivePermissions([{ roleCode: "org_admin", position: null }], []);
+    expect(plain.has("org.health.read")).toBe(false);
+    expect(plain.has("org.availability.write")).toBe(true);
+  });
+
+  it("incluir Entrenamiento a quien no lo tiene da la planificación y la carga, sin escribir", () => {
+    const rules: AccessRule[] = [
+      { profile: null, userId: "p1", area: "training", effect: "allow" },
+    ];
+    const psychologist = effectivePermissions(
+      [{ roleCode: "staff", position: "psychologist" }],
+      [],
+    );
+    expect(psychologist.has("org.load.read")).toBe(false);
+    const opened = effectivePermissions([{ roleCode: "staff", position: "psychologist" }], rules);
+    expect(opened.has("org.load.read")).toBe(true);
+    expect(opened.has("org.load.write")).toBe(false);
   });
 
   it("con varios roles, los permisos son la unión después de aplicar las reglas de cada perfil", () => {
