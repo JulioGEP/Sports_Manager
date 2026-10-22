@@ -131,7 +131,7 @@ export function PlatformClubsPage() {
           ]}
           mobileRow={(o) => ({
             leading: <Crest name={o.name} logoUrl={o.logoUrl} />,
-            title: o.name,
+            title: <Link to={`/admin/clubs/${o.slug}`}>{o.name}</Link>,
             subtitle: `/${o.slug}`,
             trailing: <StatusChip kind={statusKind[o.status]}>{statuses(o.status)}</StatusChip>,
           })}

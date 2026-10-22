@@ -229,7 +229,7 @@ export function TeamMatchesPage() {
           })}
           href={(m) => (m.status === "finished" ? paths.matchStats(m.id) : paths.match(m.id))}
           rowActions={(m): RowAction[] => [
-            ...(m.eventsCount > 0 && m.status !== "finished"
+            ...(m.eventsCount > 0
               ? [
                   {
                     key: "stats",

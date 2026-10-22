@@ -213,7 +213,7 @@ function StaffChallengesPage() {
             },
           ]}
           mobileRow={(ch) => ({
-            title: ch.name,
+            title: <Link to={paths.challenge(ch.id)}>{ch.name}</Link>,
             subtitle: `${scopeLabel(ch)} · ${period(ch)} · ${t("table.points")}: ${ch.minPoints} / ${ch.targetPoints}`,
             trailing: (
               <StatusChip kind={ch.pendingCount > 0 ? "warning" : challengeKind[ch.status]}>

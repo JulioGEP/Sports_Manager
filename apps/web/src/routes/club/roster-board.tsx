@@ -60,7 +60,7 @@ export function RosterBoard({
             {position ?? t("noPosition")}
             <span className="font-mono normal-case">{players.length}</span>
           </h3>
-          <ul className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 xl:grid-cols-3">
+          <ul className="grid grid-cols-[repeat(auto-fill,minmax(230px,1fr))] gap-2.5">
             {[...players].sort(byNumber).map((p) => (
               <li
                 key={p.playerId}

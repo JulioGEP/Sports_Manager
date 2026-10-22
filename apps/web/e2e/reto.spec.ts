@@ -224,7 +224,7 @@ test.describe("reto por puntos y paneles del personal", () => {
     await shot(page, "75-director-inicio", info.project.name);
     await expectLegibleButtons(page);
     // La dirección escribe estructura: ve el botón de nueva sección.
-    await page.getByRole("link", { name: "Secciones" }).first().click();
+    await page.getByRole("link", { name: "Secciones", exact: true }).first().click();
     await expect(page.getByRole("button", { name: "Nueva sección" })).toBeVisible();
     await signOut(page);
 

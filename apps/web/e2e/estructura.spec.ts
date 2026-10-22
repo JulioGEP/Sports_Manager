@@ -14,7 +14,7 @@ test.describe("estructura del club", () => {
     page,
   }, info) => {
     // ⌘K (Ctrl K) desde el inicio: buscar sin acentos ("alev" encuentra "Alevín A") y abrir con retorno.
-    await expect(page.getByRole("heading", { level: 1 }).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: "Buscar o hacer" }).first()).toBeVisible();
     await page.keyboard.press("Control+k");
     const palette = page.getByRole("dialog", { name: "Buscar o hacer" });
     await expect(palette.getByRole("combobox")).toBeFocused();
@@ -41,7 +41,7 @@ test.describe("estructura del club", () => {
 
   test("secciones, ficha de sección, categoría y equipo nuevos", async ({ page }, info) => {
     const sfx = suffix(info.project.name);
-    await page.getByRole("link", { name: "Secciones" }).first().click();
+    await page.getByRole("link", { name: "Secciones", exact: true }).first().click();
     await expect(page.getByRole("heading", { name: "Secciones" })).toBeVisible();
     await expect(page.getByRole("link", { name: /Fútbol sala/ })).toBeVisible();
     await expect(page.getByRole("link", { name: /Baloncesto/ })).toBeVisible();
@@ -62,7 +62,7 @@ test.describe("estructura del club", () => {
     // Al crearla se abre su ficha, con las categorías que propuso el deporte.
     await expect(page.getByRole("heading", { name: new RegExp(`Pádel ${sfx}`) })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Resumen" })).toBeVisible();
-    await page.getByRole("link", { name: "Secciones" }).first().click();
+    await page.getByRole("link", { name: "Secciones", exact: true }).first().click();
     await expect(page.getByRole("link", { name: new RegExp(`Pádel ${sfx}`) })).toBeVisible();
 
     // Ficha de la sección de fútbol sala: categorías con sus equipos, personal y resumen.

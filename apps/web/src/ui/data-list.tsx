@@ -96,6 +96,10 @@ export function DataList<T>({
           const to = href?.(row);
           const acts = rowActions?.(row).filter(Boolean) ?? [];
           const custom = actions?.(row);
+          /** En línea va la acción que la fila espera (tono `primary`) o la única que hay; el resto, en "⋯". */
+          const inline =
+            acts.find((a) => a.tone === "primary") ?? (acts.length === 1 ? acts[0] : undefined);
+          const menu = acts.filter((a) => a !== inline);
           return (
             <li
               key={getKey(row)}
@@ -112,14 +116,13 @@ export function DataList<T>({
                 ) : null}
               </div>
               {item.trailing}
-              {acts.length === 1 && acts[0] ? (
-                <RowActionButton a={acts[0]} />
-              ) : acts.length > 1 ? (
+              {inline ? <RowActionButton a={inline} /> : null}
+              {menu.length > 0 ? (
                 <Menu
                   label={c("moreActions")}
                   trigger={<DotsThreeVertical size={22} aria-hidden="true" />}
                 >
-                  {acts.map((a) => (
+                  {menu.map((a) => (
                     <MenuItem
                       key={a.key}
                       icon={
