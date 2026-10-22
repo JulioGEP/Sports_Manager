@@ -645,3 +645,9 @@ Las mismas pantallas en un móvil, con la forma envolvente del design system: ca
 ![Estadísticas del partido (móvil)](movil-102-partido-estadisticas.png)
 
 ![Histórico (móvil)](movil-103-partido-historico.png)
+
+### Entrenamiento (móvil): la sesión con la plantilla del día y "Mi bienestar"
+
+![Sesión (móvil)](movil-202-entrenamiento-sesion.png)
+
+![Mi bienestar (móvil)](movil-213-entrenamiento-mi-bienestar.png)
