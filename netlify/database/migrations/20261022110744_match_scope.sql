@@ -1,0 +1,2 @@
+ALTER TABLE "match_action_types" DROP CONSTRAINT "match_action_types_scope_check";--> statement-breakpoint
+ALTER TABLE "match_action_types" ADD CONSTRAINT "match_action_types_scope_check" CHECK ("match_action_types"."scope" in ('player', 'team', 'opponent', 'match'));

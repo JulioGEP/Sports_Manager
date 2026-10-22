@@ -23,10 +23,11 @@ export type MatchActionCategory = (typeof MATCH_ACTION_CATEGORIES)[number];
 export const MatchActionCategorySchema = z.enum(MATCH_ACTION_CATEGORIES);
 
 /**
- * A quién se aplica: a un jugador en pista (gol, falta), al equipo sin jugador (tiempo muerto)
- * o al rival (gol rival, falta rival). Las del rival nunca llevan jugador.
+ * A quién se aplica: a un jugador en pista (gol, falta), al equipo sin jugador (tiempo muerto),
+ * al rival (gol rival, falta rival) o al partido, sin equipo (partido parado, decisión arbitral).
+ * Las del rival y las del partido nunca llevan jugador; las del partido no suman al marcador.
  */
-export const MATCH_ACTION_SCOPES = ["player", "team", "opponent"] as const;
+export const MATCH_ACTION_SCOPES = ["player", "team", "opponent", "match"] as const;
 export type MatchActionScope = (typeof MATCH_ACTION_SCOPES)[number];
 export const MatchActionScopeSchema = z.enum(MATCH_ACTION_SCOPES);
 
@@ -455,6 +456,27 @@ const GOAL_SPORT_ACTIONS: MatchActionSeed[] = [
     scope: "opponent",
     mirrorOf: "timeout",
   },
+  {
+    code: "stoppage",
+    name: t("Partido parado", "Partit aturat", "Play stopped"),
+    category: "neutral",
+    scope: "match",
+    quick: true,
+  },
+  {
+    code: "injury_stop",
+    name: t("Parón por lesión", "Aturada per lesió", "Injury stoppage"),
+    category: "neutral",
+    scope: "match",
+    quick: true,
+  },
+  {
+    code: "referee_decision",
+    name: t("Decisión arbitral", "Decisió arbitral", "Referee decision"),
+    category: "neutral",
+    scope: "match",
+    quick: true,
+  },
 ];
 
 const BASKETBALL_ACTIONS: MatchActionSeed[] = [
@@ -594,6 +616,27 @@ const BASKETBALL_ACTIONS: MatchActionSeed[] = [
     scope: "opponent",
     mirrorOf: "timeout",
   },
+  {
+    code: "stoppage",
+    name: t("Partido parado", "Partit aturat", "Play stopped"),
+    category: "neutral",
+    scope: "match",
+    quick: true,
+  },
+  {
+    code: "injury_stop",
+    name: t("Parón por lesión", "Aturada per lesió", "Injury stoppage"),
+    category: "neutral",
+    scope: "match",
+    quick: true,
+  },
+  {
+    code: "referee_decision",
+    name: t("Decisión arbitral", "Decisió arbitral", "Referee decision"),
+    category: "neutral",
+    scope: "match",
+    quick: true,
+  },
 ];
 
 const VOLLEYBALL_ACTIONS: MatchActionSeed[] = [
@@ -666,6 +709,27 @@ const VOLLEYBALL_ACTIONS: MatchActionSeed[] = [
     quick: true,
     mirrorOf: "error",
   },
+  {
+    code: "stoppage",
+    name: t("Partido parado", "Partit aturat", "Play stopped"),
+    category: "neutral",
+    scope: "match",
+    quick: true,
+  },
+  {
+    code: "injury_stop",
+    name: t("Parón por lesión", "Aturada per lesió", "Injury stoppage"),
+    category: "neutral",
+    scope: "match",
+    quick: true,
+  },
+  {
+    code: "referee_decision",
+    name: t("Decisión arbitral", "Decisió arbitral", "Referee decision"),
+    category: "neutral",
+    scope: "match",
+    quick: true,
+  },
 ];
 
 /** Catálogo mínimo para un deporte sin propuesta propia: marcador, faltas y tarjetas. */
@@ -712,6 +776,27 @@ const GENERIC_ACTIONS: MatchActionSeed[] = [
     countsFoul: true,
     quick: true,
     mirrorOf: "foul",
+  },
+  {
+    code: "stoppage",
+    name: t("Partido parado", "Partit aturat", "Play stopped"),
+    category: "neutral",
+    scope: "match",
+    quick: true,
+  },
+  {
+    code: "injury_stop",
+    name: t("Parón por lesión", "Aturada per lesió", "Injury stoppage"),
+    category: "neutral",
+    scope: "match",
+    quick: true,
+  },
+  {
+    code: "referee_decision",
+    name: t("Decisión arbitral", "Decisió arbitral", "Referee decision"),
+    category: "neutral",
+    scope: "match",
+    quick: true,
   },
 ];
 
