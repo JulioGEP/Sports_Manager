@@ -43,7 +43,9 @@
     "groupClub": "El club",
     "groupActivity": "Actividad",
     "groupManagement": "Gestión",
-    "viewAs": "Ver el club como…"
+    "viewAs": "Ver el club como…",
+    "training": "Entrenamiento",
+    "athlete": "Mi bienestar"
   },
   "auth": {
     "login": {
@@ -264,7 +266,9 @@
       "scout": {
         "title": "Observación",
         "description": "Jugadores sin valoración deportiva y los que están por debajo del umbral."
-      }
+      },
+      "openTraining": "Entrenamiento",
+      "openInfirmary": "Enfermería"
     },
     "scope": {
       "restricted": "Ves tu parte del club: {sections, plural, =0 {ninguna sección} one {# sección} other {# secciones}}, {teams, plural, =0 {ningún equipo} one {# equipo} other {# equipos}} y {players, plural, =0 {ningún deportista suelto} one {# deportista suelto} other {# deportistas sueltos}}.",
@@ -369,13 +373,15 @@
         "facilities": "Instalaciones",
         "challenges": "Reto",
         "fees": "Cuotas",
-        "activity": "Movimientos"
+        "activity": "Movimientos",
+        "training": "Entrenamiento",
+        "health": "Salud"
       },
       "toggle": "{area} para {profile}",
       "changed": "Cambiado respecto a lo de por defecto",
       "reset": "Volver a lo de por defecto",
       "saved": "Acceso de {profile} guardado.",
-      "adminNote": "La administración del club lo ve todo y no tiene excepciones. Las familias ven solo lo de sus deportistas: agenda, reto y cuotas.",
+      "adminNote": "La administración del club lo ve todo salvo Salud, que solo se abre por excepción a quien lo necesite. Las familias ven solo lo de sus deportistas: agenda, reto y cuotas.",
       "overridesTitle": "Excepciones por persona",
       "overridesDescription": "Personas que ven algo distinto de lo que ve su rol: un área de más o de menos. Se añaden, se cambian y se quitan aquí.",
       "overridesEmpty": "Nadie tiene excepciones.",
@@ -392,19 +398,20 @@
       "overrideSheet": {
         "titleNew": "Nueva excepción",
         "titleEdit": "Excepciones de {name}",
-        "description": "Marca lo que ve esta persona. Parte de lo que ve su rol; lo que cambies queda como excepción solo para ella. La administración del club lo ve todo y no tiene excepciones.",
+        "description": "Marca lo que ve esta persona. Parte de lo que ve su rol; lo que cambies queda como excepción solo para ella. A la administración solo se le puede abrir Salud.",
         "person": "Persona",
         "areas": "Qué ve",
         "roleSees": "Su rol lo ve",
         "roleHides": "Su rol no lo ve",
         "exceptionChip": "Excepción",
         "none": "Cambia al menos un área respecto a su rol.",
-        "empty": "No hay personal que pueda tener excepciones: la administración lo ve todo y las familias ven solo lo suyo.",
+        "empty": "No hay nadie que pueda tener excepciones: las familias ven solo lo suyo.",
         "saved": "Excepciones de {name} guardadas.",
         "byRoleTitle": "Lo que trae su rol: {roles}",
         "scope": "Alcance: {scope}. Las excepciones no lo cambian.",
         "hides": "Su rol no ve {areas}.",
-        "seesAll": "Su rol ve todas las áreas."
+        "seesAll": "Su rol ve todas las áreas.",
+        "adminHealth": "Administra el club: lo ve todo salvo Salud. Solo Salud se le puede abrir, y queda auditado cada vez que la consulta."
       }
     }
   },
@@ -815,7 +822,8 @@
       "plan_updated": "Plan de desarrollo guardado",
       "note_added": "Registro añadido al jugador",
       "staff_assigned": "Personal asignado al deportista",
-      "staff_unassigned": "Personal retirado del deportista"
+      "staff_unassigned": "Personal retirado del deportista",
+      "focus_updated": "Contenidos foco del jugador cambiados"
     },
     "challenge": {
       "created": "Reto creado",
@@ -870,6 +878,75 @@
     },
     "access": {
       "rule_updated": "Acceso por rol cambiado"
+    },
+    "training_config": {
+      "updated": "Ajustes de entrenamiento editados"
+    },
+    "training_content": {
+      "created": "Contenido de entrenamiento creado",
+      "updated": "Contenido de entrenamiento editado",
+      "removed": "Contenido de entrenamiento eliminado"
+    },
+    "drill": {
+      "created": "Tarea creada",
+      "updated": "Tarea editada",
+      "removed": "Tarea eliminada"
+    },
+    "training_plan": {
+      "updated": "Plan de temporada editado"
+    },
+    "training_cycle": {
+      "created": "Ciclo creado",
+      "updated": "Ciclo editado",
+      "removed": "Ciclo eliminado"
+    },
+    "microcycle_template": {
+      "created": "Semana tipo creada",
+      "updated": "Semana tipo editada",
+      "removed": "Semana tipo eliminada"
+    },
+    "training_week": {
+      "copied": "Semana de entrenamiento copiada",
+      "template_applied": "Semana tipo aplicada"
+    },
+    "session": {
+      "created": "Sesión planificada",
+      "updated": "Sesión editada",
+      "block_updated": "Bloque de sesión editado",
+      "closed": "Sesión cerrada",
+      "copied": "Sesión copiada",
+      "removed": "Sesión eliminada"
+    },
+    "load": {
+      "recorded": "Carga registrada"
+    },
+    "match": {
+      "loads_updated": "Carga del partido registrada"
+    },
+    "wellness": {
+      "recorded": "Bienestar registrado"
+    },
+    "availability": {
+      "updated": "Disponibilidad cambiada"
+    },
+    "insight": {
+      "answered": "Recomendación respondida"
+    },
+    "health": {
+      "viewed": "Salud consultada",
+      "consent_updated": "Consentimiento de salud registrado",
+      "consent_revoked": "Consentimiento de salud retirado"
+    },
+    "injury": {
+      "created": "Lesión registrada",
+      "updated": "Lesión editada",
+      "phases_updated": "Fases de readaptación editadas",
+      "removed": "Lesión eliminada"
+    },
+    "physical_test": {
+      "created": "Test físico creado",
+      "updated": "Test físico editado",
+      "results_recorded": "Resultados de tests registrados"
     }
   },
   "team": {
@@ -974,6 +1051,14 @@
       "label": "Vista de la plantilla",
       "board": "Tablero",
       "list": "Lista"
+    },
+    "training": {
+      "title": "Entrenamiento",
+      "description": "La semana, la temporada, la carga del grupo y los tests.",
+      "week": "Semana",
+      "season": "Temporada",
+      "load": "Carga",
+      "tests": "Tests"
     }
   },
   "players": {
@@ -1310,7 +1395,8 @@
         "submit": "Asignar",
         "empty": "No hay nadie más del personal disponible."
       }
-    }
+    },
+    "performance": "Rendimiento"
   },
   "family": {
     "title": "Mi familia",
@@ -1827,7 +1913,8 @@
       }
     },
     "tabChallenges": "Retos",
-    "matchConfig": "Partido en directo"
+    "matchConfig": "Partido en directo",
+    "training": "Entrenamiento"
   },
   "sectionKinds": {
     "competition": "Competición",
@@ -1842,7 +1929,9 @@
     "assistant": "Segundo entrenador",
     "delegate": "Delegado",
     "physio": "Fisio",
-    "other": "Otro"
+    "other": "Otro",
+    "goalkeeper_coach": "Entrenador de porteros",
+    "fitness": "Preparación física"
   },
   "weekdays": {
     "1": "Lunes",
@@ -2120,6 +2209,12 @@
       "saved": "Evento guardado.",
       "created": "{count, plural, one {Evento creado.} other {# eventos creados.}}",
       "conflictWith": "Ojo: la instalación ya tiene «{title}» a esa hora. Se ha guardado igual."
+    },
+    "session": {
+      "planned": "Este entrenamiento tiene sesión planificada.",
+      "notPlanned": "Sin sesión planificada todavía.",
+      "open": "Ver la sesión",
+      "plan": "Planificar"
     }
   },
   "facilities": {
@@ -2766,7 +2861,9 @@
       "newFacility": "Nueva instalación",
       "invite": "Invitar a alguien",
       "newChallenge": "Nuevo reto",
-      "newSeason": "Nueva temporada"
+      "newSeason": "Nueva temporada",
+      "drills": "Biblioteca de tareas",
+      "infirmary": "Enfermería"
     },
     "keys": {
       "move": "moverse",
@@ -2775,5 +2872,1350 @@
     },
     "noTeam": "Sin equipo",
     "memberNumber": "Socio nº {number}"
+  },
+  "availability": {
+    "status": {
+      "available": "Disponible",
+      "limited": "Limitado",
+      "rehab": "Readaptación",
+      "out": "Baja"
+    },
+    "inline": {
+      "available": "disponible",
+      "limited": "limitado",
+      "rehab": "en readaptación",
+      "out": "de baja"
+    },
+    "maxMinutes": "máx. {minutes} min"
+  },
+  "restrictions": {
+    "contact": "Sin contacto",
+    "jumps": "Sin saltos",
+    "shooting": "Sin golpeo",
+    "direction_changes": "Sin cambios de dirección",
+    "high_intensity": "Sin alta intensidad"
+  },
+  "tags": {
+    "contact": "Contacto",
+    "jumps": "Saltos",
+    "shooting": "Golpeo",
+    "direction_changes": "Cambios de dirección",
+    "high_intensity": "Alta intensidad"
+  },
+  "contentKinds": {
+    "technical": "Técnico",
+    "tactical": "Táctico",
+    "physical": "Físico",
+    "set_piece": "Balón parado",
+    "goalkeeper": "Portero",
+    "psychological": "Psicológico"
+  },
+  "sessionBlocks": {
+    "warmup": "Activación",
+    "main": "Parte principal",
+    "goalkeepers": "Porteros",
+    "rehab": "Readaptación",
+    "cooldown": "Vuelta a la calma"
+  },
+  "sessionStatus": {
+    "draft": "Borrador",
+    "planned": "Planificada",
+    "done": "Hecha",
+    "cancelled": "Cancelada"
+  },
+  "zones": {
+    "r1c1": "banda izquierda junto al área",
+    "r1c2": "centro junto al área",
+    "r1c3": "banda derecha junto al área",
+    "r2c1": "banda izquierda a media distancia",
+    "r2c2": "centro a media distancia",
+    "r2c3": "banda derecha a media distancia",
+    "r3c1": "banda izquierda lejana",
+    "r3c2": "centro lejano",
+    "r3c3": "banda derecha lejana"
+  },
+  "board": {
+    "toolbar": "Herramientas de la pizarra",
+    "tools": {
+      "own": "Jugador",
+      "rival": "Rival",
+      "keeper": "Portero",
+      "ball": "Balón",
+      "cone": "Cono",
+      "goal": "Portería",
+      "pass": "Pase",
+      "dribble": "Conducción",
+      "run": "Desplazamiento",
+      "erase": "Borrar"
+    },
+    "field": "Espacio",
+    "fields": {
+      "full": "Pista entera",
+      "half": "Media pista",
+      "free": "Libre"
+    },
+    "clear": "Vaciar",
+    "pieceHint": "Toca la pista para poner la pieza.",
+    "arrowStart": "Toca el origen de la flecha.",
+    "arrowEnd": "Ahora toca el destino.",
+    "eraseHint": "Toca una pieza o una flecha para quitarla.",
+    "summary": "Pizarra con {pieces} piezas y {arrows} flechas",
+    "elements": "Elementos de la pizarra",
+    "removeElement": "Quitar {element}"
+  },
+  "load": {
+    "ua": "{value} UA",
+    "minutes": "{value} min",
+    "noRatio": "Sin historia",
+    "sources": {
+      "session": "Sesión",
+      "match": "Partido",
+      "extra": "Extra"
+    }
+  },
+  "insights": {
+    "title": "A tener en cuenta",
+    "description": "Recomendaciones explicables: qué se detecta, con qué cifra y qué se propone. Las decide el cuerpo técnico.",
+    "empty": "Nada que destacar ahora mismo.",
+    "levels": {
+      "alert": "Alerta",
+      "attention": "Atención",
+      "info": "Información"
+    },
+    "proposal": "Propuesta",
+    "groups": {
+      "recovery": "Recuperación",
+      "compensatory": "Compensatorio"
+    },
+    "apply": "Aplicada",
+    "dismiss": "Descartar",
+    "applied": "Hecho. No volverá a salir en unas semanas.",
+    "dismissed": "Descartada. No volverá a salir en dos semanas.",
+    "showAll": "Ver las {count}",
+    "showLess": "Ver menos",
+    "openMatch": "Ver el partido",
+    "openPlayer": "Ver su rendimiento",
+    "zoneHint": " Empieza por la zona con menos acierto: {zone}.",
+    "reviewHint": " Revisión el {date}.",
+    "rules": {
+      "finishing_drop": {
+        "title": "Cae el acierto en el tiro",
+        "evidence": "{recent} % de acierto en los últimos {matches} partidos frente al {season} % de la temporada.",
+        "suggestion": "Más minutos de finalización esta semana.{zone}"
+      },
+      "turnovers_up": {
+        "title": "Más pérdidas de balón",
+        "evidence": "{recent} pérdidas por partido en los últimos {matches} frente a {season} de media en la temporada.",
+        "suggestion": "Salida de presión y superioridades en el inicio del juego."
+      },
+      "early_fouls": {
+        "title": "Se llega pronto al tope de faltas",
+        "evidence": "En {matches} de los últimos {of} partidos el equipo llegó a {limit} faltas antes del minuto {minute} de una parte.",
+        "suggestion": "Defensa sin falta y 1x1 defensivo: a partir del tope, cada falta es un doble penalti."
+      },
+      "late_goals": {
+        "title": "Encajamos al final de las partes",
+        "evidence": "{late} de los {total} goles en contra ({share} %) llegaron en los últimos {minutes} minutos de una parte, en {matches} partidos.",
+        "suggestion": "Resistencia intermitente en MD-3 y revisar las rotaciones del final."
+      },
+      "corners_no_goal": {
+        "title": "Los córners no acaban en gol",
+        "evidence": "{corners} saques de esquina a favor en {matches} partidos y ningún gol en los diez segundos siguientes.",
+        "suggestion": "Ensayar la ABP ofensiva con variantes y señal."
+      },
+      "known_opponent": {
+        "title": "Ya jugamos contra {opponent}",
+        "evidence": "El {playedOn} quedó {own}-{against}. El próximo partido es el {date}.",
+        "suggestion": "Revisa la comparativa y las zonas de tiro de aquel partido."
+      },
+      "md_plus_one": {
+        "title": "Día después del partido contra {opponent}",
+        "evidence": "{recovery} jugadores con {recoveryMinutes} minutos o más y {compensatory} con menos de {compensatoryMinutes}.",
+        "suggestion": "Dos grupos: recuperación para quien jugó mucho y compensatorio para el resto."
+      },
+      "double_match_week": {
+        "title": "Semana con dos partidos",
+        "evidence": "{matches} partidos en la semana del {week}.",
+        "suggestion": "Menos volumen: aplica la semana tipo de dos partidos si la tienes."
+      },
+      "weekly_load": {
+        "title": "{direction, select, high {Semana más cargada de lo habitual} other {Semana más suave de lo habitual}}",
+        "evidence": "Carga planificada de {planned} UA frente a {baseline} UA de media en las cuatro semanas anteriores ({ratio} veces).",
+        "suggestion": "{direction, select, high {Revisa el volumen o reparte la intensidad.} other {Si no es una semana de descarga, sube algo el volumen.}}"
+      },
+      "content_gap": {
+        "title": "Sin minutos de {content}",
+        "evidence": "Es un foco del ciclo y no se ha trabajado en los últimos {days} días.",
+        "suggestion": "Añade una tarea de {content} a la próxima sesión."
+      },
+      "drill_low_rating": {
+        "title": "«{task}» no está funcionando",
+        "evidence": "Valorada como «no funcionó» {low} de las {uses} veces de las últimas cuatro semanas.",
+        "suggestion": "Prueba otra tarea con el mismo contenido."
+      },
+      "restriction_conflict": {
+        "title": "{name} no puede hacer toda la sesión",
+        "evidence": "{kind, select, tags {Está {status} ({tags}) y {task} lo exige.} minutes {Tiene un máximo de {max} minutos y la sesión le suma {minutes}.} other {Está {status} y aparece en {task}.}}",
+        "suggestion": "{kind, select, tags {Una variante sin {tags} o el grupo de readaptación.} minutes {Quítale alguna tarea o mándale a un grupo aparte.} other {Sácale de la tarea.}}"
+      },
+      "wellness_drop": {
+        "title": "{name} no llega bien hoy",
+        "evidence": "{kind, select, soreness {Dolor muscular en {soreness} de 5 (5 es sin molestias).} other {Bienestar de {score} sobre 25 dos días seguidos, frente a {mean} de media.}}",
+        "suggestion": "Avisa a fisioterapia y modera su carga hoy."
+      },
+      "acwr": {
+        "title": "{direction, select, high {{name}: carga aguda alta} other {{name}: carga por debajo de lo habitual}}",
+        "evidence": "Relación aguda:crónica de {ratio} ({acute} UA en siete días frente a {chronic} UA de media semanal). El umbral del club es {limit}.",
+        "suggestion": "{direction, select, high {Ajusta su carga esta semana. Es un aviso, no una predicción de lesión.} other {Si no es por decisión, súbele la carga poco a poco.}}"
+      },
+      "return_progression": {
+        "title": "{name} vuelve de una baja",
+        "evidence": "Desde el {since}. Esta semana lleva {acute} UA; su tope recomendado es {cap} UA, el 110 % de su carga semanal previa.",
+        "suggestion": "{over, plural, =1 {Está por encima del tope: baja su carga.} other {Sube la carga de forma progresiva sin pasar del tope.}}"
+      },
+      "rpe_above_target": {
+        "title": "{name} lo nota más de lo previsto",
+        "evidence": "RPE de {rpe} en las dos últimas sesiones, con {target} previsto.",
+        "suggestion": "Habla con el jugador y con preparación física."
+      },
+      "focus_gap": {
+        "title": "El objetivo de {name} no se trabaja",
+        "evidence": "{minutes} minutos de sus contenidos en tres semanas (mínimo del club: {target}). Objetivo: {objective}.{review}",
+        "suggestion": "Añade una tarea o una variante de esos contenidos."
+      },
+      "strength": {
+        "title": "{name} destaca en {action}",
+        "evidence": "{rate} por cada 40 minutos en los últimos {matches} partidos; la mediana del equipo es {median}.",
+        "suggestion": "Úsale de referencia en las tareas, dale un rol y reconóceselo."
+      },
+      "low_attendance": {
+        "title": "Asistencia baja de {name}",
+        "evidence": "{present} de {total} entrenamientos en cuatro semanas ({percent} %). El mínimo del club es el {min} %.",
+        "suggestion": "Habla con el jugador o con la familia."
+      },
+      "minutes_balance": {
+        "title": "{name} apenas juega",
+        "evidence": "{minutes} minutos en los últimos {matches} partidos, frente a {mean} de media del equipo.",
+        "suggestion": "En formativas, el reparto de minutos también es un objetivo."
+      }
+    }
+  },
+  "session": {
+    "rating": {
+      "1": "No funcionó",
+      "2": "Regular",
+      "3": "Funcionó"
+    },
+    "backToWeek": "Semana del equipo",
+    "noObjective": "Sin objetivo definido.",
+    "readOnly": "Puedes ver esta sesión, pero no editarla.",
+    "objective": "Objetivo",
+    "status": "Estado",
+    "targetRpe": "RPE objetivo",
+    "noRpe": "Sin indicar",
+    "md": "Día respecto al partido",
+    "cycle": "Ciclo",
+    "noCycle": "Sin ciclo",
+    "contents": "Contenidos",
+    "contentMinutes": "Minutos por contenido",
+    "notes": "Notas",
+    "actions": {
+      "close": "Cerrar sesión",
+      "reclose": "Editar el cierre",
+      "court": "Modo pista",
+      "print": "Imprimir",
+      "copy": "Copiar a otro día",
+      "remove": "Quitar planificación"
+    },
+    "summary": {
+      "plannedMinutes": "Minutos planificados",
+      "plannedLoad": "Carga planificada por jugador",
+      "ready": "Pueden entrenar",
+      "readyValue": "{ready} de {total}",
+      "actual": "Carga real media · {minutes} min"
+    },
+    "header": {
+      "title": "Planificación",
+      "edit": "Editar",
+      "description": "Lo que se quiere conseguir y en qué momento de la semana está.",
+      "objectiveHint": "Una frase: qué tiene que salir de esta sesión.",
+      "mdHint": "Se calcula con los partidos de la agenda. Cámbialo solo si hace falta.",
+      "mdAuto": "Automático",
+      "mdAutoValue": "Automático ({md})",
+      "saved": "Planificación guardada."
+    },
+    "blocks": {
+      "empty": "Sin tareas todavía.",
+      "fromLibrary": "De la biblioteca",
+      "free": "Tarea libre",
+      "moveUp": "Subir «{title}»",
+      "moveDown": "Bajar «{title}»",
+      "edit": "Editar «{title}»",
+      "remove": "Quitar «{title}»",
+      "saved": "Tarea guardada.",
+      "removed": "Tarea quitada.",
+      "rated": "Valoración: {rating}",
+      "none": "Esta sesión aún no tiene tareas",
+      "noneHint": "Las añade el cuerpo técnico del equipo, cada uno en sus bloques."
+    },
+    "item": {
+      "setsReps": "{sets} × {reps}",
+      "sets": "{sets, plural, one {# serie} other {# series}}",
+      "rest": "descanso {seconds} s",
+      "rpe": "RPE {rpe}"
+    },
+    "itemSheet": {
+      "titleNew": "Nueva tarea",
+      "titleEdit": "Editar tarea",
+      "fromDrill": "{block} · de la biblioteca: {name}",
+      "name": "Nombre",
+      "minutes": "Minutos",
+      "sets": "Series",
+      "reps": "Repeticiones",
+      "restSec": "Descanso (s)",
+      "group": "Grupo",
+      "groupHint": "Por ejemplo, Grupo A o Porteros.",
+      "demands": "Exige:",
+      "players": "Jugadores",
+      "playersHint": "Sin marcar a nadie, la hace todo el grupo.",
+      "conflict": "Choca con las restricciones de: {names}. Valora una variante o un grupo aparte.",
+      "submit": "Guardar tarea"
+    },
+    "library": {
+      "title": "Añadir de la biblioteca",
+      "description": "Las tareas del club, de la sección, del equipo y las tuyas.",
+      "search": "Buscar",
+      "content": "Contenido",
+      "allContents": "Todos",
+      "empty": "No hay tareas con ese filtro.",
+      "uses": "{count, plural, one {usada # vez} other {usada # veces}}",
+      "add": "Añadir",
+      "openLibrary": "Abrir la biblioteca"
+    },
+    "roster": {
+      "title": "Plantilla del día",
+      "description": "{total, plural, one {# jugador} other {# jugadores}} con su disponibilidad.",
+      "present": "{present} de {total} presentes",
+      "empty": "El equipo no tiene jugadores activos.",
+      "rpe": "RPE {rpe}"
+    },
+    "close": {
+      "title": "Cerrar la sesión",
+      "description": "Asistencia, RPE y participación de cada uno. Con esto se calcula la carga.",
+      "basicDescription": "Asistencia y, si quieres, el RPE del grupo.",
+      "actualMinutes": "Duración real (min)",
+      "groupRpe": "RPE del grupo",
+      "groupRpeHint": "Cuánto costó la sesión, de 0 (reposo) a 10 (máximo).",
+      "groupRpeHintFull": "Para quien no tenga el suyo. De 0 (reposo) a 10 (máximo).",
+      "players": "Jugadores",
+      "presentCount": "{present} de {total} presentes",
+      "rpeOf": "RPE de {name}",
+      "participation": "Participación",
+      "minutes": "Minutos",
+      "itemRatings": "Valoración de las tareas",
+      "ratingOf": "Valoración de «{title}»",
+      "rating": "Valoración de la sesión",
+      "notes": "Notas del cierre",
+      "submit": "Cerrar sesión",
+      "done": "Sesión cerrada con {count, plural, one {# presente} other {# presentes}}."
+    },
+    "copy": {
+      "title": "Copiar la sesión",
+      "description": "Mismas tareas en otro entrenamiento del equipo. Si ya tenía planificación, se sustituye.",
+      "week": "Semana",
+      "weekHint": "Cualquier día de la semana de destino.",
+      "target": "Entrenamiento",
+      "choose": "Elige un entrenamiento",
+      "none": "No hay entrenamientos del equipo en la agenda esa semana.",
+      "replacesOption": "{label} (ya planificado)",
+      "replaces": "Ese entrenamiento ya tiene sesión: se sustituye por esta.",
+      "submit": "Copiar",
+      "done": "Sesión copiada."
+    },
+    "remove": {
+      "title": "¿Quitar la planificación?",
+      "body": "El entrenamiento sigue en la agenda. Se pierden las tareas y el cierre.",
+      "done": "Planificación quitada."
+    },
+    "court": {
+      "exit": "Salir",
+      "step": "Tarea {current} de {total}",
+      "fullscreen": "Pantalla completa",
+      "exitFullscreen": "Salir de pantalla completa",
+      "empty": "Esta sesión aún no tiene tareas.",
+      "coachingPoints": "Puntos clave",
+      "description": "Descripción",
+      "notes": "Notas",
+      "previous": "Anterior",
+      "next": "Siguiente",
+      "start": "Arrancar el cronómetro",
+      "pause": "Parar el cronómetro",
+      "reset": "Reiniciar el cronómetro",
+      "timeUp": "Tiempo",
+      "keyboardHint": "Flechas para cambiar de tarea; espacio para el cronómetro."
+    },
+    "print": {
+      "back": "Volver a la sesión",
+      "print": "Imprimir",
+      "heading": "Sesión de entrenamiento",
+      "planned": "Planificado",
+      "coachingPoints": "Puntos clave",
+      "noItems": "Sin tareas planificadas.",
+      "roster": "Plantilla",
+      "player": "Jugador",
+      "availability": "Disponibilidad",
+      "attendance": "Asiste",
+      "rpe": "RPE"
+    }
+  },
+  "training": {
+    "backToTeam": "Volver al equipo",
+    "backToWeek": "Volver a la semana",
+    "links": {
+      "season": "Temporada",
+      "history": "Histórico",
+      "load": "Carga",
+      "tests": "Tests físicos",
+      "drills": "Biblioteca de tareas",
+      "infirmary": "Enfermería"
+    },
+    "hub": {
+      "title": "Entrenamiento",
+      "description": "Planifica la semana de cada equipo, sigue la carga y consulta lo que hay que tener en cuenta.",
+      "empty": "No hay equipos que entrenar",
+      "emptyHint": "Cuando la temporada tenga equipos en tu ámbito, aparecerán aquí.",
+      "openWeek": "Abrir la semana",
+      "teamsCount": "{count, plural, one {# equipo} other {# equipos}}",
+      "players": "{count, plural, one {# jugador} other {# jugadores}}",
+      "methodology": "Metodología",
+      "settings": "Ajustes de entrenamiento",
+      "table": {
+        "team": "Equipo",
+        "category": "Categoría",
+        "staff": "Cuerpo técnico",
+        "players": "Jugadores"
+      }
+    },
+    "week": {
+      "title": "Semana de entrenamiento",
+      "navigation": "Cambiar de semana",
+      "previous": "Semana anterior",
+      "next": "Semana siguiente",
+      "today": "Esta semana",
+      "todayLabel": "Hoy",
+      "available": "Disponibles",
+      "notAvailable": "No disponibles del todo:",
+      "planned": "Carga planificada",
+      "plannedVsBaseline": "Planificada · media de las cuatro anteriores: {baseline}",
+      "actual": "Carga real de la semana",
+      "cycle": "Ciclo en curso: {name}",
+      "days": "Día a día",
+      "rest": "Sin actividad",
+      "match": "Partido contra {opponent}",
+      "matchNoOpponent": "Partido",
+      "openStats": "Ver estadísticas",
+      "openMatch": "Abrir el partido",
+      "drills": "{count, plural, =0 {sin tareas} one {# tarea} other {# tareas}}",
+      "plan": "Planificar",
+      "notPlanned": "Sin planificar",
+      "insights": "A tener en cuenta",
+      "insightsHint": "Lo que dicen los partidos, la carga y cada jugador. Decides tú.",
+      "more": "Más del equipo",
+      "copy": {
+        "button": "Copiar semana",
+        "title": "Copiar otra semana",
+        "description": "Las sesiones de la semana elegida se copian en la del {week}.",
+        "from": "Un día de la semana de origen",
+        "fromHint": "Se copia la semana {week}.",
+        "rule": "Cada sesión va al entrenamiento con la misma etiqueta MD y, si no lo hay, al del mismo día. Los entrenamientos que ya tienen sesión no se tocan.",
+        "submit": "Copiar",
+        "done": "{count, plural, =0 {No había nada que copiar.} one {Copiada # sesión.} other {Copiadas # sesiones.}}"
+      },
+      "template": {
+        "button": "Aplicar semana tipo",
+        "title": "Aplicar una semana tipo",
+        "description": "Objetivo, minutos y RPE de cada día contando desde el partido.",
+        "template": "Semana tipo",
+        "days": "Días de la semana tipo",
+        "rule": "Si un día no tiene entrenamiento en la agenda, se crea. Las sesiones que ya existen conservan sus tareas.",
+        "submit": "Aplicar",
+        "done": "{count, plural, =0 {No se ha aplicado a ningún día.} one {Aplicada a # sesión.} other {Aplicada a # sesiones.}}",
+        "noMatch": "Esta semana no tiene partido: la semana tipo cuenta los días desde él."
+      }
+    },
+    "season": {
+      "title": "Plan de temporada",
+      "noPlan": "Todavía sin plan: empieza por los ciclos.",
+      "cycles": "Ciclos",
+      "cyclesHint": "Bloques de semanas con sus contenidos foco y la carga semanal que buscas.",
+      "matches": "Partidos",
+      "matchesHint": "{count, plural, one {# partido en la temporada} other {# partidos en la temporada}}",
+      "noMatches": "Aún no hay partidos.",
+      "noOpponent": "Rival por confirmar",
+      "openStats": "Estadísticas",
+      "showAll": "Ver los {count}",
+      "showLess": "Ver menos",
+      "load": {
+        "title": "Carga por semana",
+        "description": "Planificada frente a real, con los ciclos de fondo y los partidos debajo.",
+        "planned": "Planificada",
+        "actual": "Real",
+        "match": "Partido",
+        "sessions": "{count, plural, one {# sesión} other {# sesiones}}",
+        "summary": "Carga de {weeks} semanas: {planned} planificadas y {actual} reales.",
+        "empty": "La temporada aún no tiene semanas."
+      },
+      "plan": {
+        "create": "Crear el plan",
+        "edit": "Editar el plan",
+        "description": "El nombre y las ideas generales de la temporada para todo el cuerpo técnico.",
+        "defaultName": "Plan {season}",
+        "name": "Nombre",
+        "notes": "Notas",
+        "notesHint": "Modelo de juego, objetivos de la temporada, criterios del cuerpo técnico.",
+        "saved": "Plan guardado."
+      },
+      "cycle": {
+        "new": "Nuevo ciclo",
+        "newTitle": "Nuevo ciclo",
+        "editTitle": "Editar el ciclo",
+        "description": "Fechas, contenidos en los que poner el foco y la carga semanal que buscas.",
+        "create": "Crear el ciclo",
+        "name": "Nombre",
+        "nameHint": "Por ejemplo: «Pretemporada» o «Bloque 2: transiciones».",
+        "startsOn": "Empieza",
+        "endsOn": "Acaba",
+        "invalidDates": "Tiene que acabar después de empezar.",
+        "target": "Carga semanal objetivo (UA)",
+        "targetHint": "Opcional. RPE × minutos sumados en la semana, por jugador.",
+        "focus": "Contenidos foco ({count} de 12)",
+        "focusHint": "Si un contenido foco pasa días sin trabajarse, saldrá en «A tener en cuenta».",
+        "notes": "Notas",
+        "targetValue": "Objetivo: {load} por semana",
+        "mean": "Real: {load} de media",
+        "noTarget": "Sin carga objetivo",
+        "empty": "Sin ciclos",
+        "emptyHint": "Divide la temporada en bloques para ordenar los contenidos y la carga.",
+        "created": "Ciclo «{name}» creado.",
+        "saved": "Ciclo «{name}» guardado.",
+        "removed": "Ciclo «{name}» quitado.",
+        "confirmRemove": "¿Quitar el ciclo «{name}»?",
+        "confirmRemoveBody": "Las sesiones del ciclo se quedan; solo dejan de estar asociadas a él."
+      }
+    },
+    "history": {
+      "title": "Histórico de sesiones",
+      "description": "Qué se ha trabajado, cuánto ha durado y cuánto ha cargado.",
+      "filters": {
+        "content": "Contenido",
+        "allContents": "Todos los contenidos",
+        "from": "Desde",
+        "fromHint": "Por defecto, los últimos seis meses.",
+        "to": "Hasta"
+      },
+      "stats": {
+        "done": "{count, plural, one {Sesión hecha} other {Sesiones hechas}}",
+        "minutes": "Minutos entrenados",
+        "meanLoad": "Carga media por sesión"
+      },
+      "byContent": "Minutos por contenido",
+      "byContentHint": "Toca un contenido para ver solo sus sesiones.",
+      "list": "Sesiones",
+      "listCount": "{count, plural, one {# sesión} other {# sesiones}}",
+      "empty": "Sin sesiones",
+      "emptyHint": "Las sesiones planificadas desde la semana del equipo aparecerán aquí.",
+      "emptyFiltered": "Ninguna sesión cumple los filtros.",
+      "table": {
+        "date": "Fecha",
+        "md": "MD",
+        "status": "Estado",
+        "objective": "Objetivo",
+        "contents": "Contenidos",
+        "minutes": "Minutos",
+        "load": "Carga"
+      },
+      "export": {
+        "button": "Descargar Excel",
+        "file": "Sesiones",
+        "sessions": "Sesiones",
+        "contents": "Contenidos",
+        "plannedMinutes": "Minutos planificados",
+        "actualMinutes": "Minutos reales",
+        "plannedLoad": "Carga planificada (UA)",
+        "actualLoad": "Carga real (UA)",
+        "drills": "Tareas",
+        "content": "Contenido",
+        "kind": "Tipo",
+        "minutes": "Minutos"
+      }
+    }
+  },
+  "participations": {
+    "full": "Completa",
+    "partial": "Parcial",
+    "rehab": "Readaptación"
+  },
+  "drillScopes": {
+    "club": "Club",
+    "section": "Sección",
+    "team": "Equipo",
+    "personal": "Personal"
+  },
+  "drills": {
+    "title": "Biblioteca de tareas",
+    "description": "Las tareas del club, de tus secciones y equipos, y las tuyas. Cada una con su pizarra, sus contenidos y su uso.",
+    "backToTraining": "Entrenamiento",
+    "backToLibrary": "Biblioteca",
+    "new": "Nueva tarea",
+    "search": "Buscar tarea",
+    "filters": {
+      "label": "Filtros de la biblioteca",
+      "content": "Contenido",
+      "allContents": "Todos los contenidos",
+      "scope": "Ámbito",
+      "allScopes": "Todos los ámbitos",
+      "where": "Sección o equipo",
+      "everywhere": "Todas las secciones y equipos",
+      "sections": "Secciones",
+      "teams": "Equipos",
+      "archived": "Ver también las archivadas",
+      "clear": "Quitar filtros"
+    },
+    "count": "{count, plural, one {# tarea} other {# tareas}}",
+    "empty": {
+      "title": "Aún no hay tareas",
+      "description": "Crea la primera con su pizarra, sus contenidos y lo que exige.",
+      "filtered": "Ninguna tarea con estos filtros."
+    },
+    "noBoard": "Sin pizarra",
+    "boardOf": "Pizarra de {name}",
+    "playersRange": "{min}-{max} jugadores",
+    "playersFrom": "Desde {min} jugadores",
+    "playersUpTo": "Hasta {max} jugadores",
+    "uses": "{count, plural, =0 {Sin usar} one {Usada en # sesión} other {Usada en # sesiones}}",
+    "lastUsed": "Última vez el {date}",
+    "ratingValue": "Valoración {value} de 3",
+    "archived": "Archivada",
+    "readOnly": "Solo lectura: la edita quien gestiona su ámbito.",
+    "edit": "Editar",
+    "actions": "Más acciones",
+    "duplicate": "Copiar a mis tareas",
+    "duplicated": "Copiada a tus tareas.",
+    "copyName": "{name} (copia)",
+    "archive": "Archivar",
+    "archivedToast": "Tarea archivada. Ya no sale al planificar.",
+    "restore": "Recuperar",
+    "restored": "Tarea recuperada.",
+    "remove": "Quitar",
+    "confirmRemoveTitle": "¿Quitar «{name}»?",
+    "confirmRemoveBody": "Si alguna sesión la usa, se archiva para no perder el histórico. Si no, se borra.",
+    "removed": "Tarea quitada.",
+    "saved": "Tarea guardada.",
+    "created": "Tarea creada.",
+    "newTitle": "Nueva tarea",
+    "newDescription": "Pizarra, contenidos y lo que exige: así sale al planificar y avisa si choca con una restricción.",
+    "cards": {
+      "board": "Pizarra",
+      "development": "Desarrollo",
+      "sheet": "Ficha",
+      "usage": "Uso",
+      "recent": "Últimas sesiones",
+      "data": "Datos",
+      "contents": "Contenidos y exigencias"
+    },
+    "recentEmpty": "Aún no ha salido en ninguna sesión.",
+    "noDevelopment": "Sin descripción todavía.",
+    "openVideo": "Ver el vídeo",
+    "primary": "Principal",
+    "noContents": "Aún no hay contenidos para esta sección.",
+    "fields": {
+      "name": "Nombre",
+      "scope": "Ámbito",
+      "scopeHint": "Quién la ve: todo el club, una sección, un equipo o solo tú.",
+      "section": "Sección",
+      "noSection": "Sin sección",
+      "fixedWhere": "Para cambiarla de sitio, cambia el ámbito.",
+      "team": "Equipo",
+      "format": "Formato",
+      "formatHint": "Por ejemplo, 4x4+2 o 3x2.",
+      "space": "Espacio",
+      "spaceHint": "Por ejemplo, media pista o 20x20 m.",
+      "players": "Jugadores",
+      "playersMin": "Jugadores, mínimo",
+      "playersMax": "Jugadores, máximo",
+      "duration": "Duración (min)",
+      "targetRpe": "RPE objetivo",
+      "targetRpeHint": "De 0 (reposo) a 10 (máximo).",
+      "noRpe": "Sin RPE objetivo",
+      "material": "Material",
+      "video": "Vídeo",
+      "videoHint": "Enlace a un vídeo de la tarea.",
+      "description": "Descripción",
+      "rules": "Reglas",
+      "coachingPoints": "Puntos clave",
+      "variants": "Variantes",
+      "contents": "Contenidos que trabaja",
+      "contentsHint": "Hasta 8. El primero que marques es el principal.",
+      "restrictions": "Exige",
+      "restrictionsHint": "Lo que pide la tarea. Sirve para avisar si alguien con restricciones aparece en ella.",
+      "noDemands": "Sin exigencias especiales"
+    },
+    "errors": {
+      "name": "Ponle nombre a la tarea.",
+      "players": "El mínimo de jugadores no puede pasar del máximo.",
+      "where": "Elige dónde va la tarea."
+    }
+  },
+  "loadPanel": {
+    "title": "Carga del equipo",
+    "description": "Carga interna de cada jugador (RPE × minutos) en sesiones, partidos y trabajo extra.",
+    "backToWeek": "Semana del equipo",
+    "basicTitle": "Seguimiento básico",
+    "basicBody": "Esta sección registra el RPE del grupo, no el de cada jugador, y no recoge bienestar. La carga individual es una estimación: para afinarla, activa el seguimiento completo en los ajustes de entrenamiento de la sección.",
+    "ratioNote": "La relación aguda:crónica compara la carga de los últimos 7 días con la media semanal de las 4 últimas semanas. Fuera del rango {low}–{high} es un aviso para revisar, no una predicción de lesión. Necesita 21 días de historia.",
+    "stats": {
+      "high": "Por encima de {high}",
+      "low": "Por debajo de {low}",
+      "noHistory": "Sin historia suficiente",
+      "unavailable": "No disponibles del todo"
+    },
+    "table": {
+      "title": "Jugadores",
+      "description": "Ordenados por la relación aguda:crónica, de mayor a menor.",
+      "player": "Jugador",
+      "availability": "Disponibilidad",
+      "acute": "Aguda (7 días)",
+      "chronic": "Crónica (media semanal)",
+      "ratio": "Aguda:crónica",
+      "monotony": "Monotonía",
+      "trend": "Últimos 28 días",
+      "wellness": "Bienestar"
+    },
+    "trendLabel": "Carga diaria de {name} en los últimos 28 días",
+    "mobileSubtitle": "Aguda {acute} · Crónica {chronic}",
+    "noWellness": "Sin datos",
+    "empty": "No hay jugadores activos en la plantilla."
+  },
+  "tests": {
+    "title": "Tests físicos",
+    "description": "El último valor de cada jugador en los tests del club. Toca un jugador para ver su evolución.",
+    "backToWeek": "Semana del equipo",
+    "record": "Registrar medición",
+    "results": "Resultados",
+    "resultsDescription": "{count, plural, one {# medición registrada} other {# mediciones registradas}}.",
+    "player": "Jugador",
+    "lastOn": "Medido el {date}",
+    "measured": "{count, plural, =0 {Sin mediciones} one {# test medido} other {# tests medidos}}",
+    "empty": "Todavía no hay mediciones.",
+    "emptyHint": "Registra una medición: un test, una fecha y el valor de cada jugador.",
+    "noPlayers": "No hay jugadores activos en la plantilla.",
+    "recordSheet": {
+      "title": "Registrar medición",
+      "description": "Un test, una fecha y el valor de cada jugador. Deja en blanco a quien no lo hizo.",
+      "test": "Test",
+      "date": "Fecha",
+      "values": "Valores ({unit})",
+      "value": "Valor de {name}",
+      "submit": "Guardar medición",
+      "saved": "Medición guardada: {count, plural, one {# jugador} other {# jugadores}}."
+    },
+    "catalog": {
+      "title": "Catálogo de tests del club",
+      "description": "Los tests que usan todos los equipos. Archivar uno lo oculta sin borrar sus resultados.",
+      "add": "Nuevo test",
+      "edit": "Editar",
+      "archive": "Archivar",
+      "restore": "Recuperar",
+      "archived": "Archivado",
+      "name": "Nombre",
+      "unit": "Unidad",
+      "direction": "Qué es mejor",
+      "newTitle": "Nuevo test",
+      "editTitle": "Editar test",
+      "created": "Test añadido.",
+      "updated": "Test guardado.",
+      "archivedToast": "Test archivado.",
+      "restoredToast": "Test recuperado."
+    },
+    "units": {
+      "s": "Segundos (s)",
+      "cm": "Centímetros (cm)",
+      "m": "Metros (m)",
+      "km_h": "Kilómetros por hora (km/h)",
+      "level": "Nivel",
+      "count": "Repeticiones"
+    }
+  },
+  "testUnits": {
+    "s": "s",
+    "cm": "cm",
+    "m": "m",
+    "km_h": "km/h",
+    "level": "nivel",
+    "count": "rep."
+  },
+  "testDirections": {
+    "higher_better": "Más es mejor",
+    "lower_better": "Menos es mejor"
+  },
+  "performance": {
+    "title": "Rendimiento",
+    "backToPlayer": "Ficha del jugador",
+    "noTeam": "Sin equipo esta temporada",
+    "availability": {
+      "title": "Disponibilidad",
+      "description": "Lo que el cuerpo técnico necesita para planificar. Nunca un diagnóstico.",
+      "change": "Cambiar",
+      "since": "Desde el {date}",
+      "expectedReturn": "Vuelta prevista: {date}",
+      "history": "Historial",
+      "historyEmpty": "Sin cambios registrados.",
+      "period": "{from} – {to}",
+      "ongoing": "en curso"
+    },
+    "availabilitySheet": {
+      "title": "Disponibilidad de {name}",
+      "description": "Marcarlo disponible cierra el periodo abierto.",
+      "status": "Estado",
+      "restrictions": "Restricciones",
+      "restrictionsHint": "Lo que no puede hacer. Las tareas que lo exigen saldrán marcadas.",
+      "maxMinutes": "Minutos máximos por sesión",
+      "maxMinutesHint": "Vacío si no hay límite.",
+      "fromOn": "Desde",
+      "expectedReturnOn": "Vuelta prevista",
+      "note": "Nota para el cuerpo técnico",
+      "noteHint": "Operativa: qué puede hacer y qué no. Nunca un diagnóstico.",
+      "saved": "Disponibilidad guardada."
+    },
+    "insightsNoTeam": "Sin equipo esta temporada no hay recomendaciones.",
+    "load": {
+      "title": "Carga",
+      "description": "Carga interna de los últimos 35 días: RPE × minutos de sesiones, partidos y trabajo extra.",
+      "acute": "Aguda (7 días)",
+      "chronic": "Crónica (media semanal)",
+      "ratio": "Aguda:crónica",
+      "monotony": "Monotonía",
+      "strain": "Tensión (strain)",
+      "chartSummary": "Carga diaria de los últimos 35 días. Total: {total} UA.",
+      "ratioNote": "Aviso por encima de {high} o por debajo de {low}, nunca una predicción de lesión. Necesita 21 días de historia; ahora hay {days, plural, one {# día} other {# días}}."
+    },
+    "extras": {
+      "title": "Trabajo extra",
+      "description": "Gimnasio, trabajo individual o readaptación fuera de la sesión.",
+      "add": "Añadir carga",
+      "empty": "Sin trabajo extra en las últimas semanas.",
+      "line": "{minutes} min · RPE {rpe} · {load} UA",
+      "remove": "Quitar",
+      "removed": "Carga quitada.",
+      "confirmTitle": "¿Quitar esta carga?",
+      "confirmBody": "Deja de contar en su carga aguda y crónica."
+    },
+    "extraSheet": {
+      "title": "Trabajo extra de {name}",
+      "date": "Fecha",
+      "minutes": "Minutos",
+      "rpe": "RPE (0 a 10)",
+      "rpeHint": "0 es reposo; 10, el esfuerzo máximo.",
+      "note": "Nota",
+      "submit": "Añadir",
+      "saved": "Carga añadida."
+    },
+    "wellness": {
+      "title": "Bienestar",
+      "description": "Cinco preguntas de 1 a 5 en las que 5 es lo mejor. Suma de 5 a 25.",
+      "record": "Registrar hoy",
+      "editToday": "Editar el de hoy",
+      "empty": "Sin respuestas en las últimas cuatro semanas.",
+      "trend": "Bienestar de los últimos 28 días",
+      "sheetTitle": "Bienestar de {name}",
+      "sheetDescription": "Cómo llega hoy. En las cinco, 5 es lo mejor."
+    },
+    "focus": {
+      "title": "Objetivo de trabajo",
+      "description": "Contenidos que la recomendación vigila que se entrenen, con sus minutos de las tres últimas semanas.",
+      "edit": "Elegir contenidos",
+      "empty": "Sin contenidos elegidos.",
+      "objective": "Objetivo: {title}",
+      "review": "Revisión el {date}",
+      "noTeam": "Sin equipo esta temporada no hay catálogo de contenidos.",
+      "sheetTitle": "Contenidos del objetivo",
+      "sheetDescription": "Hasta seis. La recomendación avisa si no se trabajan.",
+      "limit": "{count} de 6",
+      "saved": "Objetivo guardado."
+    },
+    "tests": {
+      "title": "Tests físicos",
+      "description": "Su evolución, sin compararla con nadie. Arriba siempre es mejor.",
+      "empty": "Sin mediciones todavía.",
+      "summary": "Evolución en {test}: {count, plural, one {# medición} other {# mediciones}}."
+    }
+  },
+  "wellness": {
+    "items": {
+      "sleep": {
+        "label": "Sueño",
+        "low": "Muy mal",
+        "high": "Muy bien"
+      },
+      "fatigue": {
+        "label": "Fatiga",
+        "low": "Sin energía",
+        "high": "Con energía"
+      },
+      "soreness": {
+        "label": "Dolor muscular",
+        "low": "Mucho dolor",
+        "high": "Sin molestias"
+      },
+      "stress": {
+        "label": "Estrés",
+        "low": "Mucho estrés",
+        "high": "Sin estrés"
+      },
+      "mood": {
+        "label": "Ánimo",
+        "low": "Muy bajo",
+        "high": "Muy bueno"
+      }
+    },
+    "score": "{score}/25",
+    "sorenessArea": "Zona de la molestia",
+    "note": "Nota",
+    "today": "Hoy",
+    "saved": "Bienestar guardado."
+  },
+  "health": {
+    "title": "Salud",
+    "description": "Área restringida: lesiones y readaptación. Solo la ven fisioterapia y preparación física.",
+    "audited": "Cada consulta de esta sección queda registrada en la auditoría.",
+    "consent": {
+      "active": "Consentimiento de {name} ({relationship}) desde el {date}. Texto {version}.",
+      "outdated": "El texto del consentimiento ha cambiado (versión {version}). Conviene renovarlo.",
+      "missing": "Sin consentimiento vigente no se registran lesiones. Solo se usa la disponibilidad, que no es un dato de salud.",
+      "revokedOn": "Revocado el {date}.",
+      "record": "Registrar consentimiento",
+      "renew": "Renovar",
+      "revoke": "Revocar",
+      "revokeTitle": "¿Revocar el consentimiento?",
+      "revokeBody": "No se podrán registrar más lesiones hasta que se vuelva a dar. Lo registrado se conserva.",
+      "revoked": "Consentimiento revocado.",
+      "saved": "Consentimiento registrado."
+    },
+    "consentSheet": {
+      "title": "Consentimiento de datos de salud",
+      "description": "Consentimiento explícito para tratar datos de salud. Queda registrado quién lo da, cuándo y con qué texto.",
+      "grantedByName": "Quién lo da",
+      "grantedByNameHint": "El propio deportista o su tutor legal.",
+      "relationship": "Relación",
+      "grantedOn": "Fecha",
+      "version": "Versión del texto: {version}"
+    },
+    "injuries": {
+      "title": "Lesiones",
+      "add": "Registrar lesión",
+      "empty": "Sin lesiones registradas.",
+      "heading": "{area} · {kind}",
+      "side": "Lado: {side}",
+      "daysOut": "{days, plural, one {# día de baja} other {# días de baja}}",
+      "recurrence": "Recaída",
+      "occurred": "Desde el {date}",
+      "expected": "Vuelta prevista: {date}",
+      "returned": "Volvió el {date}",
+      "diagnosis": "Diagnóstico",
+      "clinicalNotes": "Notas clínicas",
+      "edit": "Editar",
+      "phases": "Fases",
+      "remove": "Borrar",
+      "removeTitle": "¿Borrar esta lesión?",
+      "removeBody": "Solo si se registró por error. Se borran también sus fases.",
+      "removed": "Lesión borrada.",
+      "created": "Lesión registrada.",
+      "updated": "Lesión guardada."
+    },
+    "injurySheet": {
+      "newTitle": "Registrar lesión",
+      "editTitle": "Editar lesión",
+      "description": "Datos clínicos: solo los ve quien tiene acceso a Salud. La disponibilidad se cambia aparte.",
+      "occurredOn": "Fecha de la lesión",
+      "context": "Contexto",
+      "bodyArea": "Zona",
+      "side": "Lado",
+      "kind": "Tipo",
+      "mechanism": "Mecanismo",
+      "recurrence": "Recaída de una lesión anterior",
+      "diagnosis": "Diagnóstico",
+      "clinicalNotes": "Notas clínicas",
+      "expectedReturnOn": "Vuelta prevista",
+      "returnedOn": "Vuelta real",
+      "status": "Estado"
+    },
+    "phases": {
+      "title": "Fases de readaptación",
+      "description": "En orden. Marca cuándo empieza y cuándo se supera cada una.",
+      "add": "Añadir fase",
+      "name": "Fase {n}",
+      "criteria": "Criterio para superarla",
+      "startedOn": "Inicio",
+      "doneOn": "Superada",
+      "removePhase": "Quitar la fase {n}",
+      "empty": "Sin fases. Añade la primera o usa las fases tipo.",
+      "useDefaults": "Usar fases tipo",
+      "defaults": {
+        "1": "Control del dolor y la inflamación",
+        "2": "Movilidad y fuerza",
+        "3": "Carrera y cambios de dirección",
+        "4": "Balón y vuelta al grupo"
+      },
+      "progress": "{done} de {total} fases superadas",
+      "saved": "Fases guardadas."
+    }
+  },
+  "bodyAreas": {
+    "head": "Cabeza",
+    "neck": "Cuello",
+    "shoulder": "Hombro",
+    "arm": "Brazo",
+    "wrist_hand": "Muñeca y mano",
+    "chest": "Tórax",
+    "back": "Espalda",
+    "hip_groin": "Cadera e ingle",
+    "thigh_front": "Cuádriceps",
+    "thigh_back": "Isquiotibiales",
+    "knee": "Rodilla",
+    "calf": "Gemelo",
+    "ankle": "Tobillo",
+    "foot": "Pie",
+    "other": "Otra zona"
+  },
+  "bodySides": {
+    "left": "Izquierdo",
+    "right": "Derecho",
+    "both": "Ambos",
+    "none": "No aplica"
+  },
+  "injuryKinds": {
+    "muscle": "Muscular",
+    "ligament": "Ligamentosa",
+    "tendon": "Tendinosa",
+    "bone": "Ósea",
+    "joint": "Articular",
+    "contusion": "Contusión",
+    "concussion": "Conmoción cerebral",
+    "illness": "Enfermedad",
+    "other": "Otra"
+  },
+  "injuryMechanisms": {
+    "contact": "Con contacto",
+    "non_contact": "Sin contacto"
+  },
+  "injuryContexts": {
+    "training": "Entrenamiento",
+    "match": "Partido",
+    "other": "Fuera del club"
+  },
+  "injuryStatuses": {
+    "active": "Activa",
+    "rehab": "En readaptación",
+    "recovered": "Recuperada"
+  },
+  "injurySeverities": {
+    "minimal": "Mínima (1–3 días)",
+    "mild": "Leve (4–7 días)",
+    "moderate": "Moderada (8–28 días)",
+    "severe": "Grave (más de 28 días)"
+  },
+  "consentRelationships": {
+    "self": "El propio deportista",
+    "guardian": "Tutor legal"
+  },
+  "infirmary": {
+    "back": "Entrenamiento",
+    "title": "Enfermería",
+    "description": "Bajas, readaptaciones y limitados, con la vuelta prevista.",
+    "descriptionHealth": "Bajas, readaptaciones y limitados, con la lesión, la fase y la vuelta prevista.",
+    "returningThisWeek": "Vuelven esta semana",
+    "thisWeek": "Vuelve esta semana",
+    "empty": {
+      "title": "Todo el mundo disponible",
+      "description": "Nadie de baja, en readaptación ni con limitaciones."
+    },
+    "groups": {
+      "out": "No pueden entrenar.",
+      "rehab": "Trabajan aparte con fisioterapia o preparación física.",
+      "limited": "Entrenan con el grupo con restricciones o un máximo de minutos."
+    },
+    "table": {
+      "player": "Jugador",
+      "status": "Estado",
+      "injury": "Lesión",
+      "return": "Vuelta prevista"
+    },
+    "returnOn": "vuelta el {date}",
+    "noReturn": "Sin fecha",
+    "since": "Desde el {date}",
+    "phase": "Fase: {phase}",
+    "soreness": {
+      "title": "Molestias reportadas",
+      "description": "Dolor muscular de 2 o menos en el bienestar de ayer o de hoy (5 es sin molestias).",
+      "date": "Día",
+      "value": "Dolor muscular",
+      "score": "{value} de 5",
+      "area": "Zona"
+    },
+    "healthHidden": "La lesión y su diagnóstico solo los ve quien tiene acceso a Salud."
+  },
+  "athlete": {
+    "title": "Mi bienestar",
+    "description": "Dos minutos al día ayudan al cuerpo técnico a ajustar tu carga.",
+    "noPlayer": {
+      "title": "Tu cuenta no tiene ficha de jugador",
+      "description": "Pide al club que vincule tu ficha a esta cuenta."
+    },
+    "rpe": {
+      "title": "¿Cuánto te ha costado?",
+      "description": "Esfuerzo del entrenamiento entero, de 0 (reposo) a 10 (máximo). Contesta unos 30 minutos después de acabar.",
+      "minutes": "{minutes} min",
+      "label": "Esfuerzo de {title}",
+      "hint": "Elige un número.",
+      "send": "Enviar",
+      "saved": "Esfuerzo enviado. Gracias.",
+      "scale": {
+        "0": "0: reposo",
+        "1": "1: muy, muy fácil",
+        "2": "2: fácil",
+        "3": "3: moderado",
+        "4": "4: algo duro",
+        "5": "5: duro",
+        "6": "6: duro",
+        "7": "7: muy duro",
+        "8": "8: muy duro",
+        "9": "9: casi al máximo",
+        "10": "10: máximo"
+      }
+    },
+    "wellness": {
+      "description": "Cinco preguntas: en todas, 5 es lo mejor.",
+      "answered": "Ya has respondido hoy. Puedes corregirlo si hace falta.",
+      "update": "Actualizar",
+      "areaHint": "Dónde lo notas: gemelo derecho, aductor…",
+      "noteHint": "Opcional. Lo lee el cuerpo técnico."
+    },
+    "recent": {
+      "title": "Tus últimos días",
+      "description": "Suma de las cinco respuestas, de 5 a 25. Tu media: {mean}.",
+      "summary": "Bienestar de los últimos {days} días, con una media de {mean} sobre 25"
+    }
+  },
+  "familyTests": {
+    "title": "Tests físicos",
+    "description": "Su evolución en cada prueba. Solo se compara consigo mismo.",
+    "lowerBetter": "Cuanto menos, mejor",
+    "higherBetter": "Cuanto más, mejor",
+    "summary": "{test}: {count} mediciones, la última {value}"
+  },
+  "methodology": {
+    "back": "Sección {section}",
+    "title": "Metodología",
+    "description": "Si los equipos planifican, cierran sus sesiones y reparten los contenidos como marca la sección.",
+    "configure": "Ajustes de entrenamiento",
+    "target": "(objetivo {value} %)",
+    "targets": {
+      "title": "Reparto objetivo por categoría",
+      "description": "Porcentaje de minutos que la sección quiere para cada tipo de contenido.",
+      "empty": "La sección todavía no ha fijado un reparto objetivo.",
+      "emptyConfigure": "Sin reparto objetivo todavía. Fíjalo en los ajustes de entrenamiento.",
+      "summary": "Reparto objetivo de contenidos de {category}"
+    },
+    "teams": {
+      "title": "Equipos",
+      "description": "Desde el inicio de la temporada hasta hoy.",
+      "empty": "La sección no tiene equipos esta temporada.",
+      "summary": "Reparto de los {minutes} minutos de tareas de {team} por tipo de contenido",
+      "noMinutes": "Todavía sin tareas planificadas."
+    },
+    "noCategory": "Sin categoría",
+    "noTrainings": "Sin entrenamientos",
+    "plannedShare": "{value} % planificado",
+    "metrics": {
+      "trainings": "Entrenamientos",
+      "planned": "Con sesión",
+      "done": "Cerradas",
+      "official": "Tareas oficiales"
+    }
+  },
+  "trainingConfig": {
+    "back": "Sección {section}",
+    "title": "Ajustes de entrenamiento",
+    "description": "Seguimiento, recomendaciones, metodología, contenidos y semanas tipo de la sección.",
+    "methodologyLink": "Metodología",
+    "readOnly": "Puedes consultar los ajustes. Para cambiarlos hace falta gestionar la biblioteca de entrenamiento.",
+    "saved": "Ajustes guardados.",
+    "tracking": {
+      "title": "Seguimiento",
+      "description": "Cuánto se registra en cada sesión. Se puede cambiar cuando se quiera.",
+      "levels": {
+        "basic": {
+          "name": "Básico",
+          "detail": "Objetivo, tareas y asistencia, con un RPE de grupo al cerrar. Pensado para formativas."
+        },
+        "full": {
+          "name": "Completo",
+          "detail": "Además, RPE de cada jugador, bienestar diario y tests físicos. Para equipos con preparación física."
+        }
+      },
+      "formative": "Equipos formativos",
+      "formativeHint": "En formativas se vigila además el reparto de minutos de partido.",
+      "formativeAuto": "Según la edad de la categoría",
+      "formativeYes": "Sí, todos",
+      "formativeNo": "No"
+    },
+    "thresholds": {
+      "title": "Umbrales de las recomendaciones",
+      "description": "A partir de qué cifra sale cada aviso. El deporte propone unos valores; la sección los ajusta.",
+      "reset": "Volver a los del deporte",
+      "resetTitle": "¿Volver a los umbrales del deporte?",
+      "resetBody": "Se pierden los cambios que haya hecho la sección en los umbrales.",
+      "hint": "{text} Por defecto: {value}.",
+      "range": "Entre {min} y {max}.",
+      "groups": {
+        "load": "Carga",
+        "match": "Partido",
+        "minutes": "Día después del partido",
+        "players": "Asistencia y objetivos individuales"
+      },
+      "items": {
+        "weeklyLoadHigh": {
+          "label": "Semana cargada (veces la media)",
+          "hint": "Avisa si la carga planificada supera en este factor la media de las cuatro semanas anteriores."
+        },
+        "weeklyLoadLow": {
+          "label": "Semana suave (veces la media)",
+          "hint": "Avisa si la carga planificada queda por debajo de este factor."
+        },
+        "acwrHigh": {
+          "label": "Relación aguda:crónica alta",
+          "hint": "Aviso por jugador por encima de esta relación. Es un aviso, no una predicción de lesión."
+        },
+        "acwrLow": {
+          "label": "Relación aguda:crónica baja",
+          "hint": "Aviso por jugador por debajo de esta relación."
+        },
+        "finishingDropPoints": {
+          "label": "Caída del acierto en el tiro (puntos)",
+          "hint": "Puntos porcentuales por debajo de la media de la temporada."
+        },
+        "turnoverRatio": {
+          "label": "Aumento de pérdidas (veces la media)",
+          "hint": "1,3 es un 30 % más de pérdidas por partido que la media."
+        },
+        "earlyFoulMinute": {
+          "label": "Tope de faltas pronto (minuto)",
+          "hint": "Llegar al tope de faltas antes de este minuto de la parte."
+        },
+        "lateGoalsShare": {
+          "label": "Goles encajados al final (%)",
+          "hint": "Proporción de goles en contra en los últimos minutos de cada parte."
+        },
+        "lateMinutes": {
+          "label": "Final de la parte (minutos)",
+          "hint": "Minutos finales de cada parte que cuentan como final."
+        },
+        "recoveryMinutes": {
+          "label": "Recuperación desde (minutos jugados)",
+          "hint": "Al día siguiente, recuperación para quien jugó estos minutos o más."
+        },
+        "compensatoryMinutes": {
+          "label": "Compensatorio hasta (minutos jugados)",
+          "hint": "Compensatorio para quien jugó menos de estos minutos."
+        },
+        "attendanceMin": {
+          "label": "Asistencia mínima (%)",
+          "hint": "En las últimas cuatro semanas."
+        },
+        "focusMinutes": {
+          "label": "Minutos mínimos del objetivo individual",
+          "hint": "Minutos de los contenidos del objetivo de cada jugador en tres semanas."
+        }
+      }
+    },
+    "methodology": {
+      "title": "Reparto objetivo de contenidos",
+      "description": "Por categoría, el porcentaje de minutos de cada tipo de contenido. Lo compara la página de metodología.",
+      "noCategories": "La sección no tiene categorías. Créalas en la sección para fijar un reparto por edad.",
+      "noTarget": "Sin objetivo",
+      "sum": "Suma {value} %",
+      "summary": "Reparto objetivo de {category}"
+    },
+    "contents": {
+      "title": "Contenidos",
+      "description": "Lo que se entrena. Cada contenido puede señalar las acciones del partido que lo miden: así las recomendaciones cruzan partidos y entrenamientos.",
+      "new": "Añadir contenido",
+      "empty": "Sin contenidos todavía.",
+      "table": {
+        "name": "Contenido",
+        "kind": "Tipo",
+        "related": "Lo miden"
+      },
+      "archivedTitle": "Archivados",
+      "restore": "Recuperar",
+      "restored": "{name} vuelve al catálogo.",
+      "removed": "{name} quitado.",
+      "archived": "{name} ya se usaba: queda archivado.",
+      "confirmRemoveTitle": "¿Quitar {name}?",
+      "confirmRemoveBody": "Si ya está en tareas o sesiones, se archiva y deja de proponerse."
+    },
+    "contentSheet": {
+      "newTitle": "Nuevo contenido",
+      "editTitle": "Editar {name}",
+      "description": "Aparece en la biblioteca, en las sesiones y en las recomendaciones.",
+      "name": "Nombre",
+      "nameHint": "Corto y reconocible: «Salida de presión».",
+      "codeHint": "Clave: {code}",
+      "kind": "Tipo",
+      "order": "Orden",
+      "orderHint": "Los números bajos van primero.",
+      "related": "Acciones del partido que lo miden",
+      "relatedHint": "Hasta 12. Si bajan en los partidos, la recomendación propone este contenido.",
+      "relatedCodesHint": "Claves de las acciones separadas por comas: goal, turnover…",
+      "submit": "Añadir",
+      "created": "{name} añadido.",
+      "saved": "Contenido guardado.",
+      "codeTaken": "Ya hay un contenido con ese nombre en la sección."
+    },
+    "templates": {
+      "title": "Semanas tipo",
+      "description": "Qué sesión toca cada día respecto al partido. Se aplican desde la semana de cada equipo.",
+      "new": "Nueva semana tipo",
+      "empty": "Sin semanas tipo",
+      "emptyHint": "Una semana de un partido y otra de dos cubren casi todo.",
+      "table": {
+        "name": "Nombre",
+        "days": "Días",
+        "minutes": "Minutos"
+      },
+      "removed": "{name} quitada.",
+      "confirmRemoveTitle": "¿Quitar {name}?",
+      "confirmRemoveBody": "Las semanas ya planificadas con ella no cambian."
+    },
+    "templateSheet": {
+      "newTitle": "Nueva semana tipo",
+      "editTitle": "Editar {name}",
+      "description": "Cada día, respecto al partido: MD es el día del partido, MD-1 la víspera, MD+1 el día después.",
+      "name": "Nombre",
+      "nameHint": "Por ejemplo, «Semana de un partido».",
+      "day": "Día",
+      "dayRepeated": "Ese día está repetido.",
+      "removeDay": "Quitar {day}",
+      "objective": "Objetivo de la sesión",
+      "minutes": "Minutos",
+      "rpe": "RPE objetivo",
+      "time": "Hora",
+      "addDay": "Añadir día",
+      "timeHint": "Si ese día el equipo no tiene entrenamiento en la agenda, al aplicar la semana se crea a esta hora (sin hora, a las 19:00).",
+      "submit": "Crear",
+      "created": "{name} creada.",
+      "saved": "Semana tipo guardada.",
+      "nameTaken": "Ya hay una semana tipo con ese nombre."
+    }
   }
 }

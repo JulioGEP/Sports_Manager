@@ -119,6 +119,10 @@ export const ACCESS_AREAS = [
   "agenda",
   "facilities",
   "challenges",
+  /** Entrenamiento (ADR 0039): planificación, biblioteca, carga, bienestar y disponibilidad. */
+  "training",
+  /** Salud (ADR 0039): lesiones con diagnóstico. La administración no la ve por defecto. */
+  "health",
   "fees",
   "activity",
 ] as const;
@@ -177,6 +181,20 @@ export const AREA_PERMISSIONS: Record<
       "org.challenges.review_own",
     ],
   },
+  training: {
+    reads: ["org.training.read", "org.load.read"],
+    all: [
+      "org.training.read",
+      "org.training.write",
+      "org.training.write_own",
+      "org.training.library",
+      "org.load.read",
+      "org.load.write",
+      "org.load.write_own",
+      "org.availability.write",
+    ],
+  },
+  health: { reads: ["org.health.read"], all: ["org.health.read", "org.health.write"] },
   fees: { reads: ["org.fees.read"], all: ["org.fees.read", "org.fees.write"] },
   activity: { reads: ["org.activity.read"], all: ["org.activity.read"] },
 };
@@ -217,10 +235,16 @@ export function visibleAreas(
 }
 
 /**
+ * Áreas que la administración no tiene por defecto y que se le pueden abrir por excepción a una
+ * persona concreta (ADR 0039, decisión 2): acceso a la salud por necesidad de conocer.
+ */
+export const ADMIN_EXCEPTION_AREAS: readonly AccessArea[] = ["health"];
+
+/**
  * Permisos efectivos de una persona: por cada pertenencia, los del rol y el cargo con las reglas
  * de su perfil aplicadas (excluir quita todo lo del área, incluir da su lectura); la unión de
  * todas; y al final las excepciones de la persona, con el mismo criterio. Quien administra no
- * pierde ni gana nada por reglas.
+ * pierde ni gana nada por reglas, salvo en las áreas de `ADMIN_EXCEPTION_AREAS`.
  */
 export function effectivePermissions(
   memberships: Iterable<MembershipRole>,
@@ -242,12 +266,11 @@ export function effectivePermissions(
     }
     for (const p of permissions) result.add(p);
   }
-  if (!admin) {
-    for (const rule of rules) {
-      if (rule.userId === null) continue;
-      if (rule.effect === "deny") for (const p of AREA_PERMISSIONS[rule.area].all) result.delete(p);
-      else for (const p of AREA_PERMISSIONS[rule.area].reads) result.add(p);
-    }
+  for (const rule of rules) {
+    if (rule.userId === null) continue;
+    if (admin && !ADMIN_EXCEPTION_AREAS.includes(rule.area)) continue;
+    if (rule.effect === "deny") for (const p of AREA_PERMISSIONS[rule.area].all) result.delete(p);
+    else for (const p of AREA_PERMISSIONS[rule.area].reads) result.add(p);
   }
   return result;
 }
@@ -287,4 +310,13 @@ export function overridesFor(
 /** Quién puede tener excepciones: el personal y el cuerpo técnico que no administran el club. */
 export function canHaveOverrides(roles: readonly string[]): boolean {
   return !roles.includes("org_admin") && roles.some((r) => r === "coach" || r === "staff");
+}
+
+/**
+ * Áreas en las que una persona admite excepciones: todas para el personal y el cuerpo técnico;
+ * para la administración, solo las que no tiene por defecto (Salud); para la familia, ninguna.
+ */
+export function overridableAreas(roles: readonly string[]): readonly AccessArea[] {
+  if (roles.includes("org_admin")) return ADMIN_EXCEPTION_AREAS;
+  return canHaveOverrides(roles) ? ACCESS_AREAS : [];
 }

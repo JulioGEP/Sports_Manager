@@ -162,6 +162,12 @@ export function StaffPanel({ kind }: { kind: PanelKind }) {
   const paths = clubPaths(slug);
   const own = kind === "coach" || kind === "delegate";
   const canSeeChallenges = org.actor.permissions.includes("org.challenges.read");
+  // Entrenamiento (ADR 0039): fisio y preparación física van a la enfermería; el resto, a la semana.
+  const health = kind === "physio" || kind === "fitness";
+  const canSeeTraining = org.actor.permissions.includes("org.training.read");
+  const canSeeInfirmary =
+    org.actor.permissions.includes("org.health.read") ||
+    org.actor.permissions.includes("org.availability.write");
   const overview = useQuery({
     queryKey: ["org", slug, "players", "overview", own ? "own" : "club"],
     queryFn: () =>
@@ -223,6 +229,15 @@ export function StaffPanel({ kind }: { kind: PanelKind }) {
                 ? t("rated", { rated, total, dimension: names(focus.dimension) })
                 : t("players", { total })}
             </StatusChip>
+          ) : null}
+          {health && canSeeInfirmary ? (
+            <ButtonLink action="open" to={paths.infirmary} variant="secondary" size="sm">
+              {t("openInfirmary")}
+            </ButtonLink>
+          ) : !health && canSeeTraining ? (
+            <ButtonLink action="open" to={paths.training} variant="secondary" size="sm">
+              {t("openTraining")}
+            </ButtonLink>
           ) : null}
           {canSeeChallenges ? (
             <ButtonLink action="open" to={paths.challenges} variant="secondary" size="sm">

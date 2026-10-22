@@ -10,6 +10,7 @@ import { createEventRoutes } from "./routes/events.ts";
 import { createFeeRoutes } from "./routes/fees.ts";
 import { createHealthRoutes } from "./routes/health.ts";
 import { createInvitationRoutes } from "./routes/invitations.ts";
+import { createLoadRoutes } from "./routes/load.ts";
 import { createMatchRoutes } from "./routes/matches.ts";
 import { createMeRoutes } from "./routes/me.ts";
 import { createOrgRoutes } from "./routes/org.ts";
@@ -18,6 +19,8 @@ import { createPlatformRoutes } from "./routes/platform.ts";
 import { createPlatformSetupRoutes } from "./routes/platform-setup.ts";
 import { createPlayerRoutes } from "./routes/players.ts";
 import { createStructureRoutes } from "./routes/structure.ts";
+import { createTrainingRoutes } from "./routes/training.ts";
+import { createPlayerHealthRoutes } from "./routes/player-health.ts";
 import { DEPLOY_CONTEXT_HEADER } from "./tenancy.ts";
 
 export type { NetlifyContext, NetlifyEnv } from "./http/context.ts";
@@ -27,7 +30,7 @@ export interface AppOptions {
   data?: DataLayer;
 }
 
-export const API_VERSION = "0.11.0";
+export const API_VERSION = "0.12.0";
 
 export function createApp(options: AppOptions = {}) {
   const config = options.config ?? loadConfig();
@@ -75,6 +78,9 @@ export function createApp(options: AppOptions = {}) {
   app.route("/", createFeeRoutes(config, data));
   app.route("/", createChallengeRoutes(config, data));
   app.route("/", createMatchRoutes(config, data));
+  app.route("/", createTrainingRoutes(config, data));
+  app.route("/", createLoadRoutes(config, data));
+  app.route("/", createPlayerHealthRoutes(config, data));
   app.route("/", createPlatformRoutes(config, data));
   app.route("/", createPlatformSetupRoutes(config, data));
 

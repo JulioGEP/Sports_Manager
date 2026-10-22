@@ -22,6 +22,8 @@ import {
   logosRepo,
   type BlobStore,
 } from "./logos.ts";
+import { healthRepo } from "./health.ts";
+import { loadRepo } from "./load.ts";
 import { matchesRepo } from "./matches.ts";
 import { membershipsRepo } from "./memberships.ts";
 import { organizationsRepo } from "./organizations.ts";
@@ -32,6 +34,7 @@ import { playersRepo } from "./players.ts";
 import { rolesRepo } from "./roles.ts";
 import { sportsRepo } from "./sports.ts";
 import { categoriesRepo, seasonsRepo, sectionsRepo, teamsRepo } from "./structure.ts";
+import { trainingRepo } from "./training.ts";
 import { usersRepo } from "./users.ts";
 
 export type { OrgScope } from "./scope.ts";
@@ -92,6 +95,28 @@ export type {
   MatchSquadRecord,
   SectionMatchConfigRecord,
 } from "./matches.ts";
+export type {
+  CycleRecord,
+  DrillFilter,
+  DrillRecord,
+  MicrocycleTemplateRecord,
+  PlanRecord,
+  SectionTrainingRecord,
+  SessionItemRecord,
+  SessionRecord,
+  TeamEventRecord,
+  TrainingContentRecord,
+} from "./training.ts";
+export { instantOf, localDate, plannedOf } from "./training.ts";
+export type {
+  AvailabilityPeriodRecord,
+  CurrentAvailability,
+  LoadRecord,
+  PhysicalTestRecord,
+  WellnessRecord,
+} from "./load.ts";
+export { AVAILABLE } from "./load.ts";
+export type { ConsentRecord, InjuryRecord } from "./health.ts";
 export type {
   DevelopmentPlanRecord,
   PlayerEventDetails,
@@ -187,6 +212,9 @@ export function createDataLayer(options: DataLayerOptions) {
     fees: feesRepo(db),
     challenges: challengesRepo(db),
     matches: matchesRepo(db),
+    training: trainingRepo(db),
+    load: loadRepo(db),
+    health: healthRepo(db),
     logos: logosRepo(
       db,
       options.logoStore ??

@@ -43,7 +43,9 @@
     "groupClub": "El club",
     "groupActivity": "Activitat",
     "groupManagement": "Gestió",
-    "viewAs": "Veure el club com…"
+    "viewAs": "Veure el club com…",
+    "training": "Entrenament",
+    "athlete": "El meu benestar"
   },
   "auth": {
     "login": {
@@ -264,7 +266,9 @@
       "scout": {
         "title": "Observació",
         "description": "Jugadors sense valoració esportiva i els que estan per sota del llindar."
-      }
+      },
+      "openTraining": "Entrenament",
+      "openInfirmary": "Infermeria"
     },
     "scope": {
       "restricted": "Veus la teva part del club: {sections, plural, =0 {cap secció} one {# secció} other {# seccions}}, {teams, plural, =0 {cap equip} one {# equip} other {# equips}} i {players, plural, =0 {cap esportista solt} one {# esportista solt} other {# esportistes solts}}.",
@@ -369,13 +373,15 @@
         "facilities": "Instal·lacions",
         "challenges": "Repte",
         "fees": "Quotes",
-        "activity": "Moviments"
+        "activity": "Moviments",
+        "training": "Entrenament",
+        "health": "Salut"
       },
       "toggle": "{area} per a {profile}",
       "changed": "Canviat respecte al que hi ha per defecte",
       "reset": "Tornar al que hi ha per defecte",
       "saved": "Accés de {profile} desat.",
-      "adminNote": "L'administració del club ho veu tot i no té excepcions. Les famílies veuen només el dels seus esportistes: agenda, repte i quotes.",
+      "adminNote": "L'administració del club ho veu tot excepte Salut, que només s'obre per excepció a qui ho necessiti. Les famílies només veuen el dels seus esportistes: agenda, repte i quotes.",
       "overridesTitle": "Excepcions per persona",
       "overridesDescription": "Persones que veuen una cosa diferent del que veu el seu rol: una àrea de més o de menys. S'afegeixen, es canvien i es treuen aquí.",
       "overridesEmpty": "Ningú té excepcions.",
@@ -392,19 +398,20 @@
       "overrideSheet": {
         "titleNew": "Nova excepció",
         "titleEdit": "Excepcions de {name}",
-        "description": "Marca el que veu aquesta persona. Parteix del que veu el seu rol; el que canviïs queda com a excepció només per a ella. L'administració del club ho veu tot i no té excepcions.",
+        "description": "Marca el que veu aquesta persona. Parteix del que veu el seu rol; el que canviïs queda com a excepció només per a ella. A l'administració només se li pot obrir Salut.",
         "person": "Persona",
         "areas": "Què veu",
         "roleSees": "El seu rol ho veu",
         "roleHides": "El seu rol no ho veu",
         "exceptionChip": "Excepció",
         "none": "Canvia almenys una àrea respecte al seu rol.",
-        "empty": "No hi ha personal que pugui tenir excepcions: l'administració ho veu tot i les famílies veuen només el seu.",
+        "empty": "No hi ha ningú que pugui tenir excepcions: les famílies només veuen el seu.",
         "saved": "Excepcions de {name} desades.",
         "byRoleTitle": "El que porta el seu rol: {roles}",
         "scope": "Abast: {scope}. Les excepcions no el canvien.",
         "hides": "El seu rol no veu {areas}.",
-        "seesAll": "El seu rol veu totes les àrees."
+        "seesAll": "El seu rol veu totes les àrees.",
+        "adminHealth": "Administra el club: ho veu tot excepte Salut. Només Salut se li pot obrir, i queda auditat cada cop que la consulta."
       }
     }
   },
@@ -815,7 +822,8 @@
       "plan_updated": "Pla de desenvolupament desat",
       "note_added": "Registre afegit al jugador",
       "staff_assigned": "Personal assignat a l'esportista",
-      "staff_unassigned": "Personal retirat de l'esportista"
+      "staff_unassigned": "Personal retirat de l'esportista",
+      "focus_updated": "Continguts focus del jugador canviats"
     },
     "challenge": {
       "created": "Repte creat",
@@ -870,6 +878,75 @@
     },
     "access": {
       "rule_updated": "Accés per rol canviat"
+    },
+    "training_config": {
+      "updated": "Ajustos d'entrenament editats"
+    },
+    "training_content": {
+      "created": "Contingut d'entrenament creat",
+      "updated": "Contingut d'entrenament editat",
+      "removed": "Contingut d'entrenament eliminat"
+    },
+    "drill": {
+      "created": "Tasca creada",
+      "updated": "Tasca editada",
+      "removed": "Tasca eliminada"
+    },
+    "training_plan": {
+      "updated": "Pla de temporada editat"
+    },
+    "training_cycle": {
+      "created": "Cicle creat",
+      "updated": "Cicle editat",
+      "removed": "Cicle eliminat"
+    },
+    "microcycle_template": {
+      "created": "Setmana tipus creada",
+      "updated": "Setmana tipus editada",
+      "removed": "Setmana tipus eliminada"
+    },
+    "training_week": {
+      "copied": "Setmana d'entrenament copiada",
+      "template_applied": "Setmana tipus aplicada"
+    },
+    "session": {
+      "created": "Sessió planificada",
+      "updated": "Sessió editada",
+      "block_updated": "Bloc de sessió editat",
+      "closed": "Sessió tancada",
+      "copied": "Sessió copiada",
+      "removed": "Sessió eliminada"
+    },
+    "load": {
+      "recorded": "Càrrega registrada"
+    },
+    "match": {
+      "loads_updated": "Càrrega del partit registrada"
+    },
+    "wellness": {
+      "recorded": "Benestar registrat"
+    },
+    "availability": {
+      "updated": "Disponibilitat canviada"
+    },
+    "insight": {
+      "answered": "Recomanació resposta"
+    },
+    "health": {
+      "viewed": "Salut consultada",
+      "consent_updated": "Consentiment de salut registrat",
+      "consent_revoked": "Consentiment de salut retirat"
+    },
+    "injury": {
+      "created": "Lesió registrada",
+      "updated": "Lesió editada",
+      "phases_updated": "Fases de readaptació editades",
+      "removed": "Lesió eliminada"
+    },
+    "physical_test": {
+      "created": "Test físic creat",
+      "updated": "Test físic editat",
+      "results_recorded": "Resultats de tests registrats"
     }
   },
   "team": {
@@ -974,6 +1051,14 @@
       "label": "Vista de la plantilla",
       "board": "Tauler",
       "list": "Llista"
+    },
+    "training": {
+      "title": "Entrenament",
+      "description": "La setmana, la temporada, la càrrega del grup i els tests.",
+      "week": "Setmana",
+      "season": "Temporada",
+      "load": "Càrrega",
+      "tests": "Tests"
     }
   },
   "players": {
@@ -1310,7 +1395,8 @@
         "submit": "Assignar",
         "empty": "No hi ha ningú més del personal disponible."
       }
-    }
+    },
+    "performance": "Rendiment"
   },
   "family": {
     "title": "La meva família",
@@ -1827,7 +1913,8 @@
       }
     },
     "tabChallenges": "Reptes",
-    "matchConfig": "Partit en directe"
+    "matchConfig": "Partit en directe",
+    "training": "Entrenament"
   },
   "sectionKinds": {
     "competition": "Competició",
@@ -1842,7 +1929,9 @@
     "assistant": "Segon entrenador",
     "delegate": "Delegat",
     "physio": "Fisio",
-    "other": "Altre"
+    "other": "Altre",
+    "goalkeeper_coach": "Entrenador de porters",
+    "fitness": "Preparació física"
   },
   "weekdays": {
     "1": "Dilluns",
@@ -2120,6 +2209,12 @@
       "saved": "Esdeveniment desat.",
       "created": "{count, plural, one {Esdeveniment creat.} other {# esdeveniments creats.}}",
       "conflictWith": "Compte: la instal·lació ja té «{title}» a aquesta hora. S'ha desat igualment."
+    },
+    "session": {
+      "planned": "Aquest entrenament té sessió planificada.",
+      "notPlanned": "Encara sense sessió planificada.",
+      "open": "Veure la sessió",
+      "plan": "Planificar"
     }
   },
   "facilities": {
@@ -2766,7 +2861,9 @@
       "newFacility": "Nova instal·lació",
       "invite": "Convidar algú",
       "newChallenge": "Nou repte",
-      "newSeason": "Nova temporada"
+      "newSeason": "Nova temporada",
+      "drills": "Biblioteca de tasques",
+      "infirmary": "Infermeria"
     },
     "keys": {
       "move": "moure's",
@@ -2775,5 +2872,1350 @@
     },
     "noTeam": "Sense equip",
     "memberNumber": "Soci núm. {number}"
+  },
+  "availability": {
+    "status": {
+      "available": "Disponible",
+      "limited": "Limitat",
+      "rehab": "Readaptació",
+      "out": "Baixa"
+    },
+    "inline": {
+      "available": "disponible",
+      "limited": "limitat",
+      "rehab": "en readaptació",
+      "out": "de baixa"
+    },
+    "maxMinutes": "màx. {minutes} min"
+  },
+  "restrictions": {
+    "contact": "Sense contacte",
+    "jumps": "Sense salts",
+    "shooting": "Sense xut",
+    "direction_changes": "Sense canvis de direcció",
+    "high_intensity": "Sense alta intensitat"
+  },
+  "tags": {
+    "contact": "Contacte",
+    "jumps": "Salts",
+    "shooting": "Xut",
+    "direction_changes": "Canvis de direcció",
+    "high_intensity": "Alta intensitat"
+  },
+  "contentKinds": {
+    "technical": "Tècnic",
+    "tactical": "Tàctic",
+    "physical": "Físic",
+    "set_piece": "Pilota aturada",
+    "goalkeeper": "Porter",
+    "psychological": "Psicològic"
+  },
+  "sessionBlocks": {
+    "warmup": "Activació",
+    "main": "Part principal",
+    "goalkeepers": "Porters",
+    "rehab": "Readaptació",
+    "cooldown": "Tornada a la calma"
+  },
+  "sessionStatus": {
+    "draft": "Esborrany",
+    "planned": "Planificada",
+    "done": "Feta",
+    "cancelled": "Cancel·lada"
+  },
+  "zones": {
+    "r1c1": "banda esquerra a prop de l'àrea",
+    "r1c2": "centre a prop de l'àrea",
+    "r1c3": "banda dreta a prop de l'àrea",
+    "r2c1": "banda esquerra a mitja distància",
+    "r2c2": "centre a mitja distància",
+    "r2c3": "banda dreta a mitja distància",
+    "r3c1": "banda esquerra llunyana",
+    "r3c2": "centre llunyà",
+    "r3c3": "banda dreta llunyana"
+  },
+  "board": {
+    "toolbar": "Eines de la pissarra",
+    "tools": {
+      "own": "Jugador",
+      "rival": "Rival",
+      "keeper": "Porter",
+      "ball": "Pilota",
+      "cone": "Con",
+      "goal": "Porteria",
+      "pass": "Passada",
+      "dribble": "Conducció",
+      "run": "Desplaçament",
+      "erase": "Esborrar"
+    },
+    "field": "Espai",
+    "fields": {
+      "full": "Pista sencera",
+      "half": "Mitja pista",
+      "free": "Lliure"
+    },
+    "clear": "Buidar",
+    "pieceHint": "Toca la pista per posar la peça.",
+    "arrowStart": "Toca l'origen de la fletxa.",
+    "arrowEnd": "Ara toca la destinació.",
+    "eraseHint": "Toca una peça o una fletxa per treure-la.",
+    "summary": "Pissarra amb {pieces} peces i {arrows} fletxes",
+    "elements": "Elements de la pissarra",
+    "removeElement": "Treure {element}"
+  },
+  "load": {
+    "ua": "{value} UA",
+    "minutes": "{value} min",
+    "noRatio": "Sense història",
+    "sources": {
+      "session": "Sessió",
+      "match": "Partit",
+      "extra": "Extra"
+    }
+  },
+  "insights": {
+    "title": "A tenir en compte",
+    "description": "Recomanacions explicables: què es detecta, amb quina xifra i què es proposa. Les decideix el cos tècnic.",
+    "empty": "Res a destacar ara mateix.",
+    "levels": {
+      "alert": "Alerta",
+      "attention": "Atenció",
+      "info": "Informació"
+    },
+    "proposal": "Proposta",
+    "groups": {
+      "recovery": "Recuperació",
+      "compensatory": "Compensatori"
+    },
+    "apply": "Aplicada",
+    "dismiss": "Descartar",
+    "applied": "Fet. No tornarà a sortir en unes setmanes.",
+    "dismissed": "Descartada. No tornarà a sortir en dues setmanes.",
+    "showAll": "Veure-les totes ({count})",
+    "showLess": "Veure'n menys",
+    "openMatch": "Veure el partit",
+    "openPlayer": "Veure el seu rendiment",
+    "zoneHint": " Comença per la zona amb menys encert: {zone}.",
+    "reviewHint": " Revisió el {date}.",
+    "rules": {
+      "finishing_drop": {
+        "title": "Baixa l'encert en el xut",
+        "evidence": "{recent} % d'encert en els darrers {matches} partits davant el {season} % de la temporada.",
+        "suggestion": "Més minuts de finalització aquesta setmana.{zone}"
+      },
+      "turnovers_up": {
+        "title": "Més pilotes perdudes",
+        "evidence": "{recent} pèrdues per partit en els darrers {matches} davant {season} de mitjana a la temporada.",
+        "suggestion": "Sortida de pressió i superioritats a l'inici del joc."
+      },
+      "early_fouls": {
+        "title": "S'arriba aviat al límit de faltes",
+        "evidence": "En {matches} dels darrers {of} partits l'equip va arribar a {limit} faltes abans del minut {minute} d'una part.",
+        "suggestion": "Defensa sense falta i 1x1 defensiu: a partir del límit, cada falta és un doble penal."
+      },
+      "late_goals": {
+        "title": "Encaixem al final de les parts",
+        "evidence": "{late} dels {total} gols en contra ({share} %) van arribar als darrers {minutes} minuts d'una part, en {matches} partits.",
+        "suggestion": "Resistència intermitent a MD-3 i revisar les rotacions del final."
+      },
+      "corners_no_goal": {
+        "title": "Els còrners no acaben en gol",
+        "evidence": "{corners} serveis de córner a favor en {matches} partits i cap gol en els deu segons següents.",
+        "suggestion": "Assajar l'ABP ofensiva amb variants i senyal."
+      },
+      "known_opponent": {
+        "title": "Ja vam jugar contra {opponent}",
+        "evidence": "El {playedOn} va quedar {own}-{against}. El proper partit és el {date}.",
+        "suggestion": "Revisa la comparativa i les zones de xut d'aquell partit."
+      },
+      "md_plus_one": {
+        "title": "Dia després del partit contra {opponent}",
+        "evidence": "{recovery} jugadors amb {recoveryMinutes} minuts o més i {compensatory} amb menys de {compensatoryMinutes}.",
+        "suggestion": "Dos grups: recuperació per a qui va jugar molt i compensatori per a la resta."
+      },
+      "double_match_week": {
+        "title": "Setmana amb dos partits",
+        "evidence": "{matches} partits a la setmana del {week}.",
+        "suggestion": "Menys volum: aplica la setmana tipus de dos partits si la tens."
+      },
+      "weekly_load": {
+        "title": "{direction, select, high {Setmana més carregada del que és habitual} other {Setmana més suau del que és habitual}}",
+        "evidence": "Càrrega planificada de {planned} UA davant {baseline} UA de mitjana en les quatre setmanes anteriors ({ratio} vegades).",
+        "suggestion": "{direction, select, high {Revisa el volum o reparteix la intensitat.} other {Si no és una setmana de descàrrega, puja una mica el volum.}}"
+      },
+      "content_gap": {
+        "title": "Sense minuts de {content}",
+        "evidence": "És un focus del cicle i no s'ha treballat en els darrers {days} dies.",
+        "suggestion": "Afegeix una tasca de {content} a la propera sessió."
+      },
+      "drill_low_rating": {
+        "title": "«{task}» no està funcionant",
+        "evidence": "Valorada com a «no ha funcionat» {low} de les {uses} vegades de les darreres quatre setmanes.",
+        "suggestion": "Prova una altra tasca amb el mateix contingut."
+      },
+      "restriction_conflict": {
+        "title": "{name} no pot fer tota la sessió",
+        "evidence": "{kind, select, tags {Està {status} ({tags}) i {task} ho exigeix.} minutes {Té un màxim de {max} minuts i la sessió n'hi suma {minutes}.} other {Està {status} i apareix a {task}.}}",
+        "suggestion": "{kind, select, tags {Una variant sense {tags} o el grup de readaptació.} minutes {Treu-li alguna tasca o envia'l a un grup a part.} other {Treu-lo de la tasca.}}"
+      },
+      "wellness_drop": {
+        "title": "{name} no arriba bé avui",
+        "evidence": "{kind, select, soreness {Dolor muscular en {soreness} de 5 (5 és sense molèsties).} other {Benestar de {score} sobre 25 dos dies seguits, davant {mean} de mitjana.}}",
+        "suggestion": "Avisa fisioteràpia i modera la seva càrrega avui."
+      },
+      "acwr": {
+        "title": "{direction, select, high {{name}: càrrega aguda alta} other {{name}: càrrega per sota del que és habitual}}",
+        "evidence": "Relació aguda:crònica de {ratio} ({acute} UA en set dies davant {chronic} UA de mitjana setmanal). El llindar del club és {limit}.",
+        "suggestion": "{direction, select, high {Ajusta la seva càrrega aquesta setmana. És un avís, no una predicció de lesió.} other {Si no és per decisió, puja-li la càrrega a poc a poc.}}"
+      },
+      "return_progression": {
+        "title": "{name} torna d'una baixa",
+        "evidence": "Des del {since}. Aquesta setmana porta {acute} UA; el seu sostre recomanat és {cap} UA, el 110 % de la seva càrrega setmanal prèvia.",
+        "suggestion": "{over, plural, =1 {És per sobre del sostre: baixa-li la càrrega.} other {Puja la càrrega de manera progressiva sense passar del sostre.}}"
+      },
+      "rpe_above_target": {
+        "title": "{name} ho nota més del que es preveia",
+        "evidence": "RPE de {rpe} en les dues darreres sessions, amb {target} previst.",
+        "suggestion": "Parla amb el jugador i amb preparació física."
+      },
+      "focus_gap": {
+        "title": "L'objectiu de {name} no es treballa",
+        "evidence": "{minutes} minuts dels seus continguts en tres setmanes (mínim del club: {target}). Objectiu: {objective}.{review}",
+        "suggestion": "Afegeix una tasca o una variant d'aquests continguts."
+      },
+      "strength": {
+        "title": "{name} destaca en {action}",
+        "evidence": "{rate} per cada 40 minuts en els darrers {matches} partits; la mediana de l'equip és {median}.",
+        "suggestion": "Fes-lo servir de referència a les tasques, dona-li un rol i reconeix-l'hi."
+      },
+      "low_attendance": {
+        "title": "Assistència baixa de {name}",
+        "evidence": "{present} de {total} entrenaments en quatre setmanes ({percent} %). El mínim del club és el {min} %.",
+        "suggestion": "Parla amb el jugador o amb la família."
+      },
+      "minutes_balance": {
+        "title": "{name} amb prou feines juga",
+        "evidence": "{minutes} minuts en els darrers {matches} partits, davant {mean} de mitjana de l'equip.",
+        "suggestion": "En formatives, el repartiment de minuts també és un objectiu."
+      }
+    }
+  },
+  "session": {
+    "rating": {
+      "1": "No ha funcionat",
+      "2": "Regular",
+      "3": "Ha funcionat"
+    },
+    "backToWeek": "Setmana de l'equip",
+    "noObjective": "Sense objectiu definit.",
+    "readOnly": "Pots veure aquesta sessió, però no editar-la.",
+    "objective": "Objectiu",
+    "status": "Estat",
+    "targetRpe": "RPE objectiu",
+    "noRpe": "Sense indicar",
+    "md": "Dia respecte al partit",
+    "cycle": "Cicle",
+    "noCycle": "Sense cicle",
+    "contents": "Continguts",
+    "contentMinutes": "Minuts per contingut",
+    "notes": "Notes",
+    "actions": {
+      "close": "Tancar la sessió",
+      "reclose": "Editar el tancament",
+      "court": "Mode pista",
+      "print": "Imprimir",
+      "copy": "Copiar a un altre dia",
+      "remove": "Treure la planificació"
+    },
+    "summary": {
+      "plannedMinutes": "Minuts planificats",
+      "plannedLoad": "Càrrega planificada per jugador",
+      "ready": "Poden entrenar",
+      "readyValue": "{ready} de {total}",
+      "actual": "Càrrega real mitjana · {minutes} min"
+    },
+    "header": {
+      "title": "Planificació",
+      "edit": "Editar",
+      "description": "El que es vol aconseguir i en quin moment de la setmana és.",
+      "objectiveHint": "Una frase: què ha de sortir d'aquesta sessió.",
+      "mdHint": "Es calcula amb els partits de l'agenda. Canvia-ho només si cal.",
+      "mdAuto": "Automàtic",
+      "mdAutoValue": "Automàtic ({md})",
+      "saved": "Planificació desada."
+    },
+    "blocks": {
+      "empty": "Encara sense tasques.",
+      "fromLibrary": "De la biblioteca",
+      "free": "Tasca lliure",
+      "moveUp": "Pujar «{title}»",
+      "moveDown": "Baixar «{title}»",
+      "edit": "Editar «{title}»",
+      "remove": "Treure «{title}»",
+      "saved": "Tasca desada.",
+      "removed": "Tasca treta.",
+      "rated": "Valoració: {rating}",
+      "none": "Aquesta sessió encara no té tasques",
+      "noneHint": "Les afegeix el cos tècnic de l'equip, cadascú als seus blocs."
+    },
+    "item": {
+      "setsReps": "{sets} × {reps}",
+      "sets": "{sets, plural, one {# sèrie} other {# sèries}}",
+      "rest": "descans {seconds} s",
+      "rpe": "RPE {rpe}"
+    },
+    "itemSheet": {
+      "titleNew": "Nova tasca",
+      "titleEdit": "Editar la tasca",
+      "fromDrill": "{block} · de la biblioteca: {name}",
+      "name": "Nom",
+      "minutes": "Minuts",
+      "sets": "Sèries",
+      "reps": "Repeticions",
+      "restSec": "Descans (s)",
+      "group": "Grup",
+      "groupHint": "Per exemple, Grup A o Porters.",
+      "demands": "Exigeix:",
+      "players": "Jugadors",
+      "playersHint": "Si no en marques cap, la fa tot el grup.",
+      "conflict": "Xoca amb les restriccions de: {names}. Valora una variant o un grup a part.",
+      "submit": "Desar la tasca"
+    },
+    "library": {
+      "title": "Afegir de la biblioteca",
+      "description": "Les tasques del club, de la secció, de l'equip i les teves.",
+      "search": "Cercar",
+      "content": "Contingut",
+      "allContents": "Tots",
+      "empty": "No hi ha tasques amb aquest filtre.",
+      "uses": "{count, plural, one {usada # vegada} other {usada # vegades}}",
+      "add": "Afegir",
+      "openLibrary": "Obrir la biblioteca"
+    },
+    "roster": {
+      "title": "Plantilla del dia",
+      "description": "{total, plural, one {# jugador} other {# jugadors}} amb la seva disponibilitat.",
+      "present": "{present} de {total} presents",
+      "empty": "L'equip no té jugadors actius.",
+      "rpe": "RPE {rpe}"
+    },
+    "close": {
+      "title": "Tancar la sessió",
+      "description": "Assistència, RPE i participació de cadascú. Amb això es calcula la càrrega.",
+      "basicDescription": "Assistència i, si vols, l'RPE del grup.",
+      "actualMinutes": "Durada real (min)",
+      "groupRpe": "RPE del grup",
+      "groupRpeHint": "Quant ha costat la sessió, de 0 (repòs) a 10 (màxim).",
+      "groupRpeHintFull": "Per a qui no tingui el seu. De 0 (repòs) a 10 (màxim).",
+      "players": "Jugadors",
+      "presentCount": "{present} de {total} presents",
+      "rpeOf": "RPE de {name}",
+      "participation": "Participació",
+      "minutes": "Minuts",
+      "itemRatings": "Valoració de les tasques",
+      "ratingOf": "Valoració de «{title}»",
+      "rating": "Valoració de la sessió",
+      "notes": "Notes del tancament",
+      "submit": "Tancar la sessió",
+      "done": "Sessió tancada amb {count, plural, one {# present} other {# presents}}."
+    },
+    "copy": {
+      "title": "Copiar la sessió",
+      "description": "Les mateixes tasques en un altre entrenament de l'equip. Si ja tenia planificació, se substitueix.",
+      "week": "Setmana",
+      "weekHint": "Qualsevol dia de la setmana de destinació.",
+      "target": "Entrenament",
+      "choose": "Tria un entrenament",
+      "none": "No hi ha entrenaments de l'equip a l'agenda aquella setmana.",
+      "replacesOption": "{label} (ja planificat)",
+      "replaces": "Aquell entrenament ja té sessió: se substitueix per aquesta.",
+      "submit": "Copiar",
+      "done": "Sessió copiada."
+    },
+    "remove": {
+      "title": "Vols treure la planificació?",
+      "body": "L'entrenament continua a l'agenda. Es perden les tasques i el tancament.",
+      "done": "Planificació treta."
+    },
+    "court": {
+      "exit": "Sortir",
+      "step": "Tasca {current} de {total}",
+      "fullscreen": "Pantalla completa",
+      "exitFullscreen": "Sortir de pantalla completa",
+      "empty": "Aquesta sessió encara no té tasques.",
+      "coachingPoints": "Punts clau",
+      "description": "Descripció",
+      "notes": "Notes",
+      "previous": "Anterior",
+      "next": "Següent",
+      "start": "Engegar el cronòmetre",
+      "pause": "Aturar el cronòmetre",
+      "reset": "Reiniciar el cronòmetre",
+      "timeUp": "Temps",
+      "keyboardHint": "Fletxes per canviar de tasca; espai per al cronòmetre."
+    },
+    "print": {
+      "back": "Tornar a la sessió",
+      "print": "Imprimir",
+      "heading": "Sessió d'entrenament",
+      "planned": "Planificat",
+      "coachingPoints": "Punts clau",
+      "noItems": "Sense tasques planificades.",
+      "roster": "Plantilla",
+      "player": "Jugador",
+      "availability": "Disponibilitat",
+      "attendance": "Assisteix",
+      "rpe": "RPE"
+    }
+  },
+  "training": {
+    "backToTeam": "Tornar a l'equip",
+    "backToWeek": "Tornar a la setmana",
+    "links": {
+      "season": "Temporada",
+      "history": "Històric",
+      "load": "Càrrega",
+      "tests": "Tests físics",
+      "drills": "Biblioteca de tasques",
+      "infirmary": "Infermeria"
+    },
+    "hub": {
+      "title": "Entrenament",
+      "description": "Planifica la setmana de cada equip, segueix la càrrega i consulta el que cal tenir en compte.",
+      "empty": "No hi ha equips per entrenar",
+      "emptyHint": "Quan la temporada tingui equips al teu àmbit, apareixeran aquí.",
+      "openWeek": "Obrir la setmana",
+      "teamsCount": "{count, plural, one {# equip} other {# equips}}",
+      "players": "{count, plural, one {# jugador} other {# jugadors}}",
+      "methodology": "Metodologia",
+      "settings": "Ajustos d'entrenament",
+      "table": {
+        "team": "Equip",
+        "category": "Categoria",
+        "staff": "Cos tècnic",
+        "players": "Jugadors"
+      }
+    },
+    "week": {
+      "title": "Setmana d'entrenament",
+      "navigation": "Canviar de setmana",
+      "previous": "Setmana anterior",
+      "next": "Setmana següent",
+      "today": "Aquesta setmana",
+      "todayLabel": "Avui",
+      "available": "Disponibles",
+      "notAvailable": "No disponibles del tot:",
+      "planned": "Càrrega planificada",
+      "plannedVsBaseline": "Planificada · mitjana de les quatre anteriors: {baseline}",
+      "actual": "Càrrega real de la setmana",
+      "cycle": "Cicle en curs: {name}",
+      "days": "Dia a dia",
+      "rest": "Sense activitat",
+      "match": "Partit contra {opponent}",
+      "matchNoOpponent": "Partit",
+      "openStats": "Veure estadístiques",
+      "openMatch": "Obrir el partit",
+      "drills": "{count, plural, =0 {sense tasques} one {# tasca} other {# tasques}}",
+      "plan": "Planificar",
+      "notPlanned": "Sense planificar",
+      "insights": "A tenir en compte",
+      "insightsHint": "El que diuen els partits, la càrrega i cada jugador. Decideixes tu.",
+      "more": "Més de l'equip",
+      "copy": {
+        "button": "Copiar setmana",
+        "title": "Copiar una altra setmana",
+        "description": "Les sessions de la setmana triada es copien a la del {week}.",
+        "from": "Un dia de la setmana d'origen",
+        "fromHint": "Es copia la setmana {week}.",
+        "rule": "Cada sessió va a l'entrenament amb la mateixa etiqueta MD i, si no n'hi ha, al del mateix dia. Els entrenaments que ja tenen sessió no es toquen.",
+        "submit": "Copiar",
+        "done": "{count, plural, =0 {No hi havia res a copiar.} one {Copiada # sessió.} other {Copiades # sessions.}}"
+      },
+      "template": {
+        "button": "Aplicar setmana tipus",
+        "title": "Aplicar una setmana tipus",
+        "description": "Objectiu, minuts i RPE de cada dia comptant des del partit.",
+        "template": "Setmana tipus",
+        "days": "Dies de la setmana tipus",
+        "rule": "Si un dia no té entrenament a l'agenda, es crea. Les sessions que ja existeixen conserven les tasques.",
+        "submit": "Aplicar",
+        "done": "{count, plural, =0 {No s'ha aplicat a cap dia.} one {Aplicada a # sessió.} other {Aplicada a # sessions.}}",
+        "noMatch": "Aquesta setmana no té partit: la setmana tipus compta els dies des d'ell."
+      }
+    },
+    "season": {
+      "title": "Pla de temporada",
+      "noPlan": "Encara sense pla: comença pels cicles.",
+      "cycles": "Cicles",
+      "cyclesHint": "Blocs de setmanes amb els continguts focus i la càrrega setmanal que busques.",
+      "matches": "Partits",
+      "matchesHint": "{count, plural, one {# partit a la temporada} other {# partits a la temporada}}",
+      "noMatches": "Encara no hi ha partits.",
+      "noOpponent": "Rival per confirmar",
+      "openStats": "Estadístiques",
+      "showAll": "Veure'ls tots ({count})",
+      "showLess": "Veure'n menys",
+      "load": {
+        "title": "Càrrega per setmana",
+        "description": "Planificada davant real, amb els cicles de fons i els partits a sota.",
+        "planned": "Planificada",
+        "actual": "Real",
+        "match": "Partit",
+        "sessions": "{count, plural, one {# sessió} other {# sessions}}",
+        "summary": "Càrrega de {weeks} setmanes: {planned} planificades i {actual} reals.",
+        "empty": "La temporada encara no té setmanes."
+      },
+      "plan": {
+        "create": "Crear el pla",
+        "edit": "Editar el pla",
+        "description": "El nom i les idees generals de la temporada per a tot el cos tècnic.",
+        "defaultName": "Pla {season}",
+        "name": "Nom",
+        "notes": "Notes",
+        "notesHint": "Model de joc, objectius de la temporada, criteris del cos tècnic.",
+        "saved": "Pla desat."
+      },
+      "cycle": {
+        "new": "Nou cicle",
+        "newTitle": "Nou cicle",
+        "editTitle": "Editar el cicle",
+        "description": "Dates, continguts en què posar el focus i la càrrega setmanal que busques.",
+        "create": "Crear el cicle",
+        "name": "Nom",
+        "nameHint": "Per exemple: «Pretemporada» o «Bloc 2: transicions».",
+        "startsOn": "Comença",
+        "endsOn": "Acaba",
+        "invalidDates": "Ha d'acabar després de començar.",
+        "target": "Càrrega setmanal objectiu (UA)",
+        "targetHint": "Opcional. RPE × minuts sumats a la setmana, per jugador.",
+        "focus": "Continguts focus ({count} de 12)",
+        "focusHint": "Si un contingut focus passa dies sense treballar-se, sortirà a «A tenir en compte».",
+        "notes": "Notes",
+        "targetValue": "Objectiu: {load} per setmana",
+        "mean": "Real: {load} de mitjana",
+        "noTarget": "Sense càrrega objectiu",
+        "empty": "Sense cicles",
+        "emptyHint": "Divideix la temporada en blocs per ordenar els continguts i la càrrega.",
+        "created": "Cicle «{name}» creat.",
+        "saved": "Cicle «{name}» desat.",
+        "removed": "Cicle «{name}» tret.",
+        "confirmRemove": "Treure el cicle «{name}»?",
+        "confirmRemoveBody": "Les sessions del cicle es queden; només deixen d'estar-hi associades."
+      }
+    },
+    "history": {
+      "title": "Històric de sessions",
+      "description": "Què s'ha treballat, quant ha durat i quanta càrrega ha suposat.",
+      "filters": {
+        "content": "Contingut",
+        "allContents": "Tots els continguts",
+        "from": "Des de",
+        "fromHint": "Per defecte, els darrers sis mesos.",
+        "to": "Fins a"
+      },
+      "stats": {
+        "done": "{count, plural, one {Sessió feta} other {Sessions fetes}}",
+        "minutes": "Minuts entrenats",
+        "meanLoad": "Càrrega mitjana per sessió"
+      },
+      "byContent": "Minuts per contingut",
+      "byContentHint": "Toca un contingut per veure només les seves sessions.",
+      "list": "Sessions",
+      "listCount": "{count, plural, one {# sessió} other {# sessions}}",
+      "empty": "Sense sessions",
+      "emptyHint": "Les sessions planificades des de la setmana de l'equip apareixeran aquí.",
+      "emptyFiltered": "Cap sessió compleix els filtres.",
+      "table": {
+        "date": "Data",
+        "md": "MD",
+        "status": "Estat",
+        "objective": "Objectiu",
+        "contents": "Continguts",
+        "minutes": "Minuts",
+        "load": "Càrrega"
+      },
+      "export": {
+        "button": "Descarregar Excel",
+        "file": "Sessions",
+        "sessions": "Sessions",
+        "contents": "Continguts",
+        "plannedMinutes": "Minuts planificats",
+        "actualMinutes": "Minuts reals",
+        "plannedLoad": "Càrrega planificada (UA)",
+        "actualLoad": "Càrrega real (UA)",
+        "drills": "Tasques",
+        "content": "Contingut",
+        "kind": "Tipus",
+        "minutes": "Minuts"
+      }
+    }
+  },
+  "participations": {
+    "full": "Completa",
+    "partial": "Parcial",
+    "rehab": "Readaptació"
+  },
+  "drillScopes": {
+    "club": "Club",
+    "section": "Secció",
+    "team": "Equip",
+    "personal": "Personal"
+  },
+  "drills": {
+    "title": "Biblioteca de tasques",
+    "description": "Les tasques del club, de les teves seccions i equips, i les teves. Cadascuna amb la seva pissarra, els seus continguts i el seu ús.",
+    "backToTraining": "Entrenament",
+    "backToLibrary": "Biblioteca",
+    "new": "Nova tasca",
+    "search": "Cercar tasca",
+    "filters": {
+      "label": "Filtres de la biblioteca",
+      "content": "Contingut",
+      "allContents": "Tots els continguts",
+      "scope": "Àmbit",
+      "allScopes": "Tots els àmbits",
+      "where": "Secció o equip",
+      "everywhere": "Totes les seccions i equips",
+      "sections": "Seccions",
+      "teams": "Equips",
+      "archived": "Veure també les arxivades",
+      "clear": "Treure filtres"
+    },
+    "count": "{count, plural, one {# tasca} other {# tasques}}",
+    "empty": {
+      "title": "Encara no hi ha tasques",
+      "description": "Crea la primera amb la seva pissarra, els seus continguts i el que exigeix.",
+      "filtered": "Cap tasca amb aquests filtres."
+    },
+    "noBoard": "Sense pissarra",
+    "boardOf": "Pissarra de {name}",
+    "playersRange": "{min}-{max} jugadors",
+    "playersFrom": "A partir de {min} jugadors",
+    "playersUpTo": "Fins a {max} jugadors",
+    "uses": "{count, plural, =0 {Sense fer servir} one {Feta servir en # sessió} other {Feta servir en # sessions}}",
+    "lastUsed": "Darrera vegada el {date}",
+    "ratingValue": "Valoració {value} de 3",
+    "archived": "Arxivada",
+    "readOnly": "Només lectura: l'edita qui gestiona el seu àmbit.",
+    "edit": "Editar",
+    "actions": "Més accions",
+    "duplicate": "Copiar a les meves tasques",
+    "duplicated": "Copiada a les teves tasques.",
+    "copyName": "{name} (còpia)",
+    "archive": "Arxivar",
+    "archivedToast": "Tasca arxivada. Ja no surt en planificar.",
+    "restore": "Recuperar",
+    "restored": "Tasca recuperada.",
+    "remove": "Treure",
+    "confirmRemoveTitle": "Treure «{name}»?",
+    "confirmRemoveBody": "Si alguna sessió la fa servir, s'arxiva per no perdre l'històric. Si no, s'esborra.",
+    "removed": "Tasca treta.",
+    "saved": "Tasca desada.",
+    "created": "Tasca creada.",
+    "newTitle": "Nova tasca",
+    "newDescription": "Pissarra, continguts i el que exigeix: així surt en planificar i avisa si xoca amb una restricció.",
+    "cards": {
+      "board": "Pissarra",
+      "development": "Desenvolupament",
+      "sheet": "Fitxa",
+      "usage": "Ús",
+      "recent": "Darreres sessions",
+      "data": "Dades",
+      "contents": "Continguts i exigències"
+    },
+    "recentEmpty": "Encara no ha sortit a cap sessió.",
+    "noDevelopment": "Encara sense descripció.",
+    "openVideo": "Veure el vídeo",
+    "primary": "Principal",
+    "noContents": "Encara no hi ha continguts per a aquesta secció.",
+    "fields": {
+      "name": "Nom",
+      "scope": "Àmbit",
+      "scopeHint": "Qui la veu: tot el club, una secció, un equip o només tu.",
+      "section": "Secció",
+      "noSection": "Sense secció",
+      "fixedWhere": "Per canviar-la de lloc, canvia l'àmbit.",
+      "team": "Equip",
+      "format": "Format",
+      "formatHint": "Per exemple, 4x4+2 o 3x2.",
+      "space": "Espai",
+      "spaceHint": "Per exemple, mitja pista o 20x20 m.",
+      "players": "Jugadors",
+      "playersMin": "Jugadors, mínim",
+      "playersMax": "Jugadors, màxim",
+      "duration": "Durada (min)",
+      "targetRpe": "RPE objectiu",
+      "targetRpeHint": "De 0 (repòs) a 10 (màxim).",
+      "noRpe": "Sense RPE objectiu",
+      "material": "Material",
+      "video": "Vídeo",
+      "videoHint": "Enllaç a un vídeo de la tasca.",
+      "description": "Descripció",
+      "rules": "Regles",
+      "coachingPoints": "Punts clau",
+      "variants": "Variants",
+      "contents": "Continguts que treballa",
+      "contentsHint": "Fins a 8. El primer que marquis és el principal.",
+      "restrictions": "Exigeix",
+      "restrictionsHint": "El que demana la tasca. Serveix per avisar si algú amb restriccions hi apareix.",
+      "noDemands": "Sense exigències especials"
+    },
+    "errors": {
+      "name": "Posa nom a la tasca.",
+      "players": "El mínim de jugadors no pot passar del màxim.",
+      "where": "Tria on va la tasca."
+    }
+  },
+  "loadPanel": {
+    "title": "Càrrega de l'equip",
+    "description": "Càrrega interna de cada jugador (RPE × minuts) en sessions, partits i treball extra.",
+    "backToWeek": "Setmana de l'equip",
+    "basicTitle": "Seguiment bàsic",
+    "basicBody": "Aquesta secció registra l'RPE del grup, no el de cada jugador, i no recull benestar. La càrrega individual és una estimació: per afinar-la, activa el seguiment complet als ajustos d'entrenament de la secció.",
+    "ratioNote": "La relació aguda:crònica compara la càrrega dels darrers 7 dies amb la mitjana setmanal de les 4 darreres setmanes. Fora del rang {low}–{high} és un avís per revisar, no una predicció de lesió. Necessita 21 dies d'història.",
+    "stats": {
+      "high": "Per sobre de {high}",
+      "low": "Per sota de {low}",
+      "noHistory": "Sense prou història",
+      "unavailable": "No disponibles del tot"
+    },
+    "table": {
+      "title": "Jugadors",
+      "description": "Ordenats per la relació aguda:crònica, de més gran a més petita.",
+      "player": "Jugador",
+      "availability": "Disponibilitat",
+      "acute": "Aguda (7 dies)",
+      "chronic": "Crònica (mitjana setmanal)",
+      "ratio": "Aguda:crònica",
+      "monotony": "Monotonia",
+      "trend": "Darrers 28 dies",
+      "wellness": "Benestar"
+    },
+    "trendLabel": "Càrrega diària de {name} en els darrers 28 dies",
+    "mobileSubtitle": "Aguda {acute} · Crònica {chronic}",
+    "noWellness": "Sense dades",
+    "empty": "No hi ha jugadors actius a la plantilla."
+  },
+  "tests": {
+    "title": "Tests físics",
+    "description": "L'últim valor de cada jugador als tests del club. Toca un jugador per veure'n l'evolució.",
+    "backToWeek": "Setmana de l'equip",
+    "record": "Registrar mesura",
+    "results": "Resultats",
+    "resultsDescription": "{count, plural, one {# mesura registrada} other {# mesures registrades}}.",
+    "player": "Jugador",
+    "lastOn": "Mesurat el {date}",
+    "measured": "{count, plural, =0 {Sense mesures} one {# test mesurat} other {# tests mesurats}}",
+    "empty": "Encara no hi ha mesures.",
+    "emptyHint": "Registra una mesura: un test, una data i el valor de cada jugador.",
+    "noPlayers": "No hi ha jugadors actius a la plantilla.",
+    "recordSheet": {
+      "title": "Registrar mesura",
+      "description": "Un test, una data i el valor de cada jugador. Deixa en blanc qui no l'ha fet.",
+      "test": "Test",
+      "date": "Data",
+      "values": "Valors ({unit})",
+      "value": "Valor de {name}",
+      "submit": "Desar mesura",
+      "saved": "Mesura desada: {count, plural, one {# jugador} other {# jugadors}}."
+    },
+    "catalog": {
+      "title": "Catàleg de tests del club",
+      "description": "Els tests que fan servir tots els equips. Arxivar-ne un l'amaga sense esborrar-ne els resultats.",
+      "add": "Nou test",
+      "edit": "Editar",
+      "archive": "Arxivar",
+      "restore": "Recuperar",
+      "archived": "Arxivat",
+      "name": "Nom",
+      "unit": "Unitat",
+      "direction": "Què és millor",
+      "newTitle": "Nou test",
+      "editTitle": "Editar test",
+      "created": "Test afegit.",
+      "updated": "Test desat.",
+      "archivedToast": "Test arxivat.",
+      "restoredToast": "Test recuperat."
+    },
+    "units": {
+      "s": "Segons (s)",
+      "cm": "Centímetres (cm)",
+      "m": "Metres (m)",
+      "km_h": "Quilòmetres per hora (km/h)",
+      "level": "Nivell",
+      "count": "Repeticions"
+    }
+  },
+  "testUnits": {
+    "s": "s",
+    "cm": "cm",
+    "m": "m",
+    "km_h": "km/h",
+    "level": "nivell",
+    "count": "rep."
+  },
+  "testDirections": {
+    "higher_better": "Més és millor",
+    "lower_better": "Menys és millor"
+  },
+  "performance": {
+    "title": "Rendiment",
+    "backToPlayer": "Fitxa del jugador",
+    "noTeam": "Sense equip aquesta temporada",
+    "availability": {
+      "title": "Disponibilitat",
+      "description": "El que el cos tècnic necessita per planificar. Mai un diagnòstic.",
+      "change": "Canviar",
+      "since": "Des del {date}",
+      "expectedReturn": "Tornada prevista: {date}",
+      "history": "Historial",
+      "historyEmpty": "Sense canvis registrats.",
+      "period": "{from} – {to}",
+      "ongoing": "en curs"
+    },
+    "availabilitySheet": {
+      "title": "Disponibilitat de {name}",
+      "description": "Marcar-lo disponible tanca el període obert.",
+      "status": "Estat",
+      "restrictions": "Restriccions",
+      "restrictionsHint": "El que no pot fer. Les tasques que ho exigeixen sortiran marcades.",
+      "maxMinutes": "Minuts màxims per sessió",
+      "maxMinutesHint": "Buit si no hi ha límit.",
+      "fromOn": "Des de",
+      "expectedReturnOn": "Tornada prevista",
+      "note": "Nota per al cos tècnic",
+      "noteHint": "Operativa: què pot fer i què no. Mai un diagnòstic.",
+      "saved": "Disponibilitat desada."
+    },
+    "insightsNoTeam": "Sense equip aquesta temporada no hi ha recomanacions.",
+    "load": {
+      "title": "Càrrega",
+      "description": "Càrrega interna dels darrers 35 dies: RPE × minuts de sessions, partits i treball extra.",
+      "acute": "Aguda (7 dies)",
+      "chronic": "Crònica (mitjana setmanal)",
+      "ratio": "Aguda:crònica",
+      "monotony": "Monotonia",
+      "strain": "Tensió (strain)",
+      "chartSummary": "Càrrega diària dels darrers 35 dies. Total: {total} UA.",
+      "ratioNote": "Avís per sobre de {high} o per sota de {low}, mai una predicció de lesió. Necessita 21 dies d'història; ara n'hi ha {days, plural, one {# dia} other {# dies}}."
+    },
+    "extras": {
+      "title": "Treball extra",
+      "description": "Gimnàs, treball individual o readaptació fora de la sessió.",
+      "add": "Afegir càrrega",
+      "empty": "Sense treball extra les darreres setmanes.",
+      "line": "{minutes} min · RPE {rpe} · {load} UA",
+      "remove": "Treure",
+      "removed": "Càrrega treta.",
+      "confirmTitle": "Treure aquesta càrrega?",
+      "confirmBody": "Deixa de comptar en la seva càrrega aguda i crònica."
+    },
+    "extraSheet": {
+      "title": "Treball extra de {name}",
+      "date": "Data",
+      "minutes": "Minuts",
+      "rpe": "RPE (0 a 10)",
+      "rpeHint": "0 és repòs; 10, l'esforç màxim.",
+      "note": "Nota",
+      "submit": "Afegir",
+      "saved": "Càrrega afegida."
+    },
+    "wellness": {
+      "title": "Benestar",
+      "description": "Cinc preguntes de l'1 al 5 en què 5 és el millor. Suma del 5 al 25.",
+      "record": "Registrar avui",
+      "editToday": "Editar el d'avui",
+      "empty": "Sense respostes les darreres quatre setmanes.",
+      "trend": "Benestar dels darrers 28 dies",
+      "sheetTitle": "Benestar de {name}",
+      "sheetDescription": "Com arriba avui. En totes cinc, 5 és el millor."
+    },
+    "focus": {
+      "title": "Objectiu de treball",
+      "description": "Continguts que la recomanació vigila que s'entrenin, amb els minuts de les tres darreres setmanes.",
+      "edit": "Triar continguts",
+      "empty": "Sense continguts triats.",
+      "objective": "Objectiu: {title}",
+      "review": "Revisió el {date}",
+      "noTeam": "Sense equip aquesta temporada no hi ha catàleg de continguts.",
+      "sheetTitle": "Continguts de l'objectiu",
+      "sheetDescription": "Fins a sis. La recomanació avisa si no es treballen.",
+      "limit": "{count} de 6",
+      "saved": "Objectiu desat."
+    },
+    "tests": {
+      "title": "Tests físics",
+      "description": "La seva evolució, sense comparar-la amb ningú. A dalt sempre és millor.",
+      "empty": "Encara sense mesures.",
+      "summary": "Evolució a {test}: {count, plural, one {# mesura} other {# mesures}}."
+    }
+  },
+  "wellness": {
+    "items": {
+      "sleep": {
+        "label": "Son",
+        "low": "Molt malament",
+        "high": "Molt bé"
+      },
+      "fatigue": {
+        "label": "Fatiga",
+        "low": "Sense energia",
+        "high": "Amb energia"
+      },
+      "soreness": {
+        "label": "Dolor muscular",
+        "low": "Molt de dolor",
+        "high": "Sense molèsties"
+      },
+      "stress": {
+        "label": "Estrès",
+        "low": "Molt d'estrès",
+        "high": "Sense estrès"
+      },
+      "mood": {
+        "label": "Ànim",
+        "low": "Molt baix",
+        "high": "Molt bo"
+      }
+    },
+    "score": "{score}/25",
+    "sorenessArea": "Zona de la molèstia",
+    "note": "Nota",
+    "today": "Avui",
+    "saved": "Benestar desat."
+  },
+  "health": {
+    "title": "Salut",
+    "description": "Àrea restringida: lesions i readaptació. Només la veuen fisioteràpia i preparació física.",
+    "audited": "Cada consulta d'aquesta secció queda registrada a l'auditoria.",
+    "consent": {
+      "active": "Consentiment de {name} ({relationship}) des del {date}. Text {version}.",
+      "outdated": "El text del consentiment ha canviat (versió {version}). Convé renovar-lo.",
+      "missing": "Sense consentiment vigent no es registren lesions. Només es fa servir la disponibilitat, que no és una dada de salut.",
+      "revokedOn": "Revocat el {date}.",
+      "record": "Registrar consentiment",
+      "renew": "Renovar",
+      "revoke": "Revocar",
+      "revokeTitle": "Revocar el consentiment?",
+      "revokeBody": "No es podran registrar més lesions fins que es torni a donar. El que s'ha registrat es conserva.",
+      "revoked": "Consentiment revocat.",
+      "saved": "Consentiment registrat."
+    },
+    "consentSheet": {
+      "title": "Consentiment de dades de salut",
+      "description": "Consentiment explícit per tractar dades de salut. Queda registrat qui el dona, quan i amb quin text.",
+      "grantedByName": "Qui el dona",
+      "grantedByNameHint": "El mateix esportista o el seu tutor legal.",
+      "relationship": "Relació",
+      "grantedOn": "Data",
+      "version": "Versió del text: {version}"
+    },
+    "injuries": {
+      "title": "Lesions",
+      "add": "Registrar lesió",
+      "empty": "Sense lesions registrades.",
+      "heading": "{area} · {kind}",
+      "side": "Costat: {side}",
+      "daysOut": "{days, plural, one {# dia de baixa} other {# dies de baixa}}",
+      "recurrence": "Recaiguda",
+      "occurred": "Des del {date}",
+      "expected": "Tornada prevista: {date}",
+      "returned": "Va tornar el {date}",
+      "diagnosis": "Diagnòstic",
+      "clinicalNotes": "Notes clíniques",
+      "edit": "Editar",
+      "phases": "Fases",
+      "remove": "Esborrar",
+      "removeTitle": "Esborrar aquesta lesió?",
+      "removeBody": "Només si es va registrar per error. També se n'esborren les fases.",
+      "removed": "Lesió esborrada.",
+      "created": "Lesió registrada.",
+      "updated": "Lesió desada."
+    },
+    "injurySheet": {
+      "newTitle": "Registrar lesió",
+      "editTitle": "Editar lesió",
+      "description": "Dades clíniques: només les veu qui té accés a Salut. La disponibilitat es canvia a part.",
+      "occurredOn": "Data de la lesió",
+      "context": "Context",
+      "bodyArea": "Zona",
+      "side": "Costat",
+      "kind": "Tipus",
+      "mechanism": "Mecanisme",
+      "recurrence": "Recaiguda d'una lesió anterior",
+      "diagnosis": "Diagnòstic",
+      "clinicalNotes": "Notes clíniques",
+      "expectedReturnOn": "Tornada prevista",
+      "returnedOn": "Tornada real",
+      "status": "Estat"
+    },
+    "phases": {
+      "title": "Fases de readaptació",
+      "description": "En ordre. Marca quan comença i quan se supera cadascuna.",
+      "add": "Afegir fase",
+      "name": "Fase {n}",
+      "criteria": "Criteri per superar-la",
+      "startedOn": "Inici",
+      "doneOn": "Superada",
+      "removePhase": "Treure la fase {n}",
+      "empty": "Sense fases. Afegeix la primera o fes servir les fases tipus.",
+      "useDefaults": "Fer servir fases tipus",
+      "defaults": {
+        "1": "Control del dolor i la inflamació",
+        "2": "Mobilitat i força",
+        "3": "Cursa i canvis de direcció",
+        "4": "Pilota i tornada al grup"
+      },
+      "progress": "{done} de {total} fases superades",
+      "saved": "Fases desades."
+    }
+  },
+  "bodyAreas": {
+    "head": "Cap",
+    "neck": "Coll",
+    "shoulder": "Espatlla",
+    "arm": "Braç",
+    "wrist_hand": "Canell i mà",
+    "chest": "Tòrax",
+    "back": "Esquena",
+    "hip_groin": "Maluc i engonal",
+    "thigh_front": "Quàdriceps",
+    "thigh_back": "Isquiotibials",
+    "knee": "Genoll",
+    "calf": "Bessó",
+    "ankle": "Turmell",
+    "foot": "Peu",
+    "other": "Altra zona"
+  },
+  "bodySides": {
+    "left": "Esquerre",
+    "right": "Dret",
+    "both": "Tots dos",
+    "none": "No s'hi aplica"
+  },
+  "injuryKinds": {
+    "muscle": "Muscular",
+    "ligament": "Lligamentosa",
+    "tendon": "Tendinosa",
+    "bone": "Òssia",
+    "joint": "Articular",
+    "contusion": "Contusió",
+    "concussion": "Commoció cerebral",
+    "illness": "Malaltia",
+    "other": "Altra"
+  },
+  "injuryMechanisms": {
+    "contact": "Amb contacte",
+    "non_contact": "Sense contacte"
+  },
+  "injuryContexts": {
+    "training": "Entrenament",
+    "match": "Partit",
+    "other": "Fora del club"
+  },
+  "injuryStatuses": {
+    "active": "Activa",
+    "rehab": "En readaptació",
+    "recovered": "Recuperada"
+  },
+  "injurySeverities": {
+    "minimal": "Mínima (1–3 dies)",
+    "mild": "Lleu (4–7 dies)",
+    "moderate": "Moderada (8–28 dies)",
+    "severe": "Greu (més de 28 dies)"
+  },
+  "consentRelationships": {
+    "self": "El mateix esportista",
+    "guardian": "Tutor legal"
+  },
+  "infirmary": {
+    "back": "Entrenament",
+    "title": "Infermeria",
+    "description": "Baixes, readaptacions i limitats, amb la tornada prevista.",
+    "descriptionHealth": "Baixes, readaptacions i limitats, amb la lesió, la fase i la tornada prevista.",
+    "returningThisWeek": "Tornen aquesta setmana",
+    "thisWeek": "Torna aquesta setmana",
+    "empty": {
+      "title": "Tothom disponible",
+      "description": "Ningú de baixa, en readaptació ni amb limitacions."
+    },
+    "groups": {
+      "out": "No poden entrenar.",
+      "rehab": "Treballen a part amb fisioteràpia o preparació física.",
+      "limited": "Entrenen amb el grup amb restriccions o un màxim de minuts."
+    },
+    "table": {
+      "player": "Jugador",
+      "status": "Estat",
+      "injury": "Lesió",
+      "return": "Tornada prevista"
+    },
+    "returnOn": "tornada el {date}",
+    "noReturn": "Sense data",
+    "since": "Des del {date}",
+    "phase": "Fase: {phase}",
+    "soreness": {
+      "title": "Molèsties reportades",
+      "description": "Dolor muscular de 2 o menys en el benestar d'ahir o d'avui (5 és sense molèsties).",
+      "date": "Dia",
+      "value": "Dolor muscular",
+      "score": "{value} de 5",
+      "area": "Zona"
+    },
+    "healthHidden": "La lesió i el diagnòstic només els veu qui té accés a Salut."
+  },
+  "athlete": {
+    "title": "El meu benestar",
+    "description": "Dos minuts al dia ajuden el cos tècnic a ajustar la teva càrrega.",
+    "noPlayer": {
+      "title": "El teu compte no té fitxa de jugador",
+      "description": "Demana al club que vinculi la teva fitxa a aquest compte."
+    },
+    "rpe": {
+      "title": "Quant t'ha costat?",
+      "description": "Esforç de tot l'entrenament, de 0 (repòs) a 10 (màxim). Contesta uns 30 minuts després d'acabar.",
+      "minutes": "{minutes} min",
+      "label": "Esforç de {title}",
+      "hint": "Tria un número.",
+      "send": "Enviar",
+      "saved": "Esforç enviat. Gràcies.",
+      "scale": {
+        "0": "0: repòs",
+        "1": "1: molt, molt fàcil",
+        "2": "2: fàcil",
+        "3": "3: moderat",
+        "4": "4: una mica dur",
+        "5": "5: dur",
+        "6": "6: dur",
+        "7": "7: molt dur",
+        "8": "8: molt dur",
+        "9": "9: gairebé al màxim",
+        "10": "10: màxim"
+      }
+    },
+    "wellness": {
+      "description": "Cinc preguntes: en totes, 5 és el millor.",
+      "answered": "Ja has respost avui. Ho pots corregir si cal.",
+      "update": "Actualitzar",
+      "areaHint": "On ho notes: bessó dret, adductor…",
+      "noteHint": "Opcional. Ho llegeix el cos tècnic."
+    },
+    "recent": {
+      "title": "Els teus darrers dies",
+      "description": "Suma de les cinc respostes, de 5 a 25. La teva mitjana: {mean}.",
+      "summary": "Benestar dels darrers {days} dies, amb una mitjana de {mean} sobre 25"
+    }
+  },
+  "familyTests": {
+    "title": "Tests físics",
+    "description": "La seva evolució en cada prova. Només es compara amb si mateix.",
+    "lowerBetter": "Com menys, millor",
+    "higherBetter": "Com més, millor",
+    "summary": "{test}: {count} mesures, l'última {value}"
+  },
+  "methodology": {
+    "back": "Secció {section}",
+    "title": "Metodologia",
+    "description": "Si els equips planifiquen, tanquen les sessions i reparteixen els continguts com marca la secció.",
+    "configure": "Ajustos d'entrenament",
+    "target": "(objectiu {value} %)",
+    "targets": {
+      "title": "Repartiment objectiu per categoria",
+      "description": "Percentatge de minuts que la secció vol per a cada tipus de contingut.",
+      "empty": "La secció encara no ha fixat un repartiment objectiu.",
+      "emptyConfigure": "Encara sense repartiment objectiu. Fixa'l als ajustos d'entrenament.",
+      "summary": "Repartiment objectiu de continguts de {category}"
+    },
+    "teams": {
+      "title": "Equips",
+      "description": "Des de l'inici de la temporada fins avui.",
+      "empty": "La secció no té equips aquesta temporada.",
+      "summary": "Repartiment dels {minutes} minuts de tasques de {team} per tipus de contingut",
+      "noMinutes": "Encara sense tasques planificades."
+    },
+    "noCategory": "Sense categoria",
+    "noTrainings": "Sense entrenaments",
+    "plannedShare": "{value} % planificat",
+    "metrics": {
+      "trainings": "Entrenaments",
+      "planned": "Amb sessió",
+      "done": "Tancades",
+      "official": "Tasques oficials"
+    }
+  },
+  "trainingConfig": {
+    "back": "Secció {section}",
+    "title": "Ajustos d'entrenament",
+    "description": "Seguiment, recomanacions, metodologia, continguts i setmanes tipus de la secció.",
+    "methodologyLink": "Metodologia",
+    "readOnly": "Pots consultar els ajustos. Per canviar-los cal gestionar la biblioteca d'entrenament.",
+    "saved": "Ajustos desats.",
+    "tracking": {
+      "title": "Seguiment",
+      "description": "Quant es registra a cada sessió. Es pot canviar quan es vulgui.",
+      "levels": {
+        "basic": {
+          "name": "Bàsic",
+          "detail": "Objectiu, tasques i assistència, amb un RPE de grup en tancar. Pensat per a formatives."
+        },
+        "full": {
+          "name": "Complet",
+          "detail": "A més, RPE de cada jugador, benestar diari i tests físics. Per a equips amb preparació física."
+        }
+      },
+      "formative": "Equips formatius",
+      "formativeHint": "En formatives es vigila també el repartiment de minuts de partit.",
+      "formativeAuto": "Segons l'edat de la categoria",
+      "formativeYes": "Sí, tots",
+      "formativeNo": "No"
+    },
+    "thresholds": {
+      "title": "Llindars de les recomanacions",
+      "description": "A partir de quina xifra surt cada avís. L'esport proposa uns valors; la secció els ajusta.",
+      "reset": "Tornar als de l'esport",
+      "resetTitle": "Tornar als llindars de l'esport?",
+      "resetBody": "Es perden els canvis que hagi fet la secció en els llindars.",
+      "hint": "{text} Per defecte: {value}.",
+      "range": "Entre {min} i {max}.",
+      "groups": {
+        "load": "Càrrega",
+        "match": "Partit",
+        "minutes": "Dia després del partit",
+        "players": "Assistència i objectius individuals"
+      },
+      "items": {
+        "weeklyLoadHigh": {
+          "label": "Setmana carregada (vegades la mitjana)",
+          "hint": "Avisa si la càrrega planificada supera en aquest factor la mitjana de les quatre setmanes anteriors."
+        },
+        "weeklyLoadLow": {
+          "label": "Setmana suau (vegades la mitjana)",
+          "hint": "Avisa si la càrrega planificada queda per sota d'aquest factor."
+        },
+        "acwrHigh": {
+          "label": "Relació aguda:crònica alta",
+          "hint": "Avís per jugador per sobre d'aquesta relació. És un avís, no una predicció de lesió."
+        },
+        "acwrLow": {
+          "label": "Relació aguda:crònica baixa",
+          "hint": "Avís per jugador per sota d'aquesta relació."
+        },
+        "finishingDropPoints": {
+          "label": "Baixada de l'encert en el xut (punts)",
+          "hint": "Punts percentuals per sota de la mitjana de la temporada."
+        },
+        "turnoverRatio": {
+          "label": "Augment de pèrdues (vegades la mitjana)",
+          "hint": "1,3 és un 30 % més de pèrdues per partit que la mitjana."
+        },
+        "earlyFoulMinute": {
+          "label": "Límit de faltes aviat (minut)",
+          "hint": "Arribar al límit de faltes abans d'aquest minut de la part."
+        },
+        "lateGoalsShare": {
+          "label": "Gols encaixats al final (%)",
+          "hint": "Proporció de gols en contra als darrers minuts de cada part."
+        },
+        "lateMinutes": {
+          "label": "Final de la part (minuts)",
+          "hint": "Minuts finals de cada part que compten com a final."
+        },
+        "recoveryMinutes": {
+          "label": "Recuperació des de (minuts jugats)",
+          "hint": "L'endemà, recuperació per a qui va jugar aquests minuts o més."
+        },
+        "compensatoryMinutes": {
+          "label": "Compensatori fins a (minuts jugats)",
+          "hint": "Compensatori per a qui va jugar menys d'aquests minuts."
+        },
+        "attendanceMin": {
+          "label": "Assistència mínima (%)",
+          "hint": "En les darreres quatre setmanes."
+        },
+        "focusMinutes": {
+          "label": "Minuts mínims de l'objectiu individual",
+          "hint": "Minuts dels continguts de l'objectiu de cada jugador en tres setmanes."
+        }
+      }
+    },
+    "methodology": {
+      "title": "Repartiment objectiu de continguts",
+      "description": "Per categoria, el percentatge de minuts de cada tipus de contingut. Ho compara la pàgina de metodologia.",
+      "noCategories": "La secció no té categories. Crea-les a la secció per fixar un repartiment per edat.",
+      "noTarget": "Sense objectiu",
+      "sum": "Suma {value} %",
+      "summary": "Repartiment objectiu de {category}"
+    },
+    "contents": {
+      "title": "Continguts",
+      "description": "El que s'entrena. Cada contingut pot assenyalar les accions del partit que el mesuren: així les recomanacions creuen partits i entrenaments.",
+      "new": "Afegir contingut",
+      "empty": "Encara sense continguts.",
+      "table": {
+        "name": "Contingut",
+        "kind": "Tipus",
+        "related": "El mesuren"
+      },
+      "archivedTitle": "Arxivats",
+      "restore": "Recuperar",
+      "restored": "{name} torna al catàleg.",
+      "removed": "{name} tret.",
+      "archived": "{name} ja es feia servir: queda arxivat.",
+      "confirmRemoveTitle": "Treure {name}?",
+      "confirmRemoveBody": "Si ja és en tasques o sessions, s'arxiva i deixa de proposar-se."
+    },
+    "contentSheet": {
+      "newTitle": "Nou contingut",
+      "editTitle": "Editar {name}",
+      "description": "Apareix a la biblioteca, a les sessions i a les recomanacions.",
+      "name": "Nom",
+      "nameHint": "Curt i reconeixible: «Sortida de pressió».",
+      "codeHint": "Clau: {code}",
+      "kind": "Tipus",
+      "order": "Ordre",
+      "orderHint": "Els números baixos van primer.",
+      "related": "Accions del partit que el mesuren",
+      "relatedHint": "Fins a 12. Si baixen als partits, la recomanació proposa aquest contingut.",
+      "relatedCodesHint": "Claus de les accions separades per comes: goal, turnover…",
+      "submit": "Afegir",
+      "created": "{name} afegit.",
+      "saved": "Contingut desat.",
+      "codeTaken": "Ja hi ha un contingut amb aquest nom a la secció."
+    },
+    "templates": {
+      "title": "Setmanes tipus",
+      "description": "Quina sessió toca cada dia respecte al partit. S'apliquen des de la setmana de cada equip.",
+      "new": "Nova setmana tipus",
+      "empty": "Sense setmanes tipus",
+      "emptyHint": "Una setmana d'un partit i una altra de dos ho cobreixen gairebé tot.",
+      "table": {
+        "name": "Nom",
+        "days": "Dies",
+        "minutes": "Minuts"
+      },
+      "removed": "{name} treta.",
+      "confirmRemoveTitle": "Treure {name}?",
+      "confirmRemoveBody": "Les setmanes ja planificades amb ella no canvien."
+    },
+    "templateSheet": {
+      "newTitle": "Nova setmana tipus",
+      "editTitle": "Editar {name}",
+      "description": "Cada dia, respecte al partit: MD és el dia del partit, MD-1 la vigília, MD+1 l'endemà.",
+      "name": "Nom",
+      "nameHint": "Per exemple, «Setmana d'un partit».",
+      "day": "Dia",
+      "dayRepeated": "Aquest dia està repetit.",
+      "removeDay": "Treure {day}",
+      "objective": "Objectiu de la sessió",
+      "minutes": "Minuts",
+      "rpe": "RPE objectiu",
+      "time": "Hora",
+      "addDay": "Afegir dia",
+      "timeHint": "Si aquell dia l'equip no té entrenament a l'agenda, en aplicar la setmana es crea a aquesta hora (sense hora, a les 19:00).",
+      "submit": "Crear",
+      "created": "{name} creada.",
+      "saved": "Setmana tipus desada.",
+      "nameTaken": "Ja hi ha una setmana tipus amb aquest nom."
+    }
   }
 }

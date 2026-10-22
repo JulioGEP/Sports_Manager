@@ -708,9 +708,16 @@ describe("alcance y visibilidad por rol", () => {
   });
 
   it("las excepciones de una persona mandan sobre su rol en los dos sentidos; la administración y la familia no tienen", async () => {
-    const coachByRole = ["sections", "players", "agenda", "facilities", "challenges"];
+    const coachByRole = ["sections", "players", "agenda", "facilities", "challenges", "training"];
     // Ve socios (su rol no) y deja de ver la agenda y las instalaciones (su rol sí).
-    const wanted = ["sections", "players", "challenges", "club_members", "club_members"];
+    const wanted = [
+      "sections",
+      "players",
+      "challenges",
+      "training",
+      "club_members",
+      "club_members",
+    ];
     const put = (user: Seeded, visible: string[], cookie = as(adminA), host = A) =>
       request("PUT", `/api/org/access/members/${user.id}`, host, { cookie, body: { visible } });
 

@@ -295,6 +295,9 @@ export function CommandPalette({
       { key: "invite", perm: "org.members.invite", to: `${paths.staff}?invite=1` },
       { key: "newChallenge", perm: "org.challenges.manage", to: `${paths.challenges}?new=1` },
       { key: "newSeason", perm: "org.settings.write", to: `${paths.settings}?tab=seasons&new=1` },
+      // Entrenamiento (ADR 0039): la biblioteca y la enfermería no van en la barra.
+      { key: "drills", perm: "org.training.read", to: paths.drills },
+      { key: "infirmary", perm: "org.availability.write", to: paths.infirmary },
     ];
     for (const a of actions) {
       if (has(a.perm))

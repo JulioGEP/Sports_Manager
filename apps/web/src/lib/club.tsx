@@ -244,4 +244,27 @@ export const clubPaths = (slug: string) => ({
   challenges: `/${slug}/challenges`,
   challenge: (id: string) => `/${slug}/challenges/${id}`,
   invitation: (token: string) => `/${slug}/invitations/${token}`,
+  /**
+   * Entrenamiento (ADR 0039): la portada con los equipos, la semana de cada equipo con su
+   * temporada, histórico, carga y tests, la sesión con su modo pista e impresión, la biblioteca,
+   * el rendimiento del jugador, la enfermería, los ajustes y la metodología de la sección, y el
+   * bienestar del deportista adulto.
+   */
+  training: `/${slug}/training`,
+  teamTraining: (id: string) => `/${slug}/teams/${id}/training`,
+  teamTrainingSeason: (id: string) => `/${slug}/teams/${id}/training/season`,
+  teamTrainingHistory: (id: string) => `/${slug}/teams/${id}/training/history`,
+  teamLoad: (id: string) => `/${slug}/teams/${id}/training/load`,
+  teamTests: (id: string) => `/${slug}/teams/${id}/training/tests`,
+  session: (id: string) => `/${slug}/sessions/${id}`,
+  sessionCourt: (id: string) => `/${slug}/sessions/${id}/court`,
+  sessionPrint: (id: string) => `/${slug}/sessions/${id}/print`,
+  drills: `/${slug}/drills`,
+  drill: (id: string) => `/${slug}/drills/${id}`,
+  newDrill: `/${slug}/drills/new`,
+  playerPerformance: (id: string) => `/${slug}/players/${id}/performance`,
+  infirmary: `/${slug}/infirmary`,
+  sectionTrainingConfig: (id: string) => `/${slug}/sections/${id}/training-config`,
+  sectionMethodology: (id: string) => `/${slug}/sections/${id}/methodology`,
+  athlete: `/${slug}/me`,
 });
