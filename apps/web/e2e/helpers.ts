@@ -151,6 +151,43 @@ export async function expectLegibleButtons(page: Page) {
   }
 }
 
+/**
+ * Confirmación abierta (DESIGN.md 9.12). Sus botones se leen sobre el fondo que de verdad tienen
+ * detrás (un botón sin fondo propio deja ver el del diálogo) y, en Precisa, es un diálogo centrado
+ * y estrecho con los botones en una fila, no un panel a todo el ancho con botones de lado a lado.
+ */
+export async function expectConfirmDialog(page: Page) {
+  const dialog = page.getByRole("dialog");
+  await expect(dialog).toBeVisible();
+  const buttons = await dialog.getByRole("button").all();
+  for (const button of buttons) {
+    const { color, background, text } = await button.evaluate((el) => {
+      let node: Element | null = el;
+      let background = "rgba(0, 0, 0, 0)";
+      while (node && background === "rgba(0, 0, 0, 0)") {
+        background = getComputedStyle(node).backgroundColor;
+        node = node.parentElement;
+      }
+      return {
+        color: getComputedStyle(el).color,
+        background,
+        text: (el.textContent ?? "").trim(),
+      };
+    });
+    expect(color, `botón "${text}" del diálogo sin contraste con su fondo`).not.toBe(background);
+  }
+
+  const shape = await page.evaluate(() => document.documentElement.dataset["shape"]);
+  if (shape !== "precisa") return;
+  const viewport = page.viewportSize()!;
+  const box = (await dialog.boundingBox())!;
+  expect(box.width, "el diálogo de confirmación ocupa todo el ancho").toBeLessThan(
+    viewport.width / 2,
+  );
+  const tops = await Promise.all(buttons.map(async (b) => (await b.boundingBox())!.y));
+  expect(new Set(tops).size, "los botones del diálogo no van en una fila").toBe(1);
+}
+
 /** Parte de la URL del enlace de invitación que muestra la interfaz en modo pruebas. */
 export async function readInvitationLink(page: Page): Promise<string> {
   const code = page.locator("code", { hasText: "/invitations/" }).first();

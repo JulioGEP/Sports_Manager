@@ -1,6 +1,14 @@
 import { expect, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
-import { CLUB, expectLegibleButtons, login, shot, signOut, suffix } from "./helpers";
+import {
+  CLUB,
+  expectConfirmDialog,
+  expectLegibleButtons,
+  login,
+  shot,
+  signOut,
+  suffix,
+} from "./helpers";
 
 /**
  * Partido en directo (Bloque 20, ADR 0034; consola a pantalla completa, ADR 0037): configuración
@@ -188,6 +196,8 @@ test.describe("partido en directo", () => {
     // Acabar, desde el menú del partido: confirmación y a las estadísticas.
     await page.getByRole("button", { name: "Más opciones" }).click();
     await page.getByRole("menuitem", { name: "Acabar el partido" }).click();
+    await expectConfirmDialog(page);
+    await shot(page, "105e-partido-acabar-confirmacion", info.project.name);
     await page.getByRole("dialog").getByRole("button", { name: "Acabar el partido" }).click();
     await expect(
       page.getByText("Partido acabado. Las estadísticas ya están listas."),

@@ -10,6 +10,13 @@
 @import "tailwindcss";
 @import "../src/theme/tokens.css";
 
+/*
+ * Los componentes del paquete también usan clases. La app solo explora su propia carpeta y este
+ * paquete le llega por node_modules, que Tailwind ignora: sin esta línea, las clases que solo
+ * aparecen aquí (botón rojo de confirmar, diálogo centrado en Precisa…) no llegan al CSS.
+ */
+@source "../src";
+
 /* Modo oscuro por atributo, no por preferencia del sistema: lo decide la app. */
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
