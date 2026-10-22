@@ -58,11 +58,20 @@ test.describe("espacio del club", () => {
     await exclusionSheet
       .getByLabel("Persona", { exact: true })
       .selectOption({ label: "Carla Vidal · Entrenador" });
-    await exclusionSheet.getByRole("checkbox", { name: "No ve Instalaciones" }).check();
+    // Lo que trae su rol: el alcance, y lo que su rol ya no ve, marcado y bloqueado.
+    await expect(exclusionSheet.getByText("Lo que trae su rol: Entrenador")).toBeVisible();
+    await expect(exclusionSheet.getByText("Alcance: Sus equipos.")).toBeVisible();
+    const hiddenByRole = exclusionSheet.getByRole("checkbox", { name: "No ve Socios" });
+    await expect(hiddenByRole).toBeChecked();
+    await expect(hiddenByRole).toBeDisabled();
+    await expect(exclusionSheet.getByText("Por su rol", { exact: true })).toHaveCount(4);
+    const facilities = exclusionSheet.getByRole("checkbox", { name: "No ve Instalaciones" });
+    await expect(facilities).toBeEnabled();
+    await facilities.check();
     await shot(page, "14b-personal-exclusion", info.project.name);
     await exclusionSheet.getByRole("button", { name: "Guardar" }).click();
     await expect(page.getByText("Exclusiones de Carla Vidal guardadas.")).toBeVisible();
-    await expect(exclusions.getByText("Carla Vidal")).toBeVisible();
+    await expect(exclusions.getByText("Carla Vidal · Entrenador")).toBeVisible();
     await expect(exclusions.getByText("Sin Instalaciones")).toBeVisible();
     await exclusions.getByRole("button", { name: "Quitar" }).click();
     await page.getByRole("dialog").getByRole("button", { name: "Quitar" }).click();
