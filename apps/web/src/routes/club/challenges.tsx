@@ -1,27 +1,21 @@
 import {
   CHALLENGE_AREAS,
-  CHALLENGE_DESCRIPTION_MAX,
-  CHALLENGE_NAME_MAX,
   CHALLENGE_NOTE_MAX,
-  ChallengeResponseSchema,
   ChallengesResponseSchema,
   FamilyChallengesResponseSchema,
   FamilyResponseSchema,
   RATING_MAX,
-  SeasonsResponseSchema,
   SUBMISSION_MAX_QUANTITY,
   playerDisplayName,
   pointsFor,
   type ChallengeManageScope,
-  type ChallengeStatus,
   type ChallengeSubmission,
   type ChallengeSummary,
   type ChallengeTask,
-  type SubmissionStatus,
 } from "@sportsmanager/shared";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState, type FormEvent } from "react";
-import { useNavigate, useSearchParams } from "react-router";
+import { Navigate, useNavigate, useParams, useSearchParams } from "react-router";
 import { apiFetch, errorKey } from "@/lib/api";
 import { clubPaths, useReadyClub } from "@/lib/club";
 import { useDates } from "@/lib/dates";
@@ -44,41 +38,23 @@ import {
   StatusChip,
   Tabs,
   useToast,
-  type StatusKind,
 } from "@/ui";
-import {
-  ScopeFields,
-  resolveScope,
-  scopeIsComplete,
-  useScopeLabel,
-  useScopeOptions,
-  type ScopeState,
-} from "./challenge-scope";
-
-export const challengeKind: Record<ChallengeStatus, StatusKind> = {
-  draft: "warning",
-  active: "success",
-  closed: "neutral",
-};
-
-export const submissionKind: Record<SubmissionStatus, StatusKind> = {
-  submitted: "info",
-  approved: "success",
-  rejected: "neutral",
-};
+import { NewChallengeSheet } from "./challenge-new-sheet";
+import { submissionKind, challengeKind, useScopeLabel } from "./challenge-scope";
 
 /**
- * Retos por puntos (Bloque 13, ADR 0030; ámbito por sección o equipo, ADR 0032). El personal ve
- * la lista de retos del club agrupados por sección; una familia, los retos activos de cada uno de
- * los suyos (los de su sección y los de su equipo), con sus puntos y sus registros. Nunca una
- * clasificación.
+ * Retos por puntos (Bloque 13, ADR 0030; ámbito por sección o equipo, ADR 0032). El reto vive en
+ * la ficha de cada equipo y de cada sección; esta vista de conjunto, sin entrada en la barra, es a
+ * donde llevan las alertas de "por validar" del inicio. Una familia llega a los retos desde la
+ * ficha de cada uno de los suyos. Nunca una clasificación para las familias.
  */
 export function ChallengesPage() {
-  const { org } = useReadyClub();
+  const { org, slug } = useReadyClub();
   const errors = useT("errors");
   const permissions = org.actor.permissions;
   if (permissions.includes("org.challenges.read")) return <StaffChallengesPage />;
-  if (permissions.includes("org.family.read")) return <FamilyChallengesPage />;
+  if (permissions.includes("org.family.read"))
+    return <Navigate to={clubPaths(slug).family} replace />;
   return <Alert kind="error">{errors("forbidden")}</Alert>;
 }
 
@@ -141,7 +117,10 @@ function StaffChallengesPage() {
         description={t("description")}
         actions={
           canManage ? (
-            <Button action="add" onClick={() => setCreating(true)}>
+            <Button
+              icon={<Icon.Plus size={20} aria-hidden="true" />}
+              onClick={() => setCreating(true)}
+            >
               {t("new")}
             </Button>
           ) : null
@@ -177,12 +156,7 @@ function StaffChallengesPage() {
               description={challenges.data ? t("emptyHint") : undefined}
               action={
                 canManage && challenges.data ? (
-                  <Button
-                    action="add"
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => setCreating(true)}
-                  >
+                  <Button variant="secondary" size="sm" onClick={() => setCreating(true)}>
                     {t("new")}
                   </Button>
                 ) : null
@@ -256,7 +230,7 @@ function StaffChallengesPage() {
             ),
           })}
           actions={(ch) => (
-            <ButtonLink action="open" to={paths.challenge(ch.id)} variant="secondary" size="sm">
+            <ButtonLink to={paths.challenge(ch.id)} variant="secondary" size="sm">
               {c("open")}
             </ButtonLink>
           )}
@@ -277,229 +251,10 @@ function StaffChallengesPage() {
   );
 }
 
-function NewChallengeSheet({
-  open,
-  manage,
-  onClose,
-  onCreated,
-}: {
-  open: boolean;
-  manage: ChallengeManageScope;
-  onClose: () => void;
-  onCreated: (id: string) => void;
-}) {
-  const t = useT("challenges.sheet");
-  const c = useT("common");
-  const errors = useT("errors");
-  const toast = useToast();
-  const { slug } = useReadyClub();
-  const seasons = useQuery({
-    queryKey: ["org", slug, "seasons"],
-    queryFn: () => apiFetch("/api/org/seasons", { schema: SeasonsResponseSchema }),
-    enabled: open,
-  });
-  const currentSeason = seasons.data?.seasons.find((s) => s.isCurrent) ?? null;
-  const scopeOptions = useScopeOptions(manage, open);
-  const [scope, setScope] = useState<ScopeState>({ sectionId: "", kind: "section", teamId: "" });
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [seasonId, setSeasonId] = useState<string | null>(null);
-  const [startsOn, setStartsOn] = useState("");
-  const [endsOn, setEndsOn] = useState("");
-  const [minPoints, setMinPoints] = useState("50");
-  const [targetPoints, setTargetPoints] = useState("150");
-  const [withDefaultTasks, setWithDefaultTasks] = useState(true);
-  const [activate, setActivate] = useState(true);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const season = seasonId ?? currentSeason?.id ?? "";
-
-  async function submit(e: FormEvent) {
-    e.preventDefault();
-    setError(null);
-    if (Number(targetPoints) < Number(minPoints)) {
-      setError(t("pointsOrder"));
-      return;
-    }
-    const resolved = resolveScope(scopeOptions, scope);
-    if (!scopeIsComplete(scopeOptions, scope)) return;
-    setBusy(true);
-    try {
-      const created = await apiFetch("/api/org/challenges", {
-        method: "POST",
-        body: {
-          name,
-          description: description.trim() || null,
-          sectionId: resolved.sectionId,
-          teamId: resolved.teamId,
-          seasonId: season || null,
-          startsOn: startsOn || null,
-          endsOn: endsOn || null,
-          minPoints: Number(minPoints),
-          targetPoints: Number(targetPoints),
-          status: activate ? "active" : "draft",
-          withDefaultTasks,
-        },
-        schema: ChallengeResponseSchema,
-      });
-      toast("success", t("created", { name: created.challenge.name }));
-      setName("");
-      setDescription("");
-      onClose();
-      onCreated(created.challenge.id);
-    } catch (err) {
-      setError(errors(errorKey(err)));
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  return (
-    <Sheet
-      open={open}
-      onClose={onClose}
-      closeLabel={c("close")}
-      title={t("title")}
-      description={t("description")}
-      footer={
-        <>
-          <Button variant="secondary" onClick={onClose}>
-            {c("cancel")}
-          </Button>
-          <Button
-            action="add"
-            type="submit"
-            form="challenge-form"
-            loading={busy}
-            disabled={!scopeIsComplete(scopeOptions, scope)}
-          >
-            {t("submit")}
-          </Button>
-        </>
-      }
-    >
-      <form id="challenge-form" className="flex flex-col gap-4" onSubmit={(e) => void submit(e)}>
-        <ScopeFields options={scopeOptions} state={scope} onChange={setScope} />
-        <Field label={t("name")} hint={t("nameHint")}>
-          {(id) => (
-            <Input
-              id={id}
-              required
-              maxLength={CHALLENGE_NAME_MAX}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          )}
-        </Field>
-        <Field label={t("descriptionLabel")}>
-          {(id) => (
-            <Input
-              id={id}
-              maxLength={CHALLENGE_DESCRIPTION_MAX}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          )}
-        </Field>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label={t("startsOn")}>
-            {(id) => (
-              <Input
-                id={id}
-                type="date"
-                value={startsOn}
-                onChange={(e) => setStartsOn(e.target.value)}
-              />
-            )}
-          </Field>
-          <Field label={t("endsOn")}>
-            {(id) => (
-              <Input
-                id={id}
-                type="date"
-                value={endsOn}
-                onChange={(e) => setEndsOn(e.target.value)}
-              />
-            )}
-          </Field>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label={t("minPoints")} hint={t("minPointsHint")}>
-            {(id) => (
-              <Input
-                id={id}
-                type="number"
-                inputMode="numeric"
-                min={0}
-                required
-                className="font-mono"
-                value={minPoints}
-                onChange={(e) => setMinPoints(e.target.value)}
-              />
-            )}
-          </Field>
-          <Field label={t("targetPoints")} hint={t("targetPointsHint")}>
-            {(id) => (
-              <Input
-                id={id}
-                type="number"
-                inputMode="numeric"
-                min={0}
-                required
-                className="font-mono"
-                value={targetPoints}
-                onChange={(e) => setTargetPoints(e.target.value)}
-              />
-            )}
-          </Field>
-        </div>
-        {seasons.data && seasons.data.seasons.length > 0 ? (
-          <Field label={t("season")}>
-            {(id) => (
-              <Select id={id} value={season} onChange={(e) => setSeasonId(e.target.value)}>
-                <option value="">{t("noSeason")}</option>
-                {seasons.data.seasons.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
-              </Select>
-            )}
-          </Field>
-        ) : null}
-        <label className="flex min-h-12 items-center gap-3 text-body text-ink">
-          <input
-            type="checkbox"
-            className="size-5 accent-[var(--club-fill)]"
-            checked={withDefaultTasks}
-            onChange={(e) => setWithDefaultTasks(e.target.checked)}
-          />
-          <span className="flex flex-col">
-            <span>{t("withDefaultTasks")}</span>
-            <span className="text-secondary text-muted">{t("withDefaultTasksHint")}</span>
-          </span>
-        </label>
-        <label className="flex min-h-12 items-center gap-3 text-body text-ink">
-          <input
-            type="checkbox"
-            className="size-5 accent-[var(--club-fill)]"
-            checked={activate}
-            onChange={(e) => setActivate(e.target.checked)}
-          />
-          <span className="flex flex-col">
-            <span>{t("activate")}</span>
-            <span className="text-secondary text-muted">{t("activateHint")}</span>
-          </span>
-        </label>
-        {error ? <Alert kind="error">{error}</Alert> : null}
-      </form>
-    </Sheet>
-  );
-}
-
 // --- Familia ---
 
-function FamilyChallengesPage() {
+/** Los retos de uno de los suyos, dentro de su ficha (`/family/:id/challenges`). */
+export function FamilyPlayerChallengesPage() {
   const t = useT("familyChallenge");
   const tc = useT("challenges");
   const c = useT("common");
@@ -508,7 +263,9 @@ function FamilyChallengesPage() {
   const toast = useToast();
   const client = useQueryClient();
   const [params, setParams] = useSearchParams();
+  const { id: playerId = "" } = useParams();
   const { org, slug } = useReadyClub();
+  const paths = clubPaths(slug);
   const scopeLabel = useScopeLabel();
   const canWrite = org.actor.permissions.includes("org.family.write");
 
@@ -517,8 +274,6 @@ function FamilyChallengesPage() {
     queryFn: () => apiFetch("/api/org/family", { schema: FamilyResponseSchema }),
   });
   const players = family.data?.players ?? [];
-  const requested = params.get("player");
-  const playerId = players.some((p) => p.id === requested) ? requested! : (players[0]?.id ?? "");
   const player = players.find((p) => p.id === playerId) ?? null;
 
   const view = useQuery({
@@ -563,25 +318,18 @@ function FamilyChallengesPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <PageHeader title={t("title")} description={t("description")} />
+      <div>
+        <ButtonLink action="back" to={paths.familyPlayer(playerId)} variant="tertiary" size="sm">
+          {player ? t("back", { name: playerDisplayName(player) }) : t("backShort")}
+        </ButtonLink>
+      </div>
+      <PageHeader
+        eyebrow={player ? playerDisplayName(player) : undefined}
+        title={t("title")}
+        description={t("description")}
+      />
       {family.isError ? <Alert kind="error">{errors(errorKey(family.error))}</Alert> : null}
-      {family.data && players.length === 0 ? (
-        <Card>
-          <EmptyState
-            icon={<Icon.HandHeart weight="duotone" />}
-            title={t("noPlayers")}
-            description={t("noPlayersHint")}
-          />
-        </Card>
-      ) : null}
-      {players.length > 1 ? (
-        <Tabs<string>
-          label={t("playerTabs")}
-          selected={playerId}
-          onChange={(id) => setParams({ player: id }, { replace: true })}
-          items={players.map((p) => ({ key: p.id, label: playerDisplayName(p) }))}
-        />
-      ) : null}
+      {family.data && !player ? <Alert kind="error">{errors("not_found")}</Alert> : null}
       {view.isError ? <Alert kind="error">{errors(errorKey(view.error))}</Alert> : null}
       {player && view.data && !challenge ? (
         <Card>
@@ -596,7 +344,7 @@ function FamilyChallengesPage() {
         <Tabs<string>
           label={t("challengeTabs", { name: playerDisplayName(player) })}
           selected={challengeId}
-          onChange={(id) => setParams({ player: playerId, challenge: id }, { replace: true })}
+          onChange={(id) => setParams({ challenge: id }, { replace: true })}
           items={views.map((v) => ({
             key: v.challenge.id,
             label: v.challenge.team ? v.challenge.team.name : v.challenge.section.name,
@@ -625,7 +373,10 @@ function FamilyChallengesPage() {
             }
             actions={
               canWrite ? (
-                <Button action="add" onClick={() => setRegistering(true)}>
+                <Button
+                  icon={<Icon.Plus size={20} aria-hidden="true" />}
+                  onClick={() => setRegistering(true)}
+                >
                   {t("register")}
                 </Button>
               ) : null
@@ -693,12 +444,7 @@ function FamilyChallengesPage() {
                   title={t("noSubmissions")}
                   action={
                     canWrite ? (
-                      <Button
-                        action="add"
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => setRegistering(true)}
-                      >
+                      <Button variant="secondary" size="sm" onClick={() => setRegistering(true)}>
                         {t("register")}
                       </Button>
                     ) : null
@@ -723,12 +469,7 @@ function FamilyChallengesPage() {
                         {tc(`submissionStatus.${s.status}`)}
                       </StatusChip>
                       {canWrite && s.status === "submitted" ? (
-                        <Button
-                          action="delete"
-                          variant="danger"
-                          size="sm"
-                          onClick={() => setRemoving(s)}
-                        >
+                        <Button variant="tertiary" size="sm" onClick={() => setRemoving(s)}>
                           {t("withdraw")}
                         </Button>
                       ) : null}
@@ -778,7 +519,6 @@ function FamilyChallengesPage() {
             title={t("confirmWithdrawTitle", { task: removing?.task.name ?? "" })}
             body={t("confirmWithdrawBody")}
             confirmLabel={t("withdraw")}
-            confirmAction="delete"
             cancelLabel={c("cancel")}
             onConfirm={() => removing && void remove(removing)}
             onCancel={() => setRemoving(null)}
@@ -865,7 +605,7 @@ function RegisterSheet({
           <Button variant="secondary" onClick={onClose}>
             {c("cancel")}
           </Button>
-          <Button action="add" type="submit" form="register-form" loading={busy} disabled={!task}>
+          <Button type="submit" form="register-form" loading={busy} disabled={!task}>
             {t("submit", { points: preview })}
           </Button>
         </>

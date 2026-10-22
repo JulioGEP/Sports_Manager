@@ -30,7 +30,6 @@
     "clubNotFound": "Este club no existe o no está activo.",
     "players": "Deportistas",
     "family": "Mi familia",
-    "challenges": "Reto",
     "sections": "Secciones",
     "clubMembers": "Socios",
     "staff": "Personal",
@@ -1439,15 +1438,24 @@
       "noOwnTeams": "No llevas ningún equipo esta temporada, así que no puedes crear retos.",
       "noSections": "Crea antes una sección: los retos son de una sección o de un equipo.",
       "filter": "Sección",
-      "filterAll": "Todas las secciones"
+      "filterAll": "Todas las secciones",
+      "locked": "Ámbito",
+      "lockedTeam": "Reto del equipo {team} ({section}).",
+      "lockedSection": "Reto de la sección {section}: para toda la sección o para uno de sus equipos."
     }
+  },
+  "challengesCard": {
+    "title": "Reto",
+    "descriptionTeam": "El reto de este equipo y el de toda su sección: el que está en marcha, los borradores y el histórico.",
+    "descriptionSection": "Los retos de toda la sección y los de cada uno de sus equipos.",
+    "new": "Nuevo reto",
+    "emptyTeam": "Este equipo todavía no tiene ningún reto.",
+    "emptySection": "Esta sección todavía no tiene ningún reto.",
+    "emptyHint": "Crea el primero con el catálogo de ejemplo y actívalo cuando esté listo."
   },
   "familyChallenge": {
     "title": "Reto",
     "description": "Registra la actividad de tus jugadores y sigue sus puntos. Solo ves los tuyos.",
-    "noPlayers": "Todavía no hay ningún jugador vinculado a tu cuenta.",
-    "noPlayersHint": "Pide a quien administra el club que te vincule desde la ficha del jugador.",
-    "playerTabs": "Jugadores de la familia",
     "noChallenge": "Ahora mismo no hay ningún reto activo.",
     "noChallengeHint": "Cuando el club active uno para su sección o su equipo, lo verás aquí.",
     "register": "Registrar actividad",
@@ -1482,10 +1490,11 @@
       "capHint": "Esta prueba tiene un tope de {points} puntos en todo el reto.",
       "saved": "Actividad registrada. El club la validará."
     },
-    "challengeTabs": "Retos de {name}"
+    "challengeTabs": "Retos de {name}",
+    "back": "Ficha de {name}",
+    "backShort": "Ficha"
   },
   "challenge": {
-    "back": "Retos",
     "points": "Mínimo {min} puntos · objetivo {target}",
     "edit": "Editar",
     "activate": "Activar",
@@ -1568,7 +1577,8 @@
         "submit": "Rechazar",
         "note": "Motivo",
         "noteHint": "Opcional, en lenguaje llano."
-      }
+      },
+      "teamFocus": "Seguimiento del equipo {team}: solo sus jugadores."
     },
     "standings": {
       "title": "Participación",
@@ -1583,8 +1593,12 @@
         "approved": "Aprobados",
         "pending": "Por validar",
         "goal": "Meta"
-      }
-    }
+      },
+      "teamFocus": "Seguimiento del equipo {team}: solo sus jugadores."
+    },
+    "backTeam": "Equipo {team}",
+    "backTeamShort": "Equipo",
+    "backSection": "Sección {section}"
   },
   "viewAs": {
     "title": "Ver el club como…",
@@ -1785,6 +1799,7 @@
         "submit": "Crear grupo"
       }
     },
+    "tabChallenges": "Retos",
     "matchConfig": "Partido en directo"
   },
   "sectionKinds": {

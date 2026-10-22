@@ -2,14 +2,29 @@ import {
   SectionsResponseSchema,
   TeamsResponseSchema,
   type ChallengeManageScope,
+  type ChallengeStatus,
   type ChallengeSummary,
+  type SubmissionStatus,
 } from "@sportsmanager/shared";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { apiFetch } from "@/lib/api";
 import { useReadyClub } from "@/lib/club";
+import { useDates } from "@/lib/dates";
 import { useT } from "@/lib/intl";
-import { Field, Select } from "@/ui";
+import { Field, Select, type StatusKind } from "@/ui";
+
+export const challengeKind: Record<ChallengeStatus, StatusKind> = {
+  draft: "warning",
+  active: "success",
+  closed: "neutral",
+};
+
+export const submissionKind: Record<SubmissionStatus, StatusKind> = {
+  submitted: "info",
+  approved: "success",
+  rejected: "neutral",
+};
 
 /**
  * Ámbito de un reto (ADR 0032): una sección y, si se quiere, un solo equipo de esa sección.
@@ -101,13 +116,24 @@ export function ScopeFields({
   options,
   state,
   onChange,
+  lock,
 }: {
   options: ScopeOptions;
   state: ScopeState;
   onChange: (next: ScopeState) => void;
+  /** Ámbito fijado por la pantalla que abre la hoja: solo el equipo, o la sección con el alcance a elegir. */
+  lock?: { kind: "team" | "section"; label: string } | undefined;
 }) {
   const t = useT("challenges.scope");
   const resolved = resolveScope(options, state);
+  if (lock?.kind === "team") {
+    return (
+      <div className="flex flex-col gap-1">
+        <span className="text-label uppercase tracking-wide text-muted">{t("locked")}</span>
+        <span className="text-body text-ink">{lock.label}</span>
+      </div>
+    );
+  }
   if (!options.loading && options.sections.length === 0) {
     return (
       <p className="text-secondary text-muted">
@@ -117,12 +143,14 @@ export function ScopeFields({
   }
   return (
     <>
+      {lock ? <p className="text-secondary text-muted">{lock.label}</p> : null}
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label={t("section")}>
           {(id) => (
             <Select
               id={id}
               value={resolved.sectionId}
+              disabled={lock !== undefined}
               onChange={(e) => onChange({ ...state, sectionId: e.target.value, teamId: "" })}
             >
               {options.sections.map((s) => (
@@ -169,6 +197,20 @@ export function ScopeFields({
       ) : null}
     </>
   );
+}
+
+/** "desde el 1 oct 2026", "1 oct – 20 dic 2026" o "Sin fechas". */
+export function useChallengePeriod() {
+  const tc = useT("challenges");
+  const dates = useDates();
+  return (ch: Pick<ChallengeSummary, "startsOn" | "endsOn">) =>
+    ch.startsOn && ch.endsOn
+      ? dates.range(ch.startsOn, ch.endsOn)
+      : ch.startsOn
+        ? tc("from", { date: dates.day(ch.startsOn) })
+        : ch.endsOn
+          ? tc("until", { date: dates.day(ch.endsOn) })
+          : tc("noDates");
 }
 
 /** "Fútbol sala · Alevín A" o "Fútbol sala · toda la sección", para listas y cabeceras. */

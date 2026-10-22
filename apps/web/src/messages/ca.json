@@ -30,7 +30,6 @@
     "clubNotFound": "Aquest club no existeix o no està actiu.",
     "players": "Esportistes",
     "family": "La meva família",
-    "challenges": "Repte",
     "sections": "Seccions",
     "clubMembers": "Socis",
     "staff": "Personal",
@@ -1439,15 +1438,24 @@
       "noOwnTeams": "No portes cap equip aquesta temporada, així que no pots crear reptes.",
       "noSections": "Crea abans una secció: els reptes són d'una secció o d'un equip.",
       "filter": "Secció",
-      "filterAll": "Totes les seccions"
+      "filterAll": "Totes les seccions",
+      "locked": "Àmbit",
+      "lockedTeam": "Repte de l'equip {team} ({section}).",
+      "lockedSection": "Repte de la secció {section}: per a tota la secció o per a un dels seus equips."
     }
+  },
+  "challengesCard": {
+    "title": "Repte",
+    "descriptionTeam": "El repte d'aquest equip i el de tota la seva secció: el que està en marxa, els esborranys i l'històric.",
+    "descriptionSection": "Els reptes de tota la secció i els de cadascun dels seus equips.",
+    "new": "Nou repte",
+    "emptyTeam": "Aquest equip encara no té cap repte.",
+    "emptySection": "Aquesta secció encara no té cap repte.",
+    "emptyHint": "Crea el primer amb el catàleg d'exemple i activa'l quan estigui a punt."
   },
   "familyChallenge": {
     "title": "Repte",
     "description": "Registra l'activitat dels teus jugadors i segueix els seus punts. Només veus els teus.",
-    "noPlayers": "Encara no hi ha cap jugador vinculat al teu compte.",
-    "noPlayersHint": "Demana a qui administra el club que et vinculi des de la fitxa del jugador.",
-    "playerTabs": "Jugadors de la família",
     "noChallenge": "Ara mateix no hi ha cap repte actiu.",
     "noChallengeHint": "Quan el club n'activi un per a la seva secció o el seu equip, el veuràs aquí.",
     "register": "Registrar activitat",
@@ -1482,10 +1490,11 @@
       "capHint": "Aquesta prova té un topall de {points} punts en tot el repte.",
       "saved": "Activitat registrada. El club la validarà."
     },
-    "challengeTabs": "Reptes de {name}"
+    "challengeTabs": "Reptes de {name}",
+    "back": "Fitxa de {name}",
+    "backShort": "Fitxa"
   },
   "challenge": {
-    "back": "Reptes",
     "points": "Mínim {min} punts · objectiu {target}",
     "edit": "Editar",
     "activate": "Activar",
@@ -1568,7 +1577,8 @@
         "submit": "Rebutjar",
         "note": "Motiu",
         "noteHint": "Opcional, en llenguatge planer."
-      }
+      },
+      "teamFocus": "Seguiment de l'equip {team}: només els seus jugadors."
     },
     "standings": {
       "title": "Participació",
@@ -1583,8 +1593,12 @@
         "approved": "Aprovats",
         "pending": "Per validar",
         "goal": "Fita"
-      }
-    }
+      },
+      "teamFocus": "Seguiment de l'equip {team}: només els seus jugadors."
+    },
+    "backTeam": "Equip {team}",
+    "backTeamShort": "Equip",
+    "backSection": "Secció {section}"
   },
   "viewAs": {
     "title": "Veure el club com…",
@@ -1785,6 +1799,7 @@
         "submit": "Crear grup"
       }
     },
+    "tabChallenges": "Reptes",
     "matchConfig": "Partit en directe"
   },
   "sectionKinds": {

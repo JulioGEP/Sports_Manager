@@ -845,6 +845,27 @@ describe("personal con cargo, permisos por equipo, familia y reto", () => {
       200,
     );
     expect(stillTwo.challenges.map((v) => v.challenge.id)).toEqual([challengeId, teamChallengeId]);
+
+    // La ficha de cada equipo lista los suyos y los de toda su sección; la de la sección, todos.
+    const idsOf = async (query: string, cookie: string) =>
+      (
+        await json<{ challenges: { id: string }[] }>(
+          await request("GET", `/api/org/challenges?${query}`, A, { cookie }),
+          200,
+        )
+      ).challenges.map((ch) => ch.id);
+    expect(await idsOf(`team=${teamId}`, as(coachA))).toEqual([challengeId, teamChallengeId]);
+    expect(await idsOf(`team=${otherTeamId}`, as(adminA))).toEqual([
+      challengeId,
+      otherTeamChallenge.challenge.id,
+    ]);
+    // Dentro de la sección: el de toda la sección antes; entre los de equipo, el más nuevo primero.
+    expect(await idsOf(`section=${sectionId}`, as(adminA))).toEqual([
+      challengeId,
+      otherTeamChallenge.challenge.id,
+      teamChallengeId,
+    ]);
+    expect(await idsOf(`section=${otherSection.section.id}`, as(adminA))).toEqual([]);
     expect(
       (
         await request("POST", familyPath(otherTeamChallenge.challenge.id), A, {
@@ -939,6 +960,21 @@ describe("personal con cargo, permisos por equipo, familia y reto", () => {
     expect(standings.standings).toMatchObject([
       { player: { name: "Clara Martí" }, totals: { approved: 4 }, reachedMin: false },
     ]);
+    // Seguimiento acotado a un equipo dentro del reto de la sección.
+    const focused = await json<{ standings: { player: { name: string } }[] }>(
+      await request("GET", `/api/org/challenges/${challengeId}/standings?team=${teamId}`, A, {
+        cookie: as(adminA),
+      }),
+      200,
+    );
+    expect(focused.standings.map((s) => s.player.name)).toEqual(["Clara Martí"]);
+    const focusedOther = await json<{ standings: unknown[] }>(
+      await request("GET", `/api/org/challenges/${challengeId}/standings?team=${otherTeamId}`, A, {
+        cookie: as(adminA),
+      }),
+      200,
+    );
+    expect(focusedOther.standings).toEqual([]);
 
     // Una prueba con registros se archiva en vez de borrarse; el resumen cuenta pendientes.
     const removed = await json<{ tasks: { id: string; status: string }[] }>(
@@ -995,6 +1031,10 @@ describe("personal con cargo, permisos por equipo, familia y reto", () => {
         })
       ).status,
     ).toBe(400);
+    expect(
+      (await request("GET", `/api/org/challenges?team=${teamId}`, B, { cookie: as(adminB) }))
+        .status,
+    ).toBe(404);
     const listB = await json<{ challenges: unknown[] }>(
       await request("GET", "/api/org/challenges", B, { cookie: as(adminB) }),
       200,

@@ -30,7 +30,6 @@
     "clubNotFound": "This club does not exist or is not active.",
     "players": "Athletes",
     "family": "My family",
-    "challenges": "Challenge",
     "sections": "Sections",
     "clubMembers": "Members",
     "staff": "Staff",
@@ -1439,15 +1438,24 @@
       "noOwnTeams": "You are not coaching any team this season, so you cannot create challenges.",
       "noSections": "Create a section first: challenges belong to a section or a team.",
       "filter": "Section",
-      "filterAll": "All sections"
+      "filterAll": "All sections",
+      "locked": "Scope",
+      "lockedTeam": "Challenge of team {team} ({section}).",
+      "lockedSection": "Challenge of section {section}: for the whole section or for one of its teams."
     }
+  },
+  "challengesCard": {
+    "title": "Challenge",
+    "descriptionTeam": "This team's challenge and its whole section's: the one under way, drafts and history.",
+    "descriptionSection": "The challenges of the whole section and of each of its teams.",
+    "new": "New challenge",
+    "emptyTeam": "This team has no challenge yet.",
+    "emptySection": "This section has no challenge yet.",
+    "emptyHint": "Create the first one with the sample catalogue and activate it when ready."
   },
   "familyChallenge": {
     "title": "Challenge",
     "description": "Log your players' activity and follow their points. You only see yours.",
-    "noPlayers": "No player is linked to your account yet.",
-    "noPlayersHint": "Ask the club admin to link you from the player's record.",
-    "playerTabs": "Family players",
     "noChallenge": "There is no active challenge right now.",
     "noChallengeHint": "When the club activates one for their section or team, you will see it here.",
     "register": "Log activity",
@@ -1482,10 +1490,11 @@
       "capHint": "This task is capped at {points} points for the whole challenge.",
       "saved": "Activity logged. The club will validate it."
     },
-    "challengeTabs": "Challenges of {name}"
+    "challengeTabs": "Challenges of {name}",
+    "back": "{name}'s record",
+    "backShort": "Record"
   },
   "challenge": {
-    "back": "Challenges",
     "points": "Minimum {min} points · target {target}",
     "edit": "Edit",
     "activate": "Activate",
@@ -1568,7 +1577,8 @@
         "submit": "Reject",
         "note": "Reason",
         "noteHint": "Optional, in plain words."
-      }
+      },
+      "teamFocus": "Tracking team {team}: only its players."
     },
     "standings": {
       "title": "Participation",
@@ -1583,8 +1593,12 @@
         "approved": "Approved",
         "pending": "To review",
         "goal": "Goal"
-      }
-    }
+      },
+      "teamFocus": "Tracking team {team}: only its players."
+    },
+    "backTeam": "Team {team}",
+    "backTeamShort": "Team",
+    "backSection": "Section {section}"
   },
   "viewAs": {
     "title": "View the club as…",
@@ -1785,6 +1799,7 @@
         "submit": "Create group"
       }
     },
+    "tabChallenges": "Challenges",
     "matchConfig": "Live match"
   },
   "sectionKinds": {

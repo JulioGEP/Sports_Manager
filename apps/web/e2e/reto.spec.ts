@@ -21,9 +21,11 @@ test.describe("reto por puntos y paneles del personal", () => {
     await shot(page, "03b-inicio-operativo", info.project.name);
     await expectLegibleButtons(page);
 
-    // En móvil el reto vive en "Más": se abre por su ruta.
-    await page.goto(`${CLUB}/challenges`);
-    await expect(page.getByRole("heading", { name: "Retos" })).toBeVisible();
+    // El reto no está en la barra (ADR 0032): vive en la ficha de cada sección y de cada equipo.
+    await expect(page.getByRole("link", { name: "Reto", exact: true })).toHaveCount(0);
+    await page.goto(`${CLUB}/sections`);
+    await page.getByRole("link", { name: /Fútbol sala/ }).click();
+    await page.getByRole("tab", { name: /Retos/ }).click();
     // Cada reto lleva su ámbito: el de hábitos es de toda la sección; el técnico, solo del Alevín A.
     await expect(page.getByText("Reto de hábitos 2026-27").first()).toBeVisible();
     await expect(page.getByText("Fútbol sala · toda la sección").first()).toBeVisible();
@@ -32,19 +34,30 @@ test.describe("reto por puntos y paneles del personal", () => {
     await shot(page, "70-retos", info.project.name);
     await expectLegibleButtons(page);
 
-    // Nuevo reto: se elige la sección y si es para toda ella o para un solo equipo.
+    // Nuevo reto desde la sección: la sección viene dada; se elige toda la sección o un equipo.
     await page.getByRole("button", { name: "Nuevo reto" }).click();
     const newSheet = page.getByRole("dialog");
-    await newSheet.getByLabel("Sección").selectOption({ label: "Fútbol sala" });
+    await expect(newSheet.getByLabel("Sección")).toBeDisabled();
     await newSheet.getByLabel("Alcance").selectOption("team");
     await expect(newSheet.getByLabel("Equipo")).toBeVisible();
     await newSheet.getByLabel("Equipo").selectOption({ label: "Infantil A" });
     await shot(page, "70b-reto-nuevo", info.project.name);
     await newSheet.getByRole("button", { name: "Cancelar" }).click();
 
-    // El de toda la sección va primero en la lista.
-    await page.getByRole("link", { name: "Abrir" }).first().click();
+    // La ficha del equipo: su reto, el de su sección y el histórico, con el seguimiento del equipo.
+    await page.getByRole("tab", { name: /Equipos/ }).click();
+    await page.getByRole("link", { name: "Alevín A" }).click();
+    await expect(page.getByRole("heading", { name: "Alevín A" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Reto", exact: true })).toBeVisible();
+    await expect(page.getByText("Reto técnico del Alevín A").first()).toBeVisible();
+    await expect(page.getByText("Reto de hábitos 2026-27").first()).toBeVisible();
+    await shot(page, "70c-equipo-retos", info.project.name);
+    await expectLegibleButtons(page);
+
+    // El reto de la sección abierto desde el equipo: la vuelta es al equipo y el seguimiento, del equipo.
+    await page.getByRole("link", { name: "Reto de hábitos 2026-27" }).click();
     await expect(page.getByRole("heading", { name: /Reto de hábitos 2026-27/ })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Equipo Alevín A" })).toBeVisible();
     await expect(page.getByText("Fútbol sala · toda la sección").first()).toBeVisible();
     await expect(page.getByText("Entrenamiento completo").first()).toBeVisible();
     await shot(page, "71-reto-pruebas", info.project.name);
@@ -62,34 +75,49 @@ test.describe("reto por puntos y paneles del personal", () => {
     await expect(page.getByText(`Prueba Estiramientos ${sfx} creada.`)).toBeVisible();
     await expect(page.getByText(`Estiramientos ${sfx}`).first()).toBeVisible();
 
-    // Validación: la cola de registros pendientes; se aprueba el primero.
+    // Validación acotada al equipo desde el que se abrió: Clara (Alevín A) sí; Marc (Benjamín A) no.
+    // Con todos los estados, para no depender de lo que haya validado ya otra pasada (escritorio y
+    // móvil comparten base).
     await page.getByRole("tab", { name: /Validación/ }).click();
-    await expect(page.getByText("Marc Martí").first()).toBeVisible();
-    await expect(page.getByText("Lectura").first()).toBeVisible();
-    await shot(page, "72-reto-validacion", info.project.name);
-    await expectLegibleButtons(page);
-    await page.getByRole("button", { name: "Aprobar" }).first().click();
-    await expect(page.getByText(/Registro de .+ aprobado: \+\d+\./)).toBeVisible();
+    await expect(
+      page.getByText("Seguimiento del equipo Alevín A: solo sus jugadores."),
+    ).toBeVisible();
+    await page.getByLabel("Estado").selectOption("");
+    await expect(page.getByText("Clara Martí").first()).toBeVisible();
+    await expect(page.getByText("Comer sano").first()).toBeVisible();
+    await expect(page.getByText("Marc Martí")).toHaveCount(0);
 
-    // Participación: solo para el personal, con los puntos aprobados.
+    // Participación: solo para el personal, con los puntos aprobados, acotada al equipo.
     await page.getByRole("tab", { name: /Participación/ }).click();
     await expect(page.getByText("Clara Martí").first()).toBeVisible();
     await expect(page.getByText("Mínimo cumplido").first()).toBeHidden();
     await shot(page, "73-reto-participacion", info.project.name);
     await expectLegibleButtons(page);
+
+    // Sin equipo por medio (desde la vista de conjunto), la validación es de toda la sección.
+    await page.goto(`${CLUB}/challenges`);
+    await page.getByRole("link", { name: "Abrir" }).first().click();
+    await page.getByRole("tab", { name: /Validación/ }).click();
+    await page.getByLabel("Estado").selectOption("");
+    await expect(page.getByText("Marc Martí").first()).toBeVisible();
+    await expect(page.getByText("Lectura").first()).toBeVisible();
     await signOut(page);
   });
 
   test("la familia registra actividad y ve solo sus puntos", async ({ page }, info) => {
     const sfx = suffix(info.project.name);
     await login(page, "familia@demo.test");
-    // En móvil el reto vive en "Más": se abre por su ruta.
-    await page.goto(`${CLUB}/challenges`);
-    await expect(page.getByRole("heading", { name: "Reto" })).toBeVisible();
-    await expect(page.getByRole("tab", { name: "Clara Martí" })).toHaveAttribute(
-      "aria-selected",
-      "true",
-    );
+    // El reto no está en la barra: se llega desde la ficha de cada uno de los suyos (ADR 0032).
+    await expect(page.getByRole("link", { name: "Reto", exact: true })).toHaveCount(0);
+    await page.goto(`${CLUB}/family`);
+    await page.getByRole("link", { name: "Clara Martí" }).first().click();
+    await page.waitForURL(/\/family\/[0-9a-f-]+$/);
+    // Su ficha enseña una tarjeta por reto: el de su sección y el de su equipo.
+    await expect(page.getByText("Reto técnico del Alevín A")).toBeVisible();
+    await page.getByRole("link", { name: "Ver el reto" }).first().click();
+    await page.waitForURL(/\/family\/[0-9a-f-]+\/challenges/);
+    await expect(page.getByRole("heading", { name: "Reto", exact: true })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Ficha de Clara Martí" })).toBeVisible();
     // Clara tiene dos retos a la vez: el de su sección (primero) y el de su equipo.
     await expect(page.getByRole("tab", { name: "Fútbol sala" })).toHaveAttribute(
       "aria-selected",
@@ -122,37 +150,67 @@ test.describe("reto por puntos y paneles del personal", () => {
     await expect(page.getByText("Conducción en zigzag").first()).toBeVisible();
     await expect(page.getByText(`Estiramientos ${sfx}`)).toHaveCount(0);
 
-    // Marc solo está en el Benjamín A: un único reto, el de la sección, sin pestañas de reto.
-    await page.getByRole("tab", { name: "Marc Martí" }).click();
+    // Marc solo está en el Benjamín A: desde su ficha, un único reto, el de la sección, sin pestañas.
+    await page.goto(`${CLUB}/family`);
+    await page.getByRole("link", { name: "Marc Martí" }).first().click();
+    await page.waitForURL(/\/family\/[0-9a-f-]+$/);
+    await page.getByRole("link", { name: "Ver el reto" }).click();
+    await page.waitForURL(/\/family\/[0-9a-f-]+\/challenges/);
     await expect(page.getByText("Lectura").first()).toBeVisible();
     await expect(page.getByRole("tab", { name: "Alevín A" })).toHaveCount(0);
     await signOut(page);
   });
 
-  test("la entrenadora gestiona solo el reto de su equipo", async ({ page }) => {
+  test("la administración valida, desde el equipo, lo que acaba de registrar la familia", async ({
+    page,
+  }, info) => {
+    const sfx = suffix(info.project.name);
+    await login(page);
+    await page.goto(`${CLUB}/sections`);
+    await page.getByRole("link", { name: /Fútbol sala/ }).click();
+    await page.getByRole("link", { name: "Alevín A" }).click();
+    await page.getByRole("link", { name: "Reto de hábitos 2026-27" }).click();
+    // La cola del equipo: el registro que la familia acaba de hacer en esta misma pasada.
+    await page.getByRole("tab", { name: /Validación/ }).click();
+    await expect(page.getByText(`Estiramientos ${sfx}`).first()).toBeVisible();
+    await expect(page.getByText("Clara Martí").first()).toBeVisible();
+    await expect(page.getByText("Marc Martí")).toHaveCount(0);
+    await shot(page, "72-reto-validacion", info.project.name);
+    await expectLegibleButtons(page);
+    await page.getByRole("button", { name: "Aprobar" }).first().click();
+    await expect(page.getByText(/Registro de .+ aprobado: \+\d+\./)).toBeVisible();
+    await signOut(page);
+  });
+
+  test("la entrenadora gestiona solo el reto de su equipo, desde la ficha del equipo", async ({
+    page,
+  }) => {
     await login(page, "entrenador@demo.test");
-    await page.goto(`${CLUB}/challenges`);
-    await expect(page.getByRole("heading", { name: "Retos" })).toBeVisible();
+    await page.goto(`${CLUB}/sections`);
+    await page.getByRole("link", { name: /Fútbol sala/ }).click();
+    await page.getByRole("link", { name: "Alevín A" }).click();
+    await expect(page.getByRole("heading", { name: "Reto", exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Nuevo reto" })).toBeVisible();
     // El reto de la sección lo ve, pero no lo edita.
-    await page.getByRole("link", { name: "Abrir" }).first().click();
+    await page.getByRole("link", { name: "Reto de hábitos 2026-27" }).click();
     await expect(page.getByRole("heading", { name: /Reto de hábitos 2026-27/ })).toBeVisible();
     await expect(page.getByRole("button", { name: "Nueva prueba" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Editar" })).toHaveCount(0);
     // El de su equipo, sí: catálogo editable y la cola de validación de Clara.
-    await page.goBack();
-    await page.getByRole("link", { name: "Abrir" }).nth(1).click();
+    await page.getByRole("link", { name: "Equipo Alevín A" }).click();
+    await page.getByRole("link", { name: "Reto técnico del Alevín A" }).click();
     await expect(page.getByRole("heading", { name: /Reto técnico del Alevín A/ })).toBeVisible();
     await expect(page.getByText("Fútbol sala · Alevín A").first()).toBeVisible();
     await expect(page.getByRole("button", { name: "Nueva prueba" })).toBeVisible();
     await page.getByRole("tab", { name: /Validación/ }).click();
     await expect(page.getByText("Clara Martí").first()).toBeVisible();
     await expect(page.getByText("Conducción en zigzag").first()).toBeVisible();
-    // Un reto nuevo solo puede ser de uno de sus equipos.
-    await page.goto(`${CLUB}/challenges?new=1`);
+    // Un reto nuevo desde su equipo: el ámbito viene dado y es el de su equipo.
+    await page.getByRole("link", { name: "Equipo Alevín A" }).click();
+    await page.getByRole("button", { name: "Nuevo reto" }).click();
     const sheet = page.getByRole("dialog");
-    await expect(sheet.getByLabel("Alcance")).toBeDisabled();
-    await expect(sheet.getByLabel("Equipo")).toHaveValue(/.+/);
-    await expect(sheet.getByText("Solo puedes crear retos para tus equipos.")).toBeVisible();
+    await expect(sheet.getByText("Reto del equipo Alevín A (Fútbol sala).")).toBeVisible();
+    await expect(sheet.getByRole("button", { name: "Crear reto" })).toBeEnabled();
     await sheet.getByRole("button", { name: "Cancelar" }).click();
     await signOut(page);
   });
