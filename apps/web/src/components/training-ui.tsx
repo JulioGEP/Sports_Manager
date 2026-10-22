@@ -677,14 +677,10 @@ function CourtLines({ field }: { field: DiagramField }) {
     return (
       <g>
         <rect x={1} y={1} width={w - 2} height={h - 2} {...line} />
-        <path
-          d={`M 1 ${h / 2 - 15} A 15 15 0 0 1 1 ${h / 2 + 15}`}
-          {...line}
-          transform={`translate(${-14},0)`}
-        />
+        {/* Medio círculo central en la línea de medio campo, el área y la portería que se ataca. */}
+        <path d={`M 1 ${h / 2 - 15} A 15 15 0 0 1 1 ${h / 2 + 15}`} {...line} />
         <path d={`M ${w - 1} ${h / 2 - 30} A 30 30 0 0 0 ${w - 1} ${h / 2 + 30}`} {...line} />
         <rect x={w - 3} y={h / 2 - 8} width={2} height={16} fill="var(--text-muted)" />
-        <circle cx={1} cy={h / 2} r={15} {...line} />
       </g>
     );
   return (
