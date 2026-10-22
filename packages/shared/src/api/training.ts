@@ -379,6 +379,9 @@ export type TeamSessionsResponse = z.infer<typeof TeamSessionsResponseSchema>;
 
 // --- Carga ---
 
+/** Umbrales de la relación aguda:crónica de la sección: fuera de ellos, aviso (nunca predicción). */
+export const AcwrThresholdsSchema = z.object({ high: z.number(), low: z.number() });
+
 export const LoadMetricsSchema = z.object({
   acute: z.number(),
   chronic: z.number(),
@@ -421,6 +424,7 @@ export const TeamLoadResponseSchema = z.object({
   ),
   insights: z.array(InsightSchema),
   tracking: z.enum(TRAINING_TRACKING_LEVELS),
+  acwr: AcwrThresholdsSchema,
   access: z.object({ write: z.boolean() }),
 });
 export type TeamLoadResponse = z.infer<typeof TeamLoadResponseSchema>;
@@ -492,6 +496,7 @@ export const PlayerPerformanceResponseSchema = z.object({
   }),
   load: z.object({
     metrics: LoadMetricsSchema,
+    acwr: AcwrThresholdsSchema,
     days: z.array(
       z.object({ date: z.string(), session: z.number(), match: z.number(), extra: z.number() }),
     ),

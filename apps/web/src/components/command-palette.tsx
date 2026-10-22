@@ -297,7 +297,7 @@ export function CommandPalette({
       { key: "newSeason", perm: "org.settings.write", to: `${paths.settings}?tab=seasons&new=1` },
       // Entrenamiento (ADR 0038): la biblioteca y la enfermería no van en la barra.
       { key: "drills", perm: "org.training.read", to: paths.drills },
-      { key: "infirmary", perm: "org.load.read", to: paths.infirmary },
+      { key: "infirmary", perm: "org.availability.write", to: paths.infirmary },
     ];
     for (const a of actions) {
       if (has(a.perm))

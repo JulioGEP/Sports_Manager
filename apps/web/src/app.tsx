@@ -12,29 +12,45 @@ import { ForgotPasswordPage } from "@/routes/auth/forgot";
 import { LoginPage } from "@/routes/auth/login";
 import { ResetPasswordPage } from "@/routes/auth/reset";
 import { AgendaPage } from "@/routes/club/agenda";
+import { AthletePage } from "@/routes/club/athlete";
 import { ChallengePage } from "@/routes/club/challenge";
 import { ChallengesPage, FamilyPlayerChallengesPage } from "@/routes/club/challenges";
 import { ClubMemberPage } from "@/routes/club/club-member";
 import { ClubMembersPage } from "@/routes/club/club-members";
+import { DrillPage } from "@/routes/club/drill";
+import { DrillsPage } from "@/routes/club/drills";
 import { FacilitiesPage } from "@/routes/club/facilities";
 import { FacilityPage } from "@/routes/club/facility";
 import { FamilyPage } from "@/routes/club/family";
 import { FamilyPlayerPage } from "@/routes/club/family-player";
 import { FeesPage } from "@/routes/club/fees";
 import { ClubHome } from "@/routes/club/home";
+import { InfirmaryPage } from "@/routes/club/infirmary";
 import { InvitationPage } from "@/routes/club/invitation";
 import { MatchLivePage } from "@/routes/club/match-live";
 import { MatchStatsPage } from "@/routes/club/match-stats";
 import { PlayerPage } from "@/routes/club/player";
+import { PlayerPerformancePage } from "@/routes/club/player-performance";
 import { PlayersPage } from "@/routes/club/players";
 import { SectionPage } from "@/routes/club/section";
 import { SectionMatchConfigPage } from "@/routes/club/section-match-config";
+import { SectionMethodologyPage } from "@/routes/club/section-methodology";
+import { SectionTrainingConfigPage } from "@/routes/club/section-training-config";
 import { SectionsPage } from "@/routes/club/sections";
+import { SessionPage } from "@/routes/club/session";
+import { SessionCourtPage } from "@/routes/club/session-court";
+import { SessionPrintPage } from "@/routes/club/session-print";
 import { SettingsPage } from "@/routes/club/settings";
 import { StaffPage } from "@/routes/club/staff";
 import { TeamPage } from "@/routes/club/team";
+import { TeamLoadPage } from "@/routes/club/team-load";
 import { TeamMatchHistoryPage } from "@/routes/club/team-match-history";
 import { TeamMatchesPage } from "@/routes/club/team-matches";
+import { TeamTestsPage } from "@/routes/club/team-tests";
+import { TeamTrainingPage } from "@/routes/club/team-training";
+import { TeamTrainingHistoryPage } from "@/routes/club/team-training-history";
+import { TeamTrainingSeasonPage } from "@/routes/club/team-training-season";
+import { TrainingHubPage } from "@/routes/club/training-hub";
 import { ClubsPage } from "@/routes/clubs";
 import { Landing } from "@/routes/landing";
 import { ToastProvider } from "@/ui";
@@ -112,6 +128,26 @@ export const router = createBrowserRouter([
       { path: "challenges", element: <ChallengesPage /> },
       { path: "challenges/:id", element: <ChallengePage /> },
       { path: "settings", element: <SettingsPage /> },
+      // Entrenamiento, carga y salud (ADR 0038): portada, semana y temporada de cada equipo,
+      // sesión con modo pista e impresión, biblioteca, rendimiento del jugador, enfermería,
+      // ajustes y metodología de la sección y el bienestar del deportista adulto.
+      { path: "training", element: <TrainingHubPage /> },
+      { path: "teams/:id/training", element: <TeamTrainingPage /> },
+      { path: "teams/:id/training/season", element: <TeamTrainingSeasonPage /> },
+      { path: "teams/:id/training/history", element: <TeamTrainingHistoryPage /> },
+      { path: "teams/:id/training/load", element: <TeamLoadPage /> },
+      { path: "teams/:id/training/tests", element: <TeamTestsPage /> },
+      { path: "sessions/:id", element: <SessionPage /> },
+      { path: "sessions/:id/court", element: <SessionCourtPage /> },
+      { path: "sessions/:id/print", element: <SessionPrintPage /> },
+      { path: "drills", element: <DrillsPage /> },
+      { path: "drills/new", element: <DrillPage /> },
+      { path: "drills/:id", element: <DrillPage /> },
+      { path: "players/:id/performance", element: <PlayerPerformancePage /> },
+      { path: "infirmary", element: <InfirmaryPage /> },
+      { path: "sections/:id/training-config", element: <SectionTrainingConfigPage /> },
+      { path: "sections/:id/methodology", element: <SectionMethodologyPage /> },
+      { path: "me", element: <AthletePage /> },
     ],
   },
   { path: "*", element: <Navigate to="/" replace /> },

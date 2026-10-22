@@ -153,29 +153,37 @@ export function SectionPage() {
               : t("noCoordinator")
         }
         actions={
-          access.write ? (
-            <>
-              {!activity && org.actor.permissions.includes("org.matches.read") ? (
-                <ButtonLink to={paths.sectionMatchConfig(id)} variant="secondary" action="open">
-                  {t("matchConfig")}
-                </ButtonLink>
-              ) : null}
-              <Button action="edit" variant="secondary" onClick={() => setEditing(true)}>
-                {t("edit")}
-              </Button>
-              <Button action="add" variant="secondary" onClick={() => setNewCategory(true)}>
-                {t("newCategory")}
-              </Button>
-              {season && categories.length > 0 ? (
-                <Button
-                  action="add"
-                  onClick={() => setNewTeamIn(categories.length === 1 ? categories[0]!.id : "")}
-                >
-                  {w("newTeam")}
+          <>
+            {/* Metodología y ajustes de entrenamiento de la sección (ADR 0038). */}
+            {!activity && org.actor.permissions.includes("org.training.read") ? (
+              <ButtonLink to={paths.sectionMethodology(id)} variant="secondary" action="open">
+                {t("training")}
+              </ButtonLink>
+            ) : null}
+            {access.write ? (
+              <>
+                {!activity && org.actor.permissions.includes("org.matches.read") ? (
+                  <ButtonLink to={paths.sectionMatchConfig(id)} variant="secondary" action="open">
+                    {t("matchConfig")}
+                  </ButtonLink>
+                ) : null}
+                <Button action="edit" variant="secondary" onClick={() => setEditing(true)}>
+                  {t("edit")}
                 </Button>
-              ) : null}
-            </>
-          ) : null
+                <Button action="add" variant="secondary" onClick={() => setNewCategory(true)}>
+                  {t("newCategory")}
+                </Button>
+                {season && categories.length > 0 ? (
+                  <Button
+                    action="add"
+                    onClick={() => setNewTeamIn(categories.length === 1 ? categories[0]!.id : "")}
+                  >
+                    {w("newTeam")}
+                  </Button>
+                ) : null}
+              </>
+            ) : null}
+          </>
         }
       />
       {seasons.data && seasons.data.seasons.length > 1 ? (

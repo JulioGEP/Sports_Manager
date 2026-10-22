@@ -4,6 +4,7 @@ import {
   AthleteResponseSchema,
   AthleteRpeSchema,
   AvailabilitySetSchema,
+  DEFAULT_INSIGHT_THRESHOLDS,
   ExtraLoadCreateSchema,
   FamilyTestsResponseSchema,
   InfirmaryResponseSchema,
@@ -21,6 +22,7 @@ import {
   weekStartOf,
   WellnessEntrySchema,
   type DailyLoad,
+  type TrainingSettings,
 } from "@sportsmanager/shared";
 import type { ApiConfig } from "../config.ts";
 import {
@@ -165,6 +167,7 @@ export function createLoadRoutes(config: ApiConfig, data: DataLayer) {
           }),
           insights: insights.insights.map(insightDto),
           tracking: section?.settings.tracking ?? "basic",
+          acwr: acwrOf(section?.settings),
           access: { write: canWriteLoad(c.get("actor"), team) },
         },
         200,
@@ -173,6 +176,12 @@ export function createLoadRoutes(config: ApiConfig, data: DataLayer) {
   );
 
   // --- Rendimiento de un jugador ---
+
+  /** Umbrales de la relación aguda:crónica: los de la sección o, sin sección, los del producto. */
+  function acwrOf(settings: TrainingSettings | undefined) {
+    const t = settings?.thresholds ?? DEFAULT_INSIGHT_THRESHOLDS;
+    return { high: t.acwrHigh, low: t.acwrLow };
+  }
 
   async function performance(c: RouteCtx, tenant: Tenant, playerId: string) {
     const today = todayOf(tenant);
@@ -212,8 +221,10 @@ export function createLoadRoutes(config: ApiConfig, data: DataLayer) {
     let contents: Awaited<ReturnType<DataLayer["training"]["contentsOf"]>> = [];
     let minutes: { contentId: string; minutes: number }[] = [];
     const focusIds = focus.get(playerId) ?? [];
+    let settings: TrainingSettings | undefined;
     if (team) {
       const section = await data.training.sectionTraining(tenant.scope, team.section.id);
+      settings = section?.settings;
       if (section)
         contents = await data.training.ensureCatalog(
           tenant.scope,
@@ -286,6 +297,7 @@ export function createLoadRoutes(config: ApiConfig, data: DataLayer) {
       },
       load: {
         metrics: loadMetrics(all, today),
+        acwr: acwrOf(settings),
         days,
         extras: loads
           .filter((l) => l.source === "extra")

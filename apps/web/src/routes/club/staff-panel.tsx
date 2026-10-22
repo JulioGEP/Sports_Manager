@@ -166,8 +166,8 @@ export function StaffPanel({ kind }: { kind: PanelKind }) {
   const health = kind === "physio" || kind === "fitness";
   const canSeeTraining = org.actor.permissions.includes("org.training.read");
   const canSeeInfirmary =
-    org.actor.permissions.includes("org.load.read") ||
-    org.actor.permissions.includes("org.health.read");
+    org.actor.permissions.includes("org.health.read") ||
+    org.actor.permissions.includes("org.availability.write");
   const overview = useQuery({
     queryKey: ["org", slug, "players", "overview", own ? "own" : "club"],
     queryFn: () =>

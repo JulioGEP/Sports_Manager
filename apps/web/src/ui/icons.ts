@@ -4,10 +4,12 @@
  */
 export {
   ArrowCounterClockwise,
+  ArrowDown,
   ArrowLeft,
   ArrowRight,
   ArrowSquareOut,
   ArrowsLeftRight,
+  ArrowUp,
   Barbell,
   Binoculars,
   Brain,
@@ -51,6 +53,7 @@ export {
   PersonSimpleRun,
   Play,
   Plus,
+  Printer,
   Pulse,
   Rows,
   ShieldCheck,

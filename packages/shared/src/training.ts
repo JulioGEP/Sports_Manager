@@ -575,8 +575,11 @@ export const DEFAULT_INSIGHT_THRESHOLDS: InsightThresholds = {
   focusMinutes: 20,
 };
 
-/** Reparto objetivo de minutos por tipo de contenido, en porcentaje, para una categoría. */
-export const MethodologyTargetSchema = z.record(
+/**
+ * Reparto objetivo de minutos por tipo de contenido, en porcentaje, para una categoría. Parcial:
+ * los tipos que no aparecen no tienen objetivo.
+ */
+export const MethodologyTargetSchema = z.partialRecord(
   TrainingContentKindSchema,
   z.number().int().min(0).max(100),
 );
