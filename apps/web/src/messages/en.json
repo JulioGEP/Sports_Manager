@@ -390,13 +390,18 @@
       "exclusionSheet": {
         "titleNew": "New exclusion",
         "titleEdit": "Exclusions for {name}",
-        "description": "Tick what this person does not see even though their role does. Club admins cannot be excluded.",
+        "description": "Tick what this person does not see even though their role does. Whatever their role already hides shows ticked and locked. Club admins cannot be excluded.",
         "person": "Person",
         "areas": "What they do not see",
         "exclude": "Does not see {area}",
         "none": "Tick at least one area.",
         "empty": "There is no staff to exclude: admins cannot be excluded and families already see only their own.",
-        "saved": "Exclusions for {name} saved."
+        "saved": "Exclusions for {name} saved.",
+        "byRoleTitle": "What their role brings: {roles}",
+        "scope": "Scope: {scope}.",
+        "hides": "Their role already hides {areas}: it shows ticked as “By their role”. Change that for the whole role in “What each role sees”.",
+        "seesAll": "Their role sees every area.",
+        "byRoleChip": "By their role"
       }
     }
   },

@@ -390,13 +390,18 @@
       "exclusionSheet": {
         "titleNew": "Nueva exclusión",
         "titleEdit": "Exclusiones de {name}",
-        "description": "Marca lo que esta persona no ve aunque su rol sí. La administración del club no se puede excluir.",
+        "description": "Marca lo que esta persona no ve aunque su rol sí. Lo que su rol ya no ve aparece marcado y bloqueado. La administración del club no se puede excluir.",
         "person": "Persona",
         "areas": "Qué no ve",
         "exclude": "No ve {area}",
         "none": "Marca al menos un área.",
         "empty": "No hay personal al que excluir: la administración no se excluye y las familias ya solo ven lo suyo.",
-        "saved": "Exclusiones de {name} guardadas."
+        "saved": "Exclusiones de {name} guardadas.",
+        "byRoleTitle": "Lo que trae su rol: {roles}",
+        "scope": "Alcance: {scope}.",
+        "hides": "Su rol ya no ve {areas}: aparece marcado como «Por su rol». Eso se cambia para todo el rol en «Qué ve cada rol».",
+        "seesAll": "Su rol ve todas las áreas.",
+        "byRoleChip": "Por su rol"
       }
     }
   },

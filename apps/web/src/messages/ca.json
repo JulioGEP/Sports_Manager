@@ -390,13 +390,18 @@
       "exclusionSheet": {
         "titleNew": "Nova exclusió",
         "titleEdit": "Exclusions de {name}",
-        "description": "Marca el que aquesta persona no veu encara que el seu rol sí. L'administració del club no es pot excloure.",
+        "description": "Marca el que aquesta persona no veu encara que el seu rol sí. El que el seu rol ja no veu apareix marcat i bloquejat. L'administració del club no es pot excloure.",
         "person": "Persona",
         "areas": "Què no veu",
         "exclude": "No veu {area}",
         "none": "Marca almenys una àrea.",
         "empty": "No hi ha personal a qui excloure: l'administració no s'exclou i les famílies ja només veuen el seu.",
-        "saved": "Exclusions de {name} desades."
+        "saved": "Exclusions de {name} desades.",
+        "byRoleTitle": "El que porta el seu rol: {roles}",
+        "scope": "Abast: {scope}.",
+        "hides": "El seu rol ja no veu {areas}: apareix marcat com «Pel seu rol». Això es canvia per a tot el rol a «Què veu cada rol».",
+        "seesAll": "El seu rol veu totes les àrees.",
+        "byRoleChip": "Pel seu rol"
       }
     }
   },
