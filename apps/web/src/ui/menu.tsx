@@ -6,11 +6,14 @@ export function Menu({
   trigger,
   label,
   align = "end",
+  triggerClassName = "text-ink hover:bg-raised",
   children,
 }: {
   trigger: ReactNode;
   label: string;
   align?: "start" | "end";
+  /** Color del disparador: sobre una franja oscura (consola del partido) hace falta otro. */
+  triggerClassName?: string;
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
@@ -44,7 +47,7 @@ export function Menu({
     <div className="relative" ref={root}>
       <button
         type="button"
-        className="inline-flex h-(--h-control) items-center gap-2 rounded-control px-2 text-ink transition-colors hover:bg-raised"
+        className={`inline-flex h-(--h-control) items-center gap-2 rounded-control px-2 transition-colors ${triggerClassName}`}
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label={label}

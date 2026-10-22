@@ -1,6 +1,6 @@
 # Capturas de la interfaz (Bloques 14 a 20)
 
-Capturas que generan las pruebas de interfaz (`pnpm test:ui`) contra la API real con base embebida, con el front de Vite + React + Tailwind sobre el design system del producto (`packages/design`, ADR 0027). Escritorio a 1280x800; móvil, Pixel 7. La fuente viva es el artefacto `capturas-interfaz` de CI; esta carpeta es la foto de la revisión del club completo (ADR 0031), con el design system 1.2: todo botón lleva el icono de su acción (rueda dentada para editar, cubo de basura rojo para eliminar, más para añadir); la fila es el objeto (se abre tocándola, con acciones como iconos silenciosos sin borde); la paleta de mandos ⌘K encuentra personas, equipos, pantallas y acciones; y la plantilla de un equipo se ve como un tablero por posición: secciones por deporte, socios, agenda e instalaciones, cuotas y "ver como", sobre lo que ya había de los bloques 11 a 13 (ADR 0028, 0029 y 0030), más el alcance por cargo y la gestión de acceso por rol del Bloque 19 (ADR 0033): el cuerpo técnico, la dirección y la fisio ven solo su parte del club, y "Personal" gana la pestaña "Acceso", y el partido en directo del Bloque 20 (ADR 0034): configuración del motor por sección, consola en la banda, estadísticas e histórico.
+Capturas que generan las pruebas de interfaz (`pnpm test:ui`) contra la API real con base embebida, con el front de Vite + React + Tailwind sobre el design system del producto (`packages/design`, ADR 0027). Escritorio a 1280x800; móvil, Pixel 7. La fuente viva es el artefacto `capturas-interfaz` de CI; esta carpeta es la foto de la revisión del club completo (ADR 0031), con el design system 1.3: todo botón lleva el icono de su acción (rueda dentada para editar, cubo de basura rojo para eliminar, más para añadir); la fila es el objeto (se abre tocándola, con acciones como iconos silenciosos sin borde); la paleta de mandos ⌘K encuentra personas, equipos, pantallas y acciones; y la plantilla de un equipo se ve como un tablero por posición: secciones por deporte, socios, agenda e instalaciones, cuotas y "ver como", sobre lo que ya había de los bloques 11 a 13 (ADR 0028, 0029 y 0030), más el alcance por cargo y la gestión de acceso por rol del Bloque 19 (ADR 0033): el cuerpo técnico, la dirección y la fisio ven solo su parte del club, y "Personal" gana la pestaña "Acceso", y el partido en directo del Bloque 20 (ADR 0034): configuración del motor por sección, consola en la banda a pantalla completa y en tres zonas con el banquillo arrastrable (ADR 0037), estadísticas e histórico.
 
 Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negocio en `/admin`. Cuentas de demostración, todas con contraseña `123456`: `admin@demo.test` (administra el club demo; en este entorno también la plataforma), `entrenador@demo.test` (entrenadora del Alevín A), `familia@demo.test` (madre de dos jugadores y socia), `director@demo.test` (dirección deportiva), `fisio@demo.test` (fisioterapia), `natacion@demo.test` (coordinación de natación) y `basquet@demo.test`, `basquetfem@demo.test` y `yoga@demo.test` (cuerpo técnico). El club demo llega con la temporada 2026-27, cuatro secciones (fútbol sala, baloncesto, natación y yoga) con categorías, once equipos y grupos, 83 deportistas, socios con tres tipos, cuatro instalaciones con horario, la agenda generada desde los horarios, partidos, planes de cuota con cargos y pagos, un reto activo y dos partidos jugados del Alevín A con su registro completo.
 
@@ -430,11 +430,11 @@ Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negoci
 
 ![Convocatoria](escritorio-104b-partido-convocatoria.png)
 
-### La consola en la banda: marcador, cronómetro, pista, bandeja de acciones, banquillo, rival y últimas acciones
+### La consola en la banda, a pantalla completa y en tres zonas: el partido arriba (marcador, faltas, cronómetro, deshacer y menú), nuestro equipo (pista, banquillo arrastrable y bandeja del jugador tocado) y el rival con las últimas acciones
 
 ![Partido en directo](escritorio-105-partido-en-directo.png)
 
-### Mapa de zonas al registrar un gol
+### La zona del gol se toca sobre la propia pista: la mitad de ataque en nueve, la propia oscurecida
 
 ![Zona del gol](escritorio-105b-partido-zona.png)
 
@@ -598,9 +598,11 @@ Las mismas pantallas en un móvil, con la forma envolvente del design system: ca
 
 ![Selector de clubes (móvil)](movil-62-mis-clubes.png)
 
-### Partido en directo (móvil): consola, estadísticas e histórico
+### Partido en directo (móvil): la consola en vertical, con el aviso para girar el móvil, y en horizontal, con pista, banquillo, bandeja y rival a la vez; estadísticas e histórico
 
 ![Partido en directo (móvil)](movil-105-partido-en-directo.png)
+
+![Partido en directo en horizontal (móvil)](movil-105c-partido-horizontal.png)
 
 ![Estadísticas del partido (móvil)](movil-102-partido-estadisticas.png)
 

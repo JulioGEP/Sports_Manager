@@ -3,10 +3,11 @@ import { readFileSync } from "node:fs";
 import { CLUB, expectLegibleButtons, login, shot, signOut, suffix } from "./helpers";
 
 /**
- * Partido en directo (Bloque 20, ADR 0034): configuración del motor por sección, partidos del
- * equipo, estadísticas e histórico de los partidos sembrados, un partido nuevo registrado desde
- * la consola (quinteto, cronómetro, gol con zona, gol rival, cambio, deshacer y cierre) y lo que
- * ven la entrenadora y la familia.
+ * Partido en directo (Bloque 20, ADR 0034; consola a pantalla completa, ADR 0037): configuración
+ * del motor por sección, partidos del equipo, estadísticas e histórico de los partidos sembrados,
+ * un partido nuevo registrado desde la consola (quinteto, cronómetro, gol con la zona sobre la
+ * pista, gol rival, cambio en dos toques y arrastrando, deshacer y cierre) y lo que ven la
+ * entrenadora y la familia.
  */
 test.describe("partido en directo", () => {
   test("configuración, partidos, estadísticas, histórico y un partido registrado en la banda", async ({
@@ -103,7 +104,9 @@ test.describe("partido en directo", () => {
     await expect(page.getByText(`Partido contra CE Prueba ${sfx} creado.`)).toBeVisible();
     await page.waitForURL(/\/matches\/[0-9a-f-]+$/);
     await expect(page.getByRole("region", { name: "Marcador y cronómetro" })).toBeVisible();
-    await expect(page.getByText(`CE Prueba ${sfx}`).first()).toBeVisible();
+    await expect(
+      page.getByRole("region", { name: "Acciones del rival" }).getByText(`CE Prueba ${sfx}`),
+    ).toBeVisible();
 
     // Convocatoria: el quinteto inicial con la portera.
     await page.getByRole("button", { name: "Convocatoria" }).click();
@@ -131,12 +134,20 @@ test.describe("partido en directo", () => {
     await expect(page.getByText("Un toque registra la acción")).toBeVisible();
     await shot(page, "105-partido-en-directo", info.project.name);
     await expectLegibleButtons(page);
+    // En un móvil, la consola va en horizontal: pista, banquillo y rival a la vez.
+    if (info.project.name === "movil") {
+      await page.setViewportSize({ width: 915, height: 412 });
+      await shot(page, "105c-partido-horizontal", info.project.name);
+      await expectLegibleButtons(page);
+      await page.setViewportSize({ width: 412, height: 915 });
+    }
+    // El gol pide la zona sobre la propia pista: un toque donde ha sido.
     await page.getByRole("button", { name: /^Gol\s*\+1$/ }).click();
-    const zone = page.getByRole("dialog");
-    await expect(zone.getByRole("heading", { name: "Gol" })).toBeVisible();
+    await expect(page.getByText("Toca la zona de la pista desde la que ha sido.")).toBeVisible();
+    await expect(page.getByText("Gol · Oriol Mateu")).toBeVisible();
     await shot(page, "105b-partido-zona", info.project.name);
-    await zone.getByRole("button", { name: "r1c2" }).click();
-    await expect(page.getByRole("dialog")).toBeHidden();
+    await page.getByRole("button", { name: "r1c2" }).click();
+    await expect(page.getByText("Toca la zona de la pista desde la que ha sido.")).toBeHidden();
     await expect(page.getByText("Gol · Oriol Mateu")).toBeVisible();
     await page.getByRole("button", { name: "Gol del rival" }).click();
     await expect(page.getByText("Gol del rival", { exact: true }).first()).toBeVisible();
@@ -154,9 +165,21 @@ test.describe("partido en directo", () => {
     await page.getByRole("button", { name: "Deshacer" }).click();
     await expect(page.getByText("Última acción deshecha.")).toBeVisible();
     await expect(page.getByRole("button", { name: "Berta Sala", exact: true })).toBeVisible();
+    await expect(page.getByText("Entra Mia Ortega por Berta Sala")).toHaveCount(0);
 
-    // Acabar: confirmación y a las estadísticas.
-    await page.getByRole("button", { name: "Acabar el partido" }).click();
+    // El mismo cambio arrastrando del banquillo sobre quien sale, en un solo gesto. Y deshacer.
+    await bench
+      .getByRole("button", { name: /Mia Ortega/ })
+      .dragTo(page.getByRole("button", { name: "Berta Sala", exact: true }));
+    await expect(page.getByText("Entra Mia Ortega por Berta Sala")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Mia Ortega", exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "Deshacer" }).click();
+    await expect(page.getByText("Última acción deshecha.")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Berta Sala", exact: true })).toBeVisible();
+
+    // Acabar, desde el menú del partido: confirmación y a las estadísticas.
+    await page.getByRole("button", { name: "Más opciones" }).click();
+    await page.getByRole("menuitem", { name: "Acabar el partido" }).click();
     await page.getByRole("dialog").getByRole("button", { name: "Acabar el partido" }).click();
     await expect(
       page.getByText("Partido acabado. Las estadísticas ya están listas."),

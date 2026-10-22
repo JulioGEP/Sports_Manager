@@ -1,6 +1,6 @@
 # Design System · [NOMBRE DEL PRODUCTO]
 
-SaaS de gestión de clubes deportivos · Versión 1.2 · 22 de octubre de 2026
+SaaS de gestión de clubes deportivos · Versión 1.3 · 22 de octubre de 2026
 
 Este documento es la fuente de verdad del diseño. Todo lo que se construya en la app debe salir de aquí. Si algo no está definido, se pregunta antes de inventarlo.
 
@@ -423,6 +423,17 @@ La plantilla de un equipo como la piensa su entrenador: **por posición y con el
 - La ficha entera se toca y abre al jugador. Editar y quitar son `ghost` solo con icono que aparecen al pasar el ratón; en pantallas táctiles están siempre.
 - Dos o tres columnas en escritorio, una en móvil. Un control segmentado (9.3) alterna **Tablero** y **Lista**; la elección se recuerda en el navegador. Tablero por defecto.
 
+### 9.19 Consola del partido · `MatchLivePage`
+
+La única pantalla a pantalla completa del producto: en la banda el partido está vivo y cada toque cuenta. Se pinta sobre toda la ventana, sin navegación del club, y se sale con la flecha de volver de la franja del partido.
+
+- **Tres zonas, y solo tres.** La franja oscura de arriba (`bg-club-deep`) es **el partido**: marcador, faltas, cronómetro y periodo, deshacer y el menú "⋯" (convocatoria, ajustes, estadísticas, pantalla completa, acabar o reabrir). La tarjeta grande es **nuestro equipo**: la pista con el sistema de juego, el banquillo al lado y la bandeja de acciones debajo. La columna de la derecha es **el rival** (nombre y acciones) y, debajo, **las últimas acciones**. Cada tarjeta lleva su etiqueta en `text-label` mayúsculas; nada del rival se mezcla con lo nuestro.
+- **Un toque, una acción.** Tocar a alguien de la pista abre su bandeja, que está siempre en el mismo sitio y con la misma altura mínima; la persona se queda seleccionada para encadenar. Sin nadie seleccionado, la bandeja enseña las acciones del equipo (tiempo muerto, saques). Las del rival están siempre a la vista. Los botones de acción llevan el color de su categoría (favorable, pérdida, neutra) y siempre texto.
+- **La zona, sobre la pista.** Una acción que pide zona divide la mitad de ataque en nueve y oscurece la propia: un toque donde ha sido. "Registrar sin zona" y "Cancelar" esperan en la bandeja.
+- **Arrastrar y soltar como atajo, nunca como única vía.** Del banquillo a un hueco (entra), del banquillo sobre alguien de la pista (cambio), de la pista a la pista (posiciones). Todo se puede hacer también en dos toques, que es la vía del teclado y del lector de pantalla. Eventos de puntero (`apps/web/src/lib/drag.ts`), un fantasma que sigue al dedo y el destino resaltado con un aro blanco.
+- **La orientación decide la forma.** Apaisado (escritorio, tableta o móvil girado): rejilla de dos columnas sin desplazamiento de página, pista y banquillo lado a lado. Vertical: una sola columna que se desplaza, el banquillo bajo la pista y, en un móvil, un aviso de una línea para girarlo con el botón de pantalla completa. Con poca altura (`compact`: apaisado y menos de 520 px) franja, piezas y botones se encogen.
+- **Piezas.** Dorsal en círculo `bg-club` (tinta con aro blanco para el portero), nombre de pila y minutos en Geist Mono. Seleccionada: `bg-surface` con aro del club. En la pista, sobre `bg-black/35`; en el banquillo, sobre `bg-page` con borde.
+
 ---
 
 ## 10. Gráficas de rendimiento
@@ -540,6 +551,7 @@ Reglas:
 | `apps/web/src/ui/data-list.tsx` | Lista de datos con fila que se abre y acciones de fila (9.7 y 9.8) |
 | `apps/web/src/components/command-palette.tsx` | Paleta de mandos (9.17) |
 | `apps/web/src/routes/club/roster-board.tsx` | Tablero de plantilla (9.18) |
+| `apps/web/src/routes/club/match-live.tsx` · `apps/web/src/lib/drag.ts` | Consola del partido y arrastrar y soltar (9.19) |
 | `src/i18n/voice.ts` · `*.json` | Voz del club, textos e idiomas |
 | `icons/sport/*.svg` | Iconos de deporte propios |
 
@@ -619,6 +631,7 @@ Antes de crear o cambiar cualquier interfaz:
 | 9. Filas | La fila es el objeto: se abre tocándola; acciones `ghost` solo con icono, menú "⋯" en móvil | Botón "Abrir" por fila; "Editar" y "Quitar" con borde y texto en cada fila | El contenido manda y el cromo se aparta; nueve filas no son dieciocho botones |
 | 9. Uso | Paleta de mandos ⌘K con personas, equipos, pantallas y acciones | Solo navegación por menús | Gestionar 80 deportistas son gestos, no rutas; es lo que no tiene ninguna otra plataforma de clubes |
 | 9. Plantilla | Tablero por posición con el dorsal a la vista, lista como alternativa | Solo tabla | Es como un entrenador piensa su equipo; una tabla es como lo piensa una base de datos |
+| 9. Partido | Consola a pantalla completa en tres zonas (partido, nuestro equipo, rival), la zona del tiro sobre la pista y el banquillo arrastrable; la orientación decide la forma | Tarjetas apiladas dentro del espacio del club; la zona en un panel aparte | En la banda cada toque cuenta: lo nuestro y lo del rival no se mezclan y el dedo no persigue botones |
 | 5. Interacción | Confirmar siempre las acciones delicadas | Deshacer siempre | Seguridad en dinero, bajas y comunicados |
 | 6. Gráficas | Evolución para familias, comparativa para entrenadores | Radar | Lectura honesta y protección del menor |
 | 6. Chat | Canales de equipo y 1:1 familia-entrenador, visibles para la coordinación | Sin chat | Comunicación real con protección del menor |
