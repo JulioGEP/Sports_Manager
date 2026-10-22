@@ -181,7 +181,7 @@ export function InfirmaryPage() {
                 ]}
                 mobileRow={(p) => ({
                   leading: <Avatar name={p.name} src={p.photoUrl} size="sm" />,
-                  title: p.name,
+                  title: <Link to={paths.playerPerformance(p.playerId)}>{p.name}</Link>,
                   subtitle: [
                     p.team?.name,
                     access.healthRead ? injuryText(p) : null,
@@ -239,7 +239,7 @@ export function InfirmaryPage() {
               },
             ]}
             mobileRow={(s) => ({
-              title: s.name,
+              title: <Link to={paths.playerPerformance(s.playerId)}>{s.name}</Link>,
               subtitle: [dates.day(s.date), s.sorenessArea].filter(Boolean).join(" · "),
               trailing: (
                 <StatusChip kind={s.soreness <= 1 ? "danger" : "warning"}>

@@ -1,4 +1,4 @@
--- Planificación de entrenamientos, carga y salud (bloques 21 a 26, ADR 0038). El club demo llega
+-- Planificación de entrenamientos, carga y salud (bloques 21 a 26, ADR 0039). El club demo llega
 -- con lo necesario para ver el concepto sin picar datos:
 --   - Fútbol sala con seguimiento completo, sus contenidos, la biblioteca de arranque y dos semanas tipo.
 --   - Un equipo Sénior A con doce jugadores adultos, su cuerpo técnico (entrenador, preparadora física
