@@ -1,16 +1,13 @@
 import {
-  ACCESS_AREAS,
   InvitationSentResponseSchema,
   InvitationsResponseSchema,
   LOCALES,
-  MemberExclusionsResponseSchema,
   MemberSectionsResponseSchema,
   MembersResponseSchema,
   ROLE_CODES,
   SectionsResponseSchema,
   STAFF_POSITIONS,
   TeamsResponseSchema,
-  type AccessArea,
   type Invitation,
   type InvitationSentResponse,
   type Locale,
@@ -620,7 +617,6 @@ function RolesSheet({
   onChanged: () => void;
 }) {
   const t = useT("members.roles");
-  const areas = useT("members.access.areas");
   const c = useT("common");
   const roles = useT("roles");
   const positions = useT("positions");
@@ -632,8 +628,8 @@ function RolesSheet({
   const [busy, setBusy] = useState<RoleCode | null>(null);
 
   /**
-   * Alcance y exclusiones (Bloque 19): dirección y coordinación llevan secciones; cualquiera que no
-   * administre puede tener áreas excluidas. Las secciones que ya coordina cuentan solas.
+   * Alcance (Bloque 19): dirección y coordinación llevan secciones; las que ya coordina cuentan
+   * solas. Las excepciones por persona no se tocan aquí: viven solo en la pestaña "Acceso".
    */
   const withSections =
     current.includes("staff") && (position === "director" || position === "coordinator");
@@ -650,10 +646,7 @@ function RolesSheet({
   const [chosenSections, setChosenSections] = useState<Set<string>>(
     () => new Set(member.sections.map((s) => s.sectionId)),
   );
-  const [excluded, setExcluded] = useState<Set<AccessArea>>(() => new Set(member.excludedAreas));
   const [savingSections, setSavingSections] = useState(false);
-  const [savingExclusions, setSavingExclusions] = useState(false);
-  const isAdmin = current.includes("org_admin");
 
   async function saveSections() {
     setSavingSections(true);
@@ -671,23 +664,6 @@ function RolesSheet({
       setSavingSections(false);
     }
   }
-  async function saveExclusions() {
-    setSavingExclusions(true);
-    try {
-      await apiFetch(`/api/org/access/members/${member.userId}`, {
-        method: "PUT",
-        body: { areas: [...excluded] },
-        schema: MemberExclusionsResponseSchema,
-      });
-      toast("success", t("exclusionsSaved", { name: member.name }));
-      onChanged();
-    } catch (err) {
-      toast("error", errors(errorKey(err)));
-    } finally {
-      setSavingExclusions(false);
-    }
-  }
-
   type RolesResult = { roles: RoleCode[]; position: StaffPosition | null };
   async function toggle(role: RoleCode) {
     setBusy(role);
@@ -835,50 +811,6 @@ function RolesSheet({
               size="sm"
               loading={savingSections}
               onClick={() => void saveSections()}
-            >
-              {c("save")}
-            </Button>
-          </div>
-        </section>
-      ) : null}
-
-      {!isAdmin ? (
-        <section className="mt-6 flex flex-col gap-3" aria-labelledby="roles-exclusions">
-          <div className="flex flex-col gap-0.5">
-            <h3 id="roles-exclusions" className="text-body font-medium text-ink">
-              {t("exclusions")}
-            </h3>
-            <p className="text-secondary text-muted">{t("exclusionsHint")}</p>
-          </div>
-          <ul className="grid gap-1 sm:grid-cols-2">
-            {ACCESS_AREAS.map((area) => (
-              <li key={area}>
-                <label className="flex min-h-11 items-center gap-3 rounded-field px-2 hover:bg-raised">
-                  <input
-                    type="checkbox"
-                    className="size-5 accent-club"
-                    checked={excluded.has(area)}
-                    disabled={savingExclusions}
-                    onChange={(e) =>
-                      setExcluded((prev) => {
-                        const next = new Set(prev);
-                        if (e.target.checked) next.add(area);
-                        else next.delete(area);
-                        return next;
-                      })
-                    }
-                  />
-                  <span className="text-body text-ink">{t("exclude", { area: areas(area) })}</span>
-                </label>
-              </li>
-            ))}
-          </ul>
-          <div>
-            <Button
-              variant="secondary"
-              size="sm"
-              loading={savingExclusions}
-              onClick={() => void saveExclusions()}
             >
               {c("save")}
             </Button>

@@ -46,5 +46,7 @@ Las decisiones no se editan una vez aceptadas. Si cambian, se escribe una nueva 
 | 0030 | Personal con cargo, permisos por equipo, ficha para la familia, inicio operativo y reto por puntos | Aceptada |
 | 0031 | Club completo: secciones por deporte, personas y socios, agenda e instalaciones, asistencia, cuotas con Stripe y "ver como" | Aceptada |
 | 0032 | El reto tiene ámbito: de una sección entera o de un solo equipo | Aceptada |
-| 0033 | Alcance por cargo y visibilidad por rol gestionada desde "Personal" | Aceptada |
+| 0033 | Alcance por cargo y visibilidad por rol gestionada desde "Personal" | Aceptada; reglas por persona concretadas por 0035 y ampliadas por 0036 |
 | 0034 | Partido en directo: motor de registro configurable por deporte, estadísticas e histórico | Aceptada |
+| 0035 | Las exclusiones por persona se gestionan solo en la pestaña "Acceso" | Aceptada; la hoja pasa a excepciones en los dos sentidos por 0036 |
+| 0036 | Excepciones por persona en los dos sentidos: ver de más o de menos que su rol | Aceptada |

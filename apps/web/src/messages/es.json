@@ -309,11 +309,7 @@
       "sectionsHint": "Dirección y coordinación ven solo las secciones marcadas. Las que ya coordina cuentan aunque no se marquen.",
       "sectionsEmpty": "Todavía no hay secciones en el club.",
       "sectionsSaved": "Secciones de {name} guardadas.",
-      "coordinates": "Coordina",
-      "exclusions": "Exclusiones especiales",
-      "exclusionsHint": "Áreas que esta persona no ve aunque su rol sí. La administración no se excluye.",
-      "exclusionsSaved": "Exclusiones de {name} guardadas.",
-      "exclude": "No ve {area}"
+      "coordinates": "Coordina"
     },
     "inviteDrawer": {
       "title": "Invitar a alguien",
@@ -379,12 +375,37 @@
       "changed": "Cambiado respecto a lo de por defecto",
       "reset": "Volver a lo de por defecto",
       "saved": "Acceso de {profile} guardado.",
-      "adminNote": "La administración del club lo ve todo y no se puede excluir. Las familias ven solo lo de sus deportistas: agenda, reto y cuotas.",
-      "exclusionsTitle": "Exclusiones por persona",
-      "exclusionsDescription": "Personas que no ven algún área aunque su rol sí. Se cambian desde los roles de cada persona.",
-      "exclusionsEmpty": "Nadie tiene exclusiones.",
-      "excluded": "No ve: {areas}",
-      "error": "No se ha podido cargar el acceso por rol."
+      "adminNote": "La administración del club lo ve todo y no tiene excepciones. Las familias ven solo lo de sus deportistas: agenda, reto y cuotas.",
+      "overridesTitle": "Excepciones por persona",
+      "overridesDescription": "Personas que ven algo distinto de lo que ve su rol: un área de más o de menos. Se añaden, se cambian y se quitan aquí.",
+      "overridesEmpty": "Nadie tiene excepciones.",
+      "error": "No se ha podido cargar el acceso por rol.",
+      "overridesEmptyHint": "Añade a alguien del personal y marca lo que debe ver.",
+      "addOverride": "Añadir excepción",
+      "editOverride": "Editar",
+      "removeOverride": "Quitar",
+      "allowedArea": "Ve {area}",
+      "deniedArea": "Sin {area}",
+      "removed": "{name} ya no tiene excepciones: ve lo que ve su rol.",
+      "confirmRemoveTitle": "¿Quitar las excepciones de {name}?",
+      "confirmRemoveBody": "Volverá a ver lo mismo que su rol.",
+      "overrideSheet": {
+        "titleNew": "Nueva excepción",
+        "titleEdit": "Excepciones de {name}",
+        "description": "Marca lo que ve esta persona. Parte de lo que ve su rol; lo que cambies queda como excepción solo para ella. La administración del club lo ve todo y no tiene excepciones.",
+        "person": "Persona",
+        "areas": "Qué ve",
+        "roleSees": "Su rol lo ve",
+        "roleHides": "Su rol no lo ve",
+        "exceptionChip": "Excepción",
+        "none": "Cambia al menos un área respecto a su rol.",
+        "empty": "No hay personal que pueda tener excepciones: la administración lo ve todo y las familias ven solo lo suyo.",
+        "saved": "Excepciones de {name} guardadas.",
+        "byRoleTitle": "Lo que trae su rol: {roles}",
+        "scope": "Alcance: {scope}. Las excepciones no lo cambian.",
+        "hides": "Su rol no ve {areas}.",
+        "seesAll": "Su rol ve todas las áreas."
+      }
     }
   },
   "settings": {
