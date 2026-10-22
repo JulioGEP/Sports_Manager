@@ -3,7 +3,7 @@ import { ACCESS_SCOPE_KINDS, AccessAreaSchema, ConfigurableProfileSchema } from 
 
 /**
  * Gestión de acceso por rol (Bloque 19, ADR 0033), solo para `org.members.manage`: qué área
- * ve cada perfil (por defecto y con las reglas del club) y las exclusiones por persona.
+ * ve cada perfil (por defecto y con las reglas del club) y las excepciones por persona (ADR 0036).
  */
 
 export const AccessProfileRowSchema = z.object({
@@ -21,11 +21,23 @@ export const AccessProfileRowSchema = z.object({
 });
 export type AccessProfileRow = z.infer<typeof AccessProfileRowSchema>;
 
+/** Excepciones de una persona: lo que ve aunque su rol no (`allow`) y lo que no ve aunque su rol sí (`deny`). */
+export const AccessOverridesSchema = z.object({
+  allow: z.array(AccessAreaSchema),
+  deny: z.array(AccessAreaSchema),
+});
+export type AccessOverrides = z.infer<typeof AccessOverridesSchema>;
+
 export const AccessOverviewResponseSchema = z.object({
   profiles: z.array(AccessProfileRowSchema),
-  /** Personas con áreas excluidas en concreto. */
-  exclusions: z.array(
-    z.object({ userId: z.string(), name: z.string(), areas: z.array(AccessAreaSchema) }),
+  /** Personas con excepciones: ven algo distinto de lo que ve su rol. */
+  people: z.array(
+    AccessOverridesSchema.extend({
+      userId: z.string(),
+      name: z.string(),
+      /** Lo que ve por su rol, sin sus excepciones: para enseñarlo al editarlas. */
+      byRole: z.array(AccessAreaSchema),
+    }),
   ),
 });
 export type AccessOverviewResponse = z.infer<typeof AccessOverviewResponseSchema>;
@@ -34,13 +46,18 @@ export type AccessOverviewResponse = z.infer<typeof AccessOverviewResponseSchema
 export const AccessAreaUpdateSchema = z.object({ visible: z.boolean() });
 export type AccessAreaUpdate = z.infer<typeof AccessAreaUpdateSchema>;
 
-/** Las áreas que una persona concreta no ve, aunque su rol sí. Sustituye la lista. */
-export const MemberExclusionsUpdateSchema = z.object({ areas: z.array(AccessAreaSchema) });
-export type MemberExclusionsUpdate = z.infer<typeof MemberExclusionsUpdateSchema>;
-export const MemberExclusionsResponseSchema = z.object({
+/**
+ * Lo que una persona concreta ve: la lista completa de áreas. La API la compara con lo que ve por
+ * su rol y guarda solo las diferencias como excepciones; igual que su rol, no queda ninguna.
+ */
+export const MemberAccessUpdateSchema = z.object({ visible: z.array(AccessAreaSchema) });
+export type MemberAccessUpdate = z.infer<typeof MemberAccessUpdateSchema>;
+export const MemberAccessResponseSchema = AccessOverridesSchema.extend({
   userId: z.string(),
-  areas: z.array(AccessAreaSchema),
+  /** Lo que ve por su rol, para que la web enseñe la diferencia. */
+  byRole: z.array(AccessAreaSchema),
 });
+export type MemberAccessResponse = z.infer<typeof MemberAccessResponseSchema>;
 
 /** Secciones a cargo de alguien del personal (dirección, coordinación). Sustituye la lista. */
 export const MemberSectionsUpdateSchema = z.object({

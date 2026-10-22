@@ -1,6 +1,6 @@
 # 0035. Las exclusiones por persona se gestionan solo en la pestaña "Acceso"
 
-Estado: aceptada. Fecha: 2026-10-22. Fase 1, Bloque 19. Concreta la 0033.
+Estado: aceptada; la 0036 cambia la hoja y la API a excepciones en los dos sentidos (sigue en un solo sitio). Fecha: 2026-10-22. Fase 1, Bloque 19. Concreta la 0033.
 
 ## Contexto
 

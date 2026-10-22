@@ -167,7 +167,7 @@ export function accessRepo(
 
     // --- Reglas ---
 
-    /** Las reglas que afectan a una persona: las de todos los perfiles y sus exclusiones. */
+    /** Las reglas que afectan a una persona: las de todos los perfiles y sus excepciones. */
     async rulesFor(scope: OrgScope, userId: string): Promise<AccessRule[]> {
       const rows = await db()
         .select({
@@ -186,10 +186,10 @@ export function accessRepo(
       return rows.map(toRule);
     },
 
-    /** Todas las reglas del club, con el nombre de las personas excluidas. */
+    /** Todas las reglas del club, con el nombre de las personas con excepciones. */
     async listRules(scope: OrgScope): Promise<{
       profiles: AccessRule[];
-      users: { userId: string; name: string; area: AccessArea }[];
+      users: { userId: string; name: string; area: AccessArea; effect: AccessEffect }[];
     }> {
       const [profiles, users] = await Promise.all([
         db()
@@ -211,6 +211,7 @@ export function accessRepo(
             userId: schema.users.id,
             name: schema.users.name,
             area: schema.accessRules.area,
+            effect: schema.accessRules.effect,
           })
           .from(schema.accessRules)
           .innerJoin(schema.users, eq(schema.users.id, schema.accessRules.userId))
@@ -218,14 +219,17 @@ export function accessRepo(
             and(
               eq(schema.accessRules.organizationId, scope.organizationId),
               isNull(schema.accessRules.profile),
-              eq(schema.accessRules.effect, "deny"),
             ),
           )
           .orderBy(asc(schema.users.name)),
       ]);
       return {
         profiles: profiles.map(toRule),
-        users: users.map((u) => ({ ...u, area: u.area as AccessArea })),
+        users: users.map((u) => ({
+          ...u,
+          area: u.area as AccessArea,
+          effect: u.effect as AccessEffect,
+        })),
       };
     },
 
@@ -257,13 +261,16 @@ export function accessRepo(
       }
     },
 
-    /** Sustituye las áreas excluidas a una persona. */
-    async setUserExclusions(
+    /** Sustituye las excepciones de una persona: lo que ve de más y lo que no ve de su rol. */
+    async setUserOverrides(
       scope: OrgScope,
       userId: string,
-      areas: AccessArea[],
-    ): Promise<AccessArea[]> {
-      const unique = [...new Set(areas)];
+      overrides: { allow: AccessArea[]; deny: AccessArea[] },
+    ): Promise<void> {
+      const rows = [
+        ...overrides.allow.map((area) => ({ area, effect: "allow" as const })),
+        ...overrides.deny.map((area) => ({ area, effect: "deny" as const })),
+      ];
       await db().transaction(async (tx) => {
         await tx
           .delete(schema.accessRules)
@@ -273,38 +280,38 @@ export function accessRepo(
               eq(schema.accessRules.userId, userId),
             ),
           );
-        if (unique.length > 0) {
-          await tx.insert(schema.accessRules).values(
-            unique.map((area) => ({
-              organizationId: scope.organizationId,
-              userId,
-              area,
-              effect: "deny" as const,
-            })),
-          );
+        if (rows.length > 0) {
+          await tx
+            .insert(schema.accessRules)
+            .values(rows.map((r) => ({ organizationId: scope.organizationId, userId, ...r })));
         }
       });
-      return unique;
     },
 
-    async exclusionsByUser(scope: OrgScope, userIds: string[]): Promise<Map<string, AccessArea[]>> {
-      const map = new Map<string, AccessArea[]>();
+    async overridesByUser(
+      scope: OrgScope,
+      userIds: string[],
+    ): Promise<Map<string, { allow: AccessArea[]; deny: AccessArea[] }>> {
+      const map = new Map<string, { allow: AccessArea[]; deny: AccessArea[] }>();
       if (userIds.length === 0) return map;
       const rows = await db()
-        .select({ userId: schema.accessRules.userId, area: schema.accessRules.area })
+        .select({
+          userId: schema.accessRules.userId,
+          area: schema.accessRules.area,
+          effect: schema.accessRules.effect,
+        })
         .from(schema.accessRules)
         .where(
           and(
             eq(schema.accessRules.organizationId, scope.organizationId),
             inArray(schema.accessRules.userId, userIds),
-            eq(schema.accessRules.effect, "deny"),
           ),
         );
       for (const row of rows) {
         if (!row.userId) continue;
-        const list = map.get(row.userId) ?? [];
-        list.push(row.area as AccessArea);
-        map.set(row.userId, list);
+        const entry = map.get(row.userId) ?? { allow: [], deny: [] };
+        entry[row.effect as AccessEffect].push(row.area as AccessArea);
+        map.set(row.userId, entry);
       }
       return map;
     },

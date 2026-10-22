@@ -89,8 +89,11 @@ export const MemberSchema = z.object({
   teams: z.array(z.object({ teamId: z.string(), teamName: z.string() })),
   /** Secciones a su cargo (Bloque 19): las que coordina o las que le asignó la administración. */
   sections: z.array(z.object({ sectionId: z.string(), sectionName: z.string() })),
-  /** Áreas que la administración le ha excluido a esta persona en concreto. */
-  excludedAreas: z.array(AccessAreaSchema),
+  /** Excepciones de esta persona (ADR 0036): lo que ve de más y de menos respecto a su rol. */
+  accessOverrides: z.object({
+    allow: z.array(AccessAreaSchema),
+    deny: z.array(AccessAreaSchema),
+  }),
   memberSince: z.string(),
 });
 export const MembersResponseSchema = z.object({ members: z.array(MemberSchema) });
