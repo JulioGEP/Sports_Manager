@@ -526,7 +526,8 @@ export const SectionDetailResponseSchema = z.object({
     ),
     eventsThisWeek: z.number().int().nonnegative(),
   }),
-  access: z.object({ write: z.boolean() }),
+  /** `removable`: sin equipos en ninguna temporada, se puede eliminar; con ellos, solo archivar. */
+  access: z.object({ write: z.boolean(), removable: z.boolean() }),
 });
 export type SectionDetailResponse = z.infer<typeof SectionDetailResponseSchema>;
 

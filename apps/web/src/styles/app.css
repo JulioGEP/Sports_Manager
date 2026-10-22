@@ -6,6 +6,13 @@
 @import "@sportsmanager/design/tailwind/theme.css";
 
 /*
+ * Los componentes del design system (diálogo de confirmación, chips, cabecera del club) traen sus
+ * clases: Tailwind no mira fuera de la app si no se le dice, y sin esto el botón rojo del diálogo
+ * de confirmación salía sin fondo.
+ */
+@source "../../../../packages/design/src";
+
+/*
  * Consola del partido (DESIGN.md 9.19): un móvil en horizontal tiene muy poca altura, así que la
  * consola se compacta (piezas y botones más bajos) cuando está apaisada y no llega a 520 px.
  */

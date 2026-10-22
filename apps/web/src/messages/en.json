@@ -797,7 +797,8 @@
     },
     "section": {
       "created": "Section created",
-      "updated": "Section edited"
+      "updated": "Section edited",
+      "removed": "Section deleted"
     },
     "team": {
       "created": "Team created",
@@ -1914,7 +1915,20 @@
     },
     "tabChallenges": "Challenges",
     "matchConfig": "Live match",
-    "training": "Training"
+    "training": "Training",
+    "more": "More actions",
+    "archive": "Archive",
+    "restore": "Reactivate",
+    "remove": "Delete",
+    "confirmRemoveTitle": "Delete {name}?",
+    "confirmRemoveBody": "The section, its categories and its settings are deleted. Events and fees that named it stay with the club. This can't be undone.",
+    "confirmArchiveTitle": "Archive {name}?",
+    "confirmArchiveBody": "It no longer shows among active sections. Its teams and history are kept, and you can reactivate it at any time.",
+    "cannotRemoveTitle": "{name} can't be deleted",
+    "cannotRemoveBody": "It has teams with their history: rosters, schedule and matches. To keep it, archive the section: it no longer shows among active ones and you can reactivate it at any time.",
+    "removed": "Section {name} deleted.",
+    "archivedToast": "Section archived.",
+    "restoredToast": "Section reactivated."
   },
   "sectionKinds": {
     "competition": "Competition",

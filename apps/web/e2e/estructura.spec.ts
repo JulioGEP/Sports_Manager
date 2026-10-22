@@ -64,6 +64,20 @@ test.describe("estructura del club", () => {
     await expect(page.getByRole("heading", { name: "Resumen" })).toBeVisible();
     await page.getByRole("link", { name: "Secciones", exact: true }).first().click();
     await expect(page.getByRole("link", { name: new RegExp(`Pádel ${sfx}`) })).toBeVisible();
+    // El alta está solo en la última tarjeta de la rejilla, no también en la cabecera.
+    await expect(page.getByRole("button", { name: "Nueva sección" })).toHaveCount(1);
+
+    // Sin equipos, la sección creada por error o de prueba se elimina desde su ficha.
+    await page.getByRole("link", { name: new RegExp(`Pádel ${sfx}`) }).click();
+    await page.getByRole("button", { name: "Más acciones" }).click();
+    await page.getByRole("menuitem", { name: "Eliminar" }).click();
+    const removeDialog = page.getByRole("dialog", { name: `¿Eliminar Pádel ${sfx}?` });
+    await expect(removeDialog).toBeVisible();
+    await shot(page, "32b-seccion-eliminar", info.project.name);
+    await removeDialog.getByRole("button", { name: "Eliminar" }).click();
+    await expect(page.getByText(`Sección Pádel ${sfx} eliminada.`)).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Secciones" })).toBeVisible();
+    await expect(page.getByRole("link", { name: new RegExp(`Pádel ${sfx}`) })).toHaveCount(0);
 
     // Ficha de la sección de fútbol sala: categorías con sus equipos, personal y resumen.
     await page.getByRole("link", { name: /Fútbol sala/ }).click();
@@ -73,6 +87,14 @@ test.describe("estructura del club", () => {
     await expect(page.getByRole("heading", { name: "Resumen" })).toBeVisible();
     await shot(page, "31-seccion-ficha", info.project.name);
     await expectLegibleButtons(page);
+    // Con equipos no se elimina: el diálogo lo explica y propone archivarla.
+    await page.getByRole("button", { name: "Más acciones" }).click();
+    await page.getByRole("menuitem", { name: "Eliminar" }).click();
+    const keepDialog = page.getByRole("dialog", { name: "Fútbol sala no se puede eliminar" });
+    await expect(keepDialog.getByRole("button", { name: "Archivar" })).toBeVisible();
+    await shot(page, "31c-seccion-no-eliminable", info.project.name);
+    await keepDialog.getByRole("button", { name: "Cancelar" }).click();
+    await expect(keepDialog).toBeHidden();
 
     await page.getByRole("tab", { name: /Personal/ }).click();
     await expect(page.getByText("Carla Vidal").first()).toBeVisible();
