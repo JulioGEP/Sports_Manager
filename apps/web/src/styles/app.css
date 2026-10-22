@@ -5,6 +5,12 @@
 /* Tema de Tailwind v4 del design system: tokens, club, formas y modo oscuro. */
 @import "@sportsmanager/design/tailwind/theme.css";
 
+/*
+ * Consola del partido (DESIGN.md 9.19): un móvil en horizontal tiene muy poca altura, así que la
+ * consola se compacta (piezas y botones más bajos) cuando está apaisada y no llega a 520 px.
+ */
+@custom-variant compact (@media (orientation: landscape) and (max-height: 520px));
+
 @theme {
   /* Las fuentes variables de @fontsource se registran como "Geist Variable". */
   --font-sans:
