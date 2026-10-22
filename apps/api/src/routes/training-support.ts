@@ -46,7 +46,7 @@ import { requireSession } from "../http/session.ts";
 import { requireOrganizationHost, resolveTenant } from "../http/tenant.ts";
 
 /**
- * Piezas comunes de las rutas de entrenamiento, carga y salud (ADR 0038): cadena de acceso,
+ * Piezas comunes de las rutas de entrenamiento, carga y salud (ADR 0039): cadena de acceso,
  * ámbito, permisos por bloque y el ensamblado de las recomendaciones a partir de partidos,
  * sesiones, carga, bienestar y disponibilidad.
  */

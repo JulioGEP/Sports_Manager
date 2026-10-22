@@ -95,7 +95,7 @@ const percent = (part: number, whole: number) =>
   whole > 0 ? Math.round((part / whole) * 100) : null;
 
 /**
- * Metodología de la sección (ADR 0038): lo que la coordinación necesita para ver si se cumple.
+ * Metodología de la sección (ADR 0039): lo que la coordinación necesita para ver si se cumple.
  * Arriba, el reparto objetivo de contenidos por categoría; debajo, por equipo, cuántos
  * entrenamientos tienen sesión planificada y cerrada, cómo se reparten los minutos y cuánto se
  * entrena con tareas de la biblioteca oficial.

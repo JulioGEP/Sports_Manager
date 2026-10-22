@@ -24,7 +24,7 @@ import { createDataLayer, createMemoryBlobStore, type DataLayer } from "../data/
 import { createSeeder } from "../data/testing/seed.ts";
 
 /**
- * Planificación de entrenamientos, carga y salud (bloques 21 a 26, ADR 0038) contra una base real:
+ * Planificación de entrenamientos, carga y salud (bloques 21 a 26, ADR 0039) contra una base real:
  * catálogo y biblioteca de la sección, sesiones con bloques por papel, semana con MD, cierre con
  * RPE, disponibilidad y conflictos, salud con consentimiento y auditoría, recomendaciones, el
  * deportista adulto, tests y la familia, metodología y aislamiento entre clubes.

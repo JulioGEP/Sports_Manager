@@ -119,7 +119,7 @@ function ClubFrame({ children }: { children: ReactNode }) {
         has("org.facilities.read")
           ? { to: paths.facilities, label: t("facilities"), icon: Icon.Buildings, end: false }
           : null,
-        // Entrenamiento (ADR 0038): una sola entrada; la biblioteca, la carga y la enfermería
+        // Entrenamiento (ADR 0039): una sola entrada; la biblioteca, la carga y la enfermería
         // cuelgan de su portada.
         has("org.training.read")
           ? { to: paths.training, label: t("training"), icon: Icon.SportIcons.Silbato, end: false }

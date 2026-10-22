@@ -181,7 +181,7 @@ interface ItemEditor {
 }
 
 /**
- * Sesión de entrenamiento (ADR 0038): cabecera, tareas por bloque y la plantilla del día con su
+ * Sesión de entrenamiento (ADR 0039): cabecera, tareas por bloque y la plantilla del día con su
  * disponibilidad. Cada papel del cuerpo técnico edita sus bloques; quien lleva la parte principal
  * edita la cabecera, copia y quita la sesión. El cierre registra asistencia, RPE y valoración.
  */

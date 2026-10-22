@@ -48,7 +48,7 @@ export const mdOf = (offset: number) =>
   offset === 0 ? "MD" : offset > 0 ? `MD+${offset}` : `MD${offset}`;
 
 /**
- * Ajustes de entrenamiento de una sección (ADR 0038): el nivel de seguimiento, los umbrales de las
+ * Ajustes de entrenamiento de una sección (ADR 0039): el nivel de seguimiento, los umbrales de las
  * recomendaciones, el reparto objetivo de contenidos por categoría, el catálogo de contenidos y
  * las semanas tipo. El deporte propone; la sección decide. Sin permiso se ve, no se cambia.
  */

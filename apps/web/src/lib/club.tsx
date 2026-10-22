@@ -245,7 +245,7 @@ export const clubPaths = (slug: string) => ({
   challenge: (id: string) => `/${slug}/challenges/${id}`,
   invitation: (token: string) => `/${slug}/invitations/${token}`,
   /**
-   * Entrenamiento (ADR 0038): la portada con los equipos, la semana de cada equipo con su
+   * Entrenamiento (ADR 0039): la portada con los equipos, la semana de cada equipo con su
    * temporada, histórico, carga y tests, la sesión con su modo pista e impresión, la biblioteca,
    * el rendimiento del jugador, la enfermería, los ajustes y la metodología de la sección, y el
    * bienestar del deportista adulto.

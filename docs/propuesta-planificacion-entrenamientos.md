@@ -1,6 +1,6 @@
 # Propuesta: planificación de entrenamientos, seguimiento y recomendaciones
 
-Estado: aprobada y construida (ADR 0038). Fecha: 22 de octubre de 2026. Punto de partida: Bloque 20 (ADR 0034) y la consola del partido (ADR 0037). Deporte de referencia: fútbol sala; el modelo vale para cualquier deporte de equipo.
+Estado: aprobada y construida (ADR 0039). Fecha: 22 de octubre de 2026. Punto de partida: Bloque 20 (ADR 0034) y la consola del partido (ADR 0037). Deporte de referencia: fútbol sala; el modelo vale para cualquier deporte de equipo.
 
 Resumen:
 

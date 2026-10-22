@@ -88,7 +88,7 @@ function refreshOthers(
 }
 
 /**
- * Rendimiento de un jugador (bloques 22 a 26, ADR 0038): disponibilidad, recomendaciones, carga,
+ * Rendimiento de un jugador (bloques 22 a 26, ADR 0039): disponibilidad, recomendaciones, carga,
  * bienestar, objetivo de trabajo y tests. La Salud (lesiones y readaptación) solo aparece para
  * quien tiene acceso a ella, y cada consulta queda en la auditoría.
  */

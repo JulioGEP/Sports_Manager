@@ -18,7 +18,7 @@ import { Alert, Avatar, Card, DataList, EmptyState, Icon, PageHeader, Stat } fro
 type LoadRow = TeamLoadResponse["players"][number];
 
 /**
- * Panel de carga del equipo (Bloque 22, ADR 0038): por jugador, la carga aguda frente a la
+ * Panel de carga del equipo (Bloque 22, ADR 0039): por jugador, la carga aguda frente a la
  * crónica, la monotonía, los últimos 28 días y el último bienestar, con las recomendaciones de
  * carga. La relación aguda:crónica es un aviso para revisar, nunca una predicción de lesión.
  */

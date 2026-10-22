@@ -46,7 +46,7 @@ import { players, seasons, sections, teams } from "./structure.ts";
 
 /**
  * Planificación de entrenamientos, carga, disponibilidad y salud (Fase 1, bloques 21 a 26,
- * ADR 0038). Todo lleva `organization_id` (ADR 0015). La sesión cuelga del entrenamiento de la
+ * ADR 0039). Todo lleva `organization_id` (ADR 0015). La sesión cuelga del entrenamiento de la
  * agenda; las tareas de una sesión copian lo que importa de la tarea de la biblioteca (contenidos
  * y restricciones) para que el histórico no cambie si la biblioteca cambia.
  */

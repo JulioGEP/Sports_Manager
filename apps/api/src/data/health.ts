@@ -17,7 +17,7 @@ import { and, asc, desc, eq, inArray, isNull, ne } from "drizzle-orm";
 import type { OrgScope } from "./scope.ts";
 
 /**
- * Salud (Bloque 24, ADR 0038): consentimiento, lesiones con diagnóstico y fases de readaptación.
+ * Salud (Bloque 24, ADR 0039): consentimiento, lesiones con diagnóstico y fases de readaptación.
  * Categoría especial del RGPD: solo se llega aquí con `org.health.read` y cada lectura queda en la
  * auditoría (lo hace la ruta). Toda consulta lleva el ámbito del club (ADR 0015).
  */

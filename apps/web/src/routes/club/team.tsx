@@ -416,7 +416,7 @@ export function TeamPage() {
             </Card>
           ) : null}
 
-          {/* Entrenamiento (ADR 0038): la semana, la temporada, la carga y los tests del equipo. */}
+          {/* Entrenamiento (ADR 0039): la semana, la temporada, la carga y los tests del equipo. */}
           {canSeeTraining ? (
             <Card title={t("training.title")} description={t("training.description")}>
               <div className="flex flex-wrap gap-2">

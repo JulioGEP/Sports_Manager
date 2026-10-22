@@ -2533,6 +2533,8 @@
     "lineupHint": "{count} de {total} en pista. Coloca el quinteto inicial: arrastra del banquillo a un hueco, o toca a uno y luego el hueco. Portero y convocados, en Convocatoria.",
     "benchSelected": "{name} está listo para entrar: toca a quien sale de la pista o un hueco libre.",
     "teamActions": "Acciones del equipo",
+    "matchActions": "Acciones del partido",
+    "noActions": "Sin acciones: se configuran en la sección.",
     "bench": "Banquillo",
     "benchHint": "Arrastra a la pista",
     "benchEmpty": "Nadie en el banquillo.",
@@ -2732,7 +2734,8 @@
     "scopes": {
       "player": "Jugador",
       "team": "Equipo",
-      "opponent": "Rival"
+      "opponent": "Rival",
+      "match": "Partido"
     },
     "categories": {
       "positive": "Favorable",

@@ -67,7 +67,7 @@ import {
 
 /**
  * Carga, bienestar, disponibilidad, tests físicos y rendimiento del jugador (bloques 22, 24, 25 y
- * 26, ADR 0038). Ver la carga pide `org.load.read`; registrarla, `org.load.write` o
+ * 26, ADR 0039). Ver la carga pide `org.load.read`; registrarla, `org.load.write` o
  * `org.load.write_own` (sus equipos); la disponibilidad la ponen fisioterapia, preparación
  * física y la administración (`org.availability.write`) y la ve todo el cuerpo técnico. El
  * deportista adulto con cuenta propia responde su bienestar y su RPE (decisión 3).

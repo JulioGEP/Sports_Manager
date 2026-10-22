@@ -112,7 +112,7 @@ export const matches = pgTable(
     clockElapsedMs: integer("clock_elapsed_ms").notNull().default(0),
     clockRunningSince: timestamp("clock_running_since", { withTimezone: true }),
     notes: text("notes"),
-    /** RPE del partido para el equipo (ADR 0038); el de cada jugador va en `player_loads`. */
+    /** RPE del partido para el equipo (ADR 0039); el de cada jugador va en `player_loads`. */
     rpe: integer("rpe"),
     createdBy: uuid("created_by").references(() => users.id, { onDelete: "set null" }),
     finishedAt: timestamp("finished_at", { withTimezone: true }),

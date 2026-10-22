@@ -50,7 +50,7 @@ describe("roles y permisos", () => {
       "org.training.read",
       "org.training.write_own",
     ]);
-    // Salud es un área aparte (ADR 0038): ni el cuerpo técnico ni la administración la ven por defecto.
+    // Salud es un área aparte (ADR 0039): ni el cuerpo técnico ni la administración la ven por defecto.
     expect(hasPermission(["coach"], "org.health.read")).toBe(false);
     expect(hasPermission(["org_admin"], "org.health.read")).toBe(false);
     expect(hasPermission(["org_admin"], "org.availability.write")).toBe(true);

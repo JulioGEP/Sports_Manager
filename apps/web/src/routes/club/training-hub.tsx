@@ -7,7 +7,7 @@ import { useT } from "@/lib/intl";
 import { Alert, ButtonLink, Card, DataList, EmptyState, Icon, PageHeader } from "@/ui";
 
 /**
- * Portada de entrenamiento (ADR 0038): los equipos de su ámbito con la entrada a la semana de
+ * Portada de entrenamiento (ADR 0039): los equipos de su ámbito con la entrada a la semana de
  * cada uno, la biblioteca de tareas, la enfermería para quien la lleva y, para quien coordina,
  * los ajustes y la metodología de cada sección.
  */

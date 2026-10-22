@@ -5,7 +5,7 @@ import { TimeOfDaySchema } from "./events.ts";
 
 /**
  * Planificación de entrenamientos, carga, disponibilidad y salud (Fase 1, bloques 21 a 26,
- * ADR 0038, `docs/propuesta-planificacion-entrenamientos.md`).
+ * ADR 0039, `docs/propuesta-planificacion-entrenamientos.md`).
  *
  * La sesión cuelga del entrenamiento de la agenda. Lo que se entrena son **contenidos** (un
  * catálogo por sección que el deporte propone y el club edita, como las acciones del partido) y

@@ -28,7 +28,7 @@ import {
   TrainingSettingsSchema,
 } from "../training.ts";
 
-/** Contratos de entrenamiento, carga y salud (bloques 21 a 26, ADR 0038). */
+/** Contratos de entrenamiento, carga y salud (bloques 21 a 26, ADR 0039). */
 
 const Ref = z.object({ id: z.string(), name: z.string() });
 

@@ -51,7 +51,7 @@ const textareaClass =
   "focus:border-2 focus:border-club focus:shadow-[0_0_0_4px_var(--club-soft)]";
 
 /**
- * Ficha de una tarea de la biblioteca (ADR 0038): la pizarra, su desarrollo, su ficha y su uso.
+ * Ficha de una tarea de la biblioteca (ADR 0039): la pizarra, su desarrollo, su ficha y su uso.
  * Quien gestiona su ámbito la edita aquí mismo; `/drills/new` abre el alta con el mismo editor.
  */
 export function DrillPage() {

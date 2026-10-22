@@ -24,7 +24,7 @@ const PRINT_CSS = `@page { size: A4; margin: 12mm; }
   #session-print { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }`;
 
-/** Hoja de la sesión para imprimir (ADR 0038): cabecera, tareas por bloque con su pizarra y la plantilla con casillas. */
+/** Hoja de la sesión para imprimir (ADR 0039): cabecera, tareas por bloque con su pizarra y la plantilla con casillas. */
 export function SessionPrintPage() {
   const { id = "" } = useParams();
   const detail = useSessionDetail(id);

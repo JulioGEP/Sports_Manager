@@ -538,10 +538,10 @@ function ActionSheet({
       name: name.trim(),
       category,
       scope,
-      ownScore: scope === "opponent" ? 0 : ownScore,
+      ownScore: scope === "player" || scope === "team" ? ownScore : 0,
       opponentScore: scope === "opponent" ? opponentScore : 0,
-      countsFoul,
-      card: card || null,
+      countsFoul: scope === "match" ? false : countsFoul,
+      card: scope === "match" ? null : card || null,
       requiresZone: scope === "player" ? requiresZone : false,
       keeperOnly: scope === "player" ? keeperOnly : false,
       weight: Math.max(
@@ -672,7 +672,7 @@ function ActionSheet({
                 />
               )}
             </Field>
-          ) : (
+          ) : scope === "match" ? null : (
             <Field label={t("ownScore")} hint={t("scoreHint")}>
               {(id) => (
                 <Input
@@ -701,19 +701,21 @@ function ActionSheet({
               />
             )}
           </Field>
-          <Field label={t("card")}>
-            {(id) => (
-              <Select
-                id={id}
-                value={card}
-                onChange={(e) => setCard(e.target.value as MatchCard | "")}
-              >
-                <option value="">{t("noCard")}</option>
-                <option value="yellow">{tc("flags.card.yellow")}</option>
-                <option value="red">{tc("flags.card.red")}</option>
-              </Select>
-            )}
-          </Field>
+          {scope === "match" ? null : (
+            <Field label={t("card")}>
+              {(id) => (
+                <Select
+                  id={id}
+                  value={card}
+                  onChange={(e) => setCard(e.target.value as MatchCard | "")}
+                >
+                  <option value="">{t("noCard")}</option>
+                  <option value="yellow">{tc("flags.card.yellow")}</option>
+                  <option value="red">{tc("flags.card.red")}</option>
+                </Select>
+              )}
+            </Field>
+          )}
           {scope === "opponent" ? (
             <Field label={t("mirrorOf")} hint={t("mirrorHint")}>
               {(id) => (
@@ -730,7 +732,9 @@ function ActionSheet({
           ) : null}
         </div>
         <div className="grid gap-1 sm:grid-cols-2">
-          {check("action-foul", t("countsFoul"), countsFoul, setCountsFoul)}
+          {scope === "match"
+            ? null
+            : check("action-foul", t("countsFoul"), countsFoul, setCountsFoul)}
           {check("action-quick", t("quick"), quick, setQuick)}
           {scope === "player"
             ? check("action-zone", t("requiresZone"), requiresZone, setRequiresZone)

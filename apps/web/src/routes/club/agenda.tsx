@@ -543,7 +543,7 @@ function EventDetailSheet({
 }
 
 /**
- * La sesión de un entrenamiento (ADR 0038): si está planificada, se abre; si no, quien planifica
+ * La sesión de un entrenamiento (ADR 0039): si está planificada, se abre; si no, quien planifica
  * ese equipo la crea desde aquí. La API decide si puede (403 o 404 si no es de los suyos).
  */
 function TrainingSessionLink({ eventId, teamId }: { eventId: string; teamId: string }) {

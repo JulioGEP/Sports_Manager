@@ -29,7 +29,7 @@ type Answers = Record<WellnessItem, number | null>;
 const EMPTY: Answers = { sleep: null, fatigue: null, soreness: null, stress: null, mood: null };
 
 /**
- * El deportista adulto con su cuenta (ADR 0038): responde cómo llega hoy (cinco preguntas de 1 a
+ * El deportista adulto con su cuenta (ADR 0039): responde cómo llega hoy (cinco preguntas de 1 a
  * 5, 5 es lo mejor) y el esfuerzo de los entrenamientos que acaba de hacer. Pensado para el móvil
  * al salir de entrenar: pocas pantallas, un toque por respuesta.
  */

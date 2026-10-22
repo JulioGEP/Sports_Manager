@@ -7,7 +7,7 @@ import { useT } from "@/lib/intl";
 import { Card } from "@/ui";
 
 /**
- * Tests físicos de uno de los suyos, para la familia (ADR 0038, DESIGN.md 10): la evolución de
+ * Tests físicos de uno de los suyos, para la familia (ADR 0039, DESIGN.md 10): la evolución de
  * cada prueba, siempre comparada consigo mismo y nunca con el equipo. Sin resultados no se pinta.
  */
 export function FamilyTestsCard({ playerId }: { playerId: string }) {

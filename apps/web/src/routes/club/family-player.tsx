@@ -273,7 +273,7 @@ export function FamilyPlayerPage() {
         {/* Partidos (Bloque 20): el resultado del equipo y la línea de este jugador, nunca la de otros. */}
         <PlayerMatchesCard playerId={id} family />
 
-        {/* Tests físicos (ADR 0038): su evolución, nunca comparada con nadie. */}
+        {/* Tests físicos (ADR 0039): su evolución, nunca comparada con nadie. */}
         <FamilyTestsCard playerId={id} />
 
         {/* Retos: los de su sección y los de su equipo (ADR 0032). Solo sus puntos, nunca los de otros. */}

@@ -1,5 +1,5 @@
 /**
- * Carga de entrenamiento (bloques 22 y 25, ADR 0038). Método de Foster: la carga de una sesión
+ * Carga de entrenamiento (bloques 22 y 25, ADR 0039). Método de Foster: la carga de una sesión
  * es el esfuerzo percibido (RPE de 0 a 10) por los minutos, en unidades arbitrarias. De ahí salen
  * la carga semanal, la aguda (7 días) frente a la crónica (media semanal de 28 días), la
  * monotonía y la tensión. Funciones puras: la API y la web calculan lo mismo con los mismos datos.

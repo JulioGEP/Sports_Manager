@@ -516,7 +516,7 @@ describe("esquema del Bloque 2 (Postgres embebido con todas las migraciones)", (
          (select count(*) from team_staff ts join users u on u.id = ts.user_id where u.email = 'entrenador@demo.test') as staff,
          (select count(*) from player_guardians pg join users u on u.id = pg.user_id where u.email = 'familia@demo.test') as guardians`,
     );
-    // Doce equipos y 95 jugadores: el Sénior A de fútbol sala llega con el entrenamiento (ADR 0038).
+    // Doce equipos y 95 jugadores: el Sénior A de fútbol sala llega con el entrenamiento (ADR 0039).
     expect(Number(rows[0]!.teams)).toBe(12);
     expect(Number(rows[0]!.players)).toBe(95);
     expect(Number(rows[0]!.staff)).toBe(1);
@@ -631,7 +631,7 @@ describe("esquema del Bloque 2 (Postgres embebido con todas las migraciones)", (
     ).toBe(CHECK_VIOLATION);
   });
 
-  it("el entrenamiento del demo (ADR 0038): biblioteca, sesiones con carga, salud con consentimiento y restricciones", async () => {
+  it("el entrenamiento del demo (ADR 0039): biblioteca, sesiones con carga, salud con consentimiento y restricciones", async () => {
     const { rows } = await client.query<Record<string, string>>(
       `select
          (select count(*) from training_contents c join organizations o on o.id = c.organization_id where o.slug = 'demo') as contents,

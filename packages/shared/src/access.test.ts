@@ -79,7 +79,7 @@ describe("ámbito y áreas de acceso (Bloque 19)", () => {
       "challenges",
       "training",
     ]);
-    // Todo menos Salud (ADR 0038): la administración no ve diagnósticos por defecto.
+    // Todo menos Salud (ADR 0039): la administración no ve diagnósticos por defecto.
     expect(visibleAreas(defaultPermissionsOf("org_admin"))).toEqual(
       ACCESS_AREAS.filter((a) => a !== "health"),
     );

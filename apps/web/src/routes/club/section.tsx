@@ -154,7 +154,7 @@ export function SectionPage() {
         }
         actions={
           <>
-            {/* Metodología y ajustes de entrenamiento de la sección (ADR 0038). */}
+            {/* Metodología y ajustes de entrenamiento de la sección (ADR 0039). */}
             {!activity && org.actor.permissions.includes("org.training.read") ? (
               <ButtonLink to={paths.sectionMethodology(id)} variant="secondary" action="open">
                 {t("training")}

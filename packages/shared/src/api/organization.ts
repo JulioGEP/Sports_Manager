@@ -26,7 +26,7 @@ export const ActorSchema = z.discriminatedUnion("kind", [
     /** Qué parte del club ve (Bloque 19): todo, o sus secciones, equipos y deportistas. */
     scope: AccessScopeSummarySchema,
     /**
-     * Su propia ficha de deportista, si su cuenta la tiene (ADR 0038): el adulto que entrena y
+     * Su propia ficha de deportista, si su cuenta la tiene (ADR 0039): el adulto que entrena y
      * responde su bienestar y su RPE.
      */
     athletePlayerId: z.string().nullable().optional(),

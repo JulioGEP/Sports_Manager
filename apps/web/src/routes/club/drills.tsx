@@ -51,7 +51,7 @@ export function useDrillPlayers() {
 }
 
 /**
- * Biblioteca de tareas (ADR 0038): las del club, las de las secciones y equipos del ámbito y las
+ * Biblioteca de tareas (ADR 0039): las del club, las de las secciones y equipos del ámbito y las
  * propias. Los filtros de contenido, sección o equipo y archivadas van a la API y viven en la URL
  * (así enlazan los contenidos de una recomendación); el texto y el ámbito filtran aquí.
  */

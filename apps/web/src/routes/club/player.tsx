@@ -158,7 +158,7 @@ export function PlayerPage() {
   const canWrite = permissions.includes("org.players.write");
   const canInvite = permissions.includes("org.members.invite");
   const canChallenges = permissions.includes("org.challenges.read");
-  /** Rendimiento (ADR 0038): disponibilidad, carga, bienestar, tests y, con acceso, la salud. */
+  /** Rendimiento (ADR 0039): disponibilidad, carga, bienestar, tests y, con acceso, la salud. */
   const canSeePerformance =
     permissions.includes("org.load.read") || permissions.includes("org.health.read");
 

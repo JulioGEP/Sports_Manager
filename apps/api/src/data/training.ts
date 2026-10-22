@@ -33,7 +33,7 @@ import { fromLocal, localParts } from "./events.ts";
 import type { OrgScope } from "./scope.ts";
 
 /**
- * Planificación de entrenamientos (bloques 21, 22 y 26, ADR 0038): contenidos y semanas tipo de
+ * Planificación de entrenamientos (bloques 21, 22 y 26, ADR 0039): contenidos y semanas tipo de
  * cada sección, biblioteca de tareas, plan de temporada con sus ciclos y las sesiones de cada
  * entrenamiento de la agenda. Toda consulta lleva el ámbito del club (ADR 0015). Las fechas de
  * sesión son días de calendario en la zona horaria del club.

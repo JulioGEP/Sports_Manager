@@ -23,7 +23,7 @@ import type { OrgScope } from "./scope.ts";
 
 /**
  * Carga, bienestar, disponibilidad, tests físicos, objetivo de trabajo del jugador y respuestas a
- * las recomendaciones (bloques 22, 23, 24 y 25, ADR 0038). Toda consulta lleva el ámbito del club
+ * las recomendaciones (bloques 22, 23, 24 y 25, ADR 0039). Toda consulta lleva el ámbito del club
  * (ADR 0015). Nada de esto es diagnóstico: la salud vive en `health.ts`.
  */
 

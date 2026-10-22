@@ -2533,6 +2533,8 @@
     "lineupHint": "{count} of {total} on court. Set the starting line-up: drag from the bench to an empty slot, or tap one and then the slot. Goalkeeper and call-ups, in Squad.",
     "benchSelected": "{name} is ready to come on: tap who leaves the court or an empty slot.",
     "teamActions": "Team actions",
+    "matchActions": "Match actions",
+    "noActions": "No actions: they are set up in the section.",
     "bench": "Bench",
     "benchHint": "Drag onto the court",
     "benchEmpty": "Nobody on the bench.",
@@ -2732,7 +2734,8 @@
     "scopes": {
       "player": "Player",
       "team": "Team",
-      "opponent": "Opponent"
+      "opponent": "Opponent",
+      "match": "Match"
     },
     "categories": {
       "positive": "Favourable",

@@ -87,7 +87,7 @@ export const PERMISSIONS = [
   "org.matches.write_own",
   "org.matches.configure",
   /**
-   * Entrenamiento (bloques 21 a 26, ADR 0038): planificación, sesiones, biblioteca, disponibilidad
+   * Entrenamiento (bloques 21 a 26, ADR 0039): planificación, sesiones, biblioteca, disponibilidad
    * sin diagnóstico y recomendaciones (`read`); planificar en cualquier equipo del ámbito
    * (`write`) o en los propios (`write_own`, por bloques según el papel en el equipo); la
    * biblioteca del club y la metodología (`library`).
@@ -168,7 +168,7 @@ export const ROLE_PERMISSIONS: Record<RoleCode, readonly Permission[]> = {
     "org.load.write",
     // Un club sin fisioterapia también tiene que poder decir quién no está disponible.
     "org.availability.write",
-    // Salud no: la administración no la ve por defecto (ADR 0038); se le abre por excepción.
+    // Salud no: la administración no la ve por defecto (ADR 0039); se le abre por excepción.
   ],
   staff: [...STAFF_READ],
   coach: [

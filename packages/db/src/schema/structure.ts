@@ -89,7 +89,7 @@ export const sections = pgTable(
     status: text("status").notNull().default("active"),
     /** Ajustes del partido en directo (Bloque 20) sobre los del deporte. Nulo: los del deporte. */
     matchSettings: jsonb("match_settings").$type<MatchSettingsPatch>(),
-    /** Ajustes de entrenamiento (ADR 0038): seguimiento, umbrales y metodología. Nulo: los de por defecto. */
+    /** Ajustes de entrenamiento (ADR 0039): seguimiento, umbrales y metodología. Nulo: los de por defecto. */
     trainingSettings: jsonb("training_settings").$type<TrainingSettingsPatch>(),
     ...timestamps,
   },

@@ -19,7 +19,7 @@ import type {
 } from "./training.ts";
 
 /**
- * Recomendaciones "A tener en cuenta" (Bloque 23, ADR 0038): un motor de reglas explicables. Cruza
+ * Recomendaciones "A tener en cuenta" (Bloque 23, ADR 0039): un motor de reglas explicables. Cruza
  * partidos, calendario, sesiones, carga, bienestar, disponibilidad y la ficha de cada jugador, y
  * devuelve qué tener en cuenta con la cifra que lo justifica y una propuesta. Nada de caja negra:
  * cada regla es una función corta con su umbral (`InsightThresholds`), y una regla que no tiene

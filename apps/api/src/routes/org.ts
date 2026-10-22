@@ -386,7 +386,7 @@ export function createOrgRoutes(config: ApiConfig, data: DataLayer) {
         data.access.rulesFor(tenant.scope, userId),
       ]);
       if (memberships.length === 0) throw notFound("Esa persona no es miembro de este club.");
-      // La administración solo admite la excepción de Salud (ADR 0038); la familia, ninguna.
+      // La administración solo admite la excepción de Salud (ADR 0039); la familia, ninguna.
       const allowed = overridableAreas(memberships.map((m) => m.roleCode));
       if (allowed.length === 0)
         throw conflict(

@@ -1,4 +1,4 @@
-# 0038. Entrenamiento, carga, salud y recomendaciones explicables
+# 0039. Entrenamiento, carga, salud y recomendaciones explicables
 
 Estado: aceptada. Fecha: 2026-10-22. Fase 1, bloques 21 a 26. Construye la [propuesta de planificación de entrenamientos](../propuesta-planificacion-entrenamientos.md) entera, en una sola entrega. Amplía la 0033 y la 0036 con dos áreas nuevas (Entrenamiento y Salud) y la única excepción a "la administración lo ve todo".
 
@@ -50,7 +50,7 @@ Portada de entrenamiento; semana del equipo con "A tener en cuenta", copiar sema
 
 ## Consecuencias
 
-- Migración `20261022114435_training_planning` con 19 tablas, `sections.training_settings` y `matches.rpe`; semilla idempotente del club demo: contenidos, 14 tareas, 2 semanas tipo, un Sénior A con cuatro partidos, 18 sesiones, cargas y bienestar de cuatro semanas, un jugador limitado, uno en readaptación con lesión y fases, y tests físicos.
+- Migración `20261022125320_training_planning` con 19 tablas, `sections.training_settings` y `matches.rpe`; semilla idempotente del club demo: contenidos, 14 tareas, 2 semanas tipo, un Sénior A con cuatro partidos, 18 sesiones, cargas y bienestar de cuatro semanas, un jugador limitado, uno en readaptación con lesión y fases, y tests físicos.
 - Cuentas nuevas en el demo: `senior@demo.test` (entrenador del Sénior A), `preparador@demo.test` (preparación física) y `jugador@demo.test` (deportista adulto con cuenta propia). `fisio@demo.test` atiende también al Sénior A.
 - Suite de aislamiento propia (`training.isolation.test.ts`): ámbito por equipo, bloques por rol, Salud fuera del alcance de la administración y del entrenador, consentimiento y auditoría de lecturas.
 - La biblioteca semilla son 14 tareas escritas para el demo, no las 30 a 40 de un entrenador del club piloto que pedía la decisión 6. Queda pendiente que las escriba ese entrenador.

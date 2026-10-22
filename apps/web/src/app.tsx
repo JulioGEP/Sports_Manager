@@ -128,7 +128,7 @@ export const router = createBrowserRouter([
       { path: "challenges", element: <ChallengesPage /> },
       { path: "challenges/:id", element: <ChallengePage /> },
       { path: "settings", element: <SettingsPage /> },
-      // Entrenamiento, carga y salud (ADR 0038): portada, semana y temporada de cada equipo,
+      // Entrenamiento, carga y salud (ADR 0039): portada, semana y temporada de cada equipo,
       // sesión con modo pista e impresión, biblioteca, rendimiento del jugador, enfermería,
       // ajustes y metodología de la sección y el bienestar del deportista adulto.
       { path: "training", element: <TrainingHubPage /> },

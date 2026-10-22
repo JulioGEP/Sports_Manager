@@ -51,4 +51,5 @@ Las decisiones no se editan una vez aceptadas. Si cambian, se escribe una nueva 
 | 0035 | Las exclusiones por persona se gestionan solo en la pestaña "Acceso" | Aceptada; la hoja pasa a excepciones en los dos sentidos por 0036 |
 | 0036 | Excepciones por persona en los dos sentidos: ver de más o de menos que su rol | Aceptada |
 | 0037 | Consola del partido a pantalla completa, en tres zonas y con el banquillo arrastrable | Aceptada |
-| 0038 | Entrenamiento, carga, salud y recomendaciones explicables | Aceptada |
+| 0038 | Acciones del partido: un cuarto ámbito del catálogo, y los catálogos del equipo, del partido y del rival a la vista | Aceptada |
+| 0039 | Entrenamiento, carga, salud y recomendaciones explicables | Aceptada |

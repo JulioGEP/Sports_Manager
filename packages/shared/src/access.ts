@@ -119,9 +119,9 @@ export const ACCESS_AREAS = [
   "agenda",
   "facilities",
   "challenges",
-  /** Entrenamiento (ADR 0038): planificación, biblioteca, carga, bienestar y disponibilidad. */
+  /** Entrenamiento (ADR 0039): planificación, biblioteca, carga, bienestar y disponibilidad. */
   "training",
-  /** Salud (ADR 0038): lesiones con diagnóstico. La administración no la ve por defecto. */
+  /** Salud (ADR 0039): lesiones con diagnóstico. La administración no la ve por defecto. */
   "health",
   "fees",
   "activity",
@@ -236,7 +236,7 @@ export function visibleAreas(
 
 /**
  * Áreas que la administración no tiene por defecto y que se le pueden abrir por excepción a una
- * persona concreta (ADR 0038, decisión 2): acceso a la salud por necesidad de conocer.
+ * persona concreta (ADR 0039, decisión 2): acceso a la salud por necesidad de conocer.
  */
 export const ADMIN_EXCEPTION_AREAS: readonly AccessArea[] = ["health"];
 

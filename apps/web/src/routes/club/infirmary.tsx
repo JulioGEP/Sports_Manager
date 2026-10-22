@@ -28,7 +28,7 @@ type Row = InfirmaryResponse["players"][number];
 const GROUPS: Exclude<AvailabilityStatus, "available">[] = ["out", "rehab", "limited"];
 
 /**
- * Enfermería (ADR 0038): bajas, readaptaciones y limitados del ámbito de quien mira, con la vuelta
+ * Enfermería (ADR 0039): bajas, readaptaciones y limitados del ámbito de quien mira, con la vuelta
  * prevista y las molestias que los jugadores han reportado en el bienestar. La lesión (zona, tipo,
  * diagnóstico y fase) solo llega a quien tiene acceso a Salud; el resto ve la disponibilidad.
  */

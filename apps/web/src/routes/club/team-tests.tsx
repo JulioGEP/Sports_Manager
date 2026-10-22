@@ -38,7 +38,7 @@ type TestPlayer = TeamTestsResponse["players"][number];
 type Result = TeamTestsResponse["results"][number];
 
 /**
- * Tests físicos del equipo (Bloque 25, ADR 0038): el último valor de cada jugador en cada test
+ * Tests físicos del equipo (Bloque 25, ADR 0039): el último valor de cada jugador en cada test
  * activo, el registro de una medición (un test, una fecha, el valor de cada uno) y, para quien
  * gestiona la biblioteca, el catálogo de tests del club.
  */

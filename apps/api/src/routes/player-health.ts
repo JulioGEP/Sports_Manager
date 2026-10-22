@@ -30,7 +30,7 @@ import {
 } from "./training-support.ts";
 
 /**
- * Salud (Bloque 24, ADR 0038): consentimiento, lesiones con diagnóstico y fases de readaptación.
+ * Salud (Bloque 24, ADR 0039): consentimiento, lesiones con diagnóstico y fases de readaptación.
  * Categoría especial del RGPD: leer pide `org.health.read` (fisioterapia y preparación física;
  * la administración, solo por excepción) y escribir, `org.health.write` (fisioterapia). Cada
  * lectura queda en la auditoría. Sin consentimiento vigente no se registra ninguna lesión: el

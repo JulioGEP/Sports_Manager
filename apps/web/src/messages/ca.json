@@ -2533,6 +2533,8 @@
     "lineupHint": "{count} de {total} a pista. Col·loca el quintet inicial: arrossega de la banqueta a un lloc lliure, o toca'n un i després el lloc. Porter i convocats, a Convocatòria.",
     "benchSelected": "{name} està a punt per entrar: toca qui surt de la pista o un lloc lliure.",
     "teamActions": "Accions de l'equip",
+    "matchActions": "Accions del partit",
+    "noActions": "Sense accions: es configuren a la secció.",
     "bench": "Banqueta",
     "benchHint": "Arrossega a la pista",
     "benchEmpty": "Ningú a la banqueta.",
@@ -2732,7 +2734,8 @@
     "scopes": {
       "player": "Jugador",
       "team": "Equip",
-      "opponent": "Rival"
+      "opponent": "Rival",
+      "match": "Partit"
     },
     "categories": {
       "positive": "Favorable",

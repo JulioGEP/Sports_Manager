@@ -89,7 +89,7 @@ const DateQuery = z.object({
 });
 
 /**
- * Planificación de entrenamientos (bloques 21, 22, 23 y 26, ADR 0038). Leer la planificación,
+ * Planificación de entrenamientos (bloques 21, 22, 23 y 26, ADR 0039). Leer la planificación,
  * la biblioteca y las recomendaciones pide `org.training.read`; planificar, `org.training.write`
  * (cualquier equipo del ámbito) o `org.training.write_own` (sus equipos, por bloques según el
  * papel en el cuerpo técnico); la biblioteca del club y la metodología, `org.training.library`.

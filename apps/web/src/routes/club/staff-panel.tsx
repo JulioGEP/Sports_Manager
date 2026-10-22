@@ -162,7 +162,7 @@ export function StaffPanel({ kind }: { kind: PanelKind }) {
   const paths = clubPaths(slug);
   const own = kind === "coach" || kind === "delegate";
   const canSeeChallenges = org.actor.permissions.includes("org.challenges.read");
-  // Entrenamiento (ADR 0038): fisio y preparación física van a la enfermería; el resto, a la semana.
+  // Entrenamiento (ADR 0039): fisio y preparación física van a la enfermería; el resto, a la semana.
   const health = kind === "physio" || kind === "fitness";
   const canSeeTraining = org.actor.permissions.includes("org.training.read");
   const canSeeInfirmary =

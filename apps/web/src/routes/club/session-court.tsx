@@ -44,7 +44,7 @@ const clock = (seconds: number) =>
   `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
 
 /**
- * Modo pista (ADR 0038): la sesión en el móvil o la tablet, una tarea por pantalla, con letra
+ * Modo pista (ADR 0039): la sesión en el móvil o la tablet, una tarea por pantalla, con letra
  * grande, la pizarra, los puntos clave y el cronómetro de la tarea. Ocupa toda la ventana, sin la
  * navegación del club; las flechas cambian de tarea y el espacio arranca o para el cronómetro.
  */

@@ -18,7 +18,7 @@ import { useT } from "@/lib/intl";
 import { Button, Icon, StatusChip, useToast, type StatusKind } from "@/ui";
 
 /**
- * Piezas comunes de entrenamiento, carga y salud (ADR 0038): estado de disponibilidad,
+ * Piezas comunes de entrenamiento, carga y salud (ADR 0039): estado de disponibilidad,
  * restricciones, contenidos, recomendaciones explicables, la pizarra de la tarea (vista y editor),
  * escalas de RPE y bienestar y las gráficas pequeñas de carga. SVG propio (DESIGN.md 10).
  */
