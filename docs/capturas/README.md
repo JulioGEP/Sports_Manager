@@ -214,6 +214,10 @@ Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negoci
 
 ![Acceso por rol](escritorio-14-personal-acceso.png)
 
+### Nueva exclusión por persona, desde la propia pestaña "Acceso" (ADR 0035)
+
+![Nueva exclusión](escritorio-14b-personal-exclusion.png)
+
 ### Ajustes del club: datos generales y zona horaria
 
 ![Ajustes del club: datos generales](escritorio-20-ajustes-general.png)

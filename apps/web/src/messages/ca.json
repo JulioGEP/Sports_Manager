@@ -308,11 +308,7 @@
       "sectionsHint": "Direcció i coordinació veuen només les seccions marcades. Les que ja coordina compten encara que no es marquin.",
       "sectionsEmpty": "Encara no hi ha seccions al club.",
       "sectionsSaved": "Seccions de {name} desades.",
-      "coordinates": "Coordina",
-      "exclusions": "Exclusions especials",
-      "exclusionsHint": "Àrees que aquesta persona no veu encara que el seu rol sí. L'administració no s'exclou.",
-      "exclusionsSaved": "Exclusions de {name} desades.",
-      "exclude": "No veu {area}"
+      "coordinates": "Coordina"
     },
     "inviteDrawer": {
       "title": "Convidar algú",
@@ -380,10 +376,28 @@
       "saved": "Accés de {profile} desat.",
       "adminNote": "L'administració del club ho veu tot i no es pot excloure. Les famílies veuen només el dels seus esportistes: agenda, repte i quotes.",
       "exclusionsTitle": "Exclusions per persona",
-      "exclusionsDescription": "Persones que no veuen alguna àrea encara que el seu rol sí. Es canvien des dels rols de cada persona.",
+      "exclusionsDescription": "Persones que no veuen alguna àrea encara que el seu rol sí. S'afegeixen, es canvien i es treuen aquí.",
       "exclusionsEmpty": "Ningú té exclusions.",
-      "excluded": "No veu: {areas}",
-      "error": "No s'ha pogut carregar l'accés per rol."
+      "error": "No s'ha pogut carregar l'accés per rol.",
+      "exclusionsEmptyHint": "Afegeix algú del personal i marca el que no ha de veure.",
+      "addExclusion": "Afegir exclusió",
+      "editExclusion": "Editar",
+      "removeExclusion": "Treure",
+      "excludedArea": "Sense {area}",
+      "removed": "{name} ja no té exclusions: veu el que veu el seu rol.",
+      "confirmRemoveTitle": "Treure les exclusions de {name}?",
+      "confirmRemoveBody": "Tornarà a veure tot el que veu el seu rol.",
+      "exclusionSheet": {
+        "titleNew": "Nova exclusió",
+        "titleEdit": "Exclusions de {name}",
+        "description": "Marca el que aquesta persona no veu encara que el seu rol sí. L'administració del club no es pot excloure.",
+        "person": "Persona",
+        "areas": "Què no veu",
+        "exclude": "No veu {area}",
+        "none": "Marca almenys una àrea.",
+        "empty": "No hi ha personal a qui excloure: l'administració no s'exclou i les famílies ja només veuen el seu.",
+        "saved": "Exclusions de {name} desades."
+      }
     }
   },
   "settings": {

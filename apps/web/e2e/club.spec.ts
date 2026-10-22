@@ -48,6 +48,31 @@ test.describe("espacio del club", () => {
     await expect(coachMembers).not.toBeChecked();
     await shot(page, "14-personal-acceso", info.project.name);
     await expectLegibleButtons(page);
+
+    // Exclusiones por persona: se añaden, se ven y se quitan aquí mismo, y en ningún otro sitio.
+    const exclusions = page.getByRole("list", { name: "Exclusiones por persona" });
+    await expect(page.getByText("Nadie tiene exclusiones.")).toBeVisible();
+    await page.getByRole("button", { name: "Añadir exclusión" }).click();
+    const exclusionSheet = page.getByRole("dialog");
+    await expect(exclusionSheet.getByRole("heading", { name: "Nueva exclusión" })).toBeVisible();
+    await exclusionSheet
+      .getByLabel("Persona", { exact: true })
+      .selectOption({ label: "Carla Vidal · Entrenador" });
+    await exclusionSheet.getByRole("checkbox", { name: "No ve Instalaciones" }).check();
+    await shot(page, "14b-personal-exclusion", info.project.name);
+    await exclusionSheet.getByRole("button", { name: "Guardar" }).click();
+    await expect(page.getByText("Exclusiones de Carla Vidal guardadas.")).toBeVisible();
+    await expect(exclusions.getByText("Carla Vidal")).toBeVisible();
+    await expect(exclusions.getByText("Sin Instalaciones")).toBeVisible();
+    await exclusions.getByRole("button", { name: "Quitar" }).click();
+    await page.getByRole("dialog").getByRole("button", { name: "Quitar" }).click();
+    await expect(page.getByText("Nadie tiene exclusiones.")).toBeVisible();
+
+    // La hoja de roles ya no las lleva.
+    await page.getByRole("tab", { name: /^Personal/ }).click();
+    await page.getByRole("button", { name: "Roles" }).first().click();
+    await expect(page.getByRole("dialog").getByText(/Exclusiones/)).toHaveCount(0);
+    await page.keyboard.press("Escape");
   });
 
   test("ajustes: general, marca y logo", async ({ page }, info) => {
