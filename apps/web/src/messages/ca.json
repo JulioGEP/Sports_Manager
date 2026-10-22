@@ -797,7 +797,8 @@
     },
     "section": {
       "created": "Secció creada",
-      "updated": "Secció editada"
+      "updated": "Secció editada",
+      "removed": "Secció eliminada"
     },
     "team": {
       "created": "Equip creat",
@@ -1914,7 +1915,20 @@
     },
     "tabChallenges": "Reptes",
     "matchConfig": "Partit en directe",
-    "training": "Entrenament"
+    "training": "Entrenament",
+    "more": "Més accions",
+    "archive": "Arxivar",
+    "restore": "Reactivar",
+    "remove": "Eliminar",
+    "confirmRemoveTitle": "Eliminar {name}?",
+    "confirmRemoveBody": "S'esborren la secció, les seves categories i la seva configuració. Els esdeveniments i les quotes que la nomenaven queden del club. No es pot desfer.",
+    "confirmArchiveTitle": "Arxivar {name}?",
+    "confirmArchiveBody": "Deixa de veure's entre les seccions actives. Els seus equips i el seu historial es conserven i pots reactivar-la quan vulguis.",
+    "cannotRemoveTitle": "{name} no es pot eliminar",
+    "cannotRemoveBody": "Té equips amb el seu historial: plantilles, agenda i partits. Per no perdre'l, arxiva-la: deixa de veure's entre les actives i pots reactivar-la quan vulguis.",
+    "removed": "Secció {name} eliminada.",
+    "archivedToast": "Secció arxivada.",
+    "restoredToast": "Secció reactivada."
   },
   "sectionKinds": {
     "competition": "Competició",

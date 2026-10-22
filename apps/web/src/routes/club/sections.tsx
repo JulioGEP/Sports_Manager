@@ -144,17 +144,8 @@ export function SectionsPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <PageHeader
-        title={t("title")}
-        description={t("description")}
-        actions={
-          canWrite ? (
-            <Button action="add" onClick={() => update({ new: "1" })}>
-              {t("new")}
-            </Button>
-          ) : null
-        }
-      />
+      {/* El alta va en la última tarjeta de la rejilla (o en el vacío), no en la cabecera. */}
+      <PageHeader title={t("title")} description={t("description")} />
       {sections.isError ? <Alert kind="error">{errors(errorKey(sections.error))}</Alert> : null}
       {seasons.data && seasons.data.seasons.length > 1 ? (
         <div className="w-full max-w-xs">

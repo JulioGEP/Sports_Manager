@@ -1,3 +1,4 @@
+import { ActionIcon } from "@sportsmanager/design";
 import {
   CATEGORY_GENDERS,
   CategoriesResponseSchema,
@@ -25,11 +26,14 @@ import {
   Button,
   ButtonLink,
   Card,
+  ConfirmDialog,
   DataList,
   EmptyState,
   Field,
   Icon,
   Input,
+  Menu,
+  MenuItem,
   PageHeader,
   Select,
   Sheet,
@@ -94,6 +98,11 @@ export function SectionPage() {
   const [newCategory, setNewCategory] = useState(false);
   const [editCategory, setEditCategory] = useState<Category | null>(null);
   const [newTeamIn, setNewTeamIn] = useState<string | null>(null);
+  /** Confirmación abierta: eliminar, archivar o, sin poder eliminar, archivar en su lugar. */
+  const [confirming, setConfirming] = useState<"remove" | "archive" | "archiveInstead" | null>(
+    null,
+  );
+  const toast = useToast();
 
   if (detail.isError) {
     const notFound = detail.error instanceof ApiClientError && detail.error.status === 404;
@@ -110,6 +119,30 @@ export function SectionPage() {
     );
   }
   const { section, season, categories, summary, access } = detail.data;
+
+  async function setStatus(status: "active" | "archived") {
+    setConfirming(null);
+    try {
+      await apiFetch(`/api/org/sections/${section.id}`, { method: "PATCH", body: { status } });
+      toast("success", t(status === "archived" ? "archivedToast" : "restoredToast"));
+      void reload();
+    } catch (err) {
+      toast("error", errors(errorKey(err)));
+    }
+  }
+
+  async function remove() {
+    setConfirming(null);
+    try {
+      await apiFetch(`/api/org/sections/${section.id}`, { method: "DELETE" });
+      toast("success", t("removed", { name: section.name }));
+      void navigate(paths.sections, { replace: true });
+      void reload();
+    } catch (err) {
+      toast("error", errors(errorKey(err)));
+    }
+  }
+
   const activity = section.kind === "activity";
   const w = (key: string, values?: Record<string, string | number>) =>
     t(`${activity ? "activity" : "competition"}.${key}`, values);
@@ -181,6 +214,36 @@ export function SectionPage() {
                     {w("newTeam")}
                   </Button>
                 ) : null}
+                <Menu
+                  label={t("more")}
+                  trigger={<Icon.DotsThreeVertical size={22} aria-hidden="true" />}
+                >
+                  {section.status === "archived" ? (
+                    <MenuItem
+                      icon={<ActionIcon action="restore" size={20} />}
+                      onClick={() => void setStatus("active")}
+                    >
+                      {t("restore")}
+                    </MenuItem>
+                  ) : (
+                    <MenuItem
+                      icon={<ActionIcon action="archive" size={20} />}
+                      onClick={() => setConfirming("archive")}
+                    >
+                      {t("archive")}
+                    </MenuItem>
+                  )}
+                  {/* Archivada y con equipos, eliminar no haría nada más: no se ofrece. */}
+                  {access.removable || section.status === "active" ? (
+                    <MenuItem
+                      tone="danger"
+                      icon={<ActionIcon action="delete" size={20} />}
+                      onClick={() => setConfirming(access.removable ? "remove" : "archiveInstead")}
+                    >
+                      {t("remove")}
+                    </MenuItem>
+                  ) : null}
+                </Menu>
               </>
             ) : null}
           </>
@@ -483,6 +546,30 @@ export function SectionPage() {
               }}
             />
           ) : null}
+          {/* Un solo diálogo para las tres confirmaciones: el título va por id y no se repite. */}
+          <ConfirmDialog
+            open={confirming !== null}
+            title={
+              confirming === "remove"
+                ? t("confirmRemoveTitle", { name: section.name })
+                : confirming === "archiveInstead"
+                  ? t("cannotRemoveTitle", { name: section.name })
+                  : t("confirmArchiveTitle", { name: section.name })
+            }
+            body={
+              confirming === "remove"
+                ? t("confirmRemoveBody")
+                : confirming === "archiveInstead"
+                  ? t("cannotRemoveBody")
+                  : t("confirmArchiveBody")
+            }
+            confirmLabel={confirming === "remove" ? t("remove") : t("archive")}
+            confirmAction={confirming === "remove" ? "delete" : "archive"}
+            tone={confirming === "remove" ? "danger" : "default"}
+            cancelLabel={c("cancel")}
+            onConfirm={() => void (confirming === "remove" ? remove() : setStatus("archived"))}
+            onCancel={() => setConfirming(null)}
+          />
         </>
       ) : null}
     </div>

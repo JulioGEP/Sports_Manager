@@ -797,7 +797,8 @@
     },
     "section": {
       "created": "Sección creada",
-      "updated": "Sección editada"
+      "updated": "Sección editada",
+      "removed": "Sección eliminada"
     },
     "team": {
       "created": "Equipo creado",
@@ -1914,7 +1915,20 @@
     },
     "tabChallenges": "Retos",
     "matchConfig": "Partido en directo",
-    "training": "Entrenamiento"
+    "training": "Entrenamiento",
+    "more": "Más acciones",
+    "archive": "Archivar",
+    "restore": "Reactivar",
+    "remove": "Eliminar",
+    "confirmRemoveTitle": "¿Eliminar {name}?",
+    "confirmRemoveBody": "Se borran la sección, sus categorías y su configuración. Los eventos y las cuotas que la nombraban quedan del club. No se puede deshacer.",
+    "confirmArchiveTitle": "¿Archivar {name}?",
+    "confirmArchiveBody": "Deja de verse entre las secciones activas. Sus equipos y su historial se conservan y puedes reactivarla cuando quieras.",
+    "cannotRemoveTitle": "{name} no se puede eliminar",
+    "cannotRemoveBody": "Tiene equipos con su historial: plantillas, agenda y partidos. Para no perderlo, archívala: deja de verse entre las activas y puedes reactivarla cuando quieras.",
+    "removed": "Sección {name} eliminada.",
+    "archivedToast": "Sección archivada.",
+    "restoredToast": "Sección reactivada."
   },
   "sectionKinds": {
     "competition": "Competición",

@@ -24,6 +24,7 @@ export const AUDIT_ACTIONS = [
   "season.updated",
   "section.created",
   "section.updated",
+  "section.removed",
   "category.created",
   "category.updated",
   "team.created",

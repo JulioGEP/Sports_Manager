@@ -477,6 +477,53 @@ export function sectionsRepo(db: () => Database) {
       return section ? { outcome: "updated", section } : { outcome: "not_found" };
     },
 
+    /** Si la sección tiene equipos en alguna temporada, archivados incluidos. */
+    async hasTeams(scope: OrgScope, sectionId: string): Promise<boolean> {
+      const rows = await db()
+        .select({ id: schema.teams.id })
+        .from(schema.teams)
+        .where(
+          and(
+            eq(schema.teams.organizationId, scope.organizationId),
+            eq(schema.teams.sectionId, sectionId),
+          ),
+        )
+        .limit(1);
+      return rows.length > 0;
+    },
+
+    /**
+     * Elimina una sección sin equipos en ninguna temporada (creada por error o de prueba): se van
+     * sus categorías, su configuración y sus retos; los eventos y las cuotas que la nombraban
+     * quedan del club. Con equipos no se borra (la base lo impide): sus plantillas, partidos y
+     * agenda son historial, y lo que toca es archivarla.
+     */
+    async remove(scope: OrgScope, id: string): Promise<"removed" | "has_teams" | "not_found"> {
+      return db().transaction(async (tx) => {
+        const teams = await tx
+          .select({ id: schema.teams.id })
+          .from(schema.teams)
+          .where(
+            and(
+              eq(schema.teams.organizationId, scope.organizationId),
+              eq(schema.teams.sectionId, id),
+            ),
+          )
+          .limit(1);
+        if (teams.length > 0) return "has_teams";
+        const rows = await tx
+          .delete(schema.sections)
+          .where(
+            and(
+              eq(schema.sections.organizationId, scope.organizationId),
+              eq(schema.sections.id, id),
+            ),
+          )
+          .returning({ id: schema.sections.id });
+        return rows.length > 0 ? "removed" : "not_found";
+      });
+    },
+
     /** Cuerpo técnico de una sección en una temporada: quién lleva qué equipos. */
     async staff(
       scope: OrgScope,

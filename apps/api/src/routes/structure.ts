@@ -551,10 +551,13 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
             .filter((s) => s.teams.length > 0)
         : allStaff;
       const canSeePlayers = c.get("actor").permissions.has("org.players.read");
-      const readiness =
+      const canWrite = c.get("actor").permissions.has("org.structure.write");
+      const [readiness, hasTeams] = await Promise.all([
         canSeePlayers && counts.playerIds.length > 0
-          ? await data.players.readinessFor(tenant.scope, counts.playerIds)
-          : null;
+          ? data.players.readinessFor(tenant.scope, counts.playerIds)
+          : Promise.resolve(null),
+        canWrite ? data.sections.hasTeams(tenant.scope, id) : Promise.resolve(true),
+      ]);
       return c.json(
         {
           section,
@@ -575,7 +578,8 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
             staff,
             eventsThisWeek,
           },
-          access: { write: c.get("actor").permissions.has("org.structure.write") },
+          // Eliminable: quien escribe la estructura y la sección sin equipos en ninguna temporada.
+          access: { write: canWrite, removable: canWrite && !hasTeams },
         },
         200,
       );
@@ -615,6 +619,40 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
       if (result.outcome === "name_taken") throw conflict("Ya hay una sección con ese nombre.");
       await audit(c, tenant, "section.updated", result.section.name, body);
       return c.json({ section: result.section }, 200);
+    },
+  );
+
+  app.openapi(
+    createRoute({
+      method: "delete",
+      path: "/api/org/sections/{id}",
+      tags: ["Estructura"],
+      summary:
+        "Elimina una sección sin equipos en ninguna temporada, con sus categorías. Con equipos no se borra: se archiva",
+      security: [{ sessionCookie: [] }],
+      middleware: [write],
+      request: { params: idParam },
+      responses: {
+        204: { description: "Eliminada" },
+        409: error("Tiene equipos: se archiva, no se elimina"),
+        ...errors,
+      },
+    }),
+    async (c) => {
+      const tenant = scopeOf(c);
+      const { id } = c.req.valid("param");
+      await requireSectionVisible(c, id);
+      const section = await data.sections.byId(tenant.scope, id);
+      if (!section) throw notFound("Esa sección no existe.");
+      const outcome = await data.sections.remove(tenant.scope, id);
+      if (outcome === "not_found") throw notFound("Esa sección no existe.");
+      if (outcome === "has_teams")
+        throw conflict("Esa sección tiene equipos: archívala para conservar su historial.");
+      await audit(c, tenant, "section.removed", section.name, {
+        sport: section.sport.code,
+        kind: section.kind,
+      });
+      return c.body(null, 204);
     },
   );
 

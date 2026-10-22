@@ -423,6 +423,63 @@ describe("estructura del club y familias", () => {
     ).toBe(400);
   });
 
+  it("una sección sin equipos se elimina con sus categorías; con equipos, solo se archiva", async () => {
+    const created = await json<{ section: { id: string } }>(
+      await request("POST", "/api/org/sections", A, {
+        cookie: as(adminA),
+        body: { name: "Prueba", sportCode: "padel", categories: [{ name: "Adultos" }] },
+      }),
+      201,
+    );
+    const id = created.section.id;
+    const detail = await json<{ access: { write: boolean; removable: boolean } }>(
+      await request("GET", `/api/org/sections/${id}`, A, { cookie: as(adminA) }),
+      200,
+    );
+    expect(detail.access).toEqual({ write: true, removable: true });
+
+    // Ni la entrenadora ni otro club la pueden eliminar.
+    expect(
+      (await request("DELETE", `/api/org/sections/${id}`, A, { cookie: as(coachA) })).status,
+    ).toBe(403);
+    expect(
+      (await request("DELETE", `/api/org/sections/${id}`, B, { cookie: as(adminB) })).status,
+    ).toBe(404);
+
+    expect(
+      (await request("DELETE", `/api/org/sections/${id}`, A, { cookie: as(adminA) })).status,
+    ).toBe(204);
+    expect(
+      (await request("GET", `/api/org/sections/${id}`, A, { cookie: as(adminA) })).status,
+    ).toBe(404);
+    const left = await json<{ categories: unknown[] }>(
+      await request("GET", `/api/org/categories?section=${id}`, A, { cookie: as(adminA) }),
+      200,
+    );
+    expect(left.categories).toEqual([]);
+    const sections = await json<{ sections: { id: string }[] }>(
+      await request("GET", "/api/org/sections", A, { cookie: as(adminA) }),
+      200,
+    );
+    expect(sections.sections.map((s) => s.id)).not.toContain(id);
+    expect(
+      (await request("DELETE", `/api/org/sections/${id}`, A, { cookie: as(adminA) })).status,
+    ).toBe(404);
+
+    // Con equipos no se borra: plantillas, partidos y agenda son historial.
+    const withTeams = await json<{ access: { removable: boolean } }>(
+      await request("GET", `/api/org/sections/${sectionId}`, A, { cookie: as(adminA) }),
+      200,
+    );
+    expect(withTeams.access.removable).toBe(false);
+    expect(
+      (await request("DELETE", `/api/org/sections/${sectionId}`, A, { cookie: as(adminA) })).status,
+    ).toBe(409);
+    expect(
+      (await request("GET", `/api/org/sections/${sectionId}`, A, { cookie: as(adminA) })).status,
+    ).toBe(200);
+  });
+
   it("la familia se invita desde la ficha del jugador y, al aceptar, queda vinculada y solo ve lo suyo", async () => {
     const sent = await json<{
       acceptUrl: string | null;
