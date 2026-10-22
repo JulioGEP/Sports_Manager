@@ -129,6 +129,16 @@ test.describe("partido en directo", () => {
         .click();
     }
     await expect(lineup.getByText("5 de 5 en pista")).toBeVisible();
+    // En pista solo hay un portero: marcar a otro titular desmarca a la portera, y al revés.
+    const keeperOf = (name: string) =>
+      lineup
+        .locator("li")
+        .filter({ hasText: name })
+        .getByRole("button", { name: "Portero", exact: true });
+    await keeperOf("Àlex Moreno").click();
+    await expect(keeperOf("Clara Martí")).toHaveAttribute("aria-pressed", "false");
+    await keeperOf("Clara Martí").click();
+    await expect(keeperOf("Àlex Moreno")).toHaveAttribute("aria-pressed", "false");
     await shot(page, "104b-partido-convocatoria", info.project.name);
     await lineup.getByRole("button", { name: "Guardar convocatoria" }).click();
     await expect(page.getByText("Convocatoria guardada.")).toBeVisible();
