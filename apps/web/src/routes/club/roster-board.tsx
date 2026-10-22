@@ -92,7 +92,7 @@ export function RosterBoard({
                   ) : null}
                 </span>
                 {canEdit ? (
-                  <span className="relative z-10 flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100 [@media(hover:none)]:opacity-100">
+                  <span className="relative z-10 flex shrink-0 items-center gap-0.5 rounded-control bg-surface [@media(hover:hover)]:absolute [@media(hover:hover)]:top-1/2 [@media(hover:hover)]:right-2 [@media(hover:hover)]:-translate-y-1/2 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:shadow-row [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:focus-within:opacity-100 transition-opacity">
                     <Button
                       iconOnly
                       action="edit"

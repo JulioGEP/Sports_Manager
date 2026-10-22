@@ -387,6 +387,7 @@ export function CommandPalette({
   const tokens = fold(query).split(/\s+/).filter(Boolean);
   const results = useMemo(() => {
     const groups = new Map<GroupKey, Item[]>();
+    const best = new Map<GroupKey, number>();
     if (tokens.length === 0) {
       if (recent.length > 0) groups.set("recent", recent);
       for (const it of items) {
@@ -398,16 +399,18 @@ export function CommandPalette({
         .map((it) => ({ it, s: score(it, tokens) }))
         .filter((x) => x.s > 0)
         .sort((a, b) => b.s - a.s || a.it.title.localeCompare(b.it.title));
-      for (const { it } of scored) {
+      for (const { it, s } of scored) {
         const list = groups.get(it.group) ?? [];
         if (list.length >= MAX_PER_GROUP) continue;
         groups.set(it.group, [...list, it]);
+        best.set(it.group, Math.max(best.get(it.group) ?? 0, s));
       }
     }
-    return GROUP_ORDER.filter((g) => groups.has(g)).map((g) => ({
-      group: g,
-      items: groups.get(g)!,
-    }));
+    // Con texto, primero el grupo con la mejor coincidencia: "alev" lleva al equipo Alevín A antes
+    // que a quienes juegan en él. Sin texto, el orden fijo: recientes, acciones, pantallas.
+    return GROUP_ORDER.filter((g) => groups.has(g))
+      .sort((a, b) => (best.get(b) ?? 0) - (best.get(a) ?? 0))
+      .map((g) => ({ group: g, items: groups.get(g)! }));
   }, [items, tokens.join(" "), recent]);
   const flat = results.flatMap((g) => g.items);
 

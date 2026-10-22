@@ -235,6 +235,7 @@ export function TeamMatchesPage() {
                     key: "stats",
                     label: t("stats"),
                     icon: <Icon.ChartBar size={16} aria-hidden="true" />,
+                    tone: "primary" as const,
                     to: paths.matchStats(m.id),
                   },
                 ]
