@@ -2,7 +2,7 @@
 
 Design system del SaaS, tal cual lo entregó producto (versión 1.0, 20 de octubre de 2026), como paquete del workspace. **`DESIGN.md` es la fuente de verdad**; `AGENTS.md` resume las reglas para quien escribe interfaz.
 
-- `tailwind/theme.css`: tema de Tailwind v4. La web lo importa como hoja principal.
+- `tailwind/theme.css`: tema de Tailwind v4. La web lo importa como hoja principal. Declara `@source "../src"` para que Tailwind genere también las clases de los componentes de este paquete: a la web le llega por `node_modules`, que no explora.
 - `src/theme/tokens.css`: variables base, estados del sistema, formas (`data-shape`) y modo oscuro.
 - `src/theme/clubTheme.ts`: motor de color del club (`buildClubTheme`, `applyClubTheme`).
 - `src/components/`: componentes de referencia (botón, portada del club, confirmación, etiqueta de estado, asistencia).

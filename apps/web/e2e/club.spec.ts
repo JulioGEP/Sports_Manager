@@ -1,5 +1,13 @@
 import { expect, test } from "@playwright/test";
-import { CLUB, expectLegibleButtons, login, shot, suffix, TEST_LOGO_PNG } from "./helpers";
+import {
+  CLUB,
+  expectConfirmDialog,
+  expectLegibleButtons,
+  login,
+  shot,
+  suffix,
+  TEST_LOGO_PNG,
+} from "./helpers";
 
 test.describe("espacio del club", () => {
   test.beforeEach(async ({ page }) => {
@@ -90,6 +98,7 @@ test.describe("espacio del club", () => {
     await page.keyboard.press("Escape");
     await expect(page.getByRole("dialog")).toBeHidden();
     await overrides.getByRole("button", { name: "Quitar" }).click();
+    await expectConfirmDialog(page);
     await page.getByRole("dialog").getByRole("button", { name: "Quitar" }).click();
     await expect(page.getByText("Nadie tiene excepciones.")).toBeVisible();
 
