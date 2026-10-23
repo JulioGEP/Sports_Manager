@@ -3,6 +3,7 @@ import type { DatabaseStatus } from "@sportsmanager/shared";
 import { eq, sql } from "drizzle-orm";
 import type { ApiConfig } from "../config.ts";
 import { accessRepo } from "./access.ts";
+import { accountingRepo } from "./accounting.ts";
 import { auditRepo } from "./audit.ts";
 import { challengesRepo } from "./challenges.ts";
 import { createAuth, type Auth } from "./auth/index.ts";
@@ -73,6 +74,15 @@ export type {
 } from "./events.ts";
 export { dayRange, fromLocal, localParts, weekRange } from "./events.ts";
 export type { FeesSummaryRecord, PersonFeesRecord } from "./fees.ts";
+export type {
+  AccountingConnectionPatch,
+  AccountingConnectionRow,
+  AccountingIssueRecord,
+  AccountingPartyRecord,
+  AccountingRepo,
+  ChargeDocumentSource,
+  PaymentSource,
+} from "./accounting.ts";
 export type { StoreBeneficiaryRecord, StoreOrderRecord, StoreProductRecord } from "./store.ts";
 export { storeImageUrlFor, storeImageVersion } from "./store.ts";
 export type {
@@ -219,6 +229,7 @@ export function createDataLayer(options: DataLayerOptions) {
     schedules: schedulesRepo(db),
     attendance: attendanceRepo(db),
     fees: feesRepo(db),
+    accounting: accountingRepo(db),
     store: storeRepo(
       db,
       options.storeImageStore ??

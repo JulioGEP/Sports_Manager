@@ -44,7 +44,7 @@ Las decisiones no se editan una vez aceptadas. Si cambian, se escribe una nueva 
 | 0028 | Estructura del club: temporadas, secciones, equipos, jugadores y familias | Aceptada |
 | 0029 | Ficha ampliada del jugador: foto, indicadores, objetivo, PDI y timeline | Aceptada |
 | 0030 | Personal con cargo, permisos por equipo, ficha para la familia, inicio operativo y reto por puntos | Aceptada |
-| 0031 | Club completo: secciones por deporte, personas y socios, agenda e instalaciones, asistencia, cuotas con Stripe y "ver como" | Aceptada |
+| 0031 | Club completo: secciones por deporte, personas y socios, agenda e instalaciones, asistencia, cuotas con Stripe y "ver como" | Aceptada; Stripe Connect y contabilidad en 0042 |
 | 0032 | El reto tiene ámbito: de una sección entera o de un solo equipo | Aceptada |
 | 0033 | Alcance por cargo y visibilidad por rol gestionada desde "Personal" | Aceptada; reglas por persona concretadas por 0035 y ampliadas por 0036 |
 | 0034 | Partido en directo: motor de registro configurable por deporte, estadísticas e histórico | Aceptada; la consola se replantea en 0037 |
@@ -55,3 +55,4 @@ Las decisiones no se editan una vez aceptadas. Si cambian, se escribe una nueva 
 | 0039 | Entrenamiento, carga, salud y recomendaciones explicables | Aceptada |
 | 0040 | Pizarra animada: arrastrar, grabar el movimiento por capas y la voz | Aceptada |
 | 0041 | Tienda del club: productos con stock, pedidos cobrados como una cuota y catálogo público para la web del club | Aceptada |
+| 0042 | Pasarela de pago con Stripe Connect y contabilidad conectada con Holded | Aceptada |

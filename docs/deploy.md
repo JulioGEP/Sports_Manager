@@ -51,6 +51,9 @@ Notas:
 | `EMAIL_FROM` | pendiente | no | Remitente con el dominio verificado, por ejemplo `Sports Manager <no-reply@dominio>` |
 | `EMAIL_DEBUG_LOG` | no definida | `true` | Escribe los emails en el log de la función. Nunca en producción |
 | `PLATFORM_ADMIN_EMAILS` | emails separados por comas | igual | Administradores de plataforma además de la tabla (ADR 0023). Hoy: el email del responsable de producto |
+| `STRIPE_SECRET_KEY` | pendiente | clave de prueba (`sk_test_…`) | Marcada como secreto. Con `STRIPE_WEBHOOK_SECRET`, los clubes pueden dar de alta su cuenta de Stripe y cobrar en línea (ADR 0031 y 0042) |
+| `STRIPE_WEBHOOK_SECRET` | pendiente | el del endpoint de prueba | Marcada como secreto. Secreto de firma del webhook de Connect `POST /api/webhooks/stripe` |
+| `INTEGRATIONS_SECRET` | secreto propio | secreto propio, distinto | Marcada como secreto, mínimo 32 caracteres (`openssl rand -base64 48`). Cifra las claves de contabilidad de los clubes (ADR 0042). Sin ella, ningún club puede conectar Holded. Cambiarla deja ilegibles las claves guardadas: cada club tendría que volver a pegar la suya |
 | `LOGO_STORE` | no definida | no definida | Solo local: `memory` sustituye Netlify Blobs (servidor local y pruebas de interfaz, ADR 0025). Fuera de local la API se niega a arrancar con ese valor |
 
 ### Primer administrador de plataforma (ADR 0026)
@@ -130,6 +133,26 @@ Las previews pueden seguir con `outbox` el tiempo que haga falta.
 Netlify Blobs con `region: "eu-central-1"` fijada en un único módulo de la API (`apps/api/src/data/logos.ts`, ADR 0024). Los stores de proyecto no siguen la región de las funciones y usarían Estados Unidos por defecto. Hoy solo hay un store, `logos`, compartido por producción y previews; las claves llevan el id del club. En `netlify dev`, Netlify CLI sirve un store local; en tests se usa uno en memoria.
 
 Subdominios por club, parche local y pasos para el dominio definitivo: `docs/dominio-y-dns.md`.
+
+## Cobros con Stripe (ADR 0031 y 0042)
+
+La plataforma usa Stripe Connect con cuentas Standard: cada club tiene su propia cuenta de Stripe, el dinero entra en ella y la plataforma solo crea las sesiones de pago. Pasos (compruébalos en https://docs.stripe.com/connect, su interfaz cambia):
+
+1. Crear la cuenta de la plataforma en Stripe y activar Connect.
+2. Crear un endpoint de webhook de **Connect** (eventos de cuentas conectadas) hacia `https://<dominio>/api/webhooks/stripe` con los eventos `checkout.session.completed`, `checkout.session.async_payment_succeeded` y `account.updated`. Copiar su secreto de firma.
+3. En Netlify, `STRIPE_SECRET_KEY` y `STRIPE_WEBHOOK_SECRET` (secretos, ámbito Functions). En previews, las de modo prueba.
+4. Volver a desplegar.
+5. Cada club entra en Ajustes, Cobros, pulsa **Conectar con Stripe**, completa el alta en Stripe y vuelve. Cuando la cuenta está lista para cobrar, elige Stripe como proveedor y guarda.
+
+El webhook comprueba la firma, solo apunta el pago si viene de la cuenta del club del cargo y espera a `async_payment_succeeded` cuando el pago aún no ha entrado (SEPA).
+
+## Contabilidad con Holded (ADR 0042)
+
+1. En Netlify, `INTEGRATIONS_SECRET` (secreto, ámbito Functions, distinto por contexto). Volver a desplegar.
+2. Cada club crea una clave de API en Holded con permisos de contactos, facturas y tickets de venta, ajustes de facturación, impuestos, tesorería e información de la cuenta, y la pega en Ajustes, Contabilidad. La API la comprueba contra Holded y la guarda cifrada.
+3. En la misma pestaña, el club elige factura o ticket, impuesto (o exento), serie, si se aprueban al crearse, las cuentas de tesorería y desde qué fecha se envían los cargos.
+
+Con "Enviar al momento", cada cargo y cada pago salen solos tras responder (`waitUntil` de Netlify). Lo demás sale con **Sincronizar ahora**, en tandas de veinte cosas y ocho segundos, por el límite de 100 peticiones por minuto de Holded. No hay tarea programada.
 
 ## Desarrollo local
 

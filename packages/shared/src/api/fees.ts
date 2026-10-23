@@ -5,7 +5,9 @@ import {
   FEE_PLAN_STATUSES,
   PAYMENT_METHODS,
   PAYMENT_PROVIDERS,
+  STRIPE_ACCOUNT_STATUSES,
 } from "../fees.ts";
+import { ACCOUNTING_LINK_STATUSES, ACCOUNTING_PROVIDERS } from "../accounting.ts";
 
 /** Contratos de cuotas y cobros (Bloque 18). Solo con `org.fees.read`. */
 
@@ -51,6 +53,18 @@ export const FeeChargeSchema = z.object({
   /** Enlace de pago de Stripe Checkout, si el club cobra por Stripe y el cargo está pendiente. */
   checkoutUrl: z.string().nullable(),
   createdAt: z.string(),
+  /**
+   * Su documento en la herramienta de contabilidad (ADR 0042), si el club la tiene conectada:
+   * estado del envío y número de factura. Solo para quien gestiona las cuotas.
+   */
+  accounting: z
+    .object({
+      provider: z.enum(ACCOUNTING_PROVIDERS),
+      status: z.enum(ACCOUNTING_LINK_STATUSES),
+      number: z.string().nullable(),
+    })
+    .nullable()
+    .optional(),
 });
 export type FeeCharge = z.infer<typeof FeeChargeSchema>;
 export const FeeChargesResponseSchema = z.object({
@@ -76,6 +90,8 @@ export const PaymentsSettingsSchema = z.object({
   stripeAccountId: z.string().nullable(),
   /** La plataforma tiene claves de Stripe configuradas (como el transporte de email con Resend). */
   stripeConfigured: z.boolean(),
+  /** Estado de la cuenta conectada según Stripe (ADR 0042). Nulo: sin cuenta o sin consultar. */
+  stripeAccountStatus: z.enum(STRIPE_ACCOUNT_STATUSES).nullable(),
   /** Moneda de las cuotas. Fija por ahora. */
   currency: z.literal("EUR"),
 });
@@ -102,3 +118,14 @@ export type CheckoutSessionRequest = z.infer<typeof CheckoutSessionRequestSchema
 
 /** Sesión de pago de Stripe Checkout creada para un cargo. */
 export const CheckoutSessionResponseSchema = z.object({ url: z.string() });
+
+/** Enlace de alta en Stripe (Stripe Connect, ADR 0042): el club completa allí sus datos y vuelve. */
+export const StripeOnboardingRequestSchema = z.object({
+  returnPath: z
+    .string()
+    .trim()
+    .max(200)
+    .regex(/^\/(?!\/)[^\s]*$/, "Ruta de vuelta inválida.")
+    .optional(),
+});
+export const StripeOnboardingResponseSchema = z.object({ url: z.string() });

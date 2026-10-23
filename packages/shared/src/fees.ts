@@ -90,6 +90,19 @@ export const PAYMENT_PROVIDERS = ["manual", "stripe"] as const;
 export type PaymentProvider = (typeof PAYMENT_PROVIDERS)[number];
 export const PaymentProviderSchema = z.enum(PAYMENT_PROVIDERS);
 
+/**
+ * Estado de la cuenta de Stripe del club (Stripe Connect, ADR 0042). `onboarding`: creada, faltan
+ * datos del club. `restricted`: datos enviados, Stripe todavía no deja cobrar. `enabled`: cobra.
+ * Nulo: sin cuenta, o una cuenta escrita a mano de la que Stripe aún no ha dicho nada.
+ */
+export const STRIPE_ACCOUNT_STATUSES = ["onboarding", "restricted", "enabled"] as const;
+export type StripeAccountStatus = (typeof STRIPE_ACCOUNT_STATUSES)[number];
+
+/** Si con ese estado la cuenta puede recibir cobros: lista, o desconocida (escrita a mano). */
+export function stripeAccountCanCharge(status: StripeAccountStatus | null): boolean {
+  return status === null || status === "enabled";
+}
+
 export const PaymentsSettingsUpdateSchema = z.object({
   provider: PaymentProviderSchema.optional(),
   /** Cuenta conectada de Stripe del club (`acct_…`). Nula: sin conectar. */

@@ -14,6 +14,7 @@ import {
   PAYMENT_PROVIDERS,
   PaymentsSettingsResponseSchema,
   SeasonCreateSchema,
+  StripeOnboardingResponseSchema,
   SeasonResponseSchema,
   SeasonUpdateSchema,
   SeasonsResponseSchema,
@@ -22,18 +23,20 @@ import {
   type Locale,
   type MemberType,
   type PaymentProvider,
+  type PaymentsSettings,
   type Season,
 } from "@sportsmanager/shared";
 import { brandTokens } from "@sportsmanager/shared/design";
 import { buildClubTheme } from "@sportsmanager/design";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState, type DragEvent, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type DragEvent, type FormEvent } from "react";
 import { useIntl } from "react-intl";
 import { useSearchParams } from "react-router";
 import { ApiClientError, apiFetch, errorKey, uploadFile } from "@/lib/api";
 import { clubPaths, useReadyClub } from "@/lib/club";
 import { useDates } from "@/lib/dates";
 import { useT } from "@/lib/intl";
+import { AccountingTab } from "./settings-accounting";
 import { DevelopersTab } from "./settings-developers";
 import {
   Alert,
@@ -66,6 +69,7 @@ const TABS = [
   "seasons",
   "memberTypes",
   "payments",
+  "accounting",
   "developers",
   "setup",
   "activity",
@@ -99,7 +103,11 @@ export function SettingsPage() {
       ? [{ key: "memberTypes" as const, label: t("tabs.memberTypes") }]
       : []),
     ...(permissions.includes("org.fees.read")
-      ? [{ key: "payments" as const, label: t("tabs.payments") }]
+      ? [
+          { key: "payments" as const, label: t("tabs.payments") },
+          // Contabilidad (ADR 0042): Holded con la clave cifrada, cómo salen las cuotas y lo enviado.
+          { key: "accounting" as const, label: t("tabs.accounting") },
+        ]
       : []),
     // Desarrolladores (ADR 0041): la clave del catálogo público para la web del club.
     { key: "developers" as const, label: t("tabs.developers") },
@@ -139,6 +147,7 @@ export function SettingsPage() {
       {tab === "seasons" ? <SeasonsTab /> : null}
       {tab === "memberTypes" ? <MemberTypesTab /> : null}
       {tab === "payments" ? <PaymentsTab /> : null}
+      {tab === "accounting" ? <AccountingTab /> : null}
       {tab === "developers" ? <DevelopersTab /> : null}
       {tab === "setup" ? <SetupTab /> : null}
       {tab === "activity" ? <ActivityTab /> : null}
@@ -1037,7 +1046,7 @@ function RenameTypeSheet({
   );
 }
 
-// --- Cobros (Bloque 18): proveedor y cuenta de Stripe ---
+// --- Cobros (Bloque 18; Stripe Connect, ADR 0042): proveedor y cuenta de Stripe del club ---
 
 function PaymentsTab() {
   const t = useT("settings.payments");
@@ -1047,17 +1056,44 @@ function PaymentsTab() {
   const toast = useToast();
   const client = useQueryClient();
   const { slug, refresh, org } = useReadyClub();
+  const [params, setParams] = useSearchParams();
   const canWrite = org.actor.permissions.includes("org.settings.write");
   const settings = useQuery({
     queryKey: ["org", slug, "fees", "settings"],
     queryFn: () => apiFetch("/api/org/fees/settings", { schema: PaymentsSettingsResponseSchema }),
   });
+  const back = params.get("stripe");
+  const handled = useRef(false);
+
+  // De vuelta del alta en Stripe: se pregunta por la cuenta. Si el enlace caducó, se pide otro.
+  useEffect(() => {
+    if (!back || handled.current) return;
+    handled.current = true;
+    const sp = new URLSearchParams(params);
+    sp.delete("stripe");
+    setParams(sp, { replace: true });
+    if (back === "refresh" && canWrite) {
+      void startOnboarding().catch((err: unknown) => toast("error", errors(errorKey(err))));
+      return;
+    }
+    void apiFetch("/api/org/fees/settings/stripe/refresh", {
+      method: "POST",
+      schema: PaymentsSettingsResponseSchema,
+    })
+      .then((res) => {
+        client.setQueryData(["org", slug, "fees", "settings"], res);
+        toast("success", t("returned"));
+      })
+      .catch((err: unknown) => toast("error", errors(errorKey(err))));
+    // Solo al volver de Stripe: el resto de dependencias no cambian el gesto.
+  }, [back]);
+
   if (settings.isPending) return <p className="text-body text-muted">{c("loading")}</p>;
   if (settings.isError || !settings.data)
     return <Alert kind="error">{errors(errorKey(settings.error))}</Alert>;
   return (
     <PaymentsForm
-      key={`${settings.data.payments.provider}:${settings.data.payments.stripeAccountId ?? ""}`}
+      key={`${settings.data.payments.provider}:${settings.data.payments.stripeAccountId ?? ""}:${settings.data.payments.stripeAccountStatus ?? ""}`}
       initial={settings.data.payments}
       canWrite={canWrite}
       labels={{ t, c, providers, errors }}
@@ -1066,22 +1102,39 @@ function PaymentsTab() {
         await refresh();
         toast("success", t("saved"));
       }}
+      onRefreshed={(payments) =>
+        client.setQueryData(["org", slug, "fees", "settings"], { payments })
+      }
     />
   );
 }
+
+/** Pide a la API el enlace de alta en Stripe y se va allí. */
+async function startOnboarding(): Promise<void> {
+  const res = await apiFetch("/api/org/fees/settings/stripe/onboarding", {
+    method: "POST",
+    body: {},
+    schema: StripeOnboardingResponseSchema,
+  });
+  window.location.assign(res.url);
+}
+
+const accountStatusKind = {
+  none: "neutral",
+  unknown: "neutral",
+  onboarding: "warning",
+  restricted: "warning",
+  enabled: "success",
+} as const;
 
 function PaymentsForm({
   initial,
   canWrite,
   labels: { t, c, providers, errors },
   onSaved,
+  onRefreshed,
 }: {
-  initial: {
-    provider: PaymentProvider;
-    stripeAccountId: string | null;
-    stripeConfigured: boolean;
-    currency: string;
-  };
+  initial: PaymentsSettings;
   canWrite: boolean;
   labels: {
     t: ReturnType<typeof useT>;
@@ -1090,13 +1143,22 @@ function PaymentsForm({
     errors: ReturnType<typeof useT>;
   };
   onSaved: () => Promise<void>;
+  onRefreshed: (payments: PaymentsSettings) => void;
 }) {
+  const toast = useToast();
   const [provider, setProvider] = useState<PaymentProvider>(initial.provider);
   const [accountId, setAccountId] = useState(initial.stripeAccountId ?? "");
+  const [manual, setManual] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [connecting, setConnecting] = useState(false);
+  const [checking, setChecking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const dirty =
     provider !== initial.provider || (accountId.trim() || null) !== initial.stripeAccountId;
+  const accountState = !initial.stripeAccountId
+    ? "none"
+    : (initial.stripeAccountStatus ?? "unknown");
+  const needsOnboarding = accountState === "none" || accountState === "onboarding";
 
   async function save(e: FormEvent) {
     e.preventDefault();
@@ -1124,7 +1186,13 @@ function PaymentsForm({
       await onSaved();
     } catch (err) {
       if (err instanceof ApiClientError && err.status === 409) {
-        setError(initial.stripeConfigured ? t("conflictAccount") : t("conflictPlatform"));
+        setError(
+          !initial.stripeConfigured
+            ? t("conflictPlatform")
+            : !accountId.trim()
+              ? t("conflictAccount")
+              : t("conflictNotReady"),
+        );
       } else if (err instanceof ApiClientError && err.status === 400) {
         setError(t("invalidAccount"));
       } else {
@@ -1135,56 +1203,128 @@ function PaymentsForm({
     }
   }
 
+  async function connect() {
+    setConnecting(true);
+    try {
+      await startOnboarding();
+    } catch (err) {
+      toast("error", errors(errorKey(err)));
+      setConnecting(false);
+    }
+  }
+
+  async function check() {
+    setChecking(true);
+    try {
+      const res = await apiFetch("/api/org/fees/settings/stripe/refresh", {
+        method: "POST",
+        schema: PaymentsSettingsResponseSchema,
+      });
+      onRefreshed(res.payments);
+    } catch (err) {
+      toast("error", errors(errorKey(err)));
+    } finally {
+      setChecking(false);
+    }
+  }
+
   return (
     <form onSubmit={(e) => void save(e)}>
       <div className="grid gap-6 lg:grid-cols-2">
-        <Card
-          title={t("title")}
-          description={t("description")}
-          footer={
-            canWrite ? (
-              <Button action="save" type="submit" loading={busy} disabled={!dirty}>
-                {c("save")}
-              </Button>
-            ) : null
-          }
-        >
-          <div className="flex flex-col gap-4">
-            {!initial.stripeConfigured ? (
-              <Alert kind="warning">{t("stripeNotConfigured")}</Alert>
-            ) : null}
-            <Field label={t("provider")} hint={t(`providerHint.${provider}`)}>
-              {(id) => (
-                <Select
-                  id={id}
-                  value={provider}
-                  disabled={!canWrite}
-                  onChange={(e) => setProvider(e.target.value as PaymentProvider)}
-                >
-                  {PAYMENT_PROVIDERS.map((p) => (
-                    <option key={p} value={p}>
-                      {providers(p)}
-                    </option>
-                  ))}
-                </Select>
-              )}
-            </Field>
-            <Field label={t("stripeAccount")} hint={t("stripeAccountHint")}>
-              {(id) => (
-                <Input
-                  id={id}
-                  value={accountId}
-                  disabled={!canWrite}
-                  placeholder="acct_…"
-                  autoComplete="off"
-                  spellCheck={false}
-                  onChange={(e) => setAccountId(e.target.value)}
-                />
-              )}
-            </Field>
-            {error ? <Alert kind="error">{error}</Alert> : null}
-          </div>
-        </Card>
+        <div className="flex flex-col gap-6">
+          <Card
+            title={t("title")}
+            description={t("description")}
+            footer={
+              canWrite ? (
+                <Button action="save" type="submit" loading={busy} disabled={!dirty}>
+                  {c("save")}
+                </Button>
+              ) : null
+            }
+          >
+            <div className="flex flex-col gap-4">
+              {!initial.stripeConfigured ? (
+                <Alert kind="warning">{t("stripeNotConfigured")}</Alert>
+              ) : null}
+              <Field label={t("provider")} hint={t(`providerHint.${provider}`)}>
+                {(id) => (
+                  <Select
+                    id={id}
+                    value={provider}
+                    disabled={!canWrite}
+                    onChange={(e) => setProvider(e.target.value as PaymentProvider)}
+                  >
+                    {PAYMENT_PROVIDERS.map((p) => (
+                      <option key={p} value={p}>
+                        {providers(p)}
+                      </option>
+                    ))}
+                  </Select>
+                )}
+              </Field>
+              {manual || (initial.stripeAccountId && !initial.stripeAccountStatus) ? (
+                <Field label={t("stripeAccount")} hint={t("stripeAccountHint")}>
+                  {(id) => (
+                    <Input
+                      id={id}
+                      value={accountId}
+                      disabled={!canWrite}
+                      placeholder="acct_…"
+                      autoComplete="off"
+                      spellCheck={false}
+                      onChange={(e) => setAccountId(e.target.value)}
+                    />
+                  )}
+                </Field>
+              ) : canWrite ? (
+                <span>
+                  <Button size="sm" variant="tertiary" onClick={() => setManual(true)}>
+                    {t("manualToggle")}
+                  </Button>
+                </span>
+              ) : null}
+              {error ? <Alert kind="error">{error}</Alert> : null}
+            </div>
+          </Card>
+          <Card
+            title={t("stripeTitle")}
+            description={t("stripeDescription")}
+            footer={
+              canWrite && initial.stripeConfigured ? (
+                <>
+                  {initial.stripeAccountId ? (
+                    <Button
+                      variant="secondary"
+                      action="restore"
+                      loading={checking}
+                      onClick={() => void check()}
+                    >
+                      {t("refresh")}
+                    </Button>
+                  ) : null}
+                  {needsOnboarding ? (
+                    <Button action="link" loading={connecting} onClick={() => void connect()}>
+                      {initial.stripeAccountId ? t("continue") : t("connect")}
+                    </Button>
+                  ) : null}
+                </>
+              ) : null
+            }
+          >
+            <div className="flex flex-col gap-3">
+              <span className="flex flex-wrap items-center gap-2 text-body text-ink">
+                {t("accountStatus")}
+                <StatusChip kind={accountStatusKind[accountState]}>
+                  {t(`statuses.${accountState}`)}
+                </StatusChip>
+              </span>
+              {accountState !== "none" && accountState !== "unknown" ? (
+                <p className="text-secondary text-muted">{t(`statusHint.${accountState}`)}</p>
+              ) : null}
+            </div>
+          </Card>
+        </div>
         <Card title={t("statusTitle")}>
           <Definitions
             items={[
@@ -1203,6 +1343,14 @@ function PaymentsForm({
                   <span className="font-mono text-secondary">{initial.stripeAccountId}</span>
                 ) : (
                   <StatusChip kind="neutral">{t("notConnected")}</StatusChip>
+                ),
+              },
+              {
+                term: t("accountStatus"),
+                detail: (
+                  <StatusChip kind={accountStatusKind[accountState]}>
+                    {t(`statuses.${accountState}`)}
+                  </StatusChip>
                 ),
               },
               { term: t("currency"), detail: initial.currency },

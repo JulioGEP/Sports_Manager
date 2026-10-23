@@ -18,20 +18,31 @@ import {
   PaymentCreateSchema,
   PaymentsSettingsResponseSchema,
   PaymentsSettingsUpdateSchema,
+  StripeOnboardingRequestSchema,
+  StripeOnboardingResponseSchema,
+  stripeAccountCanCharge,
   type FeeCharge,
   type PaymentProvider,
+  type StripeAccountStatus,
 } from "@sportsmanager/shared";
+import type { Context } from "hono";
 import type { ApiConfig } from "../config.ts";
 import type { FeeChargeRecord } from "../data/fees.ts";
-import type { DataLayer, OrganizationRow } from "../data/index.ts";
+import { localDate, type DataLayer, type OrganizationRow, type OrgScope } from "../data/index.ts";
 import { requireActor, requirePermission } from "../http/actor.ts";
+import { afterResponse } from "../http/background.ts";
 import type { AppEnv } from "../http/context.ts";
 import { badRequest, conflict, forbidden, notFound } from "../http/errors.ts";
 import { requireSession } from "../http/session.ts";
 import { requireOrganizationHost, resolveTenant } from "../http/tenant.ts";
+import type { AccountingService } from "../services/accounting/index.ts";
 import { createManualProvider } from "../services/payments/manual.ts";
 import { PaymentsProviderError, type PaymentsProvider } from "../services/payments/provider.ts";
-import { createStripeProvider } from "../services/payments/stripe.ts";
+import {
+  accountStatusOf,
+  createStripeProvider,
+  type StripeProvider,
+} from "../services/payments/stripe.ts";
 import { organizationUrl } from "../tenancy.ts";
 
 const error = (description: string) => ({
@@ -54,7 +65,15 @@ export interface FeeRoutesOptions {
   fetch?: typeof fetch;
   /** Reloj del webhook, en segundos Unix, sustituible en tests. */
   now?: () => number;
+  /** Contabilidad (ADR 0042): cada cargo y cada pago salen hacia la herramienta del club. */
+  accounting?: AccountingService;
 }
+
+/** Eventos de Checkout que confirman el cobro: al momento, o más tarde (pagos que tardan, SEPA). */
+const PAID_EVENTS = new Set([
+  "checkout.session.completed",
+  "checkout.session.async_payment_succeeded",
+]);
 
 /**
  * Cuotas, cobros y Stripe (Bloque 18, ADR 0031). Lectura con `org.fees.read`, cambios con
@@ -82,7 +101,7 @@ export function createFeeRoutes(
   const settingsRead = requirePermission("org.settings.read");
   const settingsWrite = requirePermission("org.settings.write");
 
-  const stripe: PaymentsProvider | null =
+  const stripe: StripeProvider | null =
     config.payments.stripeSecretKey && config.payments.stripeWebhookSecret
       ? createStripeProvider({
           secretKey: config.payments.stripeSecretKey,
@@ -115,6 +134,52 @@ export function createFeeRoutes(
       details,
     });
 
+  /** Manda un cargo a la contabilidad del club sin hacer esperar la respuesta. */
+  const toAccounting = (c: Context<AppEnv>, scope: OrgScope, chargeId: string) =>
+    options.accounting
+      ? afterResponse(c, () => options.accounting!.syncChargeQuietly(scope, chargeId))
+      : Promise.resolve();
+
+  /**
+   * Cargos con su documento en la contabilidad (ADR 0042): número si ya está allí, pendiente si le
+   * toca y todavía no ha salido. Solo para quien gestiona las cuotas.
+   */
+  async function adminDtos(
+    scope: OrgScope,
+    org: OrganizationRow,
+    charges: FeeChargeRecord[],
+  ): Promise<FeeCharge[]> {
+    const dtos = charges.map((ch) => chargeDto(ch, org));
+    const connection = await data.accounting.connection.get(scope);
+    if (!connection) return dtos;
+    const links = await data.accounting.documentLinks(
+      scope,
+      connection,
+      charges.map((ch) => ch.id),
+    );
+    const provider = connection.provider as "holded";
+    return dtos.map((dto, i) => {
+      const link = links.get(dto.id);
+      const charge = charges[i]!;
+      if (link)
+        return {
+          ...dto,
+          accounting: {
+            provider,
+            status: link.failing && link.status === "synced" ? "failed" : link.status,
+            number: link.number,
+          },
+        };
+      // "Desde" es un día del club: se compara en su zona horaria, no en UTC.
+      const due =
+        charge.status !== "cancelled" &&
+        localDate(org.timezone, charge.createdAt) >= connection.syncFrom;
+      return { ...dto, accounting: due ? { provider, status: "pending", number: null } : null };
+    });
+  }
+  const adminDto = async (scope: OrgScope, org: OrganizationRow, charge: FeeChargeRecord) =>
+    (await adminDtos(scope, org, [charge]))[0]!;
+
   /** Lo que sale de la API: con enlace de pago si el club cobra por Stripe y el cargo sigue abierto. */
   const chargeDto = (charge: FeeChargeRecord, org: OrganizationRow): FeeCharge => ({
     id: charge.id,
@@ -144,8 +209,20 @@ export function createFeeRoutes(
     provider: org.paymentsProvider as PaymentProvider,
     stripeAccountId: org.stripeAccountId,
     stripeConfigured: config.payments.stripeConfigured,
+    stripeAccountStatus: org.stripeAccountStatus as StripeAccountStatus | null,
     currency: "EUR" as const,
   });
+
+  /** Pregunta a Stripe por la cuenta del club y guarda lo que diga. Sin Stripe, no cambia nada. */
+  async function refreshAccount(scope: OrgScope, org: OrganizationRow): Promise<OrganizationRow> {
+    if (!stripe || !org.stripeAccountId) return org;
+    const status = await stripe.connect.accountStatus(org.stripeAccountId);
+    if (status === org.stripeAccountStatus) return org;
+    return data.organizations.update(scope, { stripeAccountStatus: status });
+  }
+
+  const clubBase = (c: Context<AppEnv>, org: OrganizationRow) =>
+    organizationUrl(org.slug, config, c.req.header("host"), c.env?.context?.deploy?.context);
 
   // --- Planes ---
   app.openapi(
@@ -255,7 +332,7 @@ export function createFeeRoutes(
       });
       return c.json(
         {
-          charges: result.charges.map((ch) => chargeDto(ch, tenant.organization)),
+          charges: await adminDtos(tenant.scope, tenant.organization, result.charges),
           totals: result.totals,
         },
         200,
@@ -293,7 +370,11 @@ export function createFeeRoutes(
         personId: body.personId,
         amountCents: body.amountCents,
       });
-      return c.json({ charge: chargeDto(result.charge, tenant.organization) }, 201);
+      await toAccounting(c, tenant.scope, result.charge.id);
+      return c.json(
+        { charge: await adminDto(tenant.scope, tenant.organization, result.charge) },
+        201,
+      );
     },
   );
 
@@ -346,7 +427,7 @@ export function createFeeRoutes(
       const { id } = c.req.valid("param");
       const charge = await data.fees.charges.byId(tenant.scope, id);
       if (!charge) throw notFound("Ese cargo no existe.");
-      return c.json({ charge: chargeDto(charge, tenant.organization) }, 200);
+      return c.json({ charge: await adminDto(tenant.scope, tenant.organization, charge) }, 200);
     },
   );
 
@@ -379,7 +460,11 @@ export function createFeeRoutes(
       if (result.outcome === "not_found") throw notFound("Ese cargo no existe.");
       if (result.outcome === "not_editable") throw conflict("Un cargo pagado no se cambia.");
       await audit(c, tenant, "fee_charge.updated", id, body);
-      return c.json({ charge: chargeDto(result.charge, tenant.organization) }, 200);
+      if (body.status !== undefined) await toAccounting(c, tenant.scope, id);
+      return c.json(
+        { charge: await adminDto(tenant.scope, tenant.organization, result.charge) },
+        200,
+      );
     },
   );
 
@@ -421,8 +506,9 @@ export function createFeeRoutes(
         amountCents: body.amountCents,
         method: body.method,
       });
+      await toAccounting(c, tenant.scope, id);
       const charge = (await data.fees.charges.byId(tenant.scope, id))!;
-      return c.json({ charge: chargeDto(charge, tenant.organization) }, 200);
+      return c.json({ charge: await adminDto(tenant.scope, tenant.organization, charge) }, 200);
     },
   );
 
@@ -476,21 +562,121 @@ export function createFeeRoutes(
           ? body.stripeAccountId
           : tenant.organization.stripeAccountId;
       const provider = body.provider ?? (tenant.organization.paymentsProvider as PaymentProvider);
+      const accountChanged =
+        body.stripeAccountId !== undefined &&
+        body.stripeAccountId !== tenant.organization.stripeAccountId;
+      // Una cuenta escrita a mano empieza sin estado; si Stripe responde, se sabe al momento.
+      let accountStatus = accountChanged
+        ? null
+        : (tenant.organization.stripeAccountStatus as StripeAccountStatus | null);
+      if (accountChanged && accountId && stripe) {
+        accountStatus = await stripe.connect.accountStatus(accountId).catch(() => null);
+      }
       if (provider === "stripe") {
         if (!config.payments.stripeConfigured)
           throw conflict("Stripe no está configurado en la plataforma todavía.");
         if (!accountId)
           throw conflict("Conecta la cuenta de Stripe del club antes de cobrar por Stripe.");
+        if (!stripeAccountCanCharge(accountStatus))
+          throw conflict(
+            "La cuenta de Stripe del club todavía no puede cobrar: termina el alta en Stripe.",
+          );
       }
       const updated = await data.organizations.update(tenant.scope, {
         ...(body.provider !== undefined ? { paymentsProvider: body.provider } : {}),
         ...(body.stripeAccountId !== undefined ? { stripeAccountId: body.stripeAccountId } : {}),
+        ...(accountChanged ? { stripeAccountStatus: accountStatus } : {}),
       });
       await audit(c, tenant, "organization.payments_updated", tenant.organization.slug, {
         provider: updated.paymentsProvider,
         stripeConnected: Boolean(updated.stripeAccountId),
       });
       return c.json({ payments: settingsDto(updated) }, 200);
+    },
+  );
+
+  // --- Stripe Connect (ADR 0042): el club da de alta su cuenta desde los ajustes ---
+  app.openapi(
+    createRoute({
+      method: "post",
+      path: "/api/org/fees/settings/stripe/onboarding",
+      tags: ["Cuotas"],
+      summary:
+        "Enlace de alta en Stripe para el club. Crea su cuenta Standard la primera vez; después, continúa el alta",
+      security: [{ sessionCookie: [] }],
+      middleware: [settingsWrite],
+      request: {
+        body: {
+          content: { "application/json": { schema: StripeOnboardingRequestSchema } },
+          required: false,
+        },
+      },
+      responses: {
+        200: json("Enlace de alta", StripeOnboardingResponseSchema),
+        409: error("Stripe no está configurado en la plataforma o no responde"),
+        ...errors,
+      },
+    }),
+    async (c) => {
+      const tenant = scopeOf(c);
+      if (!stripe) throw conflict("Stripe no está configurado en la plataforma todavía.");
+      const body = c.req.valid("json") ?? {};
+      let org = tenant.organization;
+      try {
+        if (!org.stripeAccountId) {
+          const accountId = await stripe.connect.createAccount({
+            organizationId: org.id,
+            name: org.name,
+            email: c.get("sessionUser").email,
+            country: "ES",
+          });
+          org = await data.organizations.update(tenant.scope, {
+            stripeAccountId: accountId,
+            stripeAccountStatus: "onboarding",
+          });
+        }
+        const back = `${clubBase(c, org)}${body.returnPath ?? "/settings?tab=payments"}`;
+        const joiner = back.includes("?") ? "&" : "?";
+        const url = await stripe.connect.onboardingLink({
+          accountId: org.stripeAccountId!,
+          // Si el enlace caduca, Stripe devuelve aquí y la web pide otro.
+          refreshUrl: `${back}${joiner}stripe=refresh`,
+          returnUrl: `${back}${joiner}stripe=return`,
+        });
+        await audit(c, tenant, "organization.stripe_onboarding_started", org.slug, {
+          stripeAccountId: org.stripeAccountId,
+        });
+        return c.json({ url }, 200);
+      } catch (err) {
+        if (err instanceof PaymentsProviderError) throw conflict(err.message);
+        throw err;
+      }
+    },
+  );
+
+  app.openapi(
+    createRoute({
+      method: "post",
+      path: "/api/org/fees/settings/stripe/refresh",
+      tags: ["Cuotas"],
+      summary: "Pregunta a Stripe cómo está la cuenta del club (al volver del alta) y lo guarda",
+      security: [{ sessionCookie: [] }],
+      middleware: [settingsWrite],
+      responses: {
+        200: json("Ajustes de cobro", PaymentsSettingsResponseSchema),
+        409: error("Stripe no responde"),
+        ...errors,
+      },
+    }),
+    async (c) => {
+      const tenant = scopeOf(c);
+      try {
+        const org = await refreshAccount(tenant.scope, tenant.organization);
+        return c.json({ payments: settingsDto(org) }, 200);
+      } catch (err) {
+        if (err instanceof PaymentsProviderError) throw conflict(err.message);
+        throw err;
+      }
     },
   );
 
@@ -595,7 +781,7 @@ export function createFeeRoutes(
       path: "/api/webhooks/stripe",
       tags: ["Cuotas"],
       summary:
-        "Webhook de Stripe. Registra el pago de un cargo cuando se completa su sesión de Checkout",
+        "Webhook de Stripe. Registra el pago de un cargo al completarse su Checkout y guarda el estado de la cuenta conectada del club",
       request: { body: { content: { "application/json": { schema: z.any() } }, required: false } },
       responses: {
         200: json("Recibido", z.object({ received: z.literal(true), recorded: z.boolean() })),
@@ -607,9 +793,25 @@ export function createFeeRoutes(
       const raw = await c.req.text();
       const event = await stripe.verifyWebhook(raw, c.req.header("stripe-signature") ?? null);
       if (!event) throw badRequest("Firma del webhook inválida.");
-      if (event.type !== "checkout.session.completed")
-        return c.json({ received: true as const, recorded: false }, 200);
       const object = event.data.object;
+
+      // La cuenta del club ha cambiado (alta terminada, datos pendientes): se guarda su estado.
+      if (event.type === "account.updated") {
+        const accountId = typeof object["id"] === "string" ? object["id"] : event.account;
+        const club = accountId ? await data.organizations.findByStripeAccount(accountId) : null;
+        if (club) {
+          await data.organizations.update(club.scope, {
+            stripeAccountStatus: accountStatusOf(object),
+          });
+        }
+        return c.json({ received: true as const, recorded: false }, 200);
+      }
+
+      if (!PAID_EVENTS.has(event.type))
+        return c.json({ received: true as const, recorded: false }, 200);
+      // Una sesión completada con un pago que aún no ha entrado (SEPA) llega luego como async_payment_succeeded.
+      if (typeof object["payment_status"] === "string" && object["payment_status"] !== "paid")
+        return c.json({ received: true as const, recorded: false }, 200);
       const metadata = (object["metadata"] ?? {}) as Record<string, unknown>;
       const chargeId =
         typeof object["client_reference_id"] === "string"
@@ -620,6 +822,16 @@ export function createFeeRoutes(
       const sessionId = typeof object["id"] === "string" ? object["id"] : null;
       const found = await data.fees.charges.findForWebhook({ chargeId, sessionId });
       if (!found) return c.json({ received: true as const, recorded: false }, 200);
+      // El cobro tiene que venir de la cuenta del club del cargo, no de la de otro club.
+      if (event.account) {
+        const club = await data.organizations.byScope(found.scope);
+        if (!club || club.stripeAccountId !== event.account) {
+          console.warn("[fees] webhook de una cuenta que no es la del club del cargo", {
+            event: event.id,
+          });
+          return c.json({ received: true as const, recorded: false }, 200);
+        }
+      }
       const paymentIntent =
         typeof object["payment_intent"] === "string" ? object["payment_intent"] : null;
       const providerRef = paymentIntent ?? sessionId ?? event.id;
@@ -641,6 +853,7 @@ export function createFeeRoutes(
           target: found.charge.id,
           details: { amountCents: amountTotal, method: "stripe", providerRef },
         });
+        await toAccounting(c, found.scope, found.charge.id);
       }
       return c.json({ received: true as const, recorded: outcome === "recorded" }, 200);
     },

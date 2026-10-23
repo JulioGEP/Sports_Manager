@@ -4,6 +4,7 @@ import { loadConfig, type ApiConfig } from "./config.ts";
 import { createDataLayer, type DataLayer } from "./data/index.ts";
 import type { AppEnv } from "./http/context.ts";
 import { ApiError, badRequest, notFound } from "./http/errors.ts";
+import { createAccountingRoutes } from "./routes/accounting.ts";
 import { createBrandingRoutes } from "./routes/branding.ts";
 import { createChallengeRoutes } from "./routes/challenges.ts";
 import { createEventRoutes } from "./routes/events.ts";
@@ -23,6 +24,7 @@ import { createTrainingRoutes } from "./routes/training.ts";
 import { createPlayerHealthRoutes } from "./routes/player-health.ts";
 import { createPublicStoreRoutes } from "./routes/public-store.ts";
 import { createStoreRoutes } from "./routes/store.ts";
+import { createAccountingService } from "./services/accounting/index.ts";
 import { DEPLOY_CONTEXT_HEADER } from "./tenancy.ts";
 
 export type { NetlifyContext, NetlifyEnv } from "./http/context.ts";
@@ -32,11 +34,13 @@ export interface AppOptions {
   data?: DataLayer;
 }
 
-export const API_VERSION = "0.13.0";
+export const API_VERSION = "0.14.0";
 
 export function createApp(options: AppOptions = {}) {
   const config = options.config ?? loadConfig();
   const data = options.data ?? createDataLayer({ config });
+  // Contabilidad (ADR 0042): un servicio para las cuotas, la tienda, el webhook y sus propias rutas.
+  const accounting = createAccountingService(config, data);
 
   const app = new OpenAPIHono<AppEnv>({
     defaultHook: (result, c) => {
@@ -77,8 +81,9 @@ export function createApp(options: AppOptions = {}) {
   app.route("/", createPlayerRoutes(config, data));
   app.route("/", createPeopleRoutes(config, data));
   app.route("/", createEventRoutes(config, data));
-  app.route("/", createFeeRoutes(config, data));
-  app.route("/", createStoreRoutes(config, data));
+  app.route("/", createFeeRoutes(config, data, { accounting }));
+  app.route("/", createAccountingRoutes(config, data, { service: accounting }));
+  app.route("/", createStoreRoutes(config, data, { accounting }));
   // API pública del catálogo (ADR 0041): sin sesión, la clave publicable dice el club.
   app.route("/", createPublicStoreRoutes(config, data));
   app.route("/", createChallengeRoutes(config, data));
