@@ -618,7 +618,8 @@ function PreviewCard() {
   const firstName = me.user.name.split(" ")[0] ?? me.user.name;
   return (
     <Card title={t("title")} description={t("hint")}>
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-stretch">
+      {/* Es una muestra: se ve, pero no se toca ni se recorre con el teclado. */}
+      <div inert className="grid gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-stretch">
         <ClubHero
           clubName={look.name}
           crest={<Crest name={look.name} logoUrl={look.logoUrl} size="lg" />}
