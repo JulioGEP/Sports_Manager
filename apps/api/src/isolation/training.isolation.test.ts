@@ -114,7 +114,12 @@ describe("entrenamiento, carga y salud", () => {
       TENANT_ROUTING: "subdomain",
       EMAIL_TRANSPORT: "outbox",
     });
-    data = createDataLayer({ config, connectionString, photoStore: createMemoryBlobStore() });
+    data = createDataLayer({
+      config,
+      connectionString,
+      photoStore: createMemoryBlobStore(),
+      audioStore: createMemoryBlobStore(),
+    });
     app = createApp({ config, data });
     seeder = createSeeder(connectionString);
 
@@ -305,6 +310,128 @@ describe("entrenamiento, carga y salud", () => {
         }),
       ),
     ).toBe(404);
+  });
+
+  it("pizarra animada: la voz va con el movimiento y solo la oye quien ve la tarea", async () => {
+    const audioPath = `/api/org/drills/${teamDrillId}/audio`;
+    const upload = (cookie: string, bytes: Uint8Array, type: string, host = A) =>
+      app.request(audioPath, {
+        method: "PUT",
+        headers: { host, origin: `https://${host}`, cookie, "content-type": type },
+        body: bytes,
+      });
+    // WebM de verdad empieza por la cabecera EBML; el resto da igual para el almacén.
+    const webm = new Uint8Array([
+      0x1a,
+      0x45,
+      0xdf,
+      0xa3,
+      ...Array.from({ length: 60 }, (_, i) => i),
+    ]);
+
+    // Sin movimiento no hay voz.
+    expect(status(await upload(as(coachA), webm, "audio/webm"))).toBe(409);
+    const animated = {
+      field: "half",
+      pieces: [
+        { kind: "own", x: 20, y: 50, label: "1" },
+        { kind: "ball", x: 22, y: 50 },
+      ],
+      arrows: [],
+      animation: {
+        durationMs: 4000,
+        tracks: [
+          {
+            piece: 0,
+            points: [
+              [0, 20, 50],
+              [2000, 60, 30],
+            ],
+          },
+        ],
+      },
+    };
+    const patched = await json<DrillResponse>(
+      await request("PATCH", `/api/org/drills/${teamDrillId}`, A, {
+        cookie: as(coachA),
+        body: { diagram: animated },
+      }),
+      200,
+    );
+    expect(patched.drill.diagram?.animation?.tracks).toHaveLength(1);
+    expect(patched.drill.audioUrl).toBeNull();
+    // Una pista de una pieza que no existe no pasa.
+    expect(
+      status(
+        await request("PATCH", `/api/org/drills/${teamDrillId}`, A, {
+          cookie: as(coachA),
+          body: {
+            diagram: {
+              ...animated,
+              animation: { durationMs: 10, tracks: [{ piece: 5, points: [[0, 1, 1]] }] },
+            },
+          },
+        }),
+      ),
+    ).toBe(400);
+
+    // Formato no admitido o contenido que no es lo que dice: fuera.
+    expect(status(await upload(as(coachA), webm, "audio/wav"))).toBe(415);
+    expect(
+      status(await upload(as(coachA), new Uint8Array([0x89, 0x50, 0x4e, 0x47]), "audio/webm")),
+    ).toBe(415);
+    // Quien no edita la tarea no graba; quien no la ve, ni la encuentra.
+    expect(status(await upload(as(guardianA), webm, "audio/webm"))).toBe(403);
+    expect(status(await upload(as(coachOtherA), webm, "audio/webm"))).toBe(404);
+
+    const recorded = await json<DrillResponse>(
+      await upload(as(coachA), webm, "audio/webm;codecs=opus"),
+      200,
+    );
+    expect(recorded.drill.audioUrl).toMatch(
+      new RegExp(`^/api/org/drills/${teamDrillId}/audio\\?club=club-a&v=`),
+    );
+    const listed = await json<DrillsResponse>(
+      await request("GET", "/api/org/drills", A, { cookie: as(coachA) }),
+      200,
+    );
+    expect(listed.drills.find((d) => d.id === teamDrillId)?.audioUrl).toBe(recorded.drill.audioUrl);
+
+    const full = await request("GET", audioPath, A, { cookie: as(fitnessA) });
+    expect(full.status).toBe(200);
+    expect(full.headers.get("content-type")).toBe("audio/webm");
+    expect(full.headers.get("accept-ranges")).toBe("bytes");
+    expect(new Uint8Array(await full.arrayBuffer())).toEqual(webm);
+    // Safari pide trozos: la API responde 206 con el rango.
+    const part = await app.request(audioPath, {
+      headers: { host: A, origin: `https://${A}`, cookie: as(coachA), range: "bytes=0-3" },
+    });
+    expect(part.status).toBe(206);
+    expect(part.headers.get("content-range")).toBe(`bytes 0-3/${webm.length}`);
+    expect(new Uint8Array(await part.arrayBuffer())).toEqual(webm.slice(0, 4));
+    expect(status(await request("GET", audioPath, A, { cookie: as(coachOtherA) }))).toBe(404);
+    expect(status(await request("GET", audioPath, B, { cookie: as(adminB) }))).toBe(404);
+    expect(status(await upload(as(adminB), webm, "audio/webm", B))).toBe(404);
+
+    // Quitar la voz deja el movimiento; quitar el movimiento se lleva la voz.
+    const muted = await json<DrillResponse>(
+      await request("DELETE", audioPath, A, { cookie: as(coachA) }),
+      200,
+    );
+    expect(muted.drill.audioUrl).toBeNull();
+    expect(muted.drill.diagram?.animation).toBeDefined();
+    expect(status(await request("GET", audioPath, A, { cookie: as(coachA) }))).toBe(404);
+    await json(await upload(as(coachA), webm, "audio/webm"), 200);
+    const still = await json<DrillResponse>(
+      await request("PATCH", `/api/org/drills/${teamDrillId}`, A, {
+        cookie: as(coachA),
+        body: { diagram: { ...animated, animation: undefined } },
+      }),
+      200,
+    );
+    expect(still.drill.diagram?.animation).toBeUndefined();
+    expect(still.drill.audioUrl).toBeNull();
+    expect(status(await request("GET", audioPath, A, { cookie: as(coachA) }))).toBe(404);
   });
 
   it("la sesión la planifica el primer entrenador y cada papel edita sus bloques", async () => {

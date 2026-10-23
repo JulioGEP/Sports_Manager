@@ -314,6 +314,7 @@ function ContentSelect({
 function DrillCard({ drill, to }: { drill: DrillSummary; to: string }) {
   const t = useT("drills");
   const s = useT("drillScopes");
+  const b = useT("board");
   const intl = useIntl();
   const dates = useDates();
   const format = useLoadFormat();
@@ -341,6 +342,11 @@ function DrillCard({ drill, to }: { drill: DrillSummary; to: string }) {
           <h2 className="text-body font-semibold text-ink">{drill.name}</h2>
           {drill.status === "archived" ? (
             <StatusChip kind="neutral">{t("archived")}</StatusChip>
+          ) : null}
+          {drill.diagram?.animation ? (
+            <StatusChip kind="club">
+              {drill.audioUrl ? b("animatedVoice") : b("animated")}
+            </StatusChip>
           ) : null}
         </div>
         <p className="text-secondary text-muted">

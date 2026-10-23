@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { DiagramAnimationSchema } from "./drill-animation.ts";
 import type { Locale, LocalizedText } from "./locales.ts";
 import { DateOnlySchema } from "./structure.ts";
 import { TimeOfDaySchema } from "./events.ts";
@@ -87,25 +88,36 @@ export const DIAGRAM_FIELDS = ["full", "half", "free"] as const;
 export type DiagramField = (typeof DIAGRAM_FIELDS)[number];
 
 const Coord = z.number().min(0).max(100);
-/** Pizarra de la tarea: coordenadas en porcentaje de la pista (x a lo largo, y a lo ancho). */
-export const DrillDiagramSchema = z.object({
-  field: z.enum(DIAGRAM_FIELDS),
-  pieces: z
-    .array(
-      z.object({
-        kind: z.enum(DIAGRAM_PIECE_KINDS),
-        x: Coord,
-        y: Coord,
-        label: z.string().trim().max(3).optional(),
-      }),
-    )
-    .max(40),
-  arrows: z
-    .array(
-      z.object({ kind: z.enum(DIAGRAM_ARROW_KINDS), x1: Coord, y1: Coord, x2: Coord, y2: Coord }),
-    )
-    .max(40),
-});
+/**
+ * Pizarra de la tarea: coordenadas en porcentaje de la pista (x a lo largo, y a lo ancho). Las
+ * piezas están donde empieza la jugada; si hay `animation`, cada pista mueve una de ellas.
+ */
+export const DrillDiagramSchema = z
+  .object({
+    field: z.enum(DIAGRAM_FIELDS),
+    pieces: z
+      .array(
+        z.object({
+          kind: z.enum(DIAGRAM_PIECE_KINDS),
+          x: Coord,
+          y: Coord,
+          label: z.string().trim().max(3).optional(),
+        }),
+      )
+      .max(40),
+    arrows: z
+      .array(
+        z.object({ kind: z.enum(DIAGRAM_ARROW_KINDS), x1: Coord, y1: Coord, x2: Coord, y2: Coord }),
+      )
+      .max(40),
+    animation: DiagramAnimationSchema.optional(),
+  })
+  .refine(
+    (d) => !d.animation || d.animation.tracks.every((track) => track.piece < d.pieces.length),
+    {
+      message: "Cada pista tiene que mover una pieza de la pizarra.",
+    },
+  );
 export type DrillDiagram = z.infer<typeof DrillDiagramSchema>;
 
 const Minutes = z.number().int().min(1).max(240);

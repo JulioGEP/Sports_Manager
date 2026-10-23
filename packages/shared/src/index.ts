@@ -18,6 +18,7 @@ export * from "./challenges.ts";
 export * from "./matches.ts";
 export * from "./match-stats.ts";
 export * from "./training.ts";
+export * from "./drill-animation.ts";
 export * from "./training-load.ts";
 export * from "./training-insights.ts";
 export * from "./api/health.ts";

@@ -891,7 +891,9 @@
     "drill": {
       "created": "Tarea creada",
       "updated": "Tarea editada",
-      "removed": "Tarea eliminada"
+      "removed": "Tarea eliminada",
+      "audio_updated": "Voz de la pizarra grabada",
+      "audio_removed": "Voz de la pizarra quitada"
     },
     "training_plan": {
       "updated": "Plan de temporada editado"
@@ -2975,7 +2977,33 @@
     "eraseHint": "Toca una pieza o una flecha para quitarla.",
     "summary": "Pizarra con {pieces} piezas y {arrows} flechas",
     "elements": "Elementos de la pizarra",
-    "removeElement": "Quitar {element}"
+    "removeElement": "Quitar {element}",
+    "dragHint": "Arrastra cualquier pieza para moverla.",
+    "keyboardHint": "Con el teclado: elige una pieza de la lista y muévela con las flechas (con Mayúsculas, más rápido).",
+    "selectElement": "{element}: elígelo y muévelo con las flechas",
+    "movement": "Movimiento",
+    "recordIntro": "Graba la jugada: pulsa «Grabar movimiento» y mueve las piezas. Con «Con voz», tu explicación se graba a la vez.",
+    "record": "Grabar movimiento",
+    "recordMore": "Grabar otra capa",
+    "stop": "Parar",
+    "recording": "Grabando {time}",
+    "preparingMic": "Preparando el micrófono…",
+    "recordHint": "Mueve las piezas: se graba lo que haces. Lo ya grabado se reproduce a la vez, así puedes grabar por capas.",
+    "withVoice": "Con voz",
+    "micDenied": "No se ha podido usar el micrófono: se graba solo el movimiento.",
+    "nothingRecorded": "No has movido ninguna pieza: no hay nada que guardar.",
+    "duration": "Jugada de {seconds} s.",
+    "clearAnimation": "Borrar movimiento",
+    "voiceRecorded": "Voz grabada.",
+    "voicePending": "Voz nueva: se guarda con la tarea.",
+    "removeVoice": "Quitar la voz",
+    "player": "Reproductor de la jugada",
+    "play": "Reproducir",
+    "pause": "Pausa",
+    "restart": "Desde el principio",
+    "timeline": "Momento de la jugada",
+    "animated": "Con movimiento",
+    "animatedVoice": "Con movimiento y voz"
   },
   "load": {
     "ua": "{value} UA",

@@ -104,6 +104,8 @@ export const drills = pgTable(
     targetRpe: integer("target_rpe"),
     material: text("material"),
     diagram: jsonb("diagram").$type<DrillDiagram>(),
+    /** Voz grabada con el movimiento de la pizarra (ADR 0040), en Netlify Blobs (`drill-audio`). */
+    audioBlobKey: text("audio_blob_key"),
     videoUrl: text("video_url"),
     restrictionTags: jsonb("restriction_tags").$type<RestrictionTag[]>().notNull().default([]),
     /** Clave de la semilla del deporte, para no duplicarla al volver a sembrar. */

@@ -891,7 +891,9 @@
     "drill": {
       "created": "Tasca creada",
       "updated": "Tasca editada",
-      "removed": "Tasca eliminada"
+      "removed": "Tasca eliminada",
+      "audio_updated": "Veu de la pissarra gravada",
+      "audio_removed": "Veu de la pissarra treta"
     },
     "training_plan": {
       "updated": "Pla de temporada editat"
@@ -2975,7 +2977,33 @@
     "eraseHint": "Toca una peça o una fletxa per treure-la.",
     "summary": "Pissarra amb {pieces} peces i {arrows} fletxes",
     "elements": "Elements de la pissarra",
-    "removeElement": "Treure {element}"
+    "removeElement": "Treure {element}",
+    "dragHint": "Arrossega qualsevol peça per moure-la.",
+    "keyboardHint": "Amb el teclat: tria una peça de la llista i mou-la amb les fletxes (amb Majúscules, més ràpid).",
+    "selectElement": "{element}: tria'l i mou-lo amb les fletxes",
+    "movement": "Moviment",
+    "recordIntro": "Grava la jugada: prem «Gravar moviment» i mou les peces. Amb «Amb veu», la teva explicació es grava alhora.",
+    "record": "Gravar moviment",
+    "recordMore": "Gravar una altra capa",
+    "stop": "Aturar",
+    "recording": "Gravant {time}",
+    "preparingMic": "Preparant el micròfon…",
+    "recordHint": "Mou les peces: es grava el que fas. El que ja s'ha gravat es reprodueix alhora, així pots gravar per capes.",
+    "withVoice": "Amb veu",
+    "micDenied": "No s'ha pogut fer servir el micròfon: es grava només el moviment.",
+    "nothingRecorded": "No has mogut cap peça: no hi ha res a desar.",
+    "duration": "Jugada de {seconds} s.",
+    "clearAnimation": "Esborrar moviment",
+    "voiceRecorded": "Veu gravada.",
+    "voicePending": "Veu nova: es desa amb la tasca.",
+    "removeVoice": "Treure la veu",
+    "player": "Reproductor de la jugada",
+    "play": "Reproduir",
+    "pause": "Pausa",
+    "restart": "Des del principi",
+    "timeline": "Moment de la jugada",
+    "animated": "Amb moviment",
+    "animatedVoice": "Amb moviment i veu"
   },
   "load": {
     "ua": "{value} UA",

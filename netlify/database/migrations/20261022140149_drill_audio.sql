@@ -1,0 +1,1 @@
+ALTER TABLE "drills" ADD COLUMN "audio_blob_key" text;

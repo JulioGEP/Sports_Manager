@@ -1,6 +1,10 @@
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 import {
   addDays,
+  DRILL_AUDIO_CONTENT_TYPES,
+  DRILL_AUDIO_MAX_BYTES,
+  isDrillAudioContentType,
+  sniffAudioType,
   DrillCreateSchema,
   DrillResponseSchema,
   DrillsResponseSchema,
@@ -38,6 +42,7 @@ import {
 } from "@sportsmanager/shared";
 import type { ApiConfig } from "../config.ts";
 import {
+  drillAudioUrlFor,
   instantOf,
   localDate,
   playerPhotoUrlFor,
@@ -50,7 +55,14 @@ import {
 } from "../data/index.ts";
 import { requirePermission } from "../http/actor.ts";
 import type { AppEnv } from "../http/context.ts";
-import { badRequest, conflict, forbidden, notFound } from "../http/errors.ts";
+import {
+  badRequest,
+  conflict,
+  forbidden,
+  notFound,
+  payloadTooLarge,
+  unsupportedMediaType,
+} from "../http/errors.ts";
 import {
   actualLoadOf,
   audit,
@@ -379,7 +391,7 @@ export function createTrainingRoutes(config: ApiConfig, data: DataLayer) {
     return drill;
   }
 
-  const drillSummaryDto = (d: DrillRecord, canEdit: boolean) => ({
+  const drillSummaryDto = (d: DrillRecord, canEdit: boolean, slug: string) => ({
     id: d.id,
     scope: d.scope,
     section: d.section,
@@ -393,6 +405,7 @@ export function createTrainingRoutes(config: ApiConfig, data: DataLayer) {
     restrictionTags: d.restrictionTags,
     contents: d.contents,
     diagram: d.diagram,
+    audioUrl: drillAudioUrlFor(d.audioBlobKey, slug, d.id),
     status: d.status,
     uses: d.uses,
     lastUsedOn: d.lastUsedOn,
@@ -466,7 +479,7 @@ export function createTrainingRoutes(config: ApiConfig, data: DataLayer) {
         actor.permissions.has("org.training.write_own");
       return c.json(
         {
-          drills: drills.map((d, i) => drillSummaryDto(d, editable[i]!)),
+          drills: drills.map((d, i) => drillSummaryDto(d, editable[i]!, tenant.organization.slug)),
           contents: contents.map(contentDto),
           sections: visibleSections.map((s) => ({ id: s.id, name: s.name })),
           teams: teams.map((t) => ({ id: t.id, name: t.name, sectionId: t.section.id })),
@@ -530,7 +543,7 @@ export function createTrainingRoutes(config: ApiConfig, data: DataLayer) {
     const restricted = await restrictedOf(data, c);
     return {
       drill: {
-        ...drillSummaryDto(drill, await canEditDrill(c, tenant, drill)),
+        ...drillSummaryDto(drill, await canEditDrill(c, tenant, drill), tenant.organization.slug),
         description: drill.description,
         rules: drill.rules,
         coachingPoints: drill.coachingPoints,
@@ -624,9 +637,14 @@ export function createTrainingRoutes(config: ApiConfig, data: DataLayer) {
           patch.teamId ?? drill.team?.id ?? null,
         );
       const { teamId: _t, ...rest } = patch;
-      const updated = await data.training.updateDrill(tenant.scope, id, { ...rest, ...where });
+      let updated = await data.training.updateDrill(tenant.scope, id, { ...rest, ...where });
       if (updated === "unknown_content") throw badRequest("Algún contenido no es de esa sección.");
       if (!updated) throw notFound("Esa tarea no existe.");
+      // Sin movimiento no hay voz que acompañar: se quita con él (ADR 0040).
+      if (updated.audioBlobKey && !updated.diagram?.animation) {
+        await data.drillAudio.remove(tenant.scope, id, { cleanup: cleanupBlobs(c) });
+        updated = { ...updated, audioBlobKey: null };
+      }
       await audit(data, c, tenant, "drill.updated", updated.name, Object.keys(patch));
       return c.json(await drillResponse(c, tenant, updated), 200);
     },
@@ -649,8 +667,122 @@ export function createTrainingRoutes(config: ApiConfig, data: DataLayer) {
       const drill = await drillOr404(c, tenant, id);
       if (!(await canEditDrill(c, tenant, drill))) throw forbidden();
       const outcome = await data.training.removeDrill(tenant.scope, id);
+      if (outcome === "removed" && drill.audioBlobKey)
+        await data.drillAudio
+          .remove(tenant.scope, id, { cleanup: cleanupBlobs(c) })
+          .catch(() => false);
       await audit(data, c, tenant, "drill.removed", drill.name, { outcome });
       return c.body(null, 204);
+    },
+  );
+
+  // --- Voz de la pizarra animada (ADR 0040) ---
+
+  /** Los blobs anteriores solo se borran en producción: las previews comparten el store. */
+  const cleanupBlobs = (c: RouteCtx) => c.env?.context?.deploy?.context === "production";
+
+  /**
+   * La voz de una tarea, para quien ve la tarea. Cuerpo binario, fuera de OpenAPI por no ser
+   * JSON. Atiende rangos (`Range: bytes=`): Safari no reproduce audio sin respuestas 206.
+   */
+  app.get("/api/org/drills/:id/audio", read, async (c) => {
+    const tenant = tenantOf(c);
+    const id = c.req.param("id");
+    if (!z.string().uuid().safeParse(id).success) throw notFound();
+    await drillOr404(c, tenant, id);
+    const audio = await data.drillAudio.read(tenant.scope, id);
+    if (!audio) throw notFound("Esta tarea no tiene voz.");
+    const etag = `"${audio.key.split("/").at(-1) ?? ""}"`;
+    if (c.req.header("if-none-match") === etag) return c.body(null, 304);
+    const headers = {
+      "content-type": audio.contentType,
+      "cache-control": "private, max-age=86400",
+      "accept-ranges": "bytes",
+      etag,
+    };
+    const size = audio.body.byteLength;
+    const range = /^bytes=(\d*)-(\d*)$/.exec(c.req.header("range") ?? "");
+    if (range && (range[1] || range[2])) {
+      const start = range[1] ? Number(range[1]) : Math.max(0, size - Number(range[2]));
+      const end = range[1] && range[2] ? Math.min(Number(range[2]), size - 1) : size - 1;
+      if (start >= size || start > end)
+        return c.body(null, 416, { ...headers, "content-range": `bytes */${size}` });
+      return c.body(audio.body.slice(start, end + 1), 206, {
+        ...headers,
+        "content-range": `bytes ${start}-${end}/${size}`,
+      });
+    }
+    return c.body(audio.body, 200, headers);
+  });
+
+  const audioBody = Object.fromEntries(
+    DRILL_AUDIO_CONTENT_TYPES.map((type) => [
+      type,
+      { schema: z.string().openapi({ format: "binary" }) },
+    ]),
+  );
+
+  app.openapi(
+    createRoute({
+      method: "put",
+      path: "/api/org/drills/{id}/audio",
+      tags: ["Entrenamiento"],
+      summary: `Graba la voz que acompaña al movimiento de la pizarra (cuerpo binario, ${DRILL_AUDIO_CONTENT_TYPES.join(", ")}, máximo ${DRILL_AUDIO_MAX_BYTES} bytes). Quien edita la tarea`,
+      security: [{ sessionCookie: [] }],
+      middleware: [read],
+      request: { params: idParam, body: { content: audioBody, required: true } },
+      responses: {
+        200: json("Tarea", DrillResponseSchema),
+        409: error("La pizarra no tiene movimiento"),
+        413: error("Demasiado grande"),
+        415: error("Formato no admitido"),
+        ...errors,
+      },
+    }),
+    async (c) => {
+      const tenant = tenantOf(c);
+      const { id } = c.req.valid("param");
+      const drill = await drillOr404(c, tenant, id);
+      if (!(await canEditDrill(c, tenant, drill))) throw forbidden();
+      if (!drill.diagram?.animation)
+        throw conflict("Graba antes el movimiento de la pizarra: la voz va con él.");
+      const declared =
+        (c.req.header("content-type") ?? "").split(";")[0]?.trim().toLowerCase() ?? "";
+      if (!isDrillAudioContentType(declared)) throw unsupportedMediaType();
+      if (Number(c.req.header("content-length") ?? "0") > DRILL_AUDIO_MAX_BYTES)
+        throw payloadTooLarge();
+      const body = await c.req.arrayBuffer();
+      if (body.byteLength === 0) throw badRequest("El fichero está vacío.");
+      if (body.byteLength > DRILL_AUDIO_MAX_BYTES) throw payloadTooLarge();
+      if (sniffAudioType(new Uint8Array(body)) !== declared)
+        throw unsupportedMediaType("El contenido no coincide con el formato declarado.");
+      const key = await data.drillAudio.upload(tenant.scope, id, body, declared, {
+        cleanup: cleanupBlobs(c),
+      });
+      await audit(data, c, tenant, "drill.audio_updated", drill.name, { bytes: body.byteLength });
+      return c.json(await drillResponse(c, tenant, { ...drill, audioBlobKey: key }), 200);
+    },
+  );
+
+  app.openapi(
+    createRoute({
+      method: "delete",
+      path: "/api/org/drills/{id}/audio",
+      tags: ["Entrenamiento"],
+      summary: "Quita la voz de la pizarra; el movimiento se queda",
+      security: [{ sessionCookie: [] }],
+      middleware: [read],
+      request: { params: idParam },
+      responses: { 200: json("Tarea", DrillResponseSchema), ...errors },
+    }),
+    async (c) => {
+      const tenant = tenantOf(c);
+      const { id } = c.req.valid("param");
+      const drill = await drillOr404(c, tenant, id);
+      if (!(await canEditDrill(c, tenant, drill))) throw forbidden();
+      if (await data.drillAudio.remove(tenant.scope, id, { cleanup: cleanupBlobs(c) }))
+        await audit(data, c, tenant, "drill.audio_removed", drill.name);
+      return c.json(await drillResponse(c, tenant, { ...drill, audioBlobKey: null }), 200);
     },
   );
 
@@ -1387,7 +1519,7 @@ export function createTrainingRoutes(config: ApiConfig, data: DataLayer) {
         mdLabelOverride: session.mdLabel,
       },
       section: { id: section.id, name: section.name, sportCode: section.sportCode },
-      items: items.map(itemDto),
+      items: items.map((i) => itemDto(i, tenant.organization.slug)),
       roster: active.map((r) => {
         const load = loadOf.get(r.playerId);
         return {

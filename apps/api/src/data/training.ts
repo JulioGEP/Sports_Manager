@@ -84,6 +84,7 @@ export interface DrillRecord {
   targetRpe: number | null;
   material: string | null;
   diagram: DrillDiagram | null;
+  audioBlobKey: string | null;
   videoUrl: string | null;
   restrictionTags: RestrictionTag[];
   status: DrillStatus;
@@ -166,6 +167,7 @@ export interface SessionItemRecord {
   description: string | null;
   coachingPoints: string | null;
   diagram: DrillDiagram | null;
+  audioBlobKey: string | null;
 }
 
 export interface TeamEventRecord {
@@ -493,6 +495,7 @@ export function trainingRepo(db: () => Database) {
         targetRpe: schema.drills.targetRpe,
         material: schema.drills.material,
         diagram: schema.drills.diagram,
+        audioBlobKey: schema.drills.audioBlobKey,
         videoUrl: schema.drills.videoUrl,
         restrictionTags: schema.drills.restrictionTags,
         status: schema.drills.status,
@@ -528,6 +531,7 @@ export function trainingRepo(db: () => Database) {
       targetRpe: r.targetRpe,
       material: r.material,
       diagram: r.diagram ?? null,
+      audioBlobKey: r.audioBlobKey,
       videoUrl: r.videoUrl,
       restrictionTags: Array.isArray(r.restrictionTags) ? r.restrictionTags : [],
       status: r.status as DrillStatus,
@@ -739,6 +743,7 @@ export function trainingRepo(db: () => Database) {
         description: schema.drills.description,
         coachingPoints: schema.drills.coachingPoints,
         diagram: schema.drills.diagram,
+        audioBlobKey: schema.drills.audioBlobKey,
       })
       .from(schema.trainingSessionItems)
       .leftJoin(schema.drills, eq(schema.drills.id, schema.trainingSessionItems.drillId))
