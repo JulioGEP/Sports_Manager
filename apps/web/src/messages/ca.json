@@ -423,7 +423,7 @@
   },
   "settings": {
     "title": "Configuració del club",
-    "description": "Nom, idioma i zona horària; la identitat del club (escut, colors, lletra, veu); temporades, tipus de soci i cobraments. El que canviïs aquí ho veu tot el club.",
+    "description": "Nom, idioma i zona horària; la identitat del club (escut, colors, lletra, veu); temporades, tipus de soci, cobraments i comptabilitat. El que canviïs aquí ho veu tot el club.",
     "forbidden": "No pots editar la configuració d'aquest club.",
     "tabs": {
       "general": "General",
@@ -433,7 +433,8 @@
       "payments": "Cobraments",
       "setup": "Posada en marxa",
       "activity": "Activitat",
-      "developers": "Desenvolupadors"
+      "developers": "Desenvolupadors",
+      "accounting": "Comptabilitat"
     },
     "general": {
       "title": "Dades del club",
@@ -778,7 +779,28 @@
       "connectedAccount": "Compte connectat",
       "notConnected": "Sense connectar",
       "currency": "Moneda",
-      "howItWorks": "Stripe queda preparat com Resend per a l'email: sense claus, el club segueix cobrant a mà; amb claus i compte connectat, el pagament en línia s'activa en triar Stripe."
+      "howItWorks": "Stripe queda preparat com Resend per a l'email: sense claus, el club segueix cobrant a mà; amb claus i compte connectat, el pagament en línia s'activa en triar Stripe.",
+      "stripeTitle": "Compte de Stripe del club",
+      "stripeDescription": "El club dona d'alta el seu propi compte a Stripe, amb les seves dades i el compte bancari. Stripe el revisa i avisa si falta res.",
+      "connect": "Connectar amb Stripe",
+      "continue": "Continuar l'alta",
+      "refresh": "Comprovar l'estat",
+      "accountStatus": "Estat del compte",
+      "statuses": {
+        "none": "Sense compte",
+        "unknown": "Sense comprovar",
+        "onboarding": "Alta sense acabar",
+        "restricted": "Stripe el revisa",
+        "enabled": "A punt per cobrar"
+      },
+      "statusHint": {
+        "onboarding": "Falten dades del club a Stripe. Continua l'alta on la vas deixar.",
+        "restricted": "Les dades són a Stripe i les està revisant. Sol ser ràpid; si falta res, Stripe ho demana.",
+        "enabled": "El compte pot cobrar. Tria Stripe com a proveïdor i desa per activar el cobrament en línia."
+      },
+      "manualToggle": "Tinc compte: escriure'n l'id",
+      "returned": "Has tornat de Stripe. Estat del compte actualitzat.",
+      "conflictNotReady": "El compte de Stripe del club encara no pot cobrar: acaba l'alta a Stripe."
     },
     "setup": {
       "title": "Posada en marxa",
@@ -850,6 +872,73 @@
       "confirmRotateBody": "La clau actual deixa de funcionar a l'instant: el web del club deixarà de mostrar productes fins que hi posis la nova.",
       "confirmDisableTitle": "Vols apagar el catàleg públic?",
       "confirmDisableBody": "El web del club deixarà de mostrar productes. El pots tornar a activar amb una clau nova."
+    },
+    "accounting": {
+      "connect": {
+        "title": "Connectar Holded",
+        "description": "Les quotes, els pagaments i les anul·lacions del club arriben a Holded sense teclejar-los dues vegades.",
+        "apiKey": "Clau d'API de Holded",
+        "apiKeyHint": "Es comprova amb Holded i es desa xifrada. Ningú, tampoc l'administració, la pot tornar a veure.",
+        "submit": "Connectar",
+        "connected": "Holded connectat.",
+        "invalid": "Holded no accepta aquesta clau. Revisa que sigui sencera i que tingui els permisos.",
+        "unreachable": "Holded no respon ara mateix. Prova-ho d'aquí a una estona.",
+        "platformMissing": "La plataforma encara no pot desar claus d'integracions. Quan estigui a punt, connectaràs Holded des d'aquí.",
+        "fromToday": "En connectar s'envien els càrrecs creats des d'avui. Per enviar també els anteriors, canvia la data als ajustos.",
+        "howTo": "Com aconseguir la clau",
+        "step1": "A Holded, obre la configuració del compte i busca l'apartat de desenvolupadors o API.",
+        "step2": "Crea una clau amb permís per a contactes, factures i tiquets de venda, ajustos de facturació, impostos, tresoreria i la informació del compte.",
+        "step3": "Copia-la i enganxa-la aquí. Holded només la mostra una vegada."
+      },
+      "status": {
+        "account": "Compte",
+        "key": "Clau",
+        "connectedAt": "Connectat el",
+        "pause": "Pausar",
+        "resume": "Reprendre",
+        "pausedDone": "Connexió en pausa: no s'envia res fins que la reprenguis.",
+        "resumedDone": "Connexió represa.",
+        "rotate": "Canviar la clau",
+        "disconnect": "Desconnectar",
+        "confirmDisconnectTitle": "Vols desconnectar Holded?",
+        "confirmDisconnectBody": "S'esborren la clau i el registre del que s'ha enviat. El que ja és a Holded s'hi queda. Si tornes a connectar, només s'envia el que s'hagi creat des de la data que triïs.",
+        "disconnected": "Holded desconnectat."
+      },
+      "rotate": {
+        "title": "Canviar la clau de Holded",
+        "description": "Si has canviat la clau a Holded, enganxa-hi la nova. El que ja s'ha enviat es manté.",
+        "submit": "Desar la clau",
+        "saved": "Clau canviada."
+      },
+      "settings": {
+        "title": "Com s'envien les quotes",
+        "description": "El que surt cap a Holded per cada càrrec del club.",
+        "documentType": "Document",
+        "documentTypes": {
+          "invoice": "Factura",
+          "sales_receipt": "Tiquet (factura simplificada)"
+        },
+        "documentTypeHint": "Factura completa, amb les dades fiscals de qui paga; o tiquet, per a imports petits sense NIF.",
+        "tax": "Impost",
+        "noTax": "Sense impost (exempt)",
+        "taxHint": "Les quotes de molts clubs sense ànim de lucre estan exemptes d'IVA (art. 20.1.13 de la Llei de l'IVA). Confirma-ho amb la gestoria.",
+        "series": "Sèrie de numeració",
+        "defaultSeries": "La de Holded per defecte",
+        "syncFrom": "Enviar els càrrecs creats des del",
+        "syncFromHint": "Els anteriors a aquesta data no s'envien.",
+        "approve": "Aprovar els documents en crear-los",
+        "approveHint": "Aprovats, queden numerats i tancats. Sense aprovar, queden en esborrany perquè la gestoria els revisi.",
+        "autoSync": "Enviar al moment",
+        "autoSyncHint": "Cada càrrec i cada pagament surten tan bon punt passen. Sense això, surten en prémer Sincronitzar ara.",
+        "saved": "Ajustos de comptabilitat desats.",
+        "optionsError": "No s'han pogut llegir els impostos i les sèries de Holded. Prova-ho d'aquí a una estona."
+      },
+      "treasury": {
+        "title": "Comptes de tresoreria",
+        "description": "A quin compte de Holded entra cada forma de pagament.",
+        "none": "Sense compte",
+        "saved": "Comptes de tresoreria desats."
+      }
     }
   },
   "clubs": {
@@ -1044,7 +1133,8 @@
       "updated": "Club editat",
       "logo_updated": "Logo canviat",
       "logo_removed": "Logo tret",
-      "payments_updated": "Ajustos de cobrament canviats"
+      "payments_updated": "Ajustos de cobrament canviats",
+      "stripe_onboarding_started": "Alta a Stripe iniciada"
     },
     "invitation": {
       "created": "Invitació enviada",
@@ -1234,6 +1324,13 @@
     },
     "store": {
       "public_key_updated": "Clau del catàleg públic canviada"
+    },
+    "accounting": {
+      "connected": "Comptabilitat connectada",
+      "updated": "Ajustos de comptabilitat canviats",
+      "disconnected": "Comptabilitat desconnectada",
+      "synced": "Quotes enviades a comptabilitat",
+      "retried": "Enviaments a comptabilitat reintentats"
     }
   },
   "team": {
@@ -2592,7 +2689,8 @@
     "newCharge": "Nou càrrec",
     "tabs": {
       "charges": "Càrrecs",
-      "plans": "Plans"
+      "plans": "Plans",
+      "connections": "Passarel·la i comptabilitat"
     },
     "charges": {
       "caption": "Càrrecs del club",
@@ -2623,6 +2721,19 @@
         "dueOn": "Venç",
         "amount": "Import",
         "status": "Estat"
+      },
+      "manualNotice": {
+        "title": "El club cobra a mà",
+        "body": "Perquè les famílies i els socis paguin les quotes des de l'app cal connectar una passarel·la de pagament com Stripe. El pagament s'apunta sol i els diners van al compte del club.",
+        "action": "Veure com connectar-la",
+        "settings": "Ajustos de pagaments"
+      },
+      "accounting": {
+        "pending": "{provider}: per enviar",
+        "synced": "{provider}: enviat",
+        "syncedNumber": "{provider}: {number}",
+        "failed": "{provider}: amb incidència",
+        "cancelled": "{provider}: anul·lat"
       }
     },
     "generate": {
@@ -2728,6 +2839,51 @@
       "dismiss": "Tancar",
       "checkoutSuccess": "Pagament rebut. Pot trigar uns segons a aparèixer com a pagat.",
       "checkoutCancel": "Pagament cancel·lat. Pots tornar-ho a provar quan vulguis."
+    },
+    "connections": {
+      "state": {
+        "done": "Fet",
+        "pending": "Pendent",
+        "review": "Stripe ho revisa"
+      },
+      "gateway": {
+        "title": "Passarel·la de pagament",
+        "description": "Per cobrar en línia, el club ha de connectar una passarel·la de pagament. Fem servir Stripe.",
+        "why": "Per què connectar-la",
+        "benefits": {
+          "pay": "Les famílies i els socis paguen amb targeta des de l'app, també des del mòbil, en un minut.",
+          "auto": "Cada pagament s'apunta sol a la seva quota: ningú no l'ha de registrar ni quadrar a mà.",
+          "money": "Els diners van directament al compte de Stripe del club. La plataforma no els toca.",
+          "cost": "Stripe cobra una comissió per cada pagament. El club la veu al seu panell de Stripe."
+        },
+        "steps": "Com es connecta",
+        "step1": "La plataforma té Stripe configurat.",
+        "step1Missing": "Falta que la plataforma configuri les seves claus de Stripe.",
+        "step2": "El club dona d'alta el seu compte de Stripe, amb les seves dades i el compte bancari.",
+        "step2Review": "Les dades ja s'han enviat. Stripe avisarà si falta res.",
+        "step3": "El club activa el cobrament en línia.",
+        "connect": "Connectar Stripe",
+        "continue": "Continuar l'alta a Stripe",
+        "activate": "Activar el cobrament en línia",
+        "manage": "Ajustos de pagaments",
+        "live": "Cobrament en línia actiu: cada quota pendent porta el seu botó de pagament per a la família o el soci.",
+        "platformMissing": "Quan la plataforma tingui les claus de Stripe, el club donarà d'alta el seu compte des d'aquí en uns minuts.",
+        "noPermission": "L'administració del club connecta Stripe des d'Ajustos, Cobraments."
+      },
+      "accounting": {
+        "title": "Comptabilitat",
+        "description": "Connecta l'eina de facturació del club i les quotes hi arriben soles. Comencem amb Holded.",
+        "benefits": {
+          "documents": "Cada quota surt com a factura o tiquet a Holded, a nom de qui paga: la família de l'esportista o el soci.",
+          "payments": "Cada pagament, a mà o per Stripe, s'apunta a la seva factura i al seu compte de tresoreria.",
+          "cancel": "Anul·lar una quota anul·la el seu esborrany a Holded.",
+          "safe": "Res no s'envia dues vegades, i el que Holded rebutgi queda amb el motiu per corregir-ho."
+        },
+        "connectedTo": "Connectat amb",
+        "connect": "Connectar Holded",
+        "manage": "Ajustos de comptabilitat",
+        "noPermission": "L'administració del club connecta Holded des d'Ajustos, Comptabilitat."
+      }
     }
   },
   "matches": {
@@ -4851,5 +5007,37 @@
     "confirmCancelTitle": "Vols anul·lar la comanda {code}?",
     "confirmCancelBody": "L'estoc torna a la botiga i el càrrec s'anul·la.",
     "confirmCancelPaid": "L'estoc torna a la botiga. Ja s'han cobrat {amount}: els hauràs de retornar tu."
+  },
+  "accounting": {
+    "providers": {
+      "holded": "Holded"
+    },
+    "active": "Activa",
+    "paused": "En pausa",
+    "stats": {
+      "documents": "Documents enviats",
+      "payments": "Pagaments enviats",
+      "pending": "Per enviar",
+      "failed": "Amb incidència"
+    },
+    "entities": {
+      "contact": "Contacte",
+      "document": "Document",
+      "payment": "Pagament"
+    },
+    "lastSync": "Última sincronització: {date}",
+    "neverSynced": "Encara no s'ha sincronitzat.",
+    "lastError": "L'última tanda es va aturar: {error}",
+    "sync": "Sincronitzar ara",
+    "syncing": "{sent, plural, one {# enviat} other {# enviats}} · en queden {remaining}",
+    "syncDone": "{documents, plural, =0 {Sense documents nous} one {# document enviat} other {# documents enviats}} · {payments, plural, =0 {sense pagaments nous} one {# pagament} other {# pagaments}}{failed, plural, =0 {.} other { · # amb incidència.}}",
+    "issues": {
+      "title": "Incidències",
+      "description": "El que Holded ha rebutjat o no s'ha pogut acabar, amb el motiu.",
+      "empty": "Sense incidències: tot el que s'ha enviat ha arribat.",
+      "retry": "Tornar-ho a provar",
+      "attempts": "{count, plural, one {# intent} other {# intents}}"
+    },
+    "syncWaiting": "Holded demana una pausa pel seu límit de peticions: continuem d'aquí a {seconds} s · en queden {remaining}"
   }
 }

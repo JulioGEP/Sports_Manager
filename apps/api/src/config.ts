@@ -7,6 +7,8 @@ import { z } from "zod";
 
 /** Secreto solo para desarrollo local y tests. Fuera de local, BETTER_AUTH_SECRET es obligatoria. */
 const DEV_ONLY_SECRET = "dev-only-secret-not-for-production-0123456789abcdef";
+/** Secreto de integraciones solo para local y tests: cifra las claves de contabilidad (ADR 0042). */
+const DEV_ONLY_INTEGRATIONS_SECRET = "dev-only-integrations-secret-not-for-production-0123";
 
 /** Una variable vacía en Netlify cuenta como no definida. */
 const optionalString = z.preprocess(
@@ -34,6 +36,10 @@ const EnvSchema = z.object({
   PLATFORM_ADMIN_EMAILS: optionalString,
   STRIPE_SECRET_KEY: optionalString,
   STRIPE_WEBHOOK_SECRET: optionalString,
+  INTEGRATIONS_SECRET: z.preprocess(
+    (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
+    z.string().min(32, "INTEGRATIONS_SECRET necesita al menos 32 caracteres.").optional(),
+  ),
   LOGO_STORE: z.preprocess(
     (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
     z.enum(["netlify", "memory"]).optional(),
@@ -63,6 +69,16 @@ export interface PaymentsConfig {
   stripeConfigured: boolean;
 }
 
+/**
+ * Conectores de contabilidad (ADR 0042). La clave de API de cada club se guarda cifrada con este
+ * secreto. Sin secreto (fuera de local), ningún club puede conectar su herramienta: como Stripe y
+ * Resend, todo queda preparado y sin conectar hasta configurarlo.
+ */
+export interface AccountingConfig {
+  secret: string | null;
+  configured: boolean;
+}
+
 export interface ApiConfig {
   /** Dominio base de la plataforma, sin protocolo. Los clubes viven en `<slug>.<baseDomain>`. */
   baseDomain: string;
@@ -82,6 +98,7 @@ export interface ApiConfig {
   invitationTtlDays: number;
   email: EmailConfig;
   payments: PaymentsConfig;
+  accounting: AccountingConfig;
   /**
    * Emails que cuentan como administradores de plataforma además de la tabla `platform_admins`
    * (ADR 0023). Es la vía para el primer administrador, sin contraseñas sembradas.
@@ -112,6 +129,8 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
   if (transport === "resend" && (!parsed.RESEND_API_KEY || !parsed.EMAIL_FROM)) {
     throw new Error("EMAIL_TRANSPORT=resend exige RESEND_API_KEY y EMAIL_FROM.");
   }
+  const integrationsSecret =
+    parsed.INTEGRATIONS_SECRET ?? (isLocal ? DEV_ONLY_INTEGRATIONS_SECRET : null);
   return {
     baseDomain: parsed.APP_BASE_DOMAIN.toLowerCase(),
     tenantRouting: parsed.TENANT_ROUTING ?? "path",
@@ -136,6 +155,10 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
       stripeSecretKey: parsed.STRIPE_SECRET_KEY ?? null,
       stripeWebhookSecret: parsed.STRIPE_WEBHOOK_SECRET ?? null,
       stripeConfigured: Boolean(parsed.STRIPE_SECRET_KEY && parsed.STRIPE_WEBHOOK_SECRET),
+    },
+    accounting: {
+      secret: integrationsSecret,
+      configured: integrationsSecret !== null,
     },
   };
 }

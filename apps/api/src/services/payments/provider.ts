@@ -22,6 +22,8 @@ export interface CheckoutSession {
 export interface WebhookEvent {
   id: string;
   type: string;
+  /** Cuenta conectada de la que viene el evento (Stripe Connect). Nula: de la plataforma. */
+  account: string | null;
   data: { object: Record<string, unknown> };
 }
 

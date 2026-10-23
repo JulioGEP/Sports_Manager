@@ -12,6 +12,8 @@ import type { OrganizationRow, OrgScope } from "../data/index.ts";
 export interface NetlifyContext {
   server?: { region?: string };
   deploy?: { context?: string; id?: string };
+  /** Deja trabajo en marcha tras responder (Netlify Functions). Sin él, se espera a que acabe. */
+  waitUntil?: (promise: Promise<unknown>) => void;
 }
 
 export interface NetlifyEnv {

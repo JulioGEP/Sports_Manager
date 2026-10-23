@@ -1,5 +1,5 @@
 {
-  "id": "2ea31093-e6da-4c2e-9808-fdb651a40687",
+  "id": "f8afdd54-3eec-4ba2-be15-b1549c5bf2cd",
   "prevId": "d1128207-8baf-41a8-b42a-2aca925ca4ea",
   "version": "7",
   "dialect": "postgresql",
@@ -593,61 +593,6 @@
           "notNull": true,
           "default": "'cercana'"
         },
-        "style_typography": {
-          "name": "style_typography",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'moderna'"
-        },
-        "style_buttons": {
-          "name": "style_buttons",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'sistema'"
-        },
-        "style_icons": {
-          "name": "style_icons",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'duotono'"
-        },
-        "style_background": {
-          "name": "style_background",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'liso'"
-        },
-        "style_hero": {
-          "name": "style_hero",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'liso'"
-        },
-        "style_nav": {
-          "name": "style_nav",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'claro'"
-        },
-        "style_corners": {
-          "name": "style_corners",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'sistema'"
-        },
-        "motto": {
-          "name": "motto",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "timezone": {
           "name": "timezone",
           "type": "text",
@@ -664,6 +609,12 @@
         },
         "stripe_account_id": {
           "name": "stripe_account_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "stripe_account_status": {
+          "name": "stripe_account_status",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -748,41 +699,13 @@
           "name": "organizations_voice_check",
           "value": "\"organizations\".\"voice\" in ('cercana', 'profesional', 'vestuario')"
         },
-        "organizations_style_typography_check": {
-          "name": "organizations_style_typography_check",
-          "value": "\"organizations\".\"style_typography\" in ('moderna', 'clasica', 'deportiva', 'amable', 'geometrica')"
-        },
-        "organizations_style_buttons_check": {
-          "name": "organizations_style_buttons_check",
-          "value": "\"organizations\".\"style_buttons\" in ('sistema', 'pildora', 'suave', 'recta', 'relieve')"
-        },
-        "organizations_style_icons_check": {
-          "name": "organizations_style_icons_check",
-          "value": "\"organizations\".\"style_icons\" in ('duotono', 'linea', 'fina', 'gruesa', 'relleno')"
-        },
-        "organizations_style_background_check": {
-          "name": "organizations_style_background_check",
-          "value": "\"organizations\".\"style_background\" in ('liso', 'neutro', 'tenido', 'degradado', 'trama')"
-        },
-        "organizations_style_hero_check": {
-          "name": "organizations_style_hero_check",
-          "value": "\"organizations\".\"style_hero\" in ('liso', 'degradado', 'rayas', 'banda', 'escudo')"
-        },
-        "organizations_style_nav_check": {
-          "name": "organizations_style_nav_check",
-          "value": "\"organizations\".\"style_nav\" in ('claro', 'club', 'oscuro')"
-        },
-        "organizations_style_corners_check": {
-          "name": "organizations_style_corners_check",
-          "value": "\"organizations\".\"style_corners\" in ('sistema', 'redondeadas', 'rectas')"
-        },
-        "organizations_motto_length": {
-          "name": "organizations_motto_length",
-          "value": "\"organizations\".\"motto\" is null or char_length(\"organizations\".\"motto\") between 1 and 80"
-        },
         "organizations_payments_provider_check": {
           "name": "organizations_payments_provider_check",
           "value": "\"organizations\".\"payments_provider\" in ('manual', 'stripe')"
+        },
+        "organizations_stripe_account_status_check": {
+          "name": "organizations_stripe_account_status_check",
+          "value": "\"organizations\".\"stripe_account_status\" is null or \"organizations\".\"stripe_account_status\" in ('onboarding', 'restricted', 'enabled')"
         }
       },
       "isRLSEnabled": false
@@ -5049,6 +4972,429 @@
         "payments_amount_check": {
           "name": "payments_amount_check",
           "value": "\"payments\".\"amount_cents\" >= 1"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.accounting_connections": {
+      "name": "accounting_connections",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "organization_id": {
+          "name": "organization_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "provider": {
+          "name": "provider",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'active'"
+        },
+        "api_key_ciphertext": {
+          "name": "api_key_ciphertext",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "api_key_hint": {
+          "name": "api_key_hint",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "account_name": {
+          "name": "account_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "document_type": {
+          "name": "document_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'invoice'"
+        },
+        "tax_key": {
+          "name": "tax_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tax_name": {
+          "name": "tax_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tax_rate_bp": {
+          "name": "tax_rate_bp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "numbering_series_id": {
+          "name": "numbering_series_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "approve_documents": {
+          "name": "approve_documents",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "treasury_accounts": {
+          "name": "treasury_accounts",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        },
+        "sync_from": {
+          "name": "sync_from",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "auto_sync": {
+          "name": "auto_sync",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "last_sync_at": {
+          "name": "last_sync_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_error": {
+          "name": "last_error",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "connected_by": {
+          "name": "connected_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "accounting_connections_organization_unique": {
+          "name": "accounting_connections_organization_unique",
+          "columns": [
+            {
+              "expression": "organization_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "accounting_connections_organization_id_organizations_id_fk": {
+          "name": "accounting_connections_organization_id_organizations_id_fk",
+          "tableFrom": "accounting_connections",
+          "tableTo": "organizations",
+          "columnsFrom": [
+            "organization_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "accounting_connections_connected_by_users_id_fk": {
+          "name": "accounting_connections_connected_by_users_id_fk",
+          "tableFrom": "accounting_connections",
+          "tableTo": "users",
+          "columnsFrom": [
+            "connected_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "accounting_connections_provider_check": {
+          "name": "accounting_connections_provider_check",
+          "value": "\"accounting_connections\".\"provider\" in ('holded')"
+        },
+        "accounting_connections_status_check": {
+          "name": "accounting_connections_status_check",
+          "value": "\"accounting_connections\".\"status\" in ('active', 'paused')"
+        },
+        "accounting_connections_document_type_check": {
+          "name": "accounting_connections_document_type_check",
+          "value": "\"accounting_connections\".\"document_type\" in ('invoice', 'sales_receipt')"
+        },
+        "accounting_connections_tax_rate_check": {
+          "name": "accounting_connections_tax_rate_check",
+          "value": "\"accounting_connections\".\"tax_rate_bp\" >= 0 and \"accounting_connections\".\"tax_rate_bp\" <= 10000"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.accounting_links": {
+      "name": "accounting_links",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "organization_id": {
+          "name": "organization_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "connection_id": {
+          "name": "connection_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "entity": {
+          "name": "entity",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "local_id": {
+          "name": "local_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "external_id": {
+          "name": "external_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "external_number": {
+          "name": "external_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "document_type": {
+          "name": "document_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pending'"
+        },
+        "attempts": {
+          "name": "attempts",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "last_error": {
+          "name": "last_error",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "synced_at": {
+          "name": "synced_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "accounting_links_connection_entity_local_unique": {
+          "name": "accounting_links_connection_entity_local_unique",
+          "columns": [
+            {
+              "expression": "connection_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "entity",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "local_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "accounting_links_organization_id_idx": {
+          "name": "accounting_links_organization_id_idx",
+          "columns": [
+            {
+              "expression": "organization_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "accounting_links_connection_status_idx": {
+          "name": "accounting_links_connection_status_idx",
+          "columns": [
+            {
+              "expression": "connection_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "accounting_links_organization_id_organizations_id_fk": {
+          "name": "accounting_links_organization_id_organizations_id_fk",
+          "tableFrom": "accounting_links",
+          "tableTo": "organizations",
+          "columnsFrom": [
+            "organization_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "accounting_links_connection_id_accounting_connections_id_fk": {
+          "name": "accounting_links_connection_id_accounting_connections_id_fk",
+          "tableFrom": "accounting_links",
+          "tableTo": "accounting_connections",
+          "columnsFrom": [
+            "connection_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "accounting_links_entity_check": {
+          "name": "accounting_links_entity_check",
+          "value": "\"accounting_links\".\"entity\" in ('contact', 'document', 'payment')"
+        },
+        "accounting_links_status_check": {
+          "name": "accounting_links_status_check",
+          "value": "\"accounting_links\".\"status\" in ('pending', 'synced', 'failed', 'cancelled')"
+        },
+        "accounting_links_attempts_check": {
+          "name": "accounting_links_attempts_check",
+          "value": "\"accounting_links\".\"attempts\" >= 0"
+        },
+        "accounting_links_document_type_check": {
+          "name": "accounting_links_document_type_check",
+          "value": "\"accounting_links\".\"document_type\" is null or \"accounting_links\".\"document_type\" in ('invoice', 'sales_receipt')"
+        },
+        "accounting_links_synced_external_check": {
+          "name": "accounting_links_synced_external_check",
+          "value": "\"accounting_links\".\"status\" not in ('synced', 'cancelled') or \"accounting_links\".\"external_id\" is not null"
         }
       },
       "isRLSEnabled": false

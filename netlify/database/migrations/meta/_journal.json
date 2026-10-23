@@ -124,8 +124,15 @@
     {
       "idx": 17,
       "version": "7",
-      "when": 1792792388763,
-      "tag": "20261023215308_club_style",
+      "when": 1792790925168,
+      "tag": "20261023212845_accounting_connectors",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1792794466879,
+      "tag": "20261023222746_club_style",
       "breakpoints": true
     }
   ]

@@ -334,6 +334,50 @@ export function createSeeder(connectionString: string) {
       return rows[0]!;
     },
 
+    /** Contacto y documento de una persona, como los rellena el club en su ficha. */
+    async personDetails(
+      personId: string,
+      input: { email?: string | null; nationalId?: string | null; phone?: string | null },
+    ): Promise<void> {
+      await db.update(schema.people).set(input).where(eq(schema.people.id, personId));
+    },
+
+    // --- Cobros y contabilidad (ADR 0042) ---
+
+    async stripeAccount(organizationId: string, accountId: string | null): Promise<void> {
+      await db
+        .update(schema.organizations)
+        .set({ stripeAccountId: accountId })
+        .where(eq(schema.organizations.id, organizationId));
+    },
+
+    async stripeAccountStatus(organizationId: string): Promise<string | null> {
+      const rows = await db
+        .select({ status: schema.organizations.stripeAccountStatus })
+        .from(schema.organizations)
+        .where(eq(schema.organizations.id, organizationId))
+        .limit(1);
+      return rows[0]?.status ?? null;
+    },
+
+    /** La clave de contabilidad tal y como queda en la base: para comprobar que va cifrada. */
+    async accountingCiphertext(organizationId: string): Promise<string | null> {
+      const rows = await db
+        .select({ value: schema.accountingConnections.apiKeyCiphertext })
+        .from(schema.accountingConnections)
+        .where(eq(schema.accountingConnections.organizationId, organizationId))
+        .limit(1);
+      return rows[0]?.value ?? null;
+    },
+
+    async accountingLinkCount(organizationId: string): Promise<number> {
+      const rows = await db
+        .select({ id: schema.accountingLinks.id })
+        .from(schema.accountingLinks)
+        .where(eq(schema.accountingLinks.organizationId, organizationId));
+      return rows.length;
+    },
+
     async close() {
       await handle.close();
     },

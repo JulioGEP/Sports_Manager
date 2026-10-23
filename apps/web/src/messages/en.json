@@ -423,7 +423,7 @@
   },
   "settings": {
     "title": "Club settings",
-    "description": "Name, language and time zone; the club's identity (crest, colours, type, voice); seasons, member types and payments. What you change here, the whole club sees.",
+    "description": "Name, language and time zone; the club's identity (crest, colours, type, voice); seasons, member types, payments and accounting. What you change here, the whole club sees.",
     "forbidden": "You cannot edit this club's settings.",
     "tabs": {
       "general": "General",
@@ -433,7 +433,8 @@
       "payments": "Payments",
       "setup": "Getting started",
       "activity": "Activity",
-      "developers": "Developers"
+      "developers": "Developers",
+      "accounting": "Accounting"
     },
     "general": {
       "title": "Club details",
@@ -778,7 +779,28 @@
       "connectedAccount": "Connected account",
       "notConnected": "Not connected",
       "currency": "Currency",
-      "howItWorks": "Stripe is prepared the same way Resend is for email: without keys the club keeps collecting manually; with keys and a connected account, online payment activates when you pick Stripe."
+      "howItWorks": "Stripe is prepared the same way Resend is for email: without keys the club keeps collecting manually; with keys and a connected account, online payment activates when you pick Stripe.",
+      "stripeTitle": "Club Stripe account",
+      "stripeDescription": "The club signs up its own Stripe account, with its details and bank account. Stripe reviews it and asks if anything is missing.",
+      "connect": "Connect with Stripe",
+      "continue": "Continue sign-up",
+      "refresh": "Check status",
+      "accountStatus": "Account status",
+      "statuses": {
+        "none": "No account",
+        "unknown": "Not checked",
+        "onboarding": "Sign-up unfinished",
+        "restricted": "Stripe is reviewing",
+        "enabled": "Ready to collect"
+      },
+      "statusHint": {
+        "onboarding": "Stripe still needs some club details. Continue the sign-up where you left it.",
+        "restricted": "Stripe has the details and is reviewing them. It is usually quick; Stripe will ask if anything is missing.",
+        "enabled": "The account can collect. Choose Stripe as the provider and save to turn on online payments."
+      },
+      "manualToggle": "I have an account: type its ID",
+      "returned": "You are back from Stripe. Account status updated.",
+      "conflictNotReady": "The club's Stripe account cannot collect yet: finish the sign-up in Stripe."
     },
     "setup": {
       "title": "Getting started",
@@ -850,6 +872,73 @@
       "confirmRotateBody": "The current key stops working immediately: the club website will stop showing products until you put in the new one.",
       "confirmDisableTitle": "Turn off the public catalog?",
       "confirmDisableBody": "The club website will stop showing products. You can turn it back on with a new key."
+    },
+    "accounting": {
+      "connect": {
+        "title": "Connect Holded",
+        "description": "The club's fees, payments and cancellations reach Holded without typing them twice.",
+        "apiKey": "Holded API key",
+        "apiKeyHint": "It is checked with Holded and stored encrypted. Nobody, not even the administration, can see it again.",
+        "submit": "Connect",
+        "connected": "Holded connected.",
+        "invalid": "Holded does not accept that key. Check it is complete and has the permissions.",
+        "unreachable": "Holded is not responding right now. Try again in a while.",
+        "platformMissing": "The platform cannot store integration keys yet. When it is ready, you will connect Holded from here.",
+        "fromToday": "Once connected, charges created from today are sent. To send earlier ones too, change the date in the settings.",
+        "howTo": "How to get the key",
+        "step1": "In Holded, open the account settings and look for the developers or API section.",
+        "step2": "Create a key with access to contacts, sales invoices and receipts, invoicing settings, taxes, treasury and account information.",
+        "step3": "Copy it and paste it here. Holded only shows it once."
+      },
+      "status": {
+        "account": "Account",
+        "key": "Key",
+        "connectedAt": "Connected on",
+        "pause": "Pause",
+        "resume": "Resume",
+        "pausedDone": "Connection paused: nothing is sent until you resume it.",
+        "resumedDone": "Connection resumed.",
+        "rotate": "Change key",
+        "disconnect": "Disconnect",
+        "confirmDisconnectTitle": "Disconnect Holded?",
+        "confirmDisconnectBody": "The key and the record of what was sent are deleted. What is already in Holded stays there. If you connect again, only what was created from the date you choose is sent.",
+        "disconnected": "Holded disconnected."
+      },
+      "rotate": {
+        "title": "Change Holded key",
+        "description": "If you changed the key in Holded, paste the new one here. What was already sent is kept.",
+        "submit": "Save key",
+        "saved": "Key changed."
+      },
+      "settings": {
+        "title": "How fees are sent",
+        "description": "What goes to Holded for each club charge.",
+        "documentType": "Document",
+        "documentTypes": {
+          "invoice": "Invoice",
+          "sales_receipt": "Receipt (simplified invoice)"
+        },
+        "documentTypeHint": "A full invoice, with the payer's tax details; or a receipt, for small amounts without a tax ID.",
+        "tax": "Tax",
+        "noTax": "No tax (exempt)",
+        "taxHint": "Fees of many non-profit clubs are VAT exempt (art. 20.1.13 of the Spanish VAT Act). Check with your accountant.",
+        "series": "Numbering series",
+        "defaultSeries": "Holded's default",
+        "syncFrom": "Send charges created from",
+        "syncFromHint": "Charges before this date are not sent.",
+        "approve": "Approve documents when created",
+        "approveHint": "Approved, they are numbered and closed. Not approved, they stay as drafts for your accountant to review.",
+        "autoSync": "Send right away",
+        "autoSyncHint": "Each charge and payment goes out as soon as it happens. Without this, they go out when you press Sync now.",
+        "saved": "Accounting settings saved.",
+        "optionsError": "Could not read Holded's taxes and series. Try again in a while."
+      },
+      "treasury": {
+        "title": "Treasury accounts",
+        "description": "Which Holded account each payment method goes into.",
+        "none": "No account",
+        "saved": "Treasury accounts saved."
+      }
     }
   },
   "clubs": {
@@ -1044,7 +1133,8 @@
       "updated": "Club edited",
       "logo_updated": "Logo changed",
       "logo_removed": "Logo removed",
-      "payments_updated": "Payment settings changed"
+      "payments_updated": "Payment settings changed",
+      "stripe_onboarding_started": "Stripe sign-up started"
     },
     "invitation": {
       "created": "Invitation sent",
@@ -1234,6 +1324,13 @@
     },
     "store": {
       "public_key_updated": "Public catalog key changed"
+    },
+    "accounting": {
+      "connected": "Accounting connected",
+      "updated": "Accounting settings changed",
+      "disconnected": "Accounting disconnected",
+      "synced": "Fees sent to accounting",
+      "retried": "Accounting sends retried"
     }
   },
   "team": {
@@ -2592,7 +2689,8 @@
     "newCharge": "New charge",
     "tabs": {
       "charges": "Charges",
-      "plans": "Plans"
+      "plans": "Plans",
+      "connections": "Payments and accounting"
     },
     "charges": {
       "caption": "Club charges",
@@ -2623,6 +2721,19 @@
         "dueOn": "Due",
         "amount": "Amount",
         "status": "Status"
+      },
+      "manualNotice": {
+        "title": "The club collects by hand",
+        "body": "For families and members to pay their fees in the app, the club needs to connect a payment gateway such as Stripe. Each payment is recorded on its own and the money goes to the club's account.",
+        "action": "See how to connect it",
+        "settings": "Payment settings"
+      },
+      "accounting": {
+        "pending": "{provider}: to send",
+        "synced": "{provider}: sent",
+        "syncedNumber": "{provider}: {number}",
+        "failed": "{provider}: issue",
+        "cancelled": "{provider}: cancelled"
       }
     },
     "generate": {
@@ -2728,6 +2839,51 @@
       "dismiss": "Dismiss",
       "checkoutSuccess": "Payment received. It may take a few seconds to show as paid.",
       "checkoutCancel": "Payment cancelled. You can try again any time."
+    },
+    "connections": {
+      "state": {
+        "done": "Done",
+        "pending": "Pending",
+        "review": "Stripe is reviewing"
+      },
+      "gateway": {
+        "title": "Payment gateway",
+        "description": "To collect online, the club needs to connect a payment gateway. We use Stripe.",
+        "why": "Why connect it",
+        "benefits": {
+          "pay": "Families and members pay by card in the app, on their phone too, in a minute.",
+          "auto": "Each payment is recorded on its fee automatically: nobody logs or reconciles it by hand.",
+          "money": "The money goes straight to the club's Stripe account. The platform never touches it.",
+          "cost": "Stripe charges a fee per payment. The club sees it in its Stripe dashboard."
+        },
+        "steps": "How it connects",
+        "step1": "The platform has Stripe set up.",
+        "step1Missing": "The platform still needs to set up its Stripe keys.",
+        "step2": "The club signs up its own Stripe account, with its details and bank account.",
+        "step2Review": "The details are in. Stripe will ask if anything is missing.",
+        "step3": "The club turns on online payments.",
+        "connect": "Connect Stripe",
+        "continue": "Continue Stripe sign-up",
+        "activate": "Turn on online payments",
+        "manage": "Payment settings",
+        "live": "Online payments are on: every pending fee has a pay button for the family or member.",
+        "platformMissing": "Once the platform has its Stripe keys, the club will sign up its account from here in a few minutes.",
+        "noPermission": "The club's administration connects Stripe from Settings, Payments."
+      },
+      "accounting": {
+        "title": "Accounting",
+        "description": "Connect the club's invoicing tool and fees get there on their own. We start with Holded.",
+        "benefits": {
+          "documents": "Each fee becomes an invoice or receipt in Holded, in the name of whoever pays: the athlete's family or the member.",
+          "payments": "Each payment, by hand or through Stripe, is recorded on its invoice and treasury account.",
+          "cancel": "Cancelling a fee cancels its draft in Holded.",
+          "safe": "Nothing is sent twice, and whatever Holded rejects keeps its reason so you can fix it."
+        },
+        "connectedTo": "Connected to",
+        "connect": "Connect Holded",
+        "manage": "Accounting settings",
+        "noPermission": "The club's administration connects Holded from Settings, Accounting."
+      }
     }
   },
   "matches": {
@@ -4851,5 +5007,37 @@
     "confirmCancelTitle": "Cancel order {code}?",
     "confirmCancelBody": "The stock goes back to the shop and the charge is cancelled.",
     "confirmCancelPaid": "The stock goes back to the shop. {amount} has already been collected: you will need to refund it yourself."
+  },
+  "accounting": {
+    "providers": {
+      "holded": "Holded"
+    },
+    "active": "Active",
+    "paused": "Paused",
+    "stats": {
+      "documents": "Documents sent",
+      "payments": "Payments sent",
+      "pending": "To send",
+      "failed": "With issues"
+    },
+    "entities": {
+      "contact": "Contact",
+      "document": "Document",
+      "payment": "Payment"
+    },
+    "lastSync": "Last sync: {date}",
+    "neverSynced": "Not synced yet.",
+    "lastError": "The last run stopped: {error}",
+    "sync": "Sync now",
+    "syncing": "{sent, plural, one {# sent} other {# sent}} · {remaining} left",
+    "syncDone": "{documents, plural, =0 {No new documents} one {# document sent} other {# documents sent}} · {payments, plural, =0 {no new payments} one {# payment} other {# payments}}{failed, plural, =0 {.} other { · # with issues.}}",
+    "issues": {
+      "title": "Issues",
+      "description": "What Holded rejected or could not be finished, with the reason.",
+      "empty": "No issues: everything sent has arrived.",
+      "retry": "Retry",
+      "attempts": "{count, plural, one {# attempt} other {# attempts}}"
+    },
+    "syncWaiting": "Holded asks for a pause because of its request limit: resuming in {seconds} s · {remaining} left"
   }
 }

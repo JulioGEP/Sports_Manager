@@ -13,6 +13,7 @@ import {
   ORGANIZATION_SLUG_PATTERN,
   ORGANIZATION_STATUSES,
   PAYMENT_PROVIDERS,
+  STRIPE_ACCOUNT_STATUSES,
 } from "@sportsmanager/shared";
 import { sql } from "drizzle-orm";
 import { check, pgTable, text, uuid } from "drizzle-orm/pg-core";
@@ -55,6 +56,8 @@ export const organizations = pgTable(
     /** Cómo cobra el club (Bloque 18): a mano o por Stripe en su cuenta conectada. */
     paymentsProvider: text("payments_provider").notNull().default("manual"),
     stripeAccountId: text("stripe_account_id"),
+    /** Lo que Stripe dice de esa cuenta (ADR 0042): en alta, restringida o lista para cobrar. */
+    stripeAccountStatus: text("stripe_account_status"),
     /**
      * Clave publicable del catálogo de la tienda (ADR 0041): la web del club la usa para leer sus
      * productos públicos. Nula: catálogo público apagado.
@@ -87,5 +90,9 @@ export const organizations = pgTable(
       sql`${t.motto} is null or char_length(${t.motto}) between 1 and ${sql.raw(String(CLUB_MOTTO_MAX))}`,
     ),
     check("organizations_payments_provider_check", inList(t.paymentsProvider, PAYMENT_PROVIDERS)),
+    check(
+      "organizations_stripe_account_status_check",
+      sql`${t.stripeAccountStatus} is null or ${inList(t.stripeAccountStatus, STRIPE_ACCOUNT_STATUSES)}`,
+    ),
   ],
 );

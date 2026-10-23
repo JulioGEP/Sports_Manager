@@ -423,7 +423,7 @@
   },
   "settings": {
     "title": "Ajustes del club",
-    "description": "Nombre, idioma y zona horaria; la identidad del club (escudo, colores, letra, voz); temporadas, tipos de socio y cobros. Lo que cambies aquí lo ve todo el club.",
+    "description": "Nombre, idioma y zona horaria; la identidad del club (escudo, colores, letra, voz); temporadas, tipos de socio, cobros y contabilidad. Lo que cambies aquí lo ve todo el club.",
     "forbidden": "No puedes editar los ajustes de este club.",
     "tabs": {
       "general": "General",
@@ -433,7 +433,8 @@
       "payments": "Cobros",
       "setup": "Puesta en marcha",
       "activity": "Actividad",
-      "developers": "Desarrolladores"
+      "developers": "Desarrolladores",
+      "accounting": "Contabilidad"
     },
     "general": {
       "title": "Datos del club",
@@ -778,7 +779,28 @@
       "connectedAccount": "Cuenta conectada",
       "notConnected": "Sin conectar",
       "currency": "Moneda",
-      "howItWorks": "Stripe queda preparado como Resend para el email: sin claves, el club sigue cobrando a mano; con claves y cuenta conectada, el pago en línea se activa al elegir Stripe."
+      "howItWorks": "Stripe queda preparado como Resend para el email: sin claves, el club sigue cobrando a mano; con claves y cuenta conectada, el pago en línea se activa al elegir Stripe.",
+      "stripeTitle": "Cuenta de Stripe del club",
+      "stripeDescription": "El club da de alta su propia cuenta en Stripe, con sus datos y su cuenta bancaria. Stripe la revisa y avisa si falta algo.",
+      "connect": "Conectar con Stripe",
+      "continue": "Continuar el alta",
+      "refresh": "Comprobar el estado",
+      "accountStatus": "Estado de la cuenta",
+      "statuses": {
+        "none": "Sin cuenta",
+        "unknown": "Sin comprobar",
+        "onboarding": "Alta sin terminar",
+        "restricted": "Stripe la revisa",
+        "enabled": "Lista para cobrar"
+      },
+      "statusHint": {
+        "onboarding": "Faltan datos del club en Stripe. Continúa el alta donde la dejaste.",
+        "restricted": "Los datos están en Stripe y los está revisando. Suele ser rápido; si falta algo, Stripe lo pide.",
+        "enabled": "La cuenta puede cobrar. Elige Stripe como proveedor y guarda para activar el cobro en línea."
+      },
+      "manualToggle": "Tengo cuenta: escribir su id",
+      "returned": "Has vuelto de Stripe. Estado de la cuenta actualizado.",
+      "conflictNotReady": "La cuenta de Stripe del club todavía no puede cobrar: termina el alta en Stripe."
     },
     "setup": {
       "title": "Puesta en marcha",
@@ -850,6 +872,73 @@
       "confirmRotateBody": "La clave actual deja de funcionar al momento: la web del club dejará de enseñar productos hasta que pongas la nueva.",
       "confirmDisableTitle": "¿Apagar el catálogo público?",
       "confirmDisableBody": "La web del club dejará de enseñar productos. Puedes volver a activarlo con una clave nueva."
+    },
+    "accounting": {
+      "connect": {
+        "title": "Conectar Holded",
+        "description": "Las cuotas, los pagos y las anulaciones del club llegan a Holded sin teclearlos dos veces.",
+        "apiKey": "Clave de API de Holded",
+        "apiKeyHint": "Se comprueba con Holded y se guarda cifrada. Nadie, tampoco la administración, puede volver a verla.",
+        "submit": "Conectar",
+        "connected": "Holded conectado.",
+        "invalid": "Holded no acepta esa clave. Revisa que esté entera y que tenga los permisos.",
+        "unreachable": "Holded no responde ahora mismo. Prueba en un rato.",
+        "platformMissing": "La plataforma todavía no puede guardar claves de integraciones. Cuando esté lista, conectarás Holded desde aquí.",
+        "fromToday": "Al conectar se envían los cargos creados desde hoy. Para mandar también los anteriores, cambia la fecha en los ajustes.",
+        "howTo": "Cómo conseguir la clave",
+        "step1": "En Holded, abre la configuración de la cuenta y busca el apartado de desarrolladores o API.",
+        "step2": "Crea una clave con permiso para contactos, facturas y tickets de venta, ajustes de facturación, impuestos, tesorería y la información de la cuenta.",
+        "step3": "Cópiala y pégala aquí. Holded solo la enseña una vez."
+      },
+      "status": {
+        "account": "Cuenta",
+        "key": "Clave",
+        "connectedAt": "Conectado el",
+        "pause": "Pausar",
+        "resume": "Reanudar",
+        "pausedDone": "Conexión en pausa: no se envía nada hasta reanudarla.",
+        "resumedDone": "Conexión reanudada.",
+        "rotate": "Cambiar la clave",
+        "disconnect": "Desconectar",
+        "confirmDisconnectTitle": "¿Desconectar Holded?",
+        "confirmDisconnectBody": "Se borran la clave y el registro de lo enviado. Lo que ya está en Holded se queda allí. Si vuelves a conectar, solo se envía lo creado desde la fecha que elijas.",
+        "disconnected": "Holded desconectado."
+      },
+      "rotate": {
+        "title": "Cambiar la clave de Holded",
+        "description": "Si has cambiado la clave en Holded, pega aquí la nueva. Lo ya enviado se mantiene.",
+        "submit": "Guardar la clave",
+        "saved": "Clave cambiada."
+      },
+      "settings": {
+        "title": "Cómo se mandan las cuotas",
+        "description": "Lo que sale hacia Holded por cada cargo del club.",
+        "documentType": "Documento",
+        "documentTypes": {
+          "invoice": "Factura",
+          "sales_receipt": "Ticket (factura simplificada)"
+        },
+        "documentTypeHint": "Factura completa, con los datos fiscales de quien paga; o ticket, para importes pequeños sin NIF.",
+        "tax": "Impuesto",
+        "noTax": "Sin impuesto (exento)",
+        "taxHint": "Las cuotas de muchos clubes sin ánimo de lucro están exentas de IVA (art. 20.1.13 de la Ley del IVA). Confírmalo con la gestoría.",
+        "series": "Serie de numeración",
+        "defaultSeries": "La de Holded por defecto",
+        "syncFrom": "Enviar los cargos creados desde",
+        "syncFromHint": "Los anteriores a esta fecha no se envían.",
+        "approve": "Aprobar los documentos al crearlos",
+        "approveHint": "Aprobados, quedan numerados y cerrados. Sin aprobar, quedan en borrador para que la gestoría los revise.",
+        "autoSync": "Enviar al momento",
+        "autoSyncHint": "Cada cargo y cada pago salen en cuanto ocurren. Sin esto, salen al pulsar Sincronizar ahora.",
+        "saved": "Ajustes de contabilidad guardados.",
+        "optionsError": "No se han podido leer los impuestos y las series de Holded. Prueba en un rato."
+      },
+      "treasury": {
+        "title": "Cuentas de tesorería",
+        "description": "En qué cuenta de Holded entra cada forma de pago.",
+        "none": "Sin cuenta",
+        "saved": "Cuentas de tesorería guardadas."
+      }
     }
   },
   "clubs": {
@@ -1044,7 +1133,8 @@
       "updated": "Club editado",
       "logo_updated": "Logo cambiado",
       "logo_removed": "Logo quitado",
-      "payments_updated": "Ajustes de cobro cambiados"
+      "payments_updated": "Ajustes de cobro cambiados",
+      "stripe_onboarding_started": "Alta en Stripe iniciada"
     },
     "invitation": {
       "created": "Invitación enviada",
@@ -1234,6 +1324,13 @@
     },
     "store": {
       "public_key_updated": "Clave del catálogo público cambiada"
+    },
+    "accounting": {
+      "connected": "Contabilidad conectada",
+      "updated": "Ajustes de contabilidad cambiados",
+      "disconnected": "Contabilidad desconectada",
+      "synced": "Cuotas enviadas a contabilidad",
+      "retried": "Envíos a contabilidad reintentados"
     }
   },
   "team": {
@@ -2592,7 +2689,8 @@
     "newCharge": "Nuevo cargo",
     "tabs": {
       "charges": "Cargos",
-      "plans": "Planes"
+      "plans": "Planes",
+      "connections": "Pasarela y contabilidad"
     },
     "charges": {
       "caption": "Cargos del club",
@@ -2623,6 +2721,19 @@
         "dueOn": "Vence",
         "amount": "Importe",
         "status": "Estado"
+      },
+      "manualNotice": {
+        "title": "El club cobra a mano",
+        "body": "Para que las familias y los socios paguen sus cuotas desde la app hay que conectar una pasarela de pago como Stripe. El pago se apunta solo y el dinero va a la cuenta del club.",
+        "action": "Ver cómo conectarla",
+        "settings": "Ajustes de pagos"
+      },
+      "accounting": {
+        "pending": "{provider}: por enviar",
+        "synced": "{provider}: enviado",
+        "syncedNumber": "{provider}: {number}",
+        "failed": "{provider}: con incidencia",
+        "cancelled": "{provider}: anulado"
       }
     },
     "generate": {
@@ -2728,6 +2839,51 @@
       "dismiss": "Cerrar",
       "checkoutSuccess": "Pago recibido. Puede tardar unos segundos en aparecer como pagado.",
       "checkoutCancel": "Pago cancelado. Puedes volver a intentarlo cuando quieras."
+    },
+    "connections": {
+      "state": {
+        "done": "Hecho",
+        "pending": "Pendiente",
+        "review": "Stripe lo revisa"
+      },
+      "gateway": {
+        "title": "Pasarela de pago",
+        "description": "Para cobrar en línea, el club tiene que conectar una pasarela de pago. Usamos Stripe.",
+        "why": "Por qué conectarla",
+        "benefits": {
+          "pay": "Las familias y los socios pagan con tarjeta desde la app, también desde el móvil, en un minuto.",
+          "auto": "Cada pago se apunta solo en su cuota: nadie lo registra ni lo cuadra a mano.",
+          "money": "El dinero va directo a la cuenta de Stripe del club. La plataforma no lo toca.",
+          "cost": "Stripe cobra una comisión por cada pago. El club la ve en su panel de Stripe."
+        },
+        "steps": "Cómo se conecta",
+        "step1": "La plataforma tiene Stripe configurado.",
+        "step1Missing": "Falta que la plataforma configure sus claves de Stripe.",
+        "step2": "El club da de alta su cuenta de Stripe, con sus datos y su cuenta bancaria.",
+        "step2Review": "Los datos están enviados. Stripe avisará si falta algo.",
+        "step3": "El club activa el cobro en línea.",
+        "connect": "Conectar Stripe",
+        "continue": "Continuar el alta en Stripe",
+        "activate": "Activar el cobro en línea",
+        "manage": "Ajustes de pagos",
+        "live": "Cobro en línea activo: cada cuota pendiente lleva su botón de pago para la familia o el socio.",
+        "platformMissing": "Cuando la plataforma tenga las claves de Stripe, el club dará de alta su cuenta desde aquí en unos minutos.",
+        "noPermission": "La administración del club conecta Stripe desde Ajustes, Cobros."
+      },
+      "accounting": {
+        "title": "Contabilidad",
+        "description": "Conecta la herramienta de facturación del club y las cuotas llegan solas. Empezamos con Holded.",
+        "benefits": {
+          "documents": "Cada cuota sale como factura o ticket en Holded, a nombre de quien paga: la familia del deportista o el socio.",
+          "payments": "Cada pago, a mano o por Stripe, se apunta en su factura y en su cuenta de tesorería.",
+          "cancel": "Anular una cuota anula su borrador en Holded.",
+          "safe": "Nada se manda dos veces, y lo que Holded rechace queda con su motivo para corregirlo."
+        },
+        "connectedTo": "Conectado con",
+        "connect": "Conectar Holded",
+        "manage": "Ajustes de contabilidad",
+        "noPermission": "La administración del club conecta Holded desde Ajustes, Contabilidad."
+      }
     }
   },
   "matches": {
@@ -4851,5 +5007,37 @@
     "confirmCancelTitle": "¿Anular el pedido {code}?",
     "confirmCancelBody": "El stock vuelve a la tienda y el cargo se anula.",
     "confirmCancelPaid": "El stock vuelve a la tienda. Ya se han cobrado {amount}: tendrás que devolverlos tú."
+  },
+  "accounting": {
+    "providers": {
+      "holded": "Holded"
+    },
+    "active": "Activa",
+    "paused": "En pausa",
+    "stats": {
+      "documents": "Documentos enviados",
+      "payments": "Pagos enviados",
+      "pending": "Por enviar",
+      "failed": "Con incidencia"
+    },
+    "entities": {
+      "contact": "Contacto",
+      "document": "Documento",
+      "payment": "Pago"
+    },
+    "lastSync": "Última sincronización: {date}",
+    "neverSynced": "Todavía no se ha sincronizado.",
+    "lastError": "La última tanda se paró: {error}",
+    "sync": "Sincronizar ahora",
+    "syncing": "{sent, plural, one {# enviado} other {# enviados}} · quedan {remaining}",
+    "syncDone": "{documents, plural, =0 {Sin documentos nuevos} one {# documento enviado} other {# documentos enviados}} · {payments, plural, =0 {sin pagos nuevos} one {# pago} other {# pagos}}{failed, plural, =0 {.} other { · # con incidencia.}}",
+    "issues": {
+      "title": "Incidencias",
+      "description": "Lo que Holded ha rechazado o no se ha podido terminar, con su motivo.",
+      "empty": "Sin incidencias: todo lo enviado ha llegado.",
+      "retry": "Reintentar",
+      "attempts": "{count, plural, one {# intento} other {# intentos}}"
+    },
+    "syncWaiting": "Holded pide una pausa por su límite de peticiones: seguimos en {seconds} s · quedan {remaining}"
   }
 }

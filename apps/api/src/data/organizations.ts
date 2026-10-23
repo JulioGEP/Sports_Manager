@@ -9,6 +9,7 @@ import {
   type OrganizationUpdate,
   type PaymentProvider,
   type RoleCode,
+  type StripeAccountStatus,
 } from "@sportsmanager/shared";
 import { and, count, countDistinct, eq, sql } from "drizzle-orm";
 import { isUniqueViolation } from "./db.ts";
@@ -160,6 +161,8 @@ export function organizationsRepo(db: () => Database) {
         /** Cobros (Bloque 18): proveedor y cuenta conectada de Stripe. */
         paymentsProvider?: PaymentProvider | undefined;
         stripeAccountId?: string | null | undefined;
+        /** Lo que Stripe dice de la cuenta conectada (ADR 0042). */
+        stripeAccountStatus?: StripeAccountStatus | null | undefined;
       },
     ): Promise<OrganizationRow> {
       const values: Partial<typeof schema.organizations.$inferInsert> = {};
@@ -167,6 +170,8 @@ export function organizationsRepo(db: () => Database) {
       if (patch.timezone !== undefined) values.timezone = patch.timezone;
       if (patch.paymentsProvider !== undefined) values.paymentsProvider = patch.paymentsProvider;
       if (patch.stripeAccountId !== undefined) values.stripeAccountId = patch.stripeAccountId;
+      if (patch.stripeAccountStatus !== undefined)
+        values.stripeAccountStatus = patch.stripeAccountStatus;
       if (patch.status !== undefined) values.status = patch.status;
       if (patch.defaultLocale !== undefined) values.defaultLocale = patch.defaultLocale;
       if (patch.brandPrimaryColor !== undefined) values.brandPrimaryColor = patch.brandPrimaryColor;
@@ -195,6 +200,31 @@ export function organizationsRepo(db: () => Database) {
         .where(eq(schema.organizations.id, scope.organizationId))
         .returning();
       return rows[0]!;
+    },
+
+    /** El club de un ámbito ya resuelto: para el webhook, que llega sin host de club. */
+    async byScope(scope: OrgScope): Promise<OrganizationRow | null> {
+      const rows = await db()
+        .select()
+        .from(schema.organizations)
+        .where(eq(schema.organizations.id, scope.organizationId))
+        .limit(1);
+      return rows[0] ?? null;
+    },
+
+    /**
+     * El club de una cuenta conectada de Stripe (webhook `account.updated`, ADR 0042). La cuenta
+     * la crea la plataforma para un solo club, así que la búsqueda es única.
+     */
+    async findByStripeAccount(accountId: string): Promise<ResolvedOrganization | null> {
+      const rows = await db()
+        .select()
+        .from(schema.organizations)
+        .where(eq(schema.organizations.stripeAccountId, accountId))
+        .limit(2);
+      if (rows.length !== 1) return null;
+      const organization = rows[0]!;
+      return { organization, scope: mintOrgScope(organization.id) };
     },
 
     async getSport(scope: OrgScope): Promise<OrganizationSport> {

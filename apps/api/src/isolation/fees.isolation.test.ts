@@ -540,6 +540,59 @@ describe("cuotas, cobros y Stripe", () => {
       expect.objectContaining({ method: "stripe", amountCents: 4000 }),
     ]);
 
+    // Un cobro que viene de la cuenta de otro club no se apunta; uno sin cobrar (SEPA), tampoco.
+    const loose = await json<{ charge: Charge }>(
+      await requestOn(stripeApp, "POST", "/api/org/fees/charges", A, {
+        cookie: as(adminA),
+        body: { personId: perePerson, concept: "Campus", amountCents: 3000, dueOn: "2099-03-01" },
+      }),
+      201,
+    );
+    const paid = (id: string, type: string, account: string, paymentStatus: string) =>
+      JSON.stringify({
+        id,
+        type,
+        account,
+        data: {
+          object: {
+            id: `cs_${id}`,
+            client_reference_id: loose.charge.id,
+            payment_intent: `pi_${id}`,
+            amount_total: 3000,
+            payment_status: paymentStatus,
+          },
+        },
+      });
+    for (const body of [
+      paid("evt_impostor", "checkout.session.completed", "acct_OTRO", "paid"),
+      paid("evt_sepa", "checkout.session.completed", "acct_123TEST", "unpaid"),
+    ]) {
+      const res = await json<{ recorded: boolean }>(
+        await requestOn(stripeApp, "POST", "/api/webhooks/stripe", BASE, {
+          raw: body,
+          headers: {
+            "stripe-signature": await signStripePayload(WEBHOOK_SECRET, body, nowSeconds),
+          },
+        }),
+        200,
+      );
+      expect(res.recorded).toBe(false);
+    }
+    const later = paid(
+      "evt_sepa_ok",
+      "checkout.session.async_payment_succeeded",
+      "acct_123TEST",
+      "paid",
+    );
+    const settled = await json<{ recorded: boolean }>(
+      await requestOn(stripeApp, "POST", "/api/webhooks/stripe", BASE, {
+        raw: later,
+        headers: { "stripe-signature": await signStripePayload(WEBHOOK_SECRET, later, nowSeconds) },
+      }),
+      200,
+    );
+    expect(settled.recorded).toBe(true);
+
     // Sin claves, el webhook no existe para nadie.
     expect(
       (
@@ -548,5 +601,157 @@ describe("cuotas, cobros y Stripe", () => {
         })
       ).status,
     ).toBe(400);
+  });
+  it("Stripe Connect: el club da de alta su cuenta desde los ajustes y solo cobra cuando Stripe lo deja", async () => {
+    const config = loadConfig({
+      NODE_ENV: "test",
+      APP_BASE_DOMAIN: BASE,
+      TENANT_FALLBACK_SLUG: "demo",
+      TENANT_ROUTING: "subdomain",
+      EMAIL_TRANSPORT: "outbox",
+      STRIPE_SECRET_KEY: STRIPE_SECRET,
+      STRIPE_WEBHOOK_SECRET: WEBHOOK_SECRET,
+    });
+    const calls: { method: string; url: string; headers: Record<string, string>; body: string }[] =
+      [];
+    let account: Record<string, unknown> = { charges_enabled: false, details_submitted: false };
+    const fakeFetch: typeof fetch = (input, init) => {
+      const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
+      const headers = Object.fromEntries(
+        Object.entries(init?.headers ?? {}).map(([k, v]) => [k.toLowerCase(), String(v)]),
+      );
+      calls.push({
+        method: init?.method ?? "GET",
+        url,
+        headers,
+        body: typeof init?.body === "string" ? init.body : "",
+      });
+      const reply = (body: unknown) =>
+        Promise.resolve(
+          new Response(JSON.stringify(body), {
+            status: 200,
+            headers: { "content-type": "application/json" },
+          }),
+        );
+      if (url.endsWith("/v1/accounts")) return reply({ id: "acct_clubB_1" });
+      if (url.endsWith("/v1/account_links"))
+        return reply({ url: "https://connect.stripe.com/setup/s/acct_clubB_1/abc" });
+      if (url.endsWith("/v1/accounts/acct_clubB_1"))
+        return reply({ id: "acct_clubB_1", ...account });
+      return reply({ error: { message: "ruta falsa" } });
+    };
+    const nowSeconds = Math.floor(Date.now() / 1000);
+    const stripeApp = new OpenAPIHono<AppEnv>();
+    stripeApp.onError((error, c) => {
+      if (error instanceof ApiError) return c.json(error.toBody(), error.status);
+      throw error;
+    });
+    stripeApp.route("/", createOrgRoutes(config, data));
+    stripeApp.route(
+      "/",
+      createFeeRoutes(config, data, { fetch: fakeFetch, now: () => nowSeconds }),
+    );
+    const bAdmin = await signIn(adminB.email, B);
+
+    // Una familia no da de alta la cuenta del club.
+    expect(
+      (
+        await requestOn(stripeApp, "POST", "/api/org/fees/settings/stripe/onboarding", A, {
+          cookie: as(familyA),
+        })
+      ).status,
+    ).toBe(403);
+
+    const link = await json<{ url: string }>(
+      await requestOn(stripeApp, "POST", "/api/org/fees/settings/stripe/onboarding", B, {
+        cookie: bAdmin,
+      }),
+      200,
+    );
+    expect(link.url).toBe("https://connect.stripe.com/setup/s/acct_clubB_1/abc");
+    const created = calls.find((c) => c.url.endsWith("/v1/accounts"))!;
+    const createdForm = new URLSearchParams(created.body);
+    expect(createdForm.get("type")).toBe("standard");
+    expect(createdForm.get("country")).toBe("ES");
+    expect(createdForm.get("business_profile[name]")).toBe("Club B");
+    expect(createdForm.get("metadata[organization_id]")).toBe(clubB.id);
+    // La cuenta se crea en la plataforma, no en nombre de ninguna otra.
+    expect(created.headers["stripe-account"]).toBeUndefined();
+    const linkForm = new URLSearchParams(
+      calls.find((c) => c.url.endsWith("/v1/account_links"))!.body,
+    );
+    expect(linkForm.get("account")).toBe("acct_clubB_1");
+    expect(linkForm.get("type")).toBe("account_onboarding");
+    expect(linkForm.get("return_url")).toBe(
+      "http://club-b.sportsmanager.test/settings?tab=payments&stripe=return",
+    );
+    expect(linkForm.get("refresh_url")).toBe(
+      "http://club-b.sportsmanager.test/settings?tab=payments&stripe=refresh",
+    );
+
+    const settings = async () =>
+      (
+        await json<{
+          payments: { stripeAccountId: string | null; stripeAccountStatus: string | null };
+        }>(await requestOn(stripeApp, "GET", "/api/org/fees/settings", B, { cookie: bAdmin }), 200)
+      ).payments;
+    expect(await settings()).toMatchObject({
+      stripeAccountId: "acct_clubB_1",
+      stripeAccountStatus: "onboarding",
+    });
+    // Con el alta a medias no se activa el cobro por Stripe.
+    expect(
+      (
+        await requestOn(stripeApp, "PATCH", "/api/org/fees/settings", B, {
+          cookie: bAdmin,
+          body: { provider: "stripe" },
+        })
+      ).status,
+    ).toBe(409);
+
+    // Vuelve del alta con los datos enviados: Stripe aún revisa.
+    account = { charges_enabled: false, details_submitted: true };
+    const refreshed = await json<{ payments: { stripeAccountStatus: string } }>(
+      await requestOn(stripeApp, "POST", "/api/org/fees/settings/stripe/refresh", B, {
+        cookie: bAdmin,
+      }),
+      200,
+    );
+    expect(refreshed.payments.stripeAccountStatus).toBe("restricted");
+
+    // Stripe avisa por webhook de que ya cobra.
+    const event = JSON.stringify({
+      id: "evt_account_1",
+      type: "account.updated",
+      account: "acct_clubB_1",
+      data: { object: { id: "acct_clubB_1", charges_enabled: true, details_submitted: true } },
+    });
+    const received = await json<{ recorded: boolean }>(
+      await requestOn(stripeApp, "POST", "/api/webhooks/stripe", BASE, {
+        raw: event,
+        headers: { "stripe-signature": await signStripePayload(WEBHOOK_SECRET, event, nowSeconds) },
+      }),
+      200,
+    );
+    expect(received.recorded).toBe(false);
+    expect(await settings()).toMatchObject({ stripeAccountStatus: "enabled" });
+    const activated = await json<{ payments: { provider: string } }>(
+      await requestOn(stripeApp, "PATCH", "/api/org/fees/settings", B, {
+        cookie: bAdmin,
+        body: { provider: "stripe" },
+      }),
+      200,
+    );
+    expect(activated.payments.provider).toBe("stripe");
+
+    // Volver al alta no crea otra cuenta; y nada de esto toca al club A.
+    await json(
+      await requestOn(stripeApp, "POST", "/api/org/fees/settings/stripe/onboarding", B, {
+        cookie: bAdmin,
+      }),
+      200,
+    );
+    expect(calls.filter((c) => c.url.endsWith("/v1/accounts"))).toHaveLength(1);
+    expect(await seeder.stripeAccountStatus(clubA.id)).toBeNull();
   });
 });
