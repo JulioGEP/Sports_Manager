@@ -124,6 +124,8 @@ export const ACCESS_AREAS = [
   /** Salud (ADR 0039): lesiones con diagnóstico. La administración no la ve por defecto. */
   "health",
   "fees",
+  /** Tienda (ADR 0041): productos, stock y pedidos. Se puede abrir a un cargo (material, delegación). */
+  "store",
   "activity",
 ] as const;
 export type AccessArea = (typeof ACCESS_AREAS)[number];
@@ -196,6 +198,7 @@ export const AREA_PERMISSIONS: Record<
   },
   health: { reads: ["org.health.read"], all: ["org.health.read", "org.health.write"] },
   fees: { reads: ["org.fees.read"], all: ["org.fees.read", "org.fees.write"] },
+  store: { reads: ["org.store.read"], all: ["org.store.read", "org.store.write"] },
   activity: { reads: ["org.activity.read"], all: ["org.activity.read"] },
 };
 

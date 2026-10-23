@@ -30,6 +30,11 @@ export const ActorSchema = z.discriminatedUnion("kind", [
      * responde su bienestar y su RPE.
      */
     athletePlayerId: z.string().nullable().optional(),
+    /**
+     * Tiene tienda (ADR 0041): el club vende algo y esta persona puede comprar, para un menor del
+     * que es familia o para sí misma si es deportista adulta.
+     */
+    canShop: z.boolean().optional(),
   }),
   z.object({
     kind: z.literal("platform_support"),

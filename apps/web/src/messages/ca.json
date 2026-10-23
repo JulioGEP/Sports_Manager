@@ -45,7 +45,8 @@
     "groupManagement": "Gestió",
     "viewAs": "Veure el club com…",
     "training": "Entrenament",
-    "athlete": "El meu benestar"
+    "athlete": "El meu benestar",
+    "store": "Botiga"
   },
   "auth": {
     "login": {
@@ -178,7 +179,11 @@
       "playersWithoutPhoto": "{count, plural, one {# fitxa sense fotografia} other {# fitxes sense fotografia}}",
       "playersWithoutPhotoHint": "La foto ajuda a identificar cada esportista.",
       "facilitiesWithoutHours": "{count, plural, one {# instal·lació sense horari} other {# instal·lacions sense horari}}",
-      "facilitiesWithoutHoursHint": "Sense horari no es poden detectar solapaments."
+      "facilitiesWithoutHoursHint": "Sense horari no es poden detectar solapaments.",
+      "storeOrdersToPrepare": "{count, plural, one {# comanda de la botiga per preparar} other {# comandes de la botiga per preparar}}",
+      "storeOrdersToPrepareHint": "Prepara-les i marca-les com a punt per recollir.",
+      "storeOutOfStock": "{count, plural, one {# talla esgotada a la venda} other {# talles esgotades a la venda}}",
+      "storeOutOfStockHint": "Reposa estoc o treu l'opció del producte."
     },
     "readiness": {
       "eyebrow": "Salut de les dades",
@@ -375,7 +380,8 @@
         "fees": "Quotes",
         "activity": "Moviments",
         "training": "Entrenament",
-        "health": "Salut"
+        "health": "Salut",
+        "store": "Botiga"
       },
       "toggle": "{area} per a {profile}",
       "changed": "Canviat respecte al que hi ha per defecte",
@@ -427,7 +433,8 @@
       "memberTypes": "Tipus de soci",
       "payments": "Cobraments",
       "setup": "Posada en marxa",
-      "activity": "Activitat"
+      "activity": "Activitat",
+      "developers": "Desenvolupadors"
     },
     "general": {
       "title": "Dades del club",
@@ -580,6 +587,55 @@
       "empty": "Encara no hi ha moviments.",
       "system": "Sistema",
       "loadError": "No s'ha pogut carregar l'activitat."
+    },
+    "developers": {
+      "title": "Catàleg públic",
+      "description": "El web del club pot mostrar els productes de la botiga marcats com a públics. Es connecta amb una clau publicable.",
+      "status": "Estat",
+      "on": "Actiu",
+      "off": "Apagat",
+      "publicProducts": "Productes públics",
+      "publicProductsCount": "{count, plural, =0 {Cap} one {# a la venda} other {# a la venda}}",
+      "key": "Clau publicable",
+      "keyHint": "Va al codi del web del club, a la vista. Només dona accés al catàleg públic, res més.",
+      "copy": "Copiar",
+      "copyCode": "Copiar el codi",
+      "copied": "Copiat",
+      "enable": "Activar el catàleg públic",
+      "rotate": "Canviar la clau",
+      "disable": "Apagar",
+      "enabled": "Catàleg públic actiu.",
+      "rotated": "Clau canviada. L'anterior ja no funciona.",
+      "disabled": "Catàleg públic apagat.",
+      "noPublicProducts": "Cap producte a la venda està marcat per al web del club. Fes-ho des de la fitxa del producte, a «On es mostra».",
+      "manageProducts": "Anar als productes",
+      "endpointsTitle": "Com connectar-lo",
+      "endpointsDescription": "API només de lectura, sense sessió i amb CORS obert. Retorna JSON.",
+      "endpointCatalog": "El club (nom, logo i colors) i els seus productes públics.",
+      "endpointProduct": "Un producte del catàleg.",
+      "auth": "La clau va a la capçalera {header} o al paràmetre key de l'URL.",
+      "buying": "Cada producte porta el seu enllaç de compra: la família entra a l'app amb el seu compte i el compra allà.",
+      "docs": "Documentació completa de l'API",
+      "snippetsTitle": "Codi per enganxar",
+      "snippetsDescription": "Amb la teva clau ja posada.",
+      "snippet": {
+        "html": "HTML",
+        "js": "JavaScript",
+        "curl": "curl"
+      },
+      "snippetHint": {
+        "html": "Enganxa'l a qualsevol pàgina del web del club: mostra els productes amb la foto, el preu i l'enllaç de compra.",
+        "js": "Per a qui programa el web: les dades per mostrar-los a la seva manera.",
+        "curl": "Per provar des del terminal."
+      },
+      "soldOut": "Esgotat",
+      "test": "Provar ara",
+      "testOk": "{count, plural, =0 {Funciona, però no hi ha productes públics.} one {Funciona: # producte ({names}).} other {Funciona: # productes ({names}).}}",
+      "testFail": "No respon (codi {status}).",
+      "confirmRotateTitle": "Vols canviar la clau?",
+      "confirmRotateBody": "La clau actual deixa de funcionar a l'instant: el web del club deixarà de mostrar productes fins que hi posis la nova.",
+      "confirmDisableTitle": "Vols apagar el catàleg públic?",
+      "confirmDisableBody": "El web del club deixarà de mostrar productes. El pots tornar a activar amb una clau nova."
     }
   },
   "clubs": {
@@ -950,6 +1006,20 @@
       "created": "Test físic creat",
       "updated": "Test físic editat",
       "results_recorded": "Resultats de tests registrats"
+    },
+    "store_product": {
+      "created": "Producte de la botiga creat",
+      "updated": "Producte de la botiga editat",
+      "image_updated": "Foto de producte canviada",
+      "image_removed": "Foto de producte treta"
+    },
+    "store_order": {
+      "created": "Comanda de la botiga feta",
+      "updated": "Comanda de la botiga actualitzada",
+      "cancelled": "Comanda de la botiga anul·lada"
+    },
+    "store": {
+      "public_key_updated": "Clau del catàleg públic canviada"
     }
   },
   "team": {
@@ -2880,7 +2950,10 @@
       "newChallenge": "Nou repte",
       "newSeason": "Nova temporada",
       "drills": "Biblioteca de tasques",
-      "infirmary": "Infermeria"
+      "infirmary": "Infermeria",
+      "newProduct": "Nou producte de la botiga",
+      "counterSale": "Venda al taulell",
+      "developers": "Catàleg públic per al web"
     },
     "keys": {
       "move": "moure's",
@@ -4260,5 +4333,309 @@
       "saved": "Setmana tipus desada.",
       "nameTaken": "Ja hi ha una setmana tipus amb aquest nom."
     }
+  },
+  "storeCategories": {
+    "apparel": "Roba",
+    "equipment": "Material",
+    "event": "Esdeveniments",
+    "trip": "Sortides",
+    "other": "Altres"
+  },
+  "storeOrderStatus": {
+    "pending": "Rebuda",
+    "ready": "A punt per recollir",
+    "delivered": "Lliurada",
+    "cancelled": "Anul·lada"
+  },
+  "storePaymentStatus": {
+    "pending": "Per pagar",
+    "overdue": "Pagament vençut",
+    "paid": "Pagada",
+    "cancelled": "Cobrament anul·lat",
+    "free": "Sense cost"
+  },
+  "store": {
+    "title": "Botiga",
+    "description": "El que el club ven a esportistes i famílies: roba, material i extres com sopars o sortides. Les comandes es cobren com una quota.",
+    "tabs": {
+      "orders": "Comandes",
+      "products": "Productes"
+    },
+    "counter": {
+      "action": "Venda al taulell",
+      "title": "Venda al taulell",
+      "description": "Per a algú del club que compra en persona. Baixa l'estoc i obre el seu càrrec; després el cobres.",
+      "person": "Per a qui",
+      "personHint": "Escriu almenys dues lletres del nom o del correu.",
+      "changePerson": "Canviar",
+      "product": "Producte",
+      "chooseProduct": "Tria un producte",
+      "option": "Talla o opció",
+      "chooseOption": "Tria",
+      "noOption": "Sense opcions",
+      "left": "{count, plural, =0 {esgotada} one {en queda #} other {en queden #}}",
+      "quantity": "Quantitat",
+      "addLine": "Afegir",
+      "removeLine": "Treure de la comanda",
+      "note": "Nota",
+      "chargeHint": "La comanda es cobra amb un càrrec a Quotes: cobra-la des de la fitxa de la comanda.",
+      "incomplete": "Tria la persona i almenys un producte.",
+      "created": "Comanda {code} creada.",
+      "submit": "Crear comanda · {total}"
+    },
+    "orders": {
+      "caption": "Comandes de la botiga",
+      "search": "Cercar",
+      "searchPlaceholder": "Comanda, persona, producte o nota",
+      "status": "Estat",
+      "allStatuses": "Totes",
+      "loadError": "No s'han pogut carregar les comandes.",
+      "empty": "Encara no hi ha comandes.",
+      "emptyHint": "Quan una família o un esportista compri, o venguis al taulell, apareixerà aquí.",
+      "emptyFiltered": "Cap comanda coincideix amb el filtre.",
+      "markReady": "Marcar com a punt per recollir",
+      "markDelivered": "Marcar com a lliurada",
+      "moved": "{code}: {status}.",
+      "stats": {
+        "toPrepare": "Per preparar",
+        "ready": "A punt per recollir",
+        "unpaid": "{count, plural, =0 {Per cobrar} one {Per cobrar (# comanda)} other {Per cobrar (# comandes)}}"
+      },
+      "channel": {
+        "app": "Des de l'app",
+        "counter": "Al taulell"
+      },
+      "table": {
+        "code": "Comanda",
+        "date": "Data",
+        "person": "Per a",
+        "items": "Contingut",
+        "total": "Total",
+        "status": "Estat",
+        "payment": "Cobrament",
+        "paid": "Pagat",
+        "note": "Nota",
+        "product": "Producte",
+        "option": "Opció",
+        "quantity": "Unitats",
+        "unitPrice": "Preu unitat"
+      },
+      "export": {
+        "action": "Descarregar Excel",
+        "file": "Comandes de la botiga",
+        "orders": "Comandes",
+        "lines": "Línies",
+        "toPrepare": "Per preparar"
+      }
+    },
+    "products": {
+      "caption": "Productes de la botiga",
+      "new": "Nou producte",
+      "edit": "Editar",
+      "publish": "Posar a la venda",
+      "archive": "Arxivar",
+      "restore": "Recuperar com a esborrany",
+      "loadError": "No s'han pogut carregar els productes.",
+      "empty": "Encara no vens res.",
+      "emptyHint": "Dona d'alta una samarreta, el material d'entrenament o el sopar de l'equip i posa'l a la venda.",
+      "statusChanged": {
+        "active": "«{name}» ja és a la venda.",
+        "draft": "«{name}» torna a esborrany.",
+        "archived": "«{name}» arxivat."
+      },
+      "status": {
+        "draft": "Esborrany",
+        "active": "A la venda",
+        "archived": "Arxivat"
+      },
+      "audience": {
+        "club": "Tot el club",
+        "public": "També al web del club"
+      },
+      "table": {
+        "product": "Producte",
+        "price": "Preu",
+        "stock": "Estoc",
+        "sold": "Venudes",
+        "audience": "Per a",
+        "status": "Estat"
+      },
+      "stock": {
+        "unlimited": "Sense límit",
+        "units": "{count, plural, one {# unitat} other {# unitats}}",
+        "out": "Esgotat: {options}",
+        "low": "En queden poques: {options}",
+        "single": "única"
+      }
+    },
+    "sheet": {
+      "title": "Nou producte",
+      "editTitle": "Editar producte",
+      "createdTitle": "Producte creat",
+      "description": "Preu, talles o opcions amb el seu estoc, a qui es ven i si surt al web del club.",
+      "createdDescription": "Afegeix una foto si vols i posa'l a la venda quan estigui a punt.",
+      "submit": "Crear producte",
+      "saved": "Producte desat.",
+      "created": "Producte creat.",
+      "imageSaved": "Foto desada.",
+      "image": "Foto del producte",
+      "addImage": "Afegir foto",
+      "changeImage": "Canviar foto",
+      "removeImage": "Treure foto",
+      "name": "Nom",
+      "namePlaceholder": "Samarreta oficial de joc",
+      "category": "Categoria",
+      "price": "Preu (€)",
+      "priceHint": "Amb coma o punt per als cèntims. 0 si és gratis.",
+      "descriptionField": "Descripció",
+      "options": "Talles i estoc",
+      "withOptions": "Té talles o opcions",
+      "presetKids": "Talles infantils",
+      "presetAdults": "Talles d'adult",
+      "optionLabel": "Talla o opció",
+      "optionPlaceholder": "Opció",
+      "stock": "Estoc",
+      "stockFor": "Estoc de {option}",
+      "unlimited": "Sense límit",
+      "removeOption": "Treure {option}",
+      "addOption": "Afegir opció",
+      "stockHint": "Unitats disponibles. Deixa-ho buit si no hi ha límit (una inscripció, un pagament extra). Cada comanda el baixa i anul·lar-la el retorna.",
+      "audience": "A qui es ven",
+      "audienceHint": "A l'app només ho veuen les famílies i esportistes d'aquest àmbit.",
+      "audienceClub": "Tot el club",
+      "audienceSections": "Una secció",
+      "audienceTeams": "Un equip",
+      "availableUntil": "A la venda fins",
+      "availableUntilHint": "Opcional. Després d'aquest dia ja no es pot comprar.",
+      "statusField": "Estat",
+      "statusDraft": "Esborrany",
+      "statusActive": "A la venda",
+      "statusArchived": "Arxivat",
+      "statusHint": {
+        "draft": "Només ho veu qui gestiona la botiga.",
+        "active": "Es pot comprar des de l'app.",
+        "archived": "Retirat. Les comandes anteriors es conserven."
+      },
+      "visibility": "On es mostra",
+      "visibilityMembers": "Només a l'app",
+      "visibilityPublic": "A l'app i al web del club",
+      "visibilityHint": {
+        "members": "Per a coses internes: el sopar de l'equip, una sortida.",
+        "public": "Surt al catàleg públic que llegeix el web del club (Configuració, Desenvolupadors)."
+      },
+      "invalid": "Revisa les dades: nom, preu i opcions (sense noms repetits).",
+      "invalidStock": "L'estoc és un nombre enter, o buit si no hi ha límit.",
+      "noOptions": "Afegeix almenys una opció."
+    }
+  },
+  "shop": {
+    "title": "Botiga del club",
+    "description": "Roba, material i extres del club. Es paga com una quota.",
+    "tabs": {
+      "catalog": "Catàleg",
+      "orders": "Les meves comandes",
+      "ordersCount": "Les meves comandes ({count})"
+    },
+    "cart": {
+      "open": "{count, plural, =0 {Cistella} other {Cistella (#)}}",
+      "title": "La teva cistella",
+      "description": "Una comanda per persona: així el club sap per a qui és cada cosa.",
+      "empty": "La cistella és buida.",
+      "emptyHint": "Tria un producte del catàleg i afegeix-lo.",
+      "groupFor": "Per a {name}",
+      "forSelf": "tu",
+      "less": "Una menys",
+      "more": "Una més",
+      "note": "Nota per al club",
+      "noteHint": "El nom per a la samarreta, una al·lèrgia, el que el club hagi de saber.",
+      "paymentHint": "En fer la comanda s'anota a les teves quotes. La pagues com el club ho tingui configurat.",
+      "keepShopping": "Continuar comprant",
+      "submit": "Fer la comanda · {total}",
+      "confirmTitle": "Vols fer la comanda?",
+      "confirmBody": "{count, plural, one {Una comanda} other {# comandes}} per a {names} per {total}. S'anota a les teves quotes i el club la prepara.",
+      "confirm": "Fer la comanda",
+      "ordered": "{count, plural, one {Comanda {codes} feta.} other {Comandes {codes} fetes.}}"
+    },
+    "product": {
+      "option": "Talla o opció",
+      "lowStock": "{count, plural, one {Només en queda #} other {Només en queden #}}",
+      "soldOut": "Esgotat. Torna més endavant.",
+      "until": "A la venda fins al {date}",
+      "quantity": "Quantitat",
+      "less": "Una menys",
+      "more": "Una més",
+      "for": "Per a qui",
+      "forHint": "Cada comanda és per a una persona.",
+      "forSelf": "Per a mi",
+      "forSelfLine": "Per a tu.",
+      "forLine": "Per a {name}.",
+      "add": "Afegir a la cistella · {total}"
+    },
+    "orders": {
+      "loadError": "No s'han pogut carregar les teves comandes.",
+      "empty": "Encara no has fet cap comanda.",
+      "emptyHint": "El que compris a la botiga apareixerà aquí, amb el seu estat i el seu pagament.",
+      "manualHint": "El club anota els pagaments a mà: paga per transferència o a secretaria.",
+      "seeFees": "Veure les meves quotes",
+      "line": "Per a {name} · {date}",
+      "pending": "Falten {amount}",
+      "readyHint": "A punt: passa pel club a recollir-la.",
+      "note": "Nota: {note}",
+      "cancel": "Anul·lar la comanda",
+      "pay": "Pagar {amount}",
+      "cancelled": "Comanda {code} anul·lada.",
+      "confirmCancelTitle": "Vols anul·lar la comanda?",
+      "confirmCancelBody": "La comanda {code} s'anul·la i deixa de ser a les teves quotes."
+    },
+    "spotlight": {
+      "title": "Botiga del club",
+      "description": "{count, plural, one {# producte} other {# productes}} a la venda per a {names}.",
+      "descriptionSelf": "{count, plural, one {# producte} other {# productes}} a la venda.",
+      "open": "Anar a la botiga"
+    },
+    "checkoutSuccess": "Pagament rebut. Pot trigar uns segons a aparèixer com a pagat.",
+    "checkoutCancel": "Pagament cancel·lat. Pots tornar-ho a provar quan vulguis.",
+    "dismiss": "Tancar",
+    "loadError": "No s'ha pogut carregar la botiga.",
+    "noBeneficiaries": "La botiga és per a les famílies d'esportistes menors i per als esportistes adults.",
+    "noBeneficiariesHint": "Si creus que l'hauries de veure, parla amb el club.",
+    "empty": "Ara mateix no hi ha res a la venda.",
+    "emptyHint": "Quan el club posi alguna cosa a la venda, la veuràs aquí.",
+    "soldOut": "Esgotat",
+    "until": "Fins al {date}"
+  },
+  "storeOrder": {
+    "back": "Botiga",
+    "title": "Comanda {code}",
+    "for": "Per a {name}",
+    "notFound": "Aquesta comanda no existeix.",
+    "channel": {
+      "app": "Des de l'app",
+      "counter": "Al taulell"
+    },
+    "cancel": "Anul·lar la comanda",
+    "recordPayment": "Cobrar",
+    "markReady": "Marcar com a punt",
+    "markDelivered": "Marcar com a lliurada",
+    "undoDelivered": "Tornar a a punt",
+    "moved": "Comanda: {status}.",
+    "cancelledRefund": "Comanda anul·lada. Retorna {amount} a la família.",
+    "refundDue": "Comanda anul·lada amb {amount} ja cobrats: retorna'ls pel mateix mitjà.",
+    "items": "Contingut",
+    "unit": "{price} la unitat",
+    "total": "Total",
+    "payment": "Cobrament",
+    "paymentStatus": "Estat",
+    "paid": "Cobrat",
+    "pending": "Per cobrar",
+    "dueOn": "Venç",
+    "chargeHint": "Es cobra amb un càrrec a Quotes: el pagament per Stripe o a mà el tanca als dos llocs.",
+    "details": "Dades",
+    "person": "Per a",
+    "placedBy": "La va fer",
+    "note": "Nota",
+    "confirmCancelTitle": "Vols anul·lar la comanda {code}?",
+    "confirmCancelBody": "L'estoc torna a la botiga i el càrrec s'anul·la.",
+    "confirmCancelPaid": "L'estoc torna a la botiga. Ja s'han cobrat {amount}: els hauràs de retornar tu."
   }
 }

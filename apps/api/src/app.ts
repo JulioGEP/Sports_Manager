@@ -21,6 +21,8 @@ import { createPlayerRoutes } from "./routes/players.ts";
 import { createStructureRoutes } from "./routes/structure.ts";
 import { createTrainingRoutes } from "./routes/training.ts";
 import { createPlayerHealthRoutes } from "./routes/player-health.ts";
+import { createPublicStoreRoutes } from "./routes/public-store.ts";
+import { createStoreRoutes } from "./routes/store.ts";
 import { DEPLOY_CONTEXT_HEADER } from "./tenancy.ts";
 
 export type { NetlifyContext, NetlifyEnv } from "./http/context.ts";
@@ -30,7 +32,7 @@ export interface AppOptions {
   data?: DataLayer;
 }
 
-export const API_VERSION = "0.12.0";
+export const API_VERSION = "0.13.0";
 
 export function createApp(options: AppOptions = {}) {
   const config = options.config ?? loadConfig();
@@ -76,6 +78,9 @@ export function createApp(options: AppOptions = {}) {
   app.route("/", createPeopleRoutes(config, data));
   app.route("/", createEventRoutes(config, data));
   app.route("/", createFeeRoutes(config, data));
+  app.route("/", createStoreRoutes(config, data));
+  // API pública del catálogo (ADR 0041): sin sesión, la clave publicable dice el club.
+  app.route("/", createPublicStoreRoutes(config, data));
   app.route("/", createChallengeRoutes(config, data));
   app.route("/", createMatchRoutes(config, data));
   app.route("/", createTrainingRoutes(config, data));
@@ -97,7 +102,7 @@ export function createApp(options: AppOptions = {}) {
       title: "Sports Manager API",
       version: API_VERSION,
       description:
-        "API de la plataforma. Toda petición a /api/org/* se resuelve por el subdominio del club, la sesión identifica al usuario y la pertenencia fija los permisos. Login, logout y recuperación de contraseña viven en /api/auth/* (Better Auth): POST /api/auth/sign-in/email, POST /api/auth/sign-out, POST /api/auth/request-password-reset, POST /api/auth/reset-password.",
+        "API de la plataforma. Toda petición a /api/org/* se resuelve por el subdominio del club, la sesión identifica al usuario y la pertenencia fija los permisos. Login, logout y recuperación de contraseña viven en /api/auth/* (Better Auth): POST /api/auth/sign-in/email, POST /api/auth/sign-out, POST /api/auth/request-password-reset, POST /api/auth/reset-password. El catálogo público de la tienda de cada club vive en /api/public/v1 y se lee con la clave publicable del club (cabecera x-sm-key o query key), sin sesión.",
     },
   });
   app.get("/api/docs", Scalar({ url: "/api/openapi.json" }));

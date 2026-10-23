@@ -54,3 +54,4 @@ Las decisiones no se editan una vez aceptadas. Si cambian, se escribe una nueva 
 | 0038 | Acciones del partido: un cuarto ámbito del catálogo, y los catálogos del equipo, del partido y del rival a la vista | Aceptada |
 | 0039 | Entrenamiento, carga, salud y recomendaciones explicables | Aceptada |
 | 0040 | Pizarra animada: arrastrar, grabar el movimiento por capas y la voz | Aceptada |
+| 0041 | Tienda del club: productos con stock, pedidos cobrados como una cuota y catálogo público para la web del club | Aceptada |

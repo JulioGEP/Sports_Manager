@@ -34,6 +34,7 @@ import { ApiClientError, apiFetch, errorKey, uploadFile } from "@/lib/api";
 import { clubPaths, useReadyClub } from "@/lib/club";
 import { useDates } from "@/lib/dates";
 import { useT } from "@/lib/intl";
+import { DevelopersTab } from "./settings-developers";
 import {
   Alert,
   Button,
@@ -65,6 +66,7 @@ const TABS = [
   "seasons",
   "memberTypes",
   "payments",
+  "developers",
   "setup",
   "activity",
 ] as const;
@@ -99,6 +101,8 @@ export function SettingsPage() {
     ...(permissions.includes("org.fees.read")
       ? [{ key: "payments" as const, label: t("tabs.payments") }]
       : []),
+    // Desarrolladores (ADR 0041): la clave del catálogo público para la web del club.
+    { key: "developers" as const, label: t("tabs.developers") },
     { key: "setup" as const, label: t("tabs.setup") },
     ...(permissions.includes("org.activity.read")
       ? [{ key: "activity" as const, label: t("tabs.activity") }]
@@ -135,6 +139,7 @@ export function SettingsPage() {
       {tab === "seasons" ? <SeasonsTab /> : null}
       {tab === "memberTypes" ? <MemberTypesTab /> : null}
       {tab === "payments" ? <PaymentsTab /> : null}
+      {tab === "developers" ? <DevelopersTab /> : null}
       {tab === "setup" ? <SetupTab /> : null}
       {tab === "activity" ? <ActivityTab /> : null}
     </div>

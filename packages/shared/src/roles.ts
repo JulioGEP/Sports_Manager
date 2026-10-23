@@ -76,6 +76,9 @@ export const PERMISSIONS = [
   /** Cuotas y cobros. */
   "org.fees.read",
   "org.fees.write",
+  /** Tienda del club (ADR 0041): productos, stock y pedidos. Comprar no pide permiso: lo da ser familia de un menor o deportista adulto. */
+  "org.store.read",
+  "org.store.write",
   /** Ver el club como otra persona del club sin cambiar de cuenta (solo administración). */
   "org.view_as",
   /**
@@ -160,6 +163,8 @@ export const ROLE_PERMISSIONS: Record<RoleCode, readonly Permission[]> = {
     "org.events.write",
     "org.fees.read",
     "org.fees.write",
+    "org.store.read",
+    "org.store.write",
     "org.view_as",
     "org.matches.write",
     "org.matches.configure",
@@ -265,6 +270,7 @@ export const SUPPORT_GRANT_PERMISSIONS: readonly Permission[] = [
   "org.facilities.read",
   "org.events.read",
   "org.fees.read",
+  "org.store.read",
   "org.matches.read",
   "org.training.read",
   "org.load.read",

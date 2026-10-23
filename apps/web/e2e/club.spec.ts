@@ -75,8 +75,9 @@ test.describe("espacio del club", () => {
     await expect(members).not.toBeChecked();
     await expect(members).toBeEnabled();
     await expect(facilities).toBeChecked();
-    // Socios, Personal, Salud, Cuotas y Movimientos: Salud es solo de fisioterapia (ADR 0039).
-    await expect(overrideSheet.getByText("Su rol no lo ve")).toHaveCount(5);
+    // Socios, Personal, Salud, Cuotas, Tienda y Movimientos: Salud es solo de fisioterapia
+    // (ADR 0039) y la Tienda, de quien la gestiona (ADR 0041).
+    await expect(overrideSheet.getByText("Su rol no lo ve")).toHaveCount(6);
     await expect(overrideSheet.getByText("Excepción", { exact: true })).toHaveCount(0);
     await members.check();
     await facilities.uncheck();

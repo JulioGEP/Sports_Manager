@@ -34,6 +34,11 @@ export const organizations = pgTable(
     /** Cómo cobra el club (Bloque 18): a mano o por Stripe en su cuenta conectada. */
     paymentsProvider: text("payments_provider").notNull().default("manual"),
     stripeAccountId: text("stripe_account_id"),
+    /**
+     * Clave publicable del catálogo de la tienda (ADR 0041): la web del club la usa para leer sus
+     * productos públicos. Nula: catálogo público apagado.
+     */
+    publicApiKey: text("public_api_key").unique(),
     ...timestamps,
   },
   (t) => [

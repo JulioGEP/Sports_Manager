@@ -1,4 +1,4 @@
-# Capturas de la interfaz (Bloques 14 a 26 y pizarra animada)
+# Capturas de la interfaz (Bloques 14 a 26, pizarra animada y tienda)
 
 Capturas que generan las pruebas de interfaz (`pnpm test:ui`) contra la API real con base embebida, con el front de Vite + React + Tailwind sobre el design system del producto (`packages/design`, ADR 0027). Escritorio a 1280x800; móvil, Pixel 7. La fuente viva es el artefacto `capturas-interfaz` de CI; esta carpeta es la foto de la revisión del club completo (ADR 0031), con el design system 1.3: todo botón lleva el icono de su acción (rueda dentada para editar, cubo de basura rojo para eliminar, más para añadir); la fila es el objeto (se abre tocándola, con acciones como iconos silenciosos sin borde); la paleta de mandos ⌘K encuentra personas, equipos, pantallas y acciones; y la plantilla de un equipo se ve como un tablero por posición: secciones por deporte, socios, agenda e instalaciones, cuotas y "ver como", sobre lo que ya había de los bloques 11 a 13 (ADR 0028, 0029 y 0030), más el alcance por cargo y la gestión de acceso por rol del Bloque 19 (ADR 0033): el cuerpo técnico, la dirección y la fisio ven solo su parte del club, y "Personal" gana la pestaña "Acceso", y el partido en directo del Bloque 20 (ADR 0034): configuración del motor por sección, consola en la banda a pantalla completa y en tres zonas con el banquillo arrastrable (ADR 0037), estadísticas e histórico, y el entrenamiento de los bloques 21 a 26 (ADR 0039): semana del equipo con "A tener en cuenta", sesión por bloques con su cierre y modo pista, biblioteca con pizarra, carga, enfermería, salud y "Mi bienestar".
 
@@ -494,6 +494,56 @@ Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negoci
 
 ![Reproducción](escritorio-222-pizarra-reproduccion.png)
 
+## Tienda del club (ADR 0041)
+
+### La tienda fijada en "Mi familia": tres productos a la venta para sus menores y el enlace
+
+![Tienda fijada en Mi familia](escritorio-110-familia-tienda-fijada.png)
+
+### Catálogo de la familia por categorías: la cena solo del Alevín A aparece porque Clara juega en él
+
+![Catálogo de la tienda](escritorio-111-tienda-catalogo.png)
+
+### Ficha de compra: talla (la agotada, tachada), cantidad y para quién de los suyos
+
+![Ficha de compra](escritorio-112-tienda-producto.png)
+
+### Cesta: un pedido por persona, con su nota para el club
+
+![Cesta](escritorio-113-tienda-cesta.png)
+
+### Mis pedidos: estado, cobro, anular mientras está recibido y sin pagar
+
+![Mis pedidos](escritorio-114-tienda-mis-pedidos.png)
+
+### Gestión de pedidos: por preparar, listos, por cobrar y descarga a Excel
+
+![Pedidos de la tienda](escritorio-115-tienda-pedidos.png)
+
+### Ficha del pedido: preparar, entregar, cobrar a mano o anular (devuelve el stock)
+
+![Ficha del pedido](escritorio-116-tienda-pedido.png)
+
+### Productos con stock, vendidas, tallas agotadas y pocas unidades
+
+![Productos de la tienda](escritorio-117-tienda-productos.png)
+
+### Nuevo producto con tallas infantiles, stock por talla, ámbito y visibilidad en la web
+
+![Nuevo producto](escritorio-118-tienda-producto-nuevo.png)
+
+### Venta en el mostrador para cualquier persona del club
+
+![Venta en el mostrador](escritorio-119-tienda-mostrador.png)
+
+### Ajustes, Desarrolladores: clave publicable, endpoints, código para pegar y prueba en vivo
+
+![Desarrolladores](escritorio-120-ajustes-desarrolladores.png)
+
+### El deportista adulto compra lo suyo: sin la cena de un equipo que no es el suyo
+
+![Tienda del deportista adulto](escritorio-121-tienda-deportista.png)
+
 ## Móvil
 
 Las mismas pantallas en un móvil, con la forma envolvente del design system: cabecera con el escudo, barra de pestañas flotante abajo con cuatro destinos y "Más", listas en filas cápsula y hojas que ocupan todo el ancho.
@@ -669,3 +719,11 @@ Las mismas pantallas en un móvil, con la forma envolvente del design system: ca
 ### Pizarra animada (móvil): grabar con el dedo
 
 ![Pizarra grabada (móvil)](movil-220-pizarra-grabada.png)
+
+### Tienda (móvil): fijada en "Mi familia", catálogo y mis pedidos con la barra de cinco destinos
+
+![Tienda fijada (móvil)](movil-110-familia-tienda-fijada.png)
+
+![Catálogo de la tienda (móvil)](movil-111-tienda-catalogo.png)
+
+![Mis pedidos (móvil)](movil-114-tienda-mis-pedidos.png)

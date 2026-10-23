@@ -92,6 +92,7 @@ function actorDto(
   actor: Actor,
   scope: AccessScope,
   athletePlayerId: string | null = null,
+  canShop = false,
 ): ActorDto {
   return actor.kind === "member"
     ? {
@@ -103,6 +104,7 @@ function actorDto(
         canViewAs: actor.canViewAs,
         scope: summarizeScope(scope),
         athletePlayerId,
+        canShop,
       }
     : { kind: "platform_support", hasGrant: actor.hasGrant, permissions: [...actor.permissions] };
 }
@@ -201,10 +203,18 @@ export function createOrgRoutes(config: ApiConfig, data: DataLayer) {
           counts,
         };
       }
-      const athlete =
-        actor.kind === "member" ? await data.load.athleteOf(tenant.scope, actor.userId) : null;
+      const [athlete, canShop] =
+        actor.kind === "member"
+          ? await Promise.all([
+              data.load.athleteOf(tenant.scope, actor.userId),
+              data.store.canShop(tenant.scope, actor.userId),
+            ])
+          : [null, false];
       return c.json(
-        { organization, actor: actorDto(actor, await accessScopeOf(data, c), athlete?.id ?? null) },
+        {
+          organization,
+          actor: actorDto(actor, await accessScopeOf(data, c), athlete?.id ?? null, canShop),
+        },
         200,
       );
     },

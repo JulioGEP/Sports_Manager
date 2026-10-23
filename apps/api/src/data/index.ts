@@ -13,6 +13,7 @@ export { isUniqueViolation } from "./db.ts";
 import { emailOutboxRepo } from "./email/outbox.ts";
 import { attendanceRepo, eventsRepo, facilitiesRepo, schedulesRepo } from "./events.ts";
 import { feesRepo } from "./fees.ts";
+import { createNetlifyStoreImageStore, storeRepo } from "./store.ts";
 import type { ResendLike } from "./email/resend.ts";
 import { createEmailSender, type EmailSender } from "./email/sender.ts";
 import { invitationsRepo } from "./invitations.ts";
@@ -72,6 +73,8 @@ export type {
 } from "./events.ts";
 export { dayRange, fromLocal, localParts, weekRange } from "./events.ts";
 export type { FeesSummaryRecord, PersonFeesRecord } from "./fees.ts";
+export type { StoreBeneficiaryRecord, StoreOrderRecord, StoreProductRecord } from "./store.ts";
+export { storeImageUrlFor, storeImageVersion } from "./store.ts";
 export type {
   FamilyPlayerRecord,
   GuardianRecord,
@@ -161,6 +164,8 @@ export interface DataLayerOptions {
   photoStore?: BlobStore;
   /** Almacén de la voz de la pizarra animada (ADR 0040). Mismo criterio que los logos. */
   audioStore?: BlobStore;
+  /** Almacén de las fotos de producto de la tienda (ADR 0041). Mismo criterio que los logos. */
+  storeImageStore?: BlobStore;
 }
 
 export function createDataLayer(options: DataLayerOptions) {
@@ -214,6 +219,13 @@ export function createDataLayer(options: DataLayerOptions) {
     schedules: schedulesRepo(db),
     attendance: attendanceRepo(db),
     fees: feesRepo(db),
+    store: storeRepo(
+      db,
+      options.storeImageStore ??
+        (options.config.logoStore === "memory"
+          ? createMemoryBlobStore()
+          : createNetlifyStoreImageStore()),
+    ),
     challenges: challengesRepo(db),
     matches: matchesRepo(db),
     training: trainingRepo(db),

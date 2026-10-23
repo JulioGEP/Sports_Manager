@@ -146,6 +146,12 @@ function ClubFrame({ children }: { children: ReactNode }) {
               end: false,
             }
           : null,
+        // Tienda (ADR 0041): la gestiona quien tiene el área; la ve quien puede comprar (la
+        // familia de un menor o el deportista adulto) cuando el club vende algo.
+        has("org.store.read") ||
+        (state.kind === "ready" && state.org.actor.kind === "member" && state.org.actor.canShop)
+          ? { to: paths.store, label: t("store"), icon: Icon.Storefront, end: false }
+          : null,
         has("org.settings.write")
           ? { to: paths.settings, label: t("settings"), icon: Icon.SlidersHorizontal, end: false }
           : null,

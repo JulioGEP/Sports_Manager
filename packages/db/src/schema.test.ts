@@ -675,6 +675,82 @@ describe("esquema del Bloque 2 (Postgres embebido con todas las migraciones)", (
     );
   });
 
+  it("la tienda del demo (ADR 0041): productos con tallas, pedidos cobrados con un cargo y restricciones", async () => {
+    const { rows } = await client.query<Record<string, string>>(
+      `select
+         (select count(*) from store_products p join organizations o on o.id = p.organization_id where o.slug = 'demo' and p.status = 'active') as active,
+         (select count(*) from store_products p join organizations o on o.id = p.organization_id where o.slug = 'demo' and p.status = 'active' and p.visibility = 'public') as public,
+         (select count(*) from store_product_variants v join organizations o on o.id = v.organization_id where o.slug = 'demo') as variants,
+         (select count(*) from store_orders s join organizations o on o.id = s.organization_id where o.slug = 'demo') as orders,
+         (select count(*) from store_orders s join fee_charges c on c.id = s.charge_id where c.amount_cents = s.total_cents) as charged,
+         (select count(*) from store_orders s join fee_charges c on c.id = s.charge_id where c.status = 'paid') as paid`,
+    );
+    expect(Number(rows[0]!.active)).toBe(6);
+    expect(Number(rows[0]!.public)).toBe(4);
+    expect(Number(rows[0]!.variants)).toBe(21);
+    expect(Number(rows[0]!.orders)).toBe(3);
+    expect(Number(rows[0]!.charged)).toBe(3);
+    expect(Number(rows[0]!.paid)).toBe(1);
+
+    const { rows: product } = await client.query<{
+      id: string;
+      organization_id: string;
+      section_id: string;
+      team_id: string;
+    }>(
+      `select p.id, p.organization_id, s.id as section_id, t.id as team_id
+       from store_products p
+       join sections s on s.organization_id = p.organization_id
+       join teams t on t.organization_id = p.organization_id
+       join organizations o on o.id = p.organization_id
+       where o.slug = 'demo' limit 1`,
+    );
+    const { id, organization_id: org, section_id: section, team_id: team } = product[0]!;
+    // Sección o equipo, nunca los dos; categoría, estado y visibilidad conocidos; precio y stock no negativos.
+    expect(
+      await errorCode(
+        client,
+        "update store_products set section_id = $2, team_id = $3 where id = $1",
+        [id, section, team],
+      ),
+    ).toBe(CHECK_VIOLATION);
+    expect(
+      await errorCode(client, "update store_products set category = 'comida' where id = $1", [id]),
+    ).toBe(CHECK_VIOLATION);
+    expect(
+      await errorCode(client, "update store_products set visibility = 'todos' where id = $1", [id]),
+    ).toBe(CHECK_VIOLATION);
+    expect(
+      await errorCode(client, "update store_products set price_cents = -1 where id = $1", [id]),
+    ).toBe(CHECK_VIOLATION);
+    expect(
+      await errorCode(
+        client,
+        "insert into store_product_variants (organization_id, product_id, label, stock) values ($1, $2, 'XXL', -1)",
+        [org, id],
+      ),
+    ).toBe(CHECK_VIOLATION);
+    // Número de pedido único por club.
+    const { rows: order } = await client.query<{ person_id: string }>(
+      "select person_id from store_orders where organization_id = $1 limit 1",
+      [org],
+    );
+    expect(
+      await errorCode(
+        client,
+        "insert into store_orders (organization_id, number, person_id, total_cents) values ($1, 1, $2, 0)",
+        [org, order[0]!.person_id],
+      ),
+    ).toBe(UNIQUE_VIOLATION);
+    expect(
+      await errorCode(
+        client,
+        "insert into store_orders (organization_id, number, person_id, total_cents, status) values ($1, 999, $2, 0, 'perdido')",
+        [org, order[0]!.person_id],
+      ),
+    ).toBe(CHECK_VIOLATION);
+  });
+
   it("borrar un club arrastra pertenencias e invitaciones; borrar un usuario deja en nulo quién invitó", async () => {
     const { rows } = await client.query<{ id: string }>(
       "insert into organizations (slug, name, default_locale, default_sport_id, brand_primary_color, brand_secondary_color) values ('club-tmp', 'Tmp', 'es', $1, '#111111', '#222222') returning id",
