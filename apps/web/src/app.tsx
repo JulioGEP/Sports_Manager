@@ -41,6 +41,8 @@ import { SessionPage } from "@/routes/club/session";
 import { SessionCourtPage } from "@/routes/club/session-court";
 import { SessionPrintPage } from "@/routes/club/session-print";
 import { SettingsPage } from "@/routes/club/settings";
+import { StorePage } from "@/routes/club/store";
+import { StoreOrderPage } from "@/routes/club/store-order";
 import { StaffPage } from "@/routes/club/staff";
 import { TeamPage } from "@/routes/club/team";
 import { TeamLoadPage } from "@/routes/club/team-load";
@@ -122,6 +124,9 @@ export const router = createBrowserRouter([
       { path: "facilities", element: <FacilitiesPage /> },
       { path: "facilities/:id", element: <FacilityPage /> },
       { path: "fees", element: <FeesPage /> },
+      // Tienda (ADR 0041): productos, stock y pedidos, y la compra de familias y deportistas.
+      { path: "store", element: <StorePage /> },
+      { path: "store/orders/:id", element: <StoreOrderPage /> },
       { path: "family", element: <FamilyPage /> },
       { path: "family/:id", element: <FamilyPlayerPage /> },
       { path: "family/:id/challenges", element: <FamilyPlayerChallengesPage /> },

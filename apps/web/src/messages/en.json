@@ -45,7 +45,8 @@
     "groupManagement": "Management",
     "viewAs": "View the club as…",
     "training": "Training",
-    "athlete": "My wellbeing"
+    "athlete": "My wellbeing",
+    "store": "Shop"
   },
   "auth": {
     "login": {
@@ -178,7 +179,11 @@
       "playersWithoutPhoto": "{count, plural, one {# profile without a photo} other {# profiles without a photo}}",
       "playersWithoutPhotoHint": "The photo helps identify each athlete.",
       "facilitiesWithoutHours": "{count, plural, one {# facility without opening hours} other {# facilities without opening hours}}",
-      "facilitiesWithoutHoursHint": "Without hours, overlaps cannot be detected."
+      "facilitiesWithoutHoursHint": "Without hours, overlaps cannot be detected.",
+      "storeOrdersToPrepare": "{count, plural, one {# shop order to prepare} other {# shop orders to prepare}}",
+      "storeOrdersToPrepareHint": "Prepare them and mark them as ready for pickup.",
+      "storeOutOfStock": "{count, plural, one {# size sold out while on sale} other {# sizes sold out while on sale}}",
+      "storeOutOfStockHint": "Restock or remove the option from the product."
     },
     "readiness": {
       "eyebrow": "Data health",
@@ -375,7 +380,8 @@
         "fees": "Fees",
         "activity": "Activity",
         "training": "Training",
-        "health": "Health"
+        "health": "Health",
+        "store": "Shop"
       },
       "toggle": "{area} for {profile}",
       "changed": "Changed from the default",
@@ -427,7 +433,8 @@
       "memberTypes": "Member types",
       "payments": "Payments",
       "setup": "Getting started",
-      "activity": "Activity"
+      "activity": "Activity",
+      "developers": "Developers"
     },
     "general": {
       "title": "Club details",
@@ -580,6 +587,55 @@
       "empty": "No activity yet.",
       "system": "System",
       "loadError": "Activity could not be loaded."
+    },
+    "developers": {
+      "title": "Public catalog",
+      "description": "The club website can show the shop products marked as public. It connects with a publishable key.",
+      "status": "Status",
+      "on": "On",
+      "off": "Off",
+      "publicProducts": "Public products",
+      "publicProductsCount": "{count, plural, =0 {None} one {# on sale} other {# on sale}}",
+      "key": "Publishable key",
+      "keyHint": "It goes in the club website code, in plain sight. It only gives access to the public catalog, nothing else.",
+      "copy": "Copy",
+      "copyCode": "Copy code",
+      "copied": "Copied",
+      "enable": "Turn on the public catalog",
+      "rotate": "Change the key",
+      "disable": "Turn off",
+      "enabled": "Public catalog on.",
+      "rotated": "Key changed. The old one no longer works.",
+      "disabled": "Public catalog off.",
+      "noPublicProducts": "No product on sale is marked for the club website. Do it from the product sheet, under “Where it shows”.",
+      "manageProducts": "Go to products",
+      "endpointsTitle": "How to connect it",
+      "endpointsDescription": "Read-only API, no session and open CORS. Returns JSON.",
+      "endpointCatalog": "The club (name, logo and colours) and its public products.",
+      "endpointProduct": "One product from the catalog.",
+      "auth": "The key goes in the {header} header or in the key URL parameter.",
+      "buying": "Each product comes with its buy link: the family signs in to the app with their account and buys it there.",
+      "docs": "Full API documentation",
+      "snippetsTitle": "Code to paste",
+      "snippetsDescription": "With your key already in place.",
+      "snippet": {
+        "html": "HTML",
+        "js": "JavaScript",
+        "curl": "curl"
+      },
+      "snippetHint": {
+        "html": "Paste it into any page of the club website: it shows the products with their photo, price and buy link.",
+        "js": "For whoever builds the website: the data to render them their own way.",
+        "curl": "To try it from the terminal."
+      },
+      "soldOut": "Sold out",
+      "test": "Try it now",
+      "testOk": "{count, plural, =0 {It works, but there are no public products.} one {It works: # product ({names}).} other {It works: # products ({names}).}}",
+      "testFail": "No response (code {status}).",
+      "confirmRotateTitle": "Change the key?",
+      "confirmRotateBody": "The current key stops working immediately: the club website will stop showing products until you put in the new one.",
+      "confirmDisableTitle": "Turn off the public catalog?",
+      "confirmDisableBody": "The club website will stop showing products. You can turn it back on with a new key."
     }
   },
   "clubs": {
@@ -950,6 +1006,20 @@
       "created": "Physical test created",
       "updated": "Physical test edited",
       "results_recorded": "Test results recorded"
+    },
+    "store_product": {
+      "created": "Shop product created",
+      "updated": "Shop product edited",
+      "image_updated": "Product photo changed",
+      "image_removed": "Product photo removed"
+    },
+    "store_order": {
+      "created": "Shop order placed",
+      "updated": "Shop order updated",
+      "cancelled": "Shop order cancelled"
+    },
+    "store": {
+      "public_key_updated": "Public catalog key changed"
     }
   },
   "team": {
@@ -2880,7 +2950,10 @@
       "newChallenge": "New challenge",
       "newSeason": "New season",
       "drills": "Drill library",
-      "infirmary": "Medical room"
+      "infirmary": "Medical room",
+      "newProduct": "New shop product",
+      "counterSale": "Counter sale",
+      "developers": "Public catalog for the website"
     },
     "keys": {
       "move": "move",
@@ -4260,5 +4333,309 @@
       "saved": "Template week saved.",
       "nameTaken": "There is already a template week with that name."
     }
+  },
+  "storeCategories": {
+    "apparel": "Clothing",
+    "equipment": "Equipment",
+    "event": "Events",
+    "trip": "Trips",
+    "other": "Other"
+  },
+  "storeOrderStatus": {
+    "pending": "Received",
+    "ready": "Ready for pickup",
+    "delivered": "Delivered",
+    "cancelled": "Cancelled"
+  },
+  "storePaymentStatus": {
+    "pending": "To pay",
+    "overdue": "Payment overdue",
+    "paid": "Paid",
+    "cancelled": "Charge cancelled",
+    "free": "Free"
+  },
+  "store": {
+    "title": "Shop",
+    "description": "What the club sells to athletes and families: clothing, equipment and extras like dinners or trips. Orders are charged like a fee.",
+    "tabs": {
+      "orders": "Orders",
+      "products": "Products"
+    },
+    "counter": {
+      "action": "Counter sale",
+      "title": "Counter sale",
+      "description": "For someone at the club buying in person. It lowers the stock and opens their charge; you collect it afterwards.",
+      "person": "For whom",
+      "personHint": "Type at least two letters of the name or email.",
+      "changePerson": "Change",
+      "product": "Product",
+      "chooseProduct": "Choose a product",
+      "option": "Size or option",
+      "chooseOption": "Choose",
+      "noOption": "No options",
+      "left": "{count, plural, =0 {sold out} one {# left} other {# left}}",
+      "quantity": "Quantity",
+      "addLine": "Add",
+      "removeLine": "Remove from order",
+      "note": "Note",
+      "chargeHint": "The order is charged through Fees: collect it from the order page.",
+      "incomplete": "Choose the person and at least one product.",
+      "created": "Order {code} created.",
+      "submit": "Create order · {total}"
+    },
+    "orders": {
+      "caption": "Shop orders",
+      "search": "Search",
+      "searchPlaceholder": "Order, person, product or note",
+      "status": "Status",
+      "allStatuses": "All",
+      "loadError": "Could not load the orders.",
+      "empty": "No orders yet.",
+      "emptyHint": "When a family or an athlete buys something, or you sell at the counter, it will show up here.",
+      "emptyFiltered": "No order matches the filter.",
+      "markReady": "Mark as ready for pickup",
+      "markDelivered": "Mark as delivered",
+      "moved": "{code}: {status}.",
+      "stats": {
+        "toPrepare": "To prepare",
+        "ready": "Ready for pickup",
+        "unpaid": "{count, plural, =0 {To collect} one {To collect (# order)} other {To collect (# orders)}}"
+      },
+      "channel": {
+        "app": "From the app",
+        "counter": "At the counter"
+      },
+      "table": {
+        "code": "Order",
+        "date": "Date",
+        "person": "For",
+        "items": "Items",
+        "total": "Total",
+        "status": "Status",
+        "payment": "Payment",
+        "paid": "Paid",
+        "note": "Note",
+        "product": "Product",
+        "option": "Option",
+        "quantity": "Units",
+        "unitPrice": "Unit price"
+      },
+      "export": {
+        "action": "Download Excel",
+        "file": "Shop orders",
+        "orders": "Orders",
+        "lines": "Lines",
+        "toPrepare": "To prepare"
+      }
+    },
+    "products": {
+      "caption": "Shop products",
+      "new": "New product",
+      "edit": "Edit",
+      "publish": "Put on sale",
+      "archive": "Archive",
+      "restore": "Restore as draft",
+      "loadError": "Could not load the products.",
+      "empty": "You are not selling anything yet.",
+      "emptyHint": "Add a shirt, the training kit or the team dinner and put it on sale.",
+      "statusChanged": {
+        "active": "“{name}” is now on sale.",
+        "draft": "“{name}” is back to draft.",
+        "archived": "“{name}” archived."
+      },
+      "status": {
+        "draft": "Draft",
+        "active": "On sale",
+        "archived": "Archived"
+      },
+      "audience": {
+        "club": "Whole club",
+        "public": "Also on the club website"
+      },
+      "table": {
+        "product": "Product",
+        "price": "Price",
+        "stock": "Stock",
+        "sold": "Sold",
+        "audience": "For",
+        "status": "Status"
+      },
+      "stock": {
+        "unlimited": "Unlimited",
+        "units": "{count, plural, one {# unit} other {# units}}",
+        "out": "Sold out: {options}",
+        "low": "Running low: {options}",
+        "single": "single"
+      }
+    },
+    "sheet": {
+      "title": "New product",
+      "editTitle": "Edit product",
+      "createdTitle": "Product created",
+      "description": "Price, sizes or options with their stock, who it is sold to and whether it shows on the club website.",
+      "createdDescription": "Add a photo if you like and put it on sale when it is ready.",
+      "submit": "Create product",
+      "saved": "Product saved.",
+      "created": "Product created.",
+      "imageSaved": "Photo saved.",
+      "image": "Product photo",
+      "addImage": "Add photo",
+      "changeImage": "Change photo",
+      "removeImage": "Remove photo",
+      "name": "Name",
+      "namePlaceholder": "Official match shirt",
+      "category": "Category",
+      "price": "Price (€)",
+      "priceHint": "Use a comma or a dot for cents. 0 if it is free.",
+      "descriptionField": "Description",
+      "options": "Sizes and stock",
+      "withOptions": "Has sizes or options",
+      "presetKids": "Kids sizes",
+      "presetAdults": "Adult sizes",
+      "optionLabel": "Size or option",
+      "optionPlaceholder": "Option",
+      "stock": "Stock",
+      "stockFor": "Stock for {option}",
+      "unlimited": "Unlimited",
+      "removeOption": "Remove {option}",
+      "addOption": "Add option",
+      "stockHint": "Units available. Leave it empty if there is no limit (a sign-up, an extra payment). Each order lowers it and cancelling gives it back.",
+      "audience": "Who it is sold to",
+      "audienceHint": "In the app, only families and athletes in that group see it.",
+      "audienceClub": "Whole club",
+      "audienceSections": "A section",
+      "audienceTeams": "A team",
+      "availableUntil": "On sale until",
+      "availableUntilHint": "Optional. After that day it can no longer be bought.",
+      "statusField": "Status",
+      "statusDraft": "Draft",
+      "statusActive": "On sale",
+      "statusArchived": "Archived",
+      "statusHint": {
+        "draft": "Only shop managers see it.",
+        "active": "It can be bought from the app.",
+        "archived": "Withdrawn. Previous orders are kept."
+      },
+      "visibility": "Where it shows",
+      "visibilityMembers": "Only in the app",
+      "visibilityPublic": "In the app and on the club website",
+      "visibilityHint": {
+        "members": "For internal things: the team dinner, a trip.",
+        "public": "It appears in the public catalog read by the club website (Settings, Developers)."
+      },
+      "invalid": "Check the details: name, price and options (no repeated names).",
+      "invalidStock": "Stock is a whole number, or empty if there is no limit.",
+      "noOptions": "Add at least one option."
+    }
+  },
+  "shop": {
+    "title": "Club shop",
+    "description": "Clothing, equipment and extras from the club. You pay like a fee.",
+    "tabs": {
+      "catalog": "Catalog",
+      "orders": "My orders",
+      "ordersCount": "My orders ({count})"
+    },
+    "cart": {
+      "open": "{count, plural, =0 {Basket} other {Basket (#)}}",
+      "title": "Your basket",
+      "description": "One order per person: that way the club knows who each item is for.",
+      "empty": "Your basket is empty.",
+      "emptyHint": "Choose a product from the catalog and add it.",
+      "groupFor": "For {name}",
+      "forSelf": "you",
+      "less": "One less",
+      "more": "One more",
+      "note": "Note for the club",
+      "noteHint": "The name for the shirt, an allergy, anything the club should know.",
+      "paymentHint": "Placing the order adds it to your fees. You pay it however the club has set up.",
+      "keepShopping": "Keep shopping",
+      "submit": "Place order · {total}",
+      "confirmTitle": "Place the order?",
+      "confirmBody": "{count, plural, one {One order} other {# orders}} for {names} totalling {total}. It is added to your fees and the club prepares it.",
+      "confirm": "Place order",
+      "ordered": "{count, plural, one {Order {codes} placed.} other {Orders {codes} placed.}}"
+    },
+    "product": {
+      "option": "Size or option",
+      "lowStock": "{count, plural, one {Only # left} other {Only # left}}",
+      "soldOut": "Sold out. Check back later.",
+      "until": "On sale until {date}",
+      "quantity": "Quantity",
+      "less": "One less",
+      "more": "One more",
+      "for": "For whom",
+      "forHint": "Each order is for one person.",
+      "forSelf": "For me",
+      "forSelfLine": "For you.",
+      "forLine": "For {name}.",
+      "add": "Add to basket · {total}"
+    },
+    "orders": {
+      "loadError": "Could not load your orders.",
+      "empty": "You have not placed any orders yet.",
+      "emptyHint": "What you buy in the shop will show up here, with its status and payment.",
+      "manualHint": "The club records payments by hand: pay by bank transfer or at the office.",
+      "seeFees": "See my fees",
+      "line": "For {name} · {date}",
+      "pending": "{amount} to go",
+      "readyHint": "Ready: drop by the club to pick it up.",
+      "note": "Note: {note}",
+      "cancel": "Cancel order",
+      "pay": "Pay {amount}",
+      "cancelled": "Order {code} cancelled.",
+      "confirmCancelTitle": "Cancel the order?",
+      "confirmCancelBody": "Order {code} is cancelled and removed from your fees."
+    },
+    "spotlight": {
+      "title": "Club shop",
+      "description": "{count, plural, one {# product} other {# products}} on sale for {names}.",
+      "descriptionSelf": "{count, plural, one {# product} other {# products}} on sale.",
+      "open": "Go to the shop"
+    },
+    "checkoutSuccess": "Payment received. It may take a few seconds to show as paid.",
+    "checkoutCancel": "Payment cancelled. You can try again whenever you like.",
+    "dismiss": "Close",
+    "loadError": "Could not load the shop.",
+    "noBeneficiaries": "The shop is for families of under-18 athletes and for adult athletes.",
+    "noBeneficiariesHint": "If you think you should see it, talk to the club.",
+    "empty": "Nothing is on sale right now.",
+    "emptyHint": "When the club puts something on sale, you will see it here.",
+    "soldOut": "Sold out",
+    "until": "Until {date}"
+  },
+  "storeOrder": {
+    "back": "Shop",
+    "title": "Order {code}",
+    "for": "For {name}",
+    "notFound": "This order does not exist.",
+    "channel": {
+      "app": "From the app",
+      "counter": "At the counter"
+    },
+    "cancel": "Cancel order",
+    "recordPayment": "Collect payment",
+    "markReady": "Mark as ready",
+    "markDelivered": "Mark as delivered",
+    "undoDelivered": "Back to ready",
+    "moved": "Order {status}.",
+    "cancelledRefund": "Order cancelled. Refund {amount} to the family.",
+    "refundDue": "Order cancelled with {amount} already collected: refund it the same way.",
+    "items": "Items",
+    "unit": "{price} each",
+    "total": "Total",
+    "payment": "Payment",
+    "paymentStatus": "Status",
+    "paid": "Collected",
+    "pending": "To collect",
+    "dueOn": "Due",
+    "chargeHint": "It is charged through Fees: a Stripe or manual payment closes it in both places.",
+    "details": "Details",
+    "person": "For",
+    "placedBy": "Placed by",
+    "note": "Note",
+    "confirmCancelTitle": "Cancel order {code}?",
+    "confirmCancelBody": "The stock goes back to the shop and the charge is cancelled.",
+    "confirmCancelPaid": "The stock goes back to the shop. {amount} has already been collected: you will need to refund it yourself."
   }
 }

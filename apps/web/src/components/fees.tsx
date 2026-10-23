@@ -44,13 +44,18 @@ export function FeeStatusChip({ status }: { status: FeeChargeStatus }) {
   return <StatusChip kind={feeStatusKind[status]}>{fs(status)}</StatusChip>;
 }
 
-/** Registrar un pago a mano sobre un cargo pendiente o vencido. */
+/**
+ * Registrar un pago a mano sobre un cargo pendiente o vencido. `path` cambia adónde se apunta: un
+ * pedido de la tienda se cobra por su propia ruta (ADR 0041), con el permiso de la tienda.
+ */
 export function PaymentSheet({
   charge,
+  path,
   onClose,
   onSaved,
 }: {
-  charge: FeeCharge | null;
+  charge: Pick<FeeCharge, "id" | "person" | "concept" | "amountCents" | "paidCents"> | null;
+  path?: string | undefined;
   onClose: () => void;
   onSaved: () => void;
 }) {
@@ -74,16 +79,19 @@ export function PaymentSheet({
     setError(null);
     setBusy(true);
     try {
-      await apiFetch(`/api/org/fees/charges/${charge.id}/payments`, {
-        method: "POST",
-        body: {
-          amountCents: Number.isFinite(amountCents) && amountCents > 0 ? amountCents : pendingCents,
-          method,
-          paidOn,
-          note: note.trim() || null,
-        },
-        schema: FeeChargeResponseSchema,
-      });
+      const body = {
+        amountCents: Number.isFinite(amountCents) && amountCents > 0 ? amountCents : pendingCents,
+        method,
+        paidOn,
+        note: note.trim() || null,
+      };
+      if (path) await apiFetch(path, { method: "POST", body });
+      else
+        await apiFetch(`/api/org/fees/charges/${charge.id}/payments`, {
+          method: "POST",
+          body,
+          schema: FeeChargeResponseSchema,
+        });
       toast("success", t("saved"));
       setAmount("");
       setNote("");

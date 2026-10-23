@@ -401,6 +401,9 @@ export const OperationsSummarySchema = z.object({
   /** Bloque 16 y 18: instalaciones sin franjas de apertura y cargos vencidos. */
   facilitiesWithoutHours: z.number().int().nonnegative(),
   feesOverdue: z.number().int().nonnegative(),
+  /** Tienda (ADR 0041): pedidos sin preparar y opciones agotadas de lo que está a la venta. */
+  storeOrdersToPrepare: z.number().int().nonnegative(),
+  storeOutOfStock: z.number().int().nonnegative(),
 });
 export type OperationsSummary = z.infer<typeof OperationsSummarySchema>;
 

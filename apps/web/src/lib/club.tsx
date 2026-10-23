@@ -236,6 +236,9 @@ export const clubPaths = (slug: string) => ({
   facilities: `/${slug}/facilities`,
   facility: (id: string) => `/${slug}/facilities/${id}`,
   fees: `/${slug}/fees`,
+  /** Tienda (ADR 0041): la gestión para quien la lleva y la compra para familias y deportistas. */
+  store: `/${slug}/store`,
+  storeOrder: (id: string) => `/${slug}/store/orders/${id}`,
   family: `/${slug}/family`,
   familyPlayer: (id: string) => `/${slug}/family/${id}`,
   /** Los retos de uno de los suyos, para la familia (ADR 0032): dentro de la ficha del jugador. */

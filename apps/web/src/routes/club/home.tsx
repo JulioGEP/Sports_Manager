@@ -127,6 +127,8 @@ export function ClubHome() {
           { key: "playersWithoutFamily", to: `${paths.players}?missing=family` },
           { key: "playersWithoutPhoto", to: `${paths.players}?missing=photo` },
           { key: "facilitiesWithoutHours", to: paths.facilities },
+          { key: "storeOrdersToPrepare", to: `${paths.store}?status=pending` },
+          { key: "storeOutOfStock", to: `${paths.store}?tab=products` },
         ] as const
       )
         .map((a) => ({ ...a, count: operations[a.key] }))
@@ -136,6 +138,11 @@ export function ClubHome() {
         .filter((a) => a.key !== "feesOverdue" || has("org.fees.read"))
         .filter((a) => a.key !== "facilitiesWithoutHours" || has("org.facilities.write"))
         .filter((a) => a.key !== "playersWithoutMembership" || has("org.club_members.read"))
+        .filter(
+          (a) =>
+            (a.key !== "storeOrdersToPrepare" && a.key !== "storeOutOfStock") ||
+            has("org.store.read"),
+        )
     : [];
   const readinessChecks: (keyof Omit<ReadinessSummary, "total" | "percent">)[] = [
     "withPhoto",

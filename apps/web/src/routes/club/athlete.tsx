@@ -24,6 +24,7 @@ import {
   StatusChip,
   useToast,
 } from "@/ui";
+import { StoreSpotlight } from "./shop";
 
 type Answers = Record<WellnessItem, number | null>;
 const EMPTY: Answers = { sleep: null, fatigue: null, soreness: null, stress: null, mood: null };
@@ -79,6 +80,8 @@ export function AthletePage() {
       />
       <PendingRpe data={data} />
       <WellnessCard key={data.wellnessToday?.date ?? "new"} data={data} />
+      {/* La tienda del club, fijada (ADR 0041): el adulto compra lo suyo. */}
+      <StoreSpotlight />
       <RecentCard data={data} />
     </div>
   );

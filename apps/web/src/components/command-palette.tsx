@@ -298,6 +298,10 @@ export function CommandPalette({
       // Entrenamiento (ADR 0039): la biblioteca y la enfermería no van en la barra.
       { key: "drills", perm: "org.training.read", to: paths.drills },
       { key: "infirmary", perm: "org.availability.write", to: paths.infirmary },
+      // Tienda (ADR 0041): producto nuevo, venta en el mostrador y la clave de la web del club.
+      { key: "newProduct", perm: "org.store.write", to: `${paths.store}?tab=products&new=1` },
+      { key: "counterSale", perm: "org.store.write", to: `${paths.store}?counter=1` },
+      { key: "developers", perm: "org.settings.write", to: `${paths.settings}?tab=developers` },
     ];
     for (const a of actions) {
       if (has(a.perm))

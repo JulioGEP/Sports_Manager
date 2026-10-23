@@ -6,6 +6,7 @@ import { clubPaths, useReadyClub } from "@/lib/club";
 import { useDates } from "@/lib/dates";
 import { useT } from "@/lib/intl";
 import { Alert, Avatar, ButtonLink, Card, EmptyState, Icon, PageHeader, StatusChip } from "@/ui";
+import { StoreSpotlight } from "./shop";
 
 /** Lo que ve una familia: sus jugadores, su equipo de esta temporada y quién lo entrena. */
 export function FamilyPage() {
@@ -25,6 +26,8 @@ export function FamilyPage() {
   return (
     <div className="flex flex-col gap-5">
       <PageHeader title={t("title")} description={t("description")} />
+      {/* La tienda del club, fijada (ADR 0041): solo si hay algo a la venta para sus menores. */}
+      <StoreSpotlight />
       {family.isError ? <Alert kind="error">{errors(errorKey(family.error))}</Alert> : null}
       {family.data && family.data.players.length === 0 ? (
         <Card>

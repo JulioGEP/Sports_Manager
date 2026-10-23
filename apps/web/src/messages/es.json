@@ -45,7 +45,8 @@
     "groupManagement": "Gestión",
     "viewAs": "Ver el club como…",
     "training": "Entrenamiento",
-    "athlete": "Mi bienestar"
+    "athlete": "Mi bienestar",
+    "store": "Tienda"
   },
   "auth": {
     "login": {
@@ -178,7 +179,11 @@
       "playersWithoutPhoto": "{count, plural, one {# ficha sin fotografía} other {# fichas sin fotografía}}",
       "playersWithoutPhotoHint": "La foto ayuda a identificar a cada deportista.",
       "facilitiesWithoutHours": "{count, plural, one {# instalación sin horario} other {# instalaciones sin horario}}",
-      "facilitiesWithoutHoursHint": "Sin horario no se pueden detectar solapes."
+      "facilitiesWithoutHoursHint": "Sin horario no se pueden detectar solapes.",
+      "storeOrdersToPrepare": "{count, plural, one {# pedido de la tienda por preparar} other {# pedidos de la tienda por preparar}}",
+      "storeOrdersToPrepareHint": "Prepáralos y márcalos como listos para recoger.",
+      "storeOutOfStock": "{count, plural, one {# talla agotada a la venta} other {# tallas agotadas a la venta}}",
+      "storeOutOfStockHint": "Repón stock o quita la opción del producto."
     },
     "readiness": {
       "eyebrow": "Salud de los datos",
@@ -375,7 +380,8 @@
         "fees": "Cuotas",
         "activity": "Movimientos",
         "training": "Entrenamiento",
-        "health": "Salud"
+        "health": "Salud",
+        "store": "Tienda"
       },
       "toggle": "{area} para {profile}",
       "changed": "Cambiado respecto a lo de por defecto",
@@ -427,7 +433,8 @@
       "memberTypes": "Tipos de socio",
       "payments": "Cobros",
       "setup": "Puesta en marcha",
-      "activity": "Actividad"
+      "activity": "Actividad",
+      "developers": "Desarrolladores"
     },
     "general": {
       "title": "Datos del club",
@@ -580,6 +587,55 @@
       "empty": "Todavía no hay movimientos.",
       "system": "Sistema",
       "loadError": "No se ha podido cargar la actividad."
+    },
+    "developers": {
+      "title": "Catálogo público",
+      "description": "La web del club puede enseñar los productos de la tienda marcados como públicos. Se conecta con una clave publicable.",
+      "status": "Estado",
+      "on": "Activo",
+      "off": "Apagado",
+      "publicProducts": "Productos públicos",
+      "publicProductsCount": "{count, plural, =0 {Ninguno} one {# a la venta} other {# a la venta}}",
+      "key": "Clave publicable",
+      "keyHint": "Va en el código de la web del club, a la vista. Solo da acceso al catálogo público, nada más.",
+      "copy": "Copiar",
+      "copyCode": "Copiar código",
+      "copied": "Copiado",
+      "enable": "Activar el catálogo público",
+      "rotate": "Cambiar la clave",
+      "disable": "Apagar",
+      "enabled": "Catálogo público activo.",
+      "rotated": "Clave cambiada. La anterior ya no funciona.",
+      "disabled": "Catálogo público apagado.",
+      "noPublicProducts": "Ningún producto a la venta está marcado para la web del club. Hazlo desde la ficha del producto, en «Dónde se enseña».",
+      "manageProducts": "Ir a los productos",
+      "endpointsTitle": "Cómo conectarlo",
+      "endpointsDescription": "API de solo lectura, sin sesión y con CORS abierto. Devuelve JSON.",
+      "endpointCatalog": "El club (nombre, logo y colores) y sus productos públicos.",
+      "endpointProduct": "Un producto del catálogo.",
+      "auth": "La clave va en la cabecera {header} o en el parámetro key de la URL.",
+      "buying": "Cada producto trae su enlace de compra: la familia entra en la app con su cuenta y lo compra allí.",
+      "docs": "Documentación completa de la API",
+      "snippetsTitle": "Código para pegar",
+      "snippetsDescription": "Con tu clave ya puesta.",
+      "snippet": {
+        "html": "HTML",
+        "js": "JavaScript",
+        "curl": "curl"
+      },
+      "snippetHint": {
+        "html": "Pégalo en cualquier página de la web del club: pinta los productos con su foto, precio y enlace de compra.",
+        "js": "Para quien programa la web: los datos para pintarlos a su manera.",
+        "curl": "Para probar desde el terminal."
+      },
+      "soldOut": "Agotado",
+      "test": "Probar ahora",
+      "testOk": "{count, plural, =0 {Funciona, pero no hay productos públicos.} one {Funciona: # producto ({names}).} other {Funciona: # productos ({names}).}}",
+      "testFail": "No responde (código {status}).",
+      "confirmRotateTitle": "¿Cambiar la clave?",
+      "confirmRotateBody": "La clave actual deja de funcionar al momento: la web del club dejará de enseñar productos hasta que pongas la nueva.",
+      "confirmDisableTitle": "¿Apagar el catálogo público?",
+      "confirmDisableBody": "La web del club dejará de enseñar productos. Puedes volver a activarlo con una clave nueva."
     }
   },
   "clubs": {
@@ -950,6 +1006,20 @@
       "created": "Test físico creado",
       "updated": "Test físico editado",
       "results_recorded": "Resultados de tests registrados"
+    },
+    "store_product": {
+      "created": "Producto de la tienda creado",
+      "updated": "Producto de la tienda editado",
+      "image_updated": "Foto de producto cambiada",
+      "image_removed": "Foto de producto quitada"
+    },
+    "store_order": {
+      "created": "Pedido de la tienda hecho",
+      "updated": "Pedido de la tienda actualizado",
+      "cancelled": "Pedido de la tienda anulado"
+    },
+    "store": {
+      "public_key_updated": "Clave del catálogo público cambiada"
     }
   },
   "team": {
@@ -2880,7 +2950,10 @@
       "newChallenge": "Nuevo reto",
       "newSeason": "Nueva temporada",
       "drills": "Biblioteca de tareas",
-      "infirmary": "Enfermería"
+      "infirmary": "Enfermería",
+      "newProduct": "Nuevo producto de la tienda",
+      "counterSale": "Venta en el mostrador",
+      "developers": "Catálogo público para la web"
     },
     "keys": {
       "move": "moverse",
@@ -4260,5 +4333,309 @@
       "saved": "Semana tipo guardada.",
       "nameTaken": "Ya hay una semana tipo con ese nombre."
     }
+  },
+  "storeCategories": {
+    "apparel": "Ropa",
+    "equipment": "Material",
+    "event": "Eventos",
+    "trip": "Salidas",
+    "other": "Otros"
+  },
+  "storeOrderStatus": {
+    "pending": "Recibido",
+    "ready": "Listo para recoger",
+    "delivered": "Entregado",
+    "cancelled": "Anulado"
+  },
+  "storePaymentStatus": {
+    "pending": "Por pagar",
+    "overdue": "Pago vencido",
+    "paid": "Pagado",
+    "cancelled": "Cobro anulado",
+    "free": "Sin coste"
+  },
+  "store": {
+    "title": "Tienda",
+    "description": "Lo que el club vende a deportistas y familias: ropa, material y extras como cenas o salidas. Los pedidos se cobran como una cuota.",
+    "tabs": {
+      "orders": "Pedidos",
+      "products": "Productos"
+    },
+    "counter": {
+      "action": "Venta en el mostrador",
+      "title": "Venta en el mostrador",
+      "description": "Para alguien del club que compra en persona. Baja el stock y abre su cargo; después lo cobras.",
+      "person": "Para quién",
+      "personHint": "Escribe al menos dos letras del nombre o del email.",
+      "changePerson": "Cambiar",
+      "product": "Producto",
+      "chooseProduct": "Elige un producto",
+      "option": "Talla u opción",
+      "chooseOption": "Elige",
+      "noOption": "Sin opciones",
+      "left": "{count, plural, =0 {agotada} one {queda #} other {quedan #}}",
+      "quantity": "Cantidad",
+      "addLine": "Añadir",
+      "removeLine": "Quitar del pedido",
+      "note": "Nota",
+      "chargeHint": "El pedido se cobra con un cargo en Cuotas: cóbralo desde la ficha del pedido.",
+      "incomplete": "Elige a la persona y al menos un producto.",
+      "created": "Pedido {code} creado.",
+      "submit": "Crear pedido · {total}"
+    },
+    "orders": {
+      "caption": "Pedidos de la tienda",
+      "search": "Buscar",
+      "searchPlaceholder": "Pedido, persona, producto o nota",
+      "status": "Estado",
+      "allStatuses": "Todos",
+      "loadError": "No se han podido cargar los pedidos.",
+      "empty": "Todavía no hay pedidos.",
+      "emptyHint": "Cuando una familia o un deportista compre, o vendas en el mostrador, aparecerá aquí.",
+      "emptyFiltered": "Ningún pedido coincide con el filtro.",
+      "markReady": "Marcar como listo para recoger",
+      "markDelivered": "Marcar como entregado",
+      "moved": "{code}: {status}.",
+      "stats": {
+        "toPrepare": "Por preparar",
+        "ready": "Listos para recoger",
+        "unpaid": "{count, plural, =0 {Por cobrar} one {Por cobrar (# pedido)} other {Por cobrar (# pedidos)}}"
+      },
+      "channel": {
+        "app": "Desde la app",
+        "counter": "En el mostrador"
+      },
+      "table": {
+        "code": "Pedido",
+        "date": "Fecha",
+        "person": "Para",
+        "items": "Contenido",
+        "total": "Total",
+        "status": "Estado",
+        "payment": "Cobro",
+        "paid": "Pagado",
+        "note": "Nota",
+        "product": "Producto",
+        "option": "Opción",
+        "quantity": "Unidades",
+        "unitPrice": "Precio unidad"
+      },
+      "export": {
+        "action": "Descargar Excel",
+        "file": "Pedidos de la tienda",
+        "orders": "Pedidos",
+        "lines": "Líneas",
+        "toPrepare": "Por preparar"
+      }
+    },
+    "products": {
+      "caption": "Productos de la tienda",
+      "new": "Nuevo producto",
+      "edit": "Editar",
+      "publish": "Poner a la venta",
+      "archive": "Archivar",
+      "restore": "Recuperar como borrador",
+      "loadError": "No se han podido cargar los productos.",
+      "empty": "Aún no vendes nada.",
+      "emptyHint": "Da de alta una camiseta, el material de entreno o la cena del equipo y ponlo a la venta.",
+      "statusChanged": {
+        "active": "«{name}» ya está a la venta.",
+        "draft": "«{name}» vuelve a borrador.",
+        "archived": "«{name}» archivado."
+      },
+      "status": {
+        "draft": "Borrador",
+        "active": "A la venta",
+        "archived": "Archivado"
+      },
+      "audience": {
+        "club": "Todo el club",
+        "public": "También en la web del club"
+      },
+      "table": {
+        "product": "Producto",
+        "price": "Precio",
+        "stock": "Stock",
+        "sold": "Vendidas",
+        "audience": "Para",
+        "status": "Estado"
+      },
+      "stock": {
+        "unlimited": "Sin límite",
+        "units": "{count, plural, one {# unidad} other {# unidades}}",
+        "out": "Agotado: {options}",
+        "low": "Quedan pocas: {options}",
+        "single": "única"
+      }
+    },
+    "sheet": {
+      "title": "Nuevo producto",
+      "editTitle": "Editar producto",
+      "createdTitle": "Producto creado",
+      "description": "Precio, tallas u opciones con su stock, a quién se vende y si sale en la web del club.",
+      "createdDescription": "Añade una foto si quieres y ponlo a la venta cuando esté listo.",
+      "submit": "Crear producto",
+      "saved": "Producto guardado.",
+      "created": "Producto creado.",
+      "imageSaved": "Foto guardada.",
+      "image": "Foto del producto",
+      "addImage": "Añadir foto",
+      "changeImage": "Cambiar foto",
+      "removeImage": "Quitar foto",
+      "name": "Nombre",
+      "namePlaceholder": "Camiseta oficial de juego",
+      "category": "Categoría",
+      "price": "Precio (€)",
+      "priceHint": "Con coma o punto para los céntimos. 0 si es gratis.",
+      "descriptionField": "Descripción",
+      "options": "Tallas y stock",
+      "withOptions": "Tiene tallas u opciones",
+      "presetKids": "Tallas infantiles",
+      "presetAdults": "Tallas de adulto",
+      "optionLabel": "Talla u opción",
+      "optionPlaceholder": "Opción",
+      "stock": "Stock",
+      "stockFor": "Stock de {option}",
+      "unlimited": "Sin límite",
+      "removeOption": "Quitar {option}",
+      "addOption": "Añadir opción",
+      "stockHint": "Unidades disponibles. Déjalo vacío si no hay límite (una inscripción, un pago extra). Cada pedido lo baja y anularlo lo devuelve.",
+      "audience": "A quién se vende",
+      "audienceHint": "En la app solo lo ven las familias y deportistas de ese ámbito.",
+      "audienceClub": "Todo el club",
+      "audienceSections": "Una sección",
+      "audienceTeams": "Un equipo",
+      "availableUntil": "A la venta hasta",
+      "availableUntilHint": "Opcional. Después de ese día ya no se puede comprar.",
+      "statusField": "Estado",
+      "statusDraft": "Borrador",
+      "statusActive": "A la venta",
+      "statusArchived": "Archivado",
+      "statusHint": {
+        "draft": "Solo lo ve quien gestiona la tienda.",
+        "active": "Se puede comprar desde la app.",
+        "archived": "Retirado. Los pedidos anteriores se conservan."
+      },
+      "visibility": "Dónde se enseña",
+      "visibilityMembers": "Solo en la app",
+      "visibilityPublic": "En la app y en la web del club",
+      "visibilityHint": {
+        "members": "Para cosas internas: la cena del equipo, una salida.",
+        "public": "Sale en el catálogo público que lee la web del club (Ajustes, Desarrolladores)."
+      },
+      "invalid": "Revisa los datos: nombre, precio y opciones (sin nombres repetidos).",
+      "invalidStock": "El stock es un número entero, o vacío si no hay límite.",
+      "noOptions": "Añade al menos una opción."
+    }
+  },
+  "shop": {
+    "title": "Tienda del club",
+    "description": "Ropa, material y extras del club. Se paga como una cuota.",
+    "tabs": {
+      "catalog": "Catálogo",
+      "orders": "Mis pedidos",
+      "ordersCount": "Mis pedidos ({count})"
+    },
+    "cart": {
+      "open": "{count, plural, =0 {Cesta} other {Cesta (#)}}",
+      "title": "Tu cesta",
+      "description": "Un pedido por persona: así el club sabe para quién es cada cosa.",
+      "empty": "La cesta está vacía.",
+      "emptyHint": "Elige un producto del catálogo y añádelo.",
+      "groupFor": "Para {name}",
+      "forSelf": "ti",
+      "less": "Una menos",
+      "more": "Una más",
+      "note": "Nota para el club",
+      "noteHint": "El nombre para la camiseta, una alergia, lo que el club deba saber.",
+      "paymentHint": "Al hacer el pedido se apunta en tus cuotas. Lo pagas como el club tenga configurado.",
+      "keepShopping": "Seguir comprando",
+      "submit": "Hacer pedido · {total}",
+      "confirmTitle": "¿Hacer el pedido?",
+      "confirmBody": "{count, plural, one {Un pedido} other {# pedidos}} para {names} por {total}. Se apunta en tus cuotas y el club lo prepara.",
+      "confirm": "Hacer pedido",
+      "ordered": "{count, plural, one {Pedido {codes} hecho.} other {Pedidos {codes} hechos.}}"
+    },
+    "product": {
+      "option": "Talla u opción",
+      "lowStock": "{count, plural, one {Solo queda #} other {Solo quedan #}}",
+      "soldOut": "Agotado. Vuelve más adelante.",
+      "until": "A la venta hasta el {date}",
+      "quantity": "Cantidad",
+      "less": "Una menos",
+      "more": "Una más",
+      "for": "Para quién",
+      "forHint": "Cada pedido es para una persona.",
+      "forSelf": "Para mí",
+      "forSelfLine": "Para ti.",
+      "forLine": "Para {name}.",
+      "add": "Añadir a la cesta · {total}"
+    },
+    "orders": {
+      "loadError": "No se han podido cargar tus pedidos.",
+      "empty": "Aún no has hecho ningún pedido.",
+      "emptyHint": "Lo que compres en la tienda aparecerá aquí, con su estado y su pago.",
+      "manualHint": "El club apunta los pagos a mano: paga por transferencia o en secretaría.",
+      "seeFees": "Ver mis cuotas",
+      "line": "Para {name} · {date}",
+      "pending": "Faltan {amount}",
+      "readyHint": "Listo: pásate por el club a recogerlo.",
+      "note": "Nota: {note}",
+      "cancel": "Anular pedido",
+      "pay": "Pagar {amount}",
+      "cancelled": "Pedido {code} anulado.",
+      "confirmCancelTitle": "¿Anular el pedido?",
+      "confirmCancelBody": "El pedido {code} se anula y deja de estar en tus cuotas."
+    },
+    "spotlight": {
+      "title": "Tienda del club",
+      "description": "{count, plural, one {# producto} other {# productos}} a la venta para {names}.",
+      "descriptionSelf": "{count, plural, one {# producto} other {# productos}} a la venta.",
+      "open": "Ir a la tienda"
+    },
+    "checkoutSuccess": "Pago recibido. Puede tardar unos segundos en aparecer como pagado.",
+    "checkoutCancel": "Pago cancelado. Puedes volver a intentarlo cuando quieras.",
+    "dismiss": "Cerrar",
+    "loadError": "No se ha podido cargar la tienda.",
+    "noBeneficiaries": "La tienda es para las familias de deportistas menores y para los deportistas adultos.",
+    "noBeneficiariesHint": "Si crees que deberías verla, habla con el club.",
+    "empty": "Ahora mismo no hay nada a la venta.",
+    "emptyHint": "Cuando el club ponga algo a la venta, lo verás aquí.",
+    "soldOut": "Agotado",
+    "until": "Hasta el {date}"
+  },
+  "storeOrder": {
+    "back": "Tienda",
+    "title": "Pedido {code}",
+    "for": "Para {name}",
+    "notFound": "Este pedido no existe.",
+    "channel": {
+      "app": "Desde la app",
+      "counter": "En el mostrador"
+    },
+    "cancel": "Anular pedido",
+    "recordPayment": "Cobrar",
+    "markReady": "Marcar como listo",
+    "markDelivered": "Marcar como entregado",
+    "undoDelivered": "Volver a listo",
+    "moved": "Pedido {status}.",
+    "cancelledRefund": "Pedido anulado. Devuelve {amount} a la familia.",
+    "refundDue": "Pedido anulado con {amount} ya cobrados: devuélvelos por el mismo medio.",
+    "items": "Contenido",
+    "unit": "{price} la unidad",
+    "total": "Total",
+    "payment": "Cobro",
+    "paymentStatus": "Estado",
+    "paid": "Cobrado",
+    "pending": "Por cobrar",
+    "dueOn": "Vence",
+    "chargeHint": "Se cobra con un cargo en Cuotas: el pago por Stripe o a mano lo cierra en los dos sitios.",
+    "details": "Datos",
+    "person": "Para",
+    "placedBy": "Lo hizo",
+    "note": "Nota",
+    "confirmCancelTitle": "¿Anular el pedido {code}?",
+    "confirmCancelBody": "El stock vuelve a la tienda y el cargo se anula.",
+    "confirmCancelPaid": "El stock vuelve a la tienda. Ya se han cobrado {amount}: tendrás que devolverlos tú."
   }
 }

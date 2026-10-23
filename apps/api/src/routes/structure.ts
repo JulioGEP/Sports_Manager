@@ -301,7 +301,7 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
       if (!actor.permissions.has("org.players.read")) {
         return c.json({ ...base, operations: null, readiness: null }, 200);
       }
-      const [{ operations, readiness }, challengeSubmissionsPending] = await Promise.all([
+      const [{ operations, readiness }, challengeSubmissionsPending, store] = await Promise.all([
         data.players.operations(
           tenant.scope,
           restricted ? { teamIds: restricted.teamIds, playerIds: restricted.playerIds } : undefined,
@@ -314,6 +314,9 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
                 await data.memberships.ownTeamIds(tenant.scope, actorId(c)),
               )
             : Promise.resolve(0),
+        actor.permissions.has("org.store.read")
+          ? data.store.alerts(tenant.scope)
+          : Promise.resolve({ ordersToPrepare: 0, variantsOutOfStock: 0 }),
       ]);
       return c.json(
         {
@@ -323,6 +326,8 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
             challengeSubmissionsPending,
             facilitiesWithoutHours: facilities.withoutHours,
             feesOverdue: fees?.overdueCount ?? 0,
+            storeOrdersToPrepare: store.ordersToPrepare,
+            storeOutOfStock: store.variantsOutOfStock,
           },
           readiness,
         },
