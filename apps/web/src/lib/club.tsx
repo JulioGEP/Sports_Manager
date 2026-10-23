@@ -4,6 +4,7 @@ import {
   OrganizationResponseSchema,
   isReservedSubdomain,
   ORGANIZATION_SLUG_PATTERN,
+  type ClubStyle,
   type MeResponse,
   type MyMembershipsResponse,
   type OrganizationBranding,
@@ -23,7 +24,7 @@ import {
 import { useParams } from "react-router";
 import { ApiClientError, apiFetch, setCurrentClub, setCurrentViewAs } from "./api";
 import { ME_QUERY, fetchMe } from "./session";
-import { applyClubColors } from "./theme";
+import { applyClubLook } from "./theme";
 
 export type ClubState =
   | { kind: "loading" }
@@ -44,9 +45,30 @@ export type ClubState =
     }
   | { kind: "error" };
 
+/**
+ * Borrador de la identidad del club (ADR 0043): lo que se está eligiendo en los ajustes y todavía
+ * no se ha guardado. Mientras existe, toda la app se pinta y habla con él: es la vista previa.
+ */
+export type BrandingDraft = Partial<
+  Pick<OrganizationBranding, "brandPrimaryColor" | "brandSecondaryColor" | "voice" | "motto">
+> & { style?: Partial<ClubStyle> | undefined };
+
+/** La marca guardada con el borrador encima. */
+export function withDraft(
+  branding: OrganizationBranding,
+  draft: BrandingDraft | null,
+): OrganizationBranding {
+  if (!draft) return branding;
+  const { style, ...rest } = draft;
+  return { ...branding, ...rest, style: { ...branding.style, ...style } };
+}
+
 interface ClubContextValue {
   slug: string;
   state: ClubState;
+  /** Marca con la que se pinta el club ahora: la guardada o, en los ajustes, el borrador. */
+  look: OrganizationBranding | null;
+  setDraft: (draft: BrandingDraft | null) => void;
   refresh: () => Promise<void>;
   /** "Ver como" (Bloque 14): la persona elegida, o nula si se mira con los propios ojos. */
   viewAs: string | null;
@@ -79,6 +101,7 @@ export function ClubProvider({ children }: { children: ReactNode }) {
   const slug = isValidClubSlug(club) ? club : null;
   const queryClient = useQueryClient();
   const [viewAs, setViewAsState] = useState<string | null>(() => readViewAs(slug));
+  const [draft, setDraft] = useState<BrandingDraft | null>(null);
 
   useLayoutEffect(() => {
     setCurrentClub(slug);
@@ -135,10 +158,13 @@ export function ClubProvider({ children }: { children: ReactNode }) {
     retry: false,
   });
 
+  const look = useMemo(
+    () => (branding.data ? withDraft(branding.data, draft) : null),
+    [branding.data, draft],
+  );
   useEffect(() => {
-    if (branding.data)
-      applyClubColors(branding.data.brandPrimaryColor, branding.data.brandSecondaryColor);
-  }, [branding.data]);
+    if (look) applyClubLook(look);
+  }, [look]);
   useEffect(() => {
     if (branding.data) document.title = branding.data.name;
   }, [branding.data]);
@@ -181,6 +207,8 @@ export function ClubProvider({ children }: { children: ReactNode }) {
     () => ({
       slug: slug ?? "",
       state,
+      look,
+      setDraft,
       viewAs,
       setViewAs,
       refresh: async () => {
@@ -191,7 +219,7 @@ export function ClubProvider({ children }: { children: ReactNode }) {
         ]);
       },
     }),
-    [slug, state, queryClient, viewAs, setViewAs],
+    [slug, state, look, queryClient, viewAs, setViewAs],
   );
 
   return <ClubContext.Provider value={value}>{children}</ClubContext.Provider>;
@@ -205,9 +233,18 @@ export function useClub(): ClubContextValue {
 
 /** Para páginas que solo se pintan con el club cargado y la persona dentro. */
 export function useReadyClub() {
-  const { slug, state, refresh, viewAs, setViewAs } = useClub();
+  const { slug, state, look, setDraft, refresh, viewAs, setViewAs } = useClub();
   if (state.kind !== "ready") throw new Error("useReadyClub con el club sin cargar");
-  return { slug, ...state, refresh, viewAs, setViewAs, base: `/${slug}` };
+  return {
+    slug,
+    ...state,
+    look: look ?? state.branding,
+    setDraft,
+    refresh,
+    viewAs,
+    setViewAs,
+    base: `/${slug}`,
+  };
 }
 
 /** Rutas del espacio del club (Bloque 14: secciones, socios, personal, agenda, instalaciones, cuotas). */

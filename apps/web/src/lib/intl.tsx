@@ -1,9 +1,12 @@
-import type { Locale } from "@sportsmanager/shared";
+import type { ClubVoice, Locale } from "@sportsmanager/shared";
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
 import { IntlProvider, ReactIntlErrorCode, useIntl } from "react-intl";
 import ca from "@/messages/ca.json";
 import en from "@/messages/en.json";
 import es from "@/messages/es.json";
+import caVoices from "@/messages/voices/ca.json";
+import enVoices from "@/messages/voices/en.json";
+import esVoices from "@/messages/voices/es.json";
 import { initialLocale, writeLocaleCookie } from "./locale";
 
 type Nested = { [key: string]: string | Nested };
@@ -24,6 +27,21 @@ const catalogs: Record<Locale, Record<string, string>> = {
   ca: flatten(ca),
   en: flatten(en),
 };
+
+/**
+ * Voz del club en toda la web (ADR 0043). El diccionario de siempre es la voz `cercana`; las otras
+ * dos reescriben encima los momentos de relación (saludo, vacíos, avisos tras guardar, partido,
+ * retos, agenda). Los sensibles (dinero, salud, errores, accesos, bajas) no tienen capa: suenan
+ * igual en todos los clubes. `messages.test.ts` lo vigila.
+ */
+type VoiceLayers = Partial<Record<Exclude<ClubVoice, "cercana">, Record<string, string>>>;
+const voiceLayers: Record<Locale, VoiceLayers> = { es: esVoices, ca: caVoices, en: enVoices };
+
+/** El diccionario de un idioma con la voz del club encima. */
+export function voiceCatalog(locale: Locale, voice: ClubVoice): Record<string, string> {
+  const layer = voice === "cercana" ? undefined : voiceLayers[locale][voice];
+  return layer ? { ...catalogs[locale], ...layer } : catalogs[locale];
+}
 
 interface LocaleState {
   locale: Locale;
@@ -71,5 +89,26 @@ export function useT(namespace?: string): Translate {
   return useCallback(
     (key, values) => intl.formatMessage({ id: namespace ? `${namespace}.${key}` : key }, values),
     [intl, namespace],
+  );
+}
+
+/** Todo lo que cuelga de aquí habla con la voz del club (ADR 0043). */
+export function VoiceProvider({ voice, children }: { voice: ClubVoice; children: ReactNode }) {
+  const { locale } = useLocale();
+  const messages = useMemo(() => voiceCatalog(locale, voice), [locale, voice]);
+  // Siempre el mismo árbol, también en `cercana`: cambiar de voz en la vista previa de los ajustes
+  // no puede desmontar la pantalla (y perder lo que se está editando).
+  return (
+    <IntlProvider
+      locale={locale}
+      defaultLocale="es"
+      messages={messages}
+      timeZone="Europe/Madrid"
+      onError={(error) => {
+        if (error.code !== ReactIntlErrorCode.MISSING_TRANSLATION) console.error(error);
+      }}
+    >
+      {children}
+    </IntlProvider>
   );
 }

@@ -37,6 +37,7 @@ import {
   type AccessRule,
   type AccessScope,
   type Actor as ActorDto,
+  type ClubStyle,
   type ClubVoice,
   type ConfigurableProfile,
   type Locale,
@@ -76,6 +77,19 @@ const errorResponses = {
   },
 };
 
+/** Identidad visual del club (ADR 0043) tal como la guarda la base, que ya valida cada opción. */
+export function styleDto(org: OrganizationRow): ClubStyle {
+  return {
+    typography: org.styleTypography as ClubStyle["typography"],
+    buttons: org.styleButtons as ClubStyle["buttons"],
+    icons: org.styleIcons as ClubStyle["icons"],
+    background: org.styleBackground as ClubStyle["background"],
+    hero: org.styleHero as ClubStyle["hero"],
+    nav: org.styleNav as ClubStyle["nav"],
+    corners: org.styleCorners as ClubStyle["corners"],
+  };
+}
+
 export function brandingDto(org: OrganizationRow) {
   return {
     slug: org.slug,
@@ -85,6 +99,8 @@ export function brandingDto(org: OrganizationRow) {
     brandSecondaryColor: org.brandSecondaryColor,
     logoUrl: logoUrlFor(org.logoBlobKey, org.slug),
     voice: org.voice as ClubVoice,
+    style: styleDto(org),
+    motto: org.motto,
   };
 }
 
@@ -142,6 +158,8 @@ export function createOrgRoutes(config: ApiConfig, data: DataLayer) {
       brandSecondaryColor: org.brandSecondaryColor,
       logoUrl: logoUrlFor(org.logoBlobKey, org.slug),
       voice: org.voice as ClubVoice,
+      style: styleDto(org),
+      motto: org.motto,
       timezone: org.timezone,
       paymentsProvider: org.paymentsProvider as PaymentProvider,
       createdAt: org.createdAt.toISOString(),
@@ -628,7 +646,8 @@ export function createOrgRoutes(config: ApiConfig, data: DataLayer) {
       method: "patch",
       path: "/api/org",
       tags: ["Club"],
-      summary: "Cambia nombre, idioma o colores de marca del club. Permiso `org.settings.write`",
+      summary:
+        "Cambia nombre, idioma, zona horaria, voz, colores, identidad visual o lema del club. Permiso `org.settings.write`",
       security: [{ sessionCookie: [] }],
       middleware: [requirePermission("org.settings.write")],
       request: {
@@ -656,7 +675,14 @@ export function createOrgRoutes(config: ApiConfig, data: DataLayer) {
         organizationId: updated.id,
         action: "organization.updated",
         target: updated.slug,
-        details: { fields: Object.keys(patch) },
+        // La identidad visual se audita por opción: "style.typography", "style.nav"...
+        details: {
+          fields: Object.entries(patch).flatMap(([key, value]) =>
+            key === "style" && value && typeof value === "object"
+              ? Object.keys(value).map((option) => `style.${option}`)
+              : [key],
+          ),
+        },
       });
       return c.json({ organization: await fullView(updated, tenant.scope) }, 200);
     },

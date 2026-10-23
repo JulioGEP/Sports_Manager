@@ -4,6 +4,7 @@ import { ORGANIZATION_STATUSES } from "../organizations.ts";
 import { PAYMENT_PROVIDERS } from "../fees.ts";
 import { AccessAreaSchema, AccessScopeSummarySchema } from "../access.ts";
 import { PERMISSIONS, ROLE_CODES, RoleCodeSchema, StaffPositionSchema } from "../roles.ts";
+import { ClubStyleSchema } from "../club-style.ts";
 import { ClubVoiceSchema } from "../structure.ts";
 
 /** Quién hace la petición dentro de un club, tal como lo resolvió la API. */
@@ -57,6 +58,9 @@ export const OrganizationFullSchema = z.object({
   brandSecondaryColor: z.string(),
   logoUrl: z.string().nullable(),
   voice: ClubVoiceSchema,
+  /** Identidad visual (ADR 0043). */
+  style: ClubStyleSchema,
+  motto: z.string().nullable(),
   /** Zona horaria del club (Bloque 16): la agenda se pinta en ella. */
   timezone: z.string(),
   /** Cómo cobra el club (Bloque 18). */

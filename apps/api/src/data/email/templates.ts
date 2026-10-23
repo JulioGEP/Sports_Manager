@@ -1,4 +1,4 @@
-import type { EmailTemplate, Locale } from "@sportsmanager/shared";
+import type { ClubVoice, EmailTemplate, Locale } from "@sportsmanager/shared";
 import { t } from "@sportsmanager/shared/i18n";
 
 export interface RenderedEmail {
@@ -42,7 +42,7 @@ interface Pieces {
   ignore: string;
 }
 
-function pieces(locale: Locale, content: EmailContent): Pieces {
+function pieces(locale: Locale, content: EmailContent, voice: ClubVoice): Pieces {
   if (content.template === "invitation") {
     const params = {
       club: content.clubName,
@@ -50,10 +50,12 @@ function pieces(locale: Locale, content: EmailContent): Pieces {
       role: content.roleName,
       days: content.expiresDays,
     };
+    // La invitación habla con la voz del club (ADR 0043): es su primer contacto con la persona.
+    const voiced = voice === "cercana" ? null : (`email.invitationVoice.${voice}` as const);
     return {
-      subject: t(locale, "email.invitation.subject", params),
-      greeting: t(locale, "email.invitation.greeting", params),
-      body: t(locale, "email.invitation.body", params),
+      subject: t(locale, voiced ? `${voiced}.subject` : "email.invitation.subject", params),
+      greeting: t(locale, voiced ? `${voiced}.greeting` : "email.invitation.greeting", params),
+      body: t(locale, voiced ? `${voiced}.body` : "email.invitation.body", params),
       action: t(locale, "email.invitation.action", params),
       expires: t(locale, "email.invitation.expires", params),
       ignore: t(locale, "email.invitation.ignore", params),
@@ -77,13 +79,16 @@ function pieces(locale: Locale, content: EmailContent): Pieces {
 /**
  * Plantillas de email (ADR 0018): texto plano y HTML sencillo, con el nombre del club y un
  * botón. Sin imágenes ni logo hasta el Bloque 5. Todo valor externo se escapa en el HTML.
+ * La invitación lleva la voz y el lema del club (ADR 0043); restablecer la contraseña es un
+ * momento sensible y suena igual en todos los clubes.
  */
 export function renderEmail(
   locale: Locale,
   content: EmailContent,
-  options: { brandColor: string },
+  options: { brandColor: string; voice?: ClubVoice; motto?: string | null },
 ): RenderedEmail {
-  const p = pieces(locale, content);
+  const p = pieces(locale, content, options.voice ?? "cercana");
+  const motto = content.template === "invitation" ? (options.motto ?? null) : null;
   const fallback = t(locale, "email.fallbackLink");
   const signature = t(locale, "email.signature");
   const text = [
@@ -104,7 +109,7 @@ export function renderEmail(
 <html lang="${locale}">
 <body style="margin:0;padding:24px;background:#f4f7fb;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;color:#111827;line-height:1.55;">
   <div style="max-width:560px;margin:0 auto;background:#ffffff;border:1px solid #dbe3ec;border-radius:16px;overflow:hidden;">
-    <div style="padding:16px 24px;background:${color};color:#ffffff;font-weight:700;font-size:18px;">${escapeHtml(content.clubName)}</div>
+    <div style="padding:16px 24px;background:${color};color:#ffffff;font-weight:700;font-size:18px;">${escapeHtml(content.clubName)}${motto ? `<div style="font-weight:400;font-size:14px;opacity:0.9;">${escapeHtml(motto)}</div>` : ""}</div>
     <div style="padding:24px;">
       <p style="margin:0 0 16px;">${escapeHtml(p.greeting)}</p>
       <p style="margin:0 0 24px;">${escapeHtml(p.body)}</p>

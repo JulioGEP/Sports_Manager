@@ -6,6 +6,7 @@ Reglas que no se negocian:
 
 1. Solo clases del tema (`tailwind/theme.css`). Nada de hex sueltos ni colores por defecto de Tailwind.
 2. Los colores del club salen del motor (`src/theme/clubTheme.ts`). Nunca se eligen a mano.
+2b. La identidad del club (letra, botones, iconos, fondo, portada, navegación, esquinas; `DESIGN.md` 19) se sigue sola si usas las clases del tema. Nunca condiciones en un componente según la opción del club: lee variables. En la navegación, `bg-nav`, `text-nav-ink`, `text-nav-muted`, `bg-nav-active`.
 3. Zona táctil mínima: 48 px en móvil (`data-shape="envolvente"`), 44 px en gestión (`data-shape="precisa"`).
 4. Todo estado lleva texto. El color nunca va solo.
 5. Botones con verbo. Nunca "Aceptar" ni "Enviar" a secas.
@@ -14,7 +15,7 @@ Reglas que no se negocian:
 5d. Toda pantalla con ficha propia entra en la paleta de mandos (`DESIGN.md` 9.17). El enlace de volver va dentro de `PageHeader` (`backTo`), no como botón suelto.
 5e. Arrastrar y soltar (`apps/web/src/lib/drag.ts`) es un atajo de algo que ya se hace tocando, nunca la única vía: el teclado y el lector de pantalla siguen la de los toques.
 6. Acciones delicadas (bajas, borrar, cobros, cuotas, comunicados a todas las familias): siempre `ConfirmDialog`. Marcar asistencia: nunca.
-7. Textos visibles siempre desde `src/i18n/`. Respeta la voz del club y el bloqueo de momentos sensibles.
+7. Textos visibles siempre desde `src/i18n/`. Respeta la voz del club y el bloqueo de momentos sensibles. En la web, un texto de relación nuevo (saludo, vacío, aviso tras guardar) gana su versión `profesional` y `vestuario` en `apps/web/src/messages/voices/`; uno sensible, nunca.
 8. Sin emojis. Sin marca del producto dentro de la app de un club.
 9. Chat: nunca entre adultos del club y jugadores menores. Las familias solo ven datos de sus hijos.
 10. Si algo no está definido en `DESIGN.md`, para y pregunta.

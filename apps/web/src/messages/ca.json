@@ -423,12 +423,11 @@
   },
   "settings": {
     "title": "Configuració del club",
-    "description": "Nom, idioma, marca i logo; temporades, tipus de soci i cobraments. El que canviïs aquí ho veu tot el club.",
+    "description": "Nom, idioma i zona horària; la identitat del club (escut, colors, lletra, veu); temporades, tipus de soci i cobraments. El que canviïs aquí ho veu tot el club.",
     "forbidden": "No pots editar la configuració d'aquest club.",
     "tabs": {
       "general": "General",
-      "brand": "Marca",
-      "logo": "Logo",
+      "identity": "Identitat",
       "seasons": "Temporades",
       "memberTypes": "Tipus de soci",
       "payments": "Cobraments",
@@ -442,27 +441,242 @@
       "defaultLocale": "Idioma per defecte",
       "defaultLocaleHint": "Idioma dels correus i de la interfície per a qui no n'hagi triat cap altre.",
       "saved": "Canvis desats.",
-      "voice": "Veu del club",
-      "voiceHint": "Com parla el club a la seva gent en els avisos i missatges del dia a dia. Diners, baixes i dades personals fan servir sempre un to professional.",
       "timezone": "Zona horària",
       "timezoneHint": "L'agenda es pinta en aquesta zona, sigui quina sigui la del dispositiu."
     },
-    "brand": {
-      "title": "Colors de marca",
-      "description": "Tenyeixen botons, enllaços i la capçalera del club.",
-      "primary": "Color principal",
-      "primaryHint": "Botons i elements destacats.",
-      "secondary": "Color secundari",
-      "secondaryHint": "Accents i detalls.",
-      "preview": "Vista prèvia",
-      "previewHint": "Així es veurà la capçalera amb els colors triats.",
-      "previewNav": "Inici",
-      "previewButton": "Convidar",
-      "saved": "Colors desats."
+    "identity": {
+      "intro": {
+        "title": "La plataforma del teu club, diferent de la de qualsevol altre",
+        "body": "Escut, colors, lletra, botons, icones, fons, portada, navegació, cantonades, lema i veu. El que tries es veu a l'instant a tota la plataforma, només per a tu, fins que ho desis."
+      },
+      "colors": {
+        "title": "Colors",
+        "description": "El principal tenyeix botons, enllaços i la portada; el secundari, la franja i l'anella de l'escut.",
+        "primary": "Color principal",
+        "primaryHint": "Botons i elements destacats.",
+        "secondary": "Color secundari",
+        "secondaryHint": "Franja de la portada, anella de l'escut, ratlles i banda."
+      },
+      "palettes": {
+        "title": "Paletes",
+        "hint": "Un punt de partida. Després ajusta cada color al teu gust.",
+        "names": {
+          "redGold": "Vermell i or",
+          "greenGold": "Verd i or",
+          "navyRed": "Marí i vermell",
+          "maroonWhite": "Grana i blanc",
+          "skyWhite": "Cel i blanc",
+          "blackGold": "Negre i or",
+          "orangeBlack": "Taronja i negre",
+          "purpleYellow": "Morat i groc",
+          "whiteBlue": "Blanc i blau",
+          "yellowBlack": "Groc i negre",
+          "greenWhite": "Verd i blanc",
+          "blueWhite": "Blau i blanc"
+        }
+      },
+      "typography": {
+        "title": "Tipografia",
+        "description": "La lletra de títols i textos. Les xifres continuen amb la seva lletra de números, alineades.",
+        "sample": "Entreno a les 18:30",
+        "options": {
+          "moderna": {
+            "name": "Moderna",
+            "hint": "Neta i precisa. La de sempre."
+          },
+          "clasica": {
+            "name": "Clàssica",
+            "hint": "Títols amb serifa. Per a clubs amb història."
+          },
+          "deportiva": {
+            "name": "Esportiva",
+            "hint": "Títols estrets i rotunds, com un marcador."
+          },
+          "amable": {
+            "name": "Amable",
+            "hint": "Arrodonida i propera. Per a escoles i esport de base."
+          },
+          "geometrica": {
+            "name": "Geomètrica",
+            "hint": "Formes pures i títols amb pes."
+          }
+        }
+      },
+      "buttons": {
+        "title": "Botons",
+        "description": "Forma i pes de botons i controls. L'alçada no canvia: es continuen tocant bé.",
+        "sample": "Desar",
+        "options": {
+          "sistema": {
+            "name": "Del sistema",
+            "hint": "Píndola al mòbil, cantonades suaus a l'ordinador."
+          },
+          "pildora": {
+            "name": "Píndola",
+            "hint": "Rodons a tot arreu i amb més pes."
+          },
+          "suave": {
+            "name": "Suau",
+            "hint": "Cantonades amables, ni rodó ni recte."
+          },
+          "recta": {
+            "name": "Recta",
+            "hint": "Cantonades vives i verb en negreta."
+          },
+          "relieve": {
+            "name": "Relleu",
+            "hint": "Amb ombra a sota, com una tecla."
+          }
+        }
+      },
+      "icons": {
+        "title": "Icones",
+        "description": "El traç de totes les icones de la plataforma, també les d'esport.",
+        "options": {
+          "duotono": {
+            "name": "Duotó",
+            "hint": "Traç i farciment suau amb el color del club."
+          },
+          "linea": {
+            "name": "Línia",
+            "hint": "Només traç, net."
+          },
+          "fina": {
+            "name": "Fina",
+            "hint": "Traç fi i lleuger."
+          },
+          "gruesa": {
+            "name": "Gruixuda",
+            "hint": "Traç gruixut, es veu de lluny."
+          },
+          "relleno": {
+            "name": "Farcida",
+            "hint": "Massisses, amb molta presència."
+          }
+        }
+      },
+      "background": {
+        "title": "Fons",
+        "description": "El fons de les pantalles, darrere de les targetes. El text manté el contrast en tots.",
+        "options": {
+          "liso": {
+            "name": "Llis",
+            "hint": "Gris amb un toc del color del club."
+          },
+          "neutro": {
+            "name": "Neutre",
+            "hint": "Grisos purs, sense tint."
+          },
+          "tenido": {
+            "name": "Tenyit",
+            "hint": "El color del club es nota a tot el fons."
+          },
+          "degradado": {
+            "name": "Degradat",
+            "hint": "Un vel del color del club a dalt."
+          },
+          "trama": {
+            "name": "Trama",
+            "hint": "Punts fins en el color del club."
+          }
+        }
+      },
+      "hero": {
+        "title": "Portada",
+        "description": "La capçalera de l'inici, on mana el club.",
+        "noLogo": "Puja l'escut per veure'l de fons a la portada. Mentrestant, es veu llisa.",
+        "options": {
+          "liso": {
+            "name": "Llisa",
+            "hint": "El color principal, sense més."
+          },
+          "degradado": {
+            "name": "Degradat",
+            "hint": "Un vel que dona profunditat."
+          },
+          "rayas": {
+            "name": "Ratlles",
+            "hint": "Ratlles del secundari, com la samarreta."
+          },
+          "banda": {
+            "name": "Banda",
+            "hint": "Una banda diagonal del secundari."
+          },
+          "escudo": {
+            "name": "Escut",
+            "hint": "L'escut en gran, de fons."
+          }
+        }
+      },
+      "nav": {
+        "title": "Navegació",
+        "description": "La barra lateral a l'ordinador i les barres de dalt i de baix al mòbil.",
+        "options": {
+          "claro": {
+            "name": "Clara",
+            "hint": "Blanca; el color del club, en allò actiu."
+          },
+          "club": {
+            "name": "Del club",
+            "hint": "En el color principal del club."
+          },
+          "oscuro": {
+            "name": "Fosca",
+            "hint": "Gairebé negra, amb un tint del club."
+          }
+        }
+      },
+      "corners": {
+        "title": "Cantonades",
+        "description": "Targetes, camps, panells i la portada.",
+        "options": {
+          "sistema": {
+            "name": "Del sistema",
+            "hint": "Arrodonides al mòbil, precises a l'ordinador."
+          },
+          "redondeadas": {
+            "name": "Arrodonides",
+            "hint": "Més suaus a tot arreu."
+          },
+          "rectas": {
+            "name": "Rectes",
+            "hint": "Cantonades vives, aire tècnic."
+          }
+        }
+      },
+      "motto": {
+        "title": "Lema",
+        "description": "Una frase curta sota el nom del club, a la portada i a les invitacions.",
+        "label": "Lema del club",
+        "hint": "Opcional. {count} de {max} caràcters.",
+        "example": "Junts des de 1952"
+      },
+      "voice": {
+        "title": "Veu del club",
+        "description": "Com parla el club a la seva gent a tota la plataforma: salutacions, avisos, pantalles buides, partits, reptes i agenda. Diners, salut, errors, accessos i baixes sonen sempre igual: clars i professionals.",
+        "sample": "Així sona"
+      },
+      "preview": {
+        "title": "Previsualització",
+        "hint": "La portada i una targeta, amb el que estàs triant.",
+        "heroLabel": "Previsualització de la portada",
+        "cardTitle": "Aleví A",
+        "chip": "Convocatòria",
+        "primary": "Passar llista",
+        "secondary": "Veure plantilla"
+      },
+      "bar": {
+        "label": "Canvis sense desar",
+        "dirty": "Estàs veient la plataforma amb els teus canvis. Ningú més no els veu fins que desis.",
+        "save": "Desar identitat",
+        "discard": "Descartar",
+        "saved": "Identitat desada. Ja la veu tot el club.",
+        "discarded": "Canvis descartats."
+      }
     },
     "logo": {
-      "title": "Pujar el logo",
-      "hint": "PNG, JPEG o WebP de fins a {mb} MB. Es mostra a la capçalera, al login i al selector de clubs.",
+      "title": "Escut",
+      "hint": "PNG, JPEG o WebP de fins a {mb} MB. Surt a la navegació, a la portada, a l'inici de sessió, a la pestanya del navegador i al selector de clubs.",
       "drop": "Arrossega el logo aquí",
       "choose": "o fes clic per triar un fitxer",
       "uploading": "Pujant…",
@@ -572,8 +786,8 @@
       "done": "Fet",
       "logo": "Puja el logo del club",
       "logoAction": "Pujar logo",
-      "colors": "Tria els colors de marca",
-      "colorsAction": "Triar colors",
+      "colors": "Tria els colors i la identitat del club",
+      "colorsAction": "Triar identitat",
       "season": "Crea la temporada actual",
       "seasonAction": "Crear temporada",
       "section": "Crea la primera secció",

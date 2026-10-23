@@ -22,6 +22,22 @@ export default {
       expires: "El enlace caduca en {days} días.",
       ignore: "Si no esperabas esta invitación, puedes ignorar este mensaje.",
     },
+    /**
+     * La invitación con la voz del club (ADR 0043). `cercana` es la de arriba. Lo demás del email
+     * (caducidad, enlace, aviso) no cambia: es información, no relación.
+     */
+    invitationVoice: {
+      profesional: {
+        subject: "Invitación a {club}",
+        greeting: "Hola:",
+        body: "{inviter} te ha dado acceso a {club} con el rol de {role}.",
+      },
+      vestuario: {
+        subject: "{club} te quiere en el equipo",
+        greeting: "¡Hola!",
+        body: "{inviter} te ha fichado para {club} como {role}. ¡Te esperamos en el vestuario!",
+      },
+    },
     passwordReset: {
       subject: "Restablece tu contraseña",
       greeting: "Hola, {name}.",

@@ -110,7 +110,9 @@ test.describe("espacio del club", () => {
     await page.keyboard.press("Escape");
   });
 
-  test("ajustes: general, marca y logo", async ({ page }, info) => {
+  test("ajustes: general e identidad del club (escudo, colores, estilo, lema y voz)", async ({
+    page,
+  }, info) => {
     // En móvil la barra inferior lleva cuatro destinos y "Más": los ajustes viven en esa hoja.
     // La navegación se pinta cuando llega la sesión: se espera a un destino presente en ambas barras.
     await expect(page.getByRole("link", { name: "Secciones", exact: true }).first()).toBeVisible();
@@ -124,31 +126,58 @@ test.describe("espacio del club", () => {
     }
     await expect(page.getByRole("heading", { name: "Ajustes del club" })).toBeVisible();
     await expect(page.getByLabel("Nombre del club")).toHaveValue("Club de demostración");
+    // La voz ya no vive en General: está con el resto de la identidad.
+    await expect(page.getByLabel("Voz del club")).toHaveCount(0);
     await shot(page, "20-ajustes-general", info.project.name);
     await expectLegibleButtons(page);
 
-    await page.getByRole("tab", { name: "Marca" }).click();
-    await expect(page.getByRole("heading", { name: "Colores de marca" })).toBeVisible();
-    await shot(page, "21-ajustes-marca", info.project.name);
-    await expectLegibleButtons(page);
-    await page.getByLabel("Color principal").fill("#0f766e");
-    await page.getByRole("button", { name: "Guardar" }).click();
-    await expect(page.getByText("Colores guardados.")).toBeVisible();
-    await expect
-      .poll(async () =>
-        page.evaluate(() =>
-          getComputedStyle(document.documentElement)
-            .getPropertyValue("--club-fill")
-            .trim()
-            .toLowerCase(),
-        ),
-      )
-      .toBe("#0f766e");
-    await shot(page, "22-ajustes-marca-guardada", info.project.name);
+    const root = (attribute: string) =>
+      page.evaluate((a) => document.documentElement.getAttribute(a), attribute);
+    const clubFill = () =>
+      page.evaluate(() =>
+        getComputedStyle(document.documentElement)
+          .getPropertyValue("--club-fill")
+          .trim()
+          .toLowerCase(),
+      );
+    const pick = (group: string, option: string) =>
+      page
+        .getByRole("radiogroup", { name: group })
+        .getByRole("radio", { name: option, exact: true })
+        .check();
 
-    await page.getByRole("tab", { name: "Logo" }).click();
-    await expect(page.getByRole("heading", { name: "Subir logo" })).toBeVisible();
-    await shot(page, "23-ajustes-logo", info.project.name);
+    await page.getByRole("tab", { name: "Identidad" }).click();
+    await expect(page.getByRole("heading", { name: "Colores" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Tipografía" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Voz del club" })).toBeVisible();
+    await shot(page, "21-ajustes-identidad", info.project.name);
+    await expectLegibleButtons(page);
+
+    // Vista previa en directo: lo que se elige pinta toda la app antes de guardar.
+    await page.getByLabel("Color principal").fill("#0f766e");
+    await expect.poll(clubFill).toBe("#0f766e");
+    await pick("Tipografía", "Deportiva");
+    await pick("Navegación", "Del club");
+    await pick("Portada", "Rayas");
+    await pick("Voz del club", "Vestuario");
+    await page.getByLabel("Lema del club").fill("Juntos desde 1952");
+    await expect.poll(() => root("data-type")).toBe("deportiva");
+    await expect.poll(() => root("data-nav")).toBe("club");
+    await expect(page.getByRole("region", { name: "Cambios sin guardar" })).toBeVisible();
+    await shot(page, "22-ajustes-identidad-vista-previa", info.project.name);
+    await page.getByRole("button", { name: "Guardar identidad" }).click();
+    await expect(page.getByText("Identidad guardada. Ya la ve todo el club.")).toBeVisible();
+    await expect(page.getByRole("region", { name: "Cambios sin guardar" })).toBeHidden();
+
+    // Guardada, el inicio habla con la voz del club y lleva su lema.
+    await page.goto(`${CLUB}`);
+    await expect(page.getByText("Juntos desde 1952")).toBeVisible();
+    await expect(page.getByText(/¡Vamos, |Siguiente cita:/).first()).toBeVisible();
+    expect(await root("data-hero")).toBe("rayas");
+    await shot(page, "23-inicio-identidad-propia", info.project.name);
+    await page.goto(`${CLUB}/settings?tab=identity`);
+
+    await expect(page.getByRole("heading", { name: "Escudo" })).toBeVisible();
     await page.locator("input[type=file]").setInputFiles({
       name: "logo.png",
       mimeType: "image/png",
@@ -162,20 +191,18 @@ test.describe("espacio del club", () => {
     await expect(page.getByText("Logo quitado.")).toBeVisible();
     await expect(page.getByText("Todavía no hay logo.")).toBeVisible();
 
-    // Deja el club demo con su marca de origen para el resto de pruebas y capturas.
-    await page.getByRole("tab", { name: "Marca" }).click();
-    await page.getByLabel("Color principal").fill("#D71920");
-    await page.getByRole("button", { name: "Guardar" }).click();
+    // Deja el club demo con su identidad de origen para el resto de pruebas y capturas.
+    await page.getByRole("button", { name: "Rojo y oro" }).click();
+    await pick("Tipografía", "Moderna");
+    await pick("Navegación", "Clara");
+    await pick("Portada", "Lisa");
+    await pick("Voz del club", "Cercana");
+    await page.getByLabel("Lema del club").fill("");
+    await page.getByRole("button", { name: "Guardar identidad" }).click();
+    await expect(page.getByText("Identidad guardada. Ya la ve todo el club.")).toBeVisible();
     await expect(page).toHaveURL(new RegExp(`${CLUB}/settings`));
-    await expect
-      .poll(async () =>
-        page.evaluate(() =>
-          getComputedStyle(document.documentElement)
-            .getPropertyValue("--club-fill")
-            .trim()
-            .toLowerCase(),
-        ),
-      )
-      .toBe("#d71920");
+    await expect.poll(clubFill).toBe("#d71920");
+    expect(await root("data-type")).toBe("moderna");
+    expect(await root("data-nav")).toBe("claro");
   });
 });

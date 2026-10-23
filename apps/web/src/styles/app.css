@@ -1,6 +1,16 @@
 /* Fuentes del design system, autoalojadas (sin Google Fonts). */
 @import "@fontsource-variable/geist";
 @import "@fontsource-variable/geist-mono";
+/*
+ * Tipografías que puede elegir cada club (ADR 0043). Solo declaran @font-face: el navegador
+ * descarga una fuente cuando la pantalla la usa, así que un club con Geist no baja ninguna otra.
+ */
+@import "@fontsource-variable/fraunces";
+@import "@fontsource-variable/source-sans-3";
+@import "@fontsource-variable/oswald";
+@import "@fontsource-variable/archivo";
+@import "@fontsource-variable/nunito";
+@import "@fontsource-variable/montserrat";
 
 /* Tema de Tailwind v4 del design system: tokens, club, formas y modo oscuro. */
 @import "@sportsmanager/design/tailwind/theme.css";
@@ -19,9 +29,10 @@
 @custom-variant compact (@media (orientation: landscape) and (max-height: 520px));
 
 @theme {
-  /* Las fuentes variables de @fontsource se registran como "Geist Variable". */
-  --font-sans:
-    "Geist Variable", "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  /*
+   * Las fuentes variables de @fontsource se registran como "Geist Variable". La de texto y la de
+   * títulos las pone la tipografía del club (--type-body, --type-display, en el design system).
+   */
   --font-mono: "Geist Mono Variable", "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
 }
 
@@ -32,7 +43,8 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
-  background: var(--surface-page);
+  /* Fondo del club (ADR 0043): liso, degradado o trama sobre el color de la página. */
+  background: var(--page-background, var(--surface-page));
   color: var(--text);
   font-size: 1rem;
   line-height: 1.5rem;

@@ -3,6 +3,7 @@ export * from "./tenancy.ts";
 export * from "./roles.ts";
 export * from "./access.ts";
 export * from "./organizations.ts";
+export * from "./club-style.ts";
 export * from "./branding.ts";
 export * from "./audit.ts";
 export * from "./users.ts";

@@ -61,14 +61,18 @@ export function buttonTitle(children: ReactNode): string | undefined {
 
 // La altura es fija, así que el texto no puede partirse en dos líneas: si falta sitio, el contenedor
 // (pie de panel, barra de acciones) es quien tiene que pasar el botón a otra fila.
+// Radio, peso y espaciado los pone el estilo de botones del club (ADR 0043): --r-control,
+// --btn-weight y --btn-tracking. Por defecto, los de siempre (500 y sin espaciado).
 const base =
-  "inline-flex items-center justify-center gap-2 rounded-control font-medium whitespace-nowrap " +
-  "transition-colors duration-150 " +
+  "inline-flex items-center justify-center gap-2 rounded-control " +
+  "[letter-spacing:var(--btn-tracking,normal)] whitespace-nowrap transition-colors duration-150 " +
   "disabled:cursor-not-allowed disabled:border-transparent disabled:bg-raised disabled:text-muted";
 
 const variants: Record<ButtonVariant, string> = {
-  primary: "border border-club-edge bg-club text-on-club",
-  secondary: "border border-control bg-surface text-ink",
+  primary:
+    "border border-club-edge bg-club text-on-club [box-shadow:var(--btn-primary-shadow,none)]",
+  secondary:
+    "border border-control bg-surface text-ink [box-shadow:var(--btn-secondary-shadow,none)]",
   tertiary: "bg-transparent text-club-text",
   danger: "border border-danger-border bg-surface text-danger",
   "danger-solid": "bg-danger-solid text-white",
@@ -91,10 +95,10 @@ export function buttonClassName({
       ? "px-4"
       : "px-5";
   const measure = cta
-    ? "h-13 w-full text-body font-semibold envolvente:shadow-float"
+    ? "h-13 w-full text-body [font-weight:max(600,var(--btn-weight,500))] envolvente:shadow-float"
     : size === "sm"
-      ? "h-10 text-secondary"
-      : "h-(--h-control) text-body";
+      ? "h-10 text-secondary [font-weight:var(--btn-weight,500)]"
+      : "h-(--h-control) text-body [font-weight:var(--btn-weight,500)]";
   return `${base} ${variants[variant]} ${padding} ${measure}`;
 }
 

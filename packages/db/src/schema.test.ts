@@ -352,6 +352,23 @@ describe("esquema del Bloque 2 (Postgres embebido con todas las migraciones)", (
     expect(
       await errorCode(client, "update organizations set voice = 'gritona' where id = $1", [orgId]),
     ).toBe(CHECK_VIOLATION);
+    // Identidad visual (ADR 0043): solo opciones del catálogo y un lema corto y no vacío.
+    expect(
+      await errorCode(client, "update organizations set style_typography = 'comic' where id = $1", [
+        orgId,
+      ]),
+    ).toBe(CHECK_VIOLATION);
+    expect(
+      await errorCode(client, "update organizations set style_nav = 'neon' where id = $1", [orgId]),
+    ).toBe(CHECK_VIOLATION);
+    expect(
+      await errorCode(client, "update organizations set motto = '' where id = $1", [orgId]),
+    ).toBe(CHECK_VIOLATION);
+    expect(
+      await errorCode(client, "update organizations set motto = repeat('x', 81) where id = $1", [
+        orgId,
+      ]),
+    ).toBe(CHECK_VIOLATION);
   });
 
   it("ficha ampliada del jugador (ADR 0029): pie y altura válidos, un objetivo y un PDI por jugador, indicadores por dimensión y registros con tipo conocido", async () => {
