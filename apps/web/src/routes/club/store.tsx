@@ -346,7 +346,10 @@ function OrdersTab({ canWrite }: { canWrite: boolean }) {
             header: t("table.code"),
             cell: (o) => (
               <span className="flex flex-col">
-                <Link to={paths.storeOrder(o.id)} className="font-mono font-medium text-ink">
+                <Link
+                  to={paths.storeOrder(o.id)}
+                  className="whitespace-nowrap font-mono font-medium text-ink"
+                >
                   {o.code}
                 </Link>
                 <span className="text-label text-muted">{day(o.createdAt.slice(0, 10))}</span>
@@ -1280,19 +1283,19 @@ function CounterOrderSheet({
             )
           }
         </Field>
-        <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,10rem)_5rem_auto] sm:items-end">
-          <Field label={t("product")}>
-            {(id) => (
-              <Select id={id} value={productId} onChange={(e) => chooseProduct(e.target.value)}>
-                <option value="">{t("chooseProduct")}</option>
-                {sellable.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name} · {money(p.priceCents)}
-                  </option>
-                ))}
-              </Select>
-            )}
-          </Field>
+        <Field label={t("product")}>
+          {(id) => (
+            <Select id={id} value={productId} onChange={(e) => chooseProduct(e.target.value)}>
+              <option value="">{t("chooseProduct")}</option>
+              {sellable.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name} · {money(p.priceCents)}
+                </option>
+              ))}
+            </Select>
+          )}
+        </Field>
+        <div className="grid grid-cols-[minmax(0,1fr)_5rem_auto] items-end gap-3">
           <Field label={t("option")}>
             {(id) => (
               <Select
