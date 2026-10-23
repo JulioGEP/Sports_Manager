@@ -1712,12 +1712,21 @@ function LineupSheet({
         list.map((p) => (p.playerId === id ? { ...p, slot: p.slot === null ? 99 : null } : p)),
       ),
     );
+  /** En pista solo hay un portero: marcar a quien sale de inicio desmarca a los demás titulares. */
   const toggleKeeper = (id: string) =>
-    setDraft((list) =>
-      assignSlots(
-        list.map((p) => (p.playerId === id ? { ...p, isGoalkeeper: !p.isGoalkeeper } : p)),
-      ),
-    );
+    setDraft((list) => {
+      const target = list.find((p) => p.playerId === id);
+      const single = target !== undefined && !target.isGoalkeeper && target.slot !== null;
+      return assignSlots(
+        list.map((p) =>
+          p.playerId === id
+            ? { ...p, isGoalkeeper: !p.isGoalkeeper }
+            : single && p.slot !== null && p.isGoalkeeper
+              ? { ...p, isGoalkeeper: false }
+              : p,
+        ),
+      );
+    });
   const remove = (id: string) => {
     const p = draft.find((x) => x.playerId === id);
     setDraft((list) => assignSlots(list.filter((x) => x.playerId !== id)));
@@ -1762,8 +1771,10 @@ function LineupSheet({
       }
     >
       <div className="flex flex-col gap-3">
-        {settings.goalkeeper && full && keepers !== 1 ? (
-          <Alert kind="warning">{t("keeperNeeded")}</Alert>
+        {settings.goalkeeper && keepers > 1 ? (
+          <Alert kind="warning">{t("keeperTooMany", { count: keepers })}</Alert>
+        ) : settings.goalkeeper && full && keepers === 0 ? (
+          <Alert kind="warning">{t("keeperMissing")}</Alert>
         ) : null}
         <ul className="flex flex-col divide-y divide-line">
           {draft.map((p) => (
@@ -1788,14 +1799,21 @@ function LineupSheet({
                 </span>
               </button>
               {settings.goalkeeper ? (
-                <Button
-                  variant={p.isGoalkeeper ? "primary" : "secondary"}
-                  size="sm"
-                  onClick={() => toggleKeeper(p.playerId)}
+                // Botón de alternar (DESIGN.md 9.6): en tinta, como el dorsal del portero, y con la
+                // marca de check; el color del club queda para la acción de guardar.
+                <button
+                  type="button"
                   aria-pressed={p.isGoalkeeper}
+                  onClick={() => toggleKeeper(p.playerId)}
+                  className={`inline-flex h-10 shrink-0 items-center gap-1.5 rounded-control border px-3 text-secondary font-medium whitespace-nowrap transition-colors ${
+                    p.isGoalkeeper
+                      ? "border-ink bg-ink text-white"
+                      : "border-control bg-surface text-ink"
+                  }`}
                 >
+                  {p.isGoalkeeper ? <Icon.Check size={16} aria-hidden="true" /> : null}
                   {t("keeper")}
-                </Button>
+                </button>
               ) : null}
               <Button
                 action="delete"

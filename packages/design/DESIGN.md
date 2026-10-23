@@ -433,6 +433,7 @@ La única pantalla a pantalla completa del producto: en la banda el partido est�
 - **Arrastrar y soltar como atajo, nunca como única vía.** Del banquillo a un hueco (entra), del banquillo sobre alguien de la pista (cambio), de la pista a la pista (posiciones). Todo se puede hacer también en dos toques, que es la vía del teclado y del lector de pantalla. Eventos de puntero (`apps/web/src/lib/drag.ts`), un fantasma que sigue al dedo y el destino resaltado con un aro blanco.
 - **La orientación decide la forma.** Apaisado (escritorio, tableta o móvil girado): rejilla de dos columnas sin desplazamiento de página, pista y banquillo lado a lado. Vertical: una sola columna que se desplaza, el banquillo bajo la pista y, en un móvil, un aviso de una línea para girarlo con el botón de pantalla completa. Con poca altura (`compact`: apaisado y menos de 520 px) franja, piezas y botones se encogen.
 - **Piezas.** Dorsal en círculo `bg-club` (tinta con aro blanco para el portero), nombre de pila y minutos en Geist Mono. Seleccionada: `bg-surface` con aro del club. En la pista, sobre `bg-black/35`; en el banquillo, sobre `bg-page` con borde.
+- **Convocatoria.** Tocar la fila decide quién sale de inicio; "Portero" es un botón de alternar (9.6), en tinta y con check cuando está marcado, nunca en el color del club, que es el de "Guardar convocatoria". Puede haber varios porteros convocados, pero en pista solo uno: marcar a un titular desmarca a los demás titulares, y el aviso dice cuántos hay cuando sobran.
 
 ---
 
