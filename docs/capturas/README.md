@@ -1,4 +1,4 @@
-# Capturas de la interfaz (Bloques 14 a 26, pizarra animada y tienda)
+# Capturas de la interfaz (Bloques 14 a 26, pizarra animada, tienda, pasarela y contabilidad)
 
 Capturas que generan las pruebas de interfaz (`pnpm test:ui`) contra la API real con base embebida, con el front de Vite + React + Tailwind sobre el design system del producto (`packages/design`, ADR 0027). Escritorio a 1280x800; móvil, Pixel 7. La fuente viva es el artefacto `capturas-interfaz` de CI; esta carpeta es la foto de la revisión del club completo (ADR 0031), con el design system 1.3: todo botón lleva el icono de su acción (rueda dentada para editar, cubo de basura rojo para eliminar, más para añadir); la fila es el objeto (se abre tocándola, con acciones como iconos silenciosos sin borde); la paleta de mandos ⌘K encuentra personas, equipos, pantallas y acciones; y la plantilla de un equipo se ve como un tablero por posición: secciones por deporte, socios, agenda e instalaciones, cuotas y "ver como", sobre lo que ya había de los bloques 11 a 13 (ADR 0028, 0029 y 0030), más el alcance por cargo y la gestión de acceso por rol del Bloque 19 (ADR 0033): el cuerpo técnico, la dirección y la fisio ven solo su parte del club, y "Personal" gana la pestaña "Acceso", y el partido en directo del Bloque 20 (ADR 0034): configuración del motor por sección, consola en la banda a pantalla completa y en tres zonas con el banquillo arrastrable (ADR 0037), estadísticas e histórico, y el entrenamiento de los bloques 21 a 26 (ADR 0039): semana del equipo con "A tener en cuenta", sesión por bloques con su cierre y modo pista, biblioteca con pizarra, carga, enfermería, salud y "Mi bienestar".
 
@@ -172,7 +172,7 @@ Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negoci
 
 ## Cuotas y cobros (`/demo/fees`, Bloque 18)
 
-### Cargos del club: pendientes, vencidos y cobrados, con filtros
+### Cargos del club: pendientes, vencidos y cobrados, con filtros, y el aviso de que el club cobra a mano
 
 ![Cargos](escritorio-98-cuotas-cargos.png)
 
@@ -187,6 +187,18 @@ Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negoci
 ### Ajustes: cómo cobra el club, con Stripe preparado y sin claves
 
 ![Ajustes de cobro](escritorio-99-ajustes-cobros.png)
+
+### Pasarela y contabilidad (ADR 0042): por qué conectar Stripe, en qué paso está el club, y Holded
+
+![Pasarela y contabilidad](escritorio-123-cuotas-pasarela-y-contabilidad.png)
+
+### Ajustes, Cobros: la cuenta de Stripe del club, que se da de alta desde aquí
+
+![Cuenta de Stripe del club](escritorio-124-ajustes-cuenta-de-stripe.png)
+
+### Ajustes, Contabilidad: conectar Holded con su clave de API
+
+![Conectar Holded](escritorio-125-ajustes-conectar-holded.png)
 
 ## Personal y ajustes
 
@@ -615,6 +627,10 @@ Las mismas pantallas en un móvil, con la forma envolvente del design system: ca
 ### Cargos
 
 ![Cargos (móvil)](movil-98-cuotas-cargos.png)
+
+### Pasarela y contabilidad
+
+![Pasarela y contabilidad (móvil)](movil-123-cuotas-pasarela-y-contabilidad.png)
 
 ### Personal del club
 

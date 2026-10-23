@@ -24,6 +24,7 @@ import {
   type StorePaymentStatus,
   type StoreProduct,
 } from "@sportsmanager/shared";
+import type { Context } from "hono";
 import type { ApiConfig } from "../config.ts";
 import {
   isLogoContentType,
@@ -36,6 +37,7 @@ import {
   type StoreProductRecord,
 } from "../data/index.ts";
 import { requireActor, requirePermission } from "../http/actor.ts";
+import { afterResponse } from "../http/background.ts";
 import type { AppEnv } from "../http/context.ts";
 import {
   badRequest,
@@ -47,6 +49,7 @@ import {
 } from "../http/errors.ts";
 import { requireSession } from "../http/session.ts";
 import { requireOrganizationHost, resolveTenant } from "../http/tenant.ts";
+import type { AccountingService } from "../services/accounting/index.ts";
 import { absoluteApiUrl } from "../tenancy.ts";
 
 const error = (description: string) => ({
@@ -92,14 +95,28 @@ export function productDto(product: StoreProductRecord): StoreProduct {
 /** Hay stock: sin límite o con alguna unidad. */
 export const inStock = (stock: number | null) => stock === null || stock > 0;
 
+export interface StoreRoutesOptions {
+  /** Contabilidad (ADR 0042): el cargo del pedido sale hacia la herramienta del club al moverse. */
+  accounting?: AccountingService;
+}
+
 /**
  * Tienda del club (ADR 0041). La gestión (productos, stock y pedidos) pide `org.store.read` o
  * `org.store.write`; la clave del catálogo público, los ajustes del club. Comprar no pide permiso:
  * lo puede hacer la familia de un menor (para él) o el deportista adulto con su cuenta (para sí),
  * y la API lo comprueba en cada pedido. El cobro es un cargo de cuotas: se paga como una cuota.
  */
-export function createStoreRoutes(config: ApiConfig, data: DataLayer) {
+export function createStoreRoutes(
+  config: ApiConfig,
+  data: DataLayer,
+  options: StoreRoutesOptions = {},
+) {
   const app = new OpenAPIHono<AppEnv>();
+  /** El cargo del pedido, a la contabilidad del club, sin hacer esperar a nadie. */
+  const toAccounting = (c: Context<AppEnv>, tenant: Tenant, chargeId: string | undefined) =>
+    options.accounting && chargeId
+      ? afterResponse(c, () => options.accounting!.syncChargeQuietly(tenant.scope, chargeId))
+      : Promise.resolve();
   const chain = [
     resolveTenant(config, data),
     requireOrganizationHost,
@@ -463,6 +480,7 @@ export function createStoreRoutes(config: ApiConfig, data: DataLayer) {
         totalCents: result.order.totalCents,
         channel: "counter",
       });
+      await toAccounting(c, tenant, result.order.charge?.id);
       return c.json({ order: orderDto(result.order, tenant.organization) }, 201);
     },
   );
@@ -511,6 +529,7 @@ export function createStoreRoutes(config: ApiConfig, data: DataLayer) {
         storeOrderCode(result.order.number),
         { status, refundCents: result.refundCents },
       );
+      if (status === "cancelled") await toAccounting(c, tenant, result.order.charge?.id);
       return c.json(
         { order: orderDto(result.order, tenant.organization), refundCents: result.refundCents },
         200,
@@ -560,6 +579,7 @@ export function createStoreRoutes(config: ApiConfig, data: DataLayer) {
         method: body.method,
         order: storeOrderCode(order.number),
       });
+      await toAccounting(c, tenant, order.charge.id);
       return c.json({ order: orderDto(await orderOr404(tenant, id), tenant.organization) }, 200);
     },
   );
@@ -690,6 +710,7 @@ export function createStoreRoutes(config: ApiConfig, data: DataLayer) {
         totalCents: result.order.totalCents,
         channel: "app",
       });
+      await toAccounting(c, tenant, result.order.charge?.id);
       return c.json({ order: orderDto(result.order, tenant.organization) }, 201);
     },
   );
@@ -723,6 +744,7 @@ export function createStoreRoutes(config: ApiConfig, data: DataLayer) {
       await audit(c, tenant, "store_order.cancelled", storeOrderCode(order.number), {
         by: "buyer",
       });
+      await toAccounting(c, tenant, result.order.charge?.id);
       return c.json({ order: orderDto(result.order, tenant.organization) }, 200);
     },
   );

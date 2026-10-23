@@ -120,6 +120,13 @@
       "when": 1792785949728,
       "tag": "20261023200549_store",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1792790925168,
+      "tag": "20261023212845_accounting_connectors",
+      "breakpoints": true
     }
   ]
 }

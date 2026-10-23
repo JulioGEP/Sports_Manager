@@ -751,6 +751,86 @@ describe("esquema del Bloque 2 (Postgres embebido con todas las migraciones)", (
     ).toBe(CHECK_VIOLATION);
   });
 
+  it("contabilidad (ADR 0042): una conexión por club, enlaces sin repetir y borrar la conexión borra sus enlaces", async () => {
+    const { rows: org } = await client.query<{ id: string }>(
+      "select id from organizations where slug = 'demo'",
+    );
+    const demo = org[0]!.id;
+    const insertConnection =
+      "insert into accounting_connections (organization_id, provider, api_key_ciphertext, api_key_hint) values ($1, $2, 'v1.iv.cifrado', '…abcd') returning id";
+    const { rows: conn } = await client.query<{ id: string }>(insertConnection, [demo, "holded"]);
+    const connection = conn[0]!.id;
+    expect(await errorCode(client, insertConnection, [demo, "holded"])).toBe(UNIQUE_VIOLATION);
+    expect(await errorCode(client, insertConnection, [orgId, "contaplus"])).toBe(CHECK_VIOLATION);
+    expect(
+      await errorCode(
+        client,
+        "update accounting_connections set document_type = 'albaran' where id = $1",
+        [connection],
+      ),
+    ).toBe(CHECK_VIOLATION);
+    expect(
+      await errorCode(
+        client,
+        "update accounting_connections set tax_rate_bp = 10001 where id = $1",
+        [connection],
+      ),
+    ).toBe(CHECK_VIOLATION);
+
+    const { rows: person } = await client.query<{ id: string }>(
+      "select id from people where organization_id = $1 limit 1",
+      [demo],
+    );
+    const insertLink =
+      "insert into accounting_links (organization_id, connection_id, entity, local_id, external_id, status) values ($1, $2, $3, $4, $5, $6)";
+    await client.query(insertLink, [demo, connection, "contact", person[0]!.id, "abc", "synced"]);
+    expect(
+      await errorCode(client, insertLink, [
+        demo,
+        connection,
+        "contact",
+        person[0]!.id,
+        "def",
+        "synced",
+      ]),
+    ).toBe(UNIQUE_VIOLATION);
+    expect(
+      await errorCode(client, insertLink, [
+        demo,
+        connection,
+        "factura",
+        person[0]!.id,
+        "x",
+        "synced",
+      ]),
+    ).toBe(CHECK_VIOLATION);
+    // Un enlace enviado lleva siempre el identificador de la herramienta.
+    expect(
+      await errorCode(client, insertLink, [
+        demo,
+        connection,
+        "document",
+        person[0]!.id,
+        null,
+        "synced",
+      ]),
+    ).toBe(CHECK_VIOLATION);
+    expect(
+      await errorCode(
+        client,
+        "update organizations set stripe_account_status = 'blocked' where id = $1",
+        [demo],
+      ),
+    ).toBe(CHECK_VIOLATION);
+
+    await client.query("delete from accounting_connections where id = $1", [connection]);
+    const { rows: left } = await client.query<{ count: string }>(
+      "select count(*) from accounting_links where connection_id = $1",
+      [connection],
+    );
+    expect(Number(left[0]!.count)).toBe(0);
+  });
+
   it("borrar un club arrastra pertenencias e invitaciones; borrar un usuario deja en nulo quién invitó", async () => {
     const { rows } = await client.query<{ id: string }>(
       "insert into organizations (slug, name, default_locale, default_sport_id, brand_primary_color, brand_secondary_color) values ('club-tmp', 'Tmp', 'es', $1, '#111111', '#222222') returning id",

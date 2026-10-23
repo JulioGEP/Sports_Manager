@@ -14,6 +14,7 @@ export * from "./people.ts";
 export * from "./structure.ts";
 export * from "./events.ts";
 export * from "./fees.ts";
+export * from "./accounting.ts";
 export * from "./store.ts";
 export * from "./player-profile.ts";
 export * from "./challenges.ts";

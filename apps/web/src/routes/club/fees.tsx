@@ -11,6 +11,7 @@ import {
   FeePlansResponseSchema,
   MemberTypesResponseSchema,
   MyFeesResponseSchema,
+  PaymentsSettingsResponseSchema,
   SectionsResponseSchema,
   centsToAmount,
   personDisplayName,
@@ -22,14 +23,17 @@ import {
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState, type FormEvent } from "react";
 import { useSearchParams } from "react-router";
+import { FeesConnections } from "./fees-connections";
+import { ChargeAccountingLine } from "@/components/accounting";
 import { ChargeSheet, FeeStatusChip, PaymentSheet, money } from "@/components/fees";
 import { apiFetch, errorKey } from "@/lib/api";
-import { useReadyClub } from "@/lib/club";
+import { clubPaths, useReadyClub } from "@/lib/club";
 import { useDates } from "@/lib/dates";
 import { useT } from "@/lib/intl";
 import {
   Alert,
   Button,
+  ButtonLink,
   Card,
   ConfirmDialog,
   DataList,
@@ -57,14 +61,16 @@ export function FeesPage() {
   return canRead ? <FeesAdmin /> : <MyFees />;
 }
 
-type AdminTab = "charges" | "plans";
+type AdminTab = "charges" | "plans" | "connections";
+const ADMIN_TABS: readonly AdminTab[] = ["charges", "plans", "connections"];
 
 function FeesAdmin() {
   const t = useT("fees");
   const { org } = useReadyClub();
   const [params, setParams] = useSearchParams();
   const canWrite = org.actor.permissions.includes("org.fees.write");
-  const tab: AdminTab = params.get("tab") === "plans" ? "plans" : "charges";
+  const raw = params.get("tab");
+  const tab: AdminTab = ADMIN_TABS.includes(raw as AdminTab) ? (raw as AdminTab) : "charges";
   const [generating, setGenerating] = useState(false);
   const [newCharge, setNewCharge] = useState(false);
   const client = useQueryClient();
@@ -96,9 +102,12 @@ function FeesAdmin() {
         items={[
           { key: "charges", label: t("tabs.charges") },
           { key: "plans", label: t("tabs.plans") },
+          { key: "connections", label: t("tabs.connections") },
         ]}
       />
-      {tab === "charges" ? <ChargesTab canWrite={canWrite} /> : <PlansTab canWrite={canWrite} />}
+      {tab === "charges" ? <ChargesTab canWrite={canWrite} /> : null}
+      {tab === "plans" ? <PlansTab canWrite={canWrite} /> : null}
+      {tab === "connections" ? <FeesConnections /> : null}
       {canWrite ? (
         <>
           <GenerateSheet
@@ -184,6 +193,7 @@ function ChargesTab({ canWrite }: { canWrite: boolean }) {
 
   return (
     <div className="flex flex-col gap-5">
+      <ManualCollectionNotice />
       {totals ? (
         <div className="grid gap-4 sm:grid-cols-3">
           <Stat
@@ -275,7 +285,12 @@ function ChargesTab({ canWrite }: { canWrite: boolean }) {
           {
             key: "status",
             header: t("table.status"),
-            cell: (ch) => <FeeStatusChip status={ch.status} />,
+            cell: (ch) => (
+              <span className="flex flex-col items-start gap-1">
+                <FeeStatusChip status={ch.status} />
+                <ChargeAccountingLine accounting={ch.accounting} />
+              </span>
+            ),
           },
         ]}
         rows={rows}
@@ -287,6 +302,7 @@ function ChargesTab({ canWrite }: { canWrite: boolean }) {
             <span className="flex flex-col items-end gap-1">
               <span className="font-mono text-body text-ink">{money(ch.amountCents)}</span>
               <FeeStatusChip status={ch.status} />
+              <ChargeAccountingLine accounting={ch.accounting} />
             </span>
           ),
         })}
@@ -351,6 +367,52 @@ function ChargesTab({ canWrite }: { canWrite: boolean }) {
         onCancel={() => setCancelling(null)}
       />
     </div>
+  );
+}
+
+/**
+ * Mientras el club cobra a mano, Cuotas lo dice y explica qué falta para cobrar en línea: conectar
+ * una pasarela de pago como Stripe (ADR 0042). Solo lo ve quien puede leer los ajustes de cobro.
+ */
+function ManualCollectionNotice() {
+  const t = useT("fees.charges.manualNotice");
+  const { slug, org } = useReadyClub();
+  const [, setParams] = useSearchParams();
+  const settings = useQuery({
+    queryKey: ["org", slug, "fees", "settings"],
+    queryFn: () => apiFetch("/api/org/fees/settings", { schema: PaymentsSettingsResponseSchema }),
+    enabled: org.actor.permissions.includes("org.settings.read"),
+    retry: false,
+  });
+  if (settings.data?.payments.provider !== "manual") return null;
+  return (
+    <Alert
+      kind="info"
+      title={t("title")}
+      actions={
+        <>
+          <Button
+            size="sm"
+            variant="secondary"
+            action="open"
+            onClick={() => setParams({ tab: "connections" }, { replace: true })}
+          >
+            {t("action")}
+          </Button>
+          {org.actor.permissions.includes("org.settings.write") ? (
+            <ButtonLink
+              size="sm"
+              variant="tertiary"
+              to={`${clubPaths(slug).settings}?tab=payments`}
+            >
+              {t("settings")}
+            </ButtonLink>
+          ) : null}
+        </>
+      }
+    >
+      {t("body")}
+    </Alert>
   );
 }
 
