@@ -135,10 +135,11 @@ export function createTrainingRoutes(config: ApiConfig, data: DataLayer) {
   async function configResponse(c: RouteCtx, tenant: Tenant, sectionId: string) {
     const section = await data.training.sectionTraining(tenant.scope, sectionId);
     if (!section) throw notFound("Esa sección no existe.");
-    const [contents, categories, templates] = await Promise.all([
+    const [contents, categories, templates, equipment] = await Promise.all([
       data.training.ensureCatalog(tenant.scope, sectionId, section.sportCode, localeOf(c, tenant)),
       data.training.categoriesOf(tenant.scope, sectionId),
       data.training.templatesOf(tenant.scope, sectionId),
+      data.ai.equipmentOf(tenant.scope, sectionId),
     ]);
     return {
       section: { id: section.id, name: section.name, sportCode: section.sportCode },
@@ -147,6 +148,7 @@ export function createTrainingRoutes(config: ApiConfig, data: DataLayer) {
       contents: contents.map(contentDto),
       categories,
       templates: templates.map(({ sectionId: _s, ...t }) => t),
+      equipment,
       access: { configure: c.get("actor").permissions.has("org.training.library") },
     };
   }

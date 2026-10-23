@@ -127,6 +127,13 @@
       "when": 1792790925168,
       "tag": "20261023212845_accounting_connectors",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1792797323883,
+      "tag": "20261023231523_ai_training_drafts",
+      "breakpoints": true
     }
   ]
 }

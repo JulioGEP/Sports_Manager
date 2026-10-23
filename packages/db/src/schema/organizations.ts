@@ -1,4 +1,6 @@
 import {
+  AI_DEFAULT_WEEKLY_QUOTA,
+  AI_MAX_WEEKLY_QUOTA,
   BRAND_COLOR_PATTERN,
   CLUB_VOICES,
   LOCALES,
@@ -8,7 +10,7 @@ import {
   STRIPE_ACCOUNT_STATUSES,
 } from "@sportsmanager/shared";
 import { sql } from "drizzle-orm";
-import { check, pgTable, text, uuid } from "drizzle-orm/pg-core";
+import { check, integer, pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { id, inList, regexLiteral, timestamps } from "./_shared.ts";
 import { sports } from "./sports.ts";
 
@@ -42,6 +44,8 @@ export const organizations = pgTable(
      * productos públicos. Nula: catálogo público apagado.
      */
     publicApiKey: text("public_api_key").unique(),
+    /** Propuestas de sesión con IA por semana (ADR 0043). Lo fija la plataforma; 0 la apaga. */
+    aiWeeklyQuota: integer("ai_weekly_quota").notNull().default(AI_DEFAULT_WEEKLY_QUOTA),
     ...timestamps,
   },
   (t) => [
@@ -61,6 +65,10 @@ export const organizations = pgTable(
     check(
       "organizations_stripe_account_status_check",
       sql`${t.stripeAccountStatus} is null or ${inList(t.stripeAccountStatus, STRIPE_ACCOUNT_STATUSES)}`,
+    ),
+    check(
+      "organizations_ai_weekly_quota_check",
+      sql`${t.aiWeeklyQuota} between 0 and ${sql.raw(String(AI_MAX_WEEKLY_QUOTA))}`,
     ),
   ],
 );

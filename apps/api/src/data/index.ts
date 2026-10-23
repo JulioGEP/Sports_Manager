@@ -4,6 +4,8 @@ import { eq, sql } from "drizzle-orm";
 import type { ApiConfig } from "../config.ts";
 import { accessRepo } from "./access.ts";
 import { accountingRepo } from "./accounting.ts";
+import { aiRepo } from "./ai.ts";
+import { createAnthropicModel, type AiModelClient } from "./ai-model.ts";
 import { auditRepo } from "./audit.ts";
 import { challengesRepo } from "./challenges.ts";
 import { createAuth, type Auth } from "./auth/index.ts";
@@ -41,6 +43,14 @@ import { trainingRepo } from "./training.ts";
 import { usersRepo } from "./users.ts";
 
 export type { OrgScope } from "./scope.ts";
+export type { AiGenerationRecord, NewGeneration, SectionEquipmentRecord } from "./ai.ts";
+export {
+  createFakeModel,
+  NO_USAGE,
+  type AiModelClient,
+  type AiModelRequest,
+  type AiModelResult,
+} from "./ai-model.ts";
 export { drillAudioUrlFor } from "./drill-audio.ts";
 export type {
   CreateOrganizationResult,
@@ -176,6 +186,8 @@ export interface DataLayerOptions {
   audioStore?: BlobStore;
   /** Almacén de las fotos de producto de la tienda (ADR 0041). Mismo criterio que los logos. */
   storeImageStore?: BlobStore;
+  /** Modelo de la propuesta con IA (ADR 0043). Por defecto, Anthropic si hay token; en tests, uno falso. */
+  aiModel?: AiModelClient | null;
 }
 
 export function createDataLayer(options: DataLayerOptions) {
@@ -240,6 +252,14 @@ export function createDataLayer(options: DataLayerOptions) {
     challenges: challengesRepo(db),
     matches: matchesRepo(db),
     training: trainingRepo(db),
+    ai: aiRepo(db),
+    /** Nulo sin token del proveedor: la propuesta con IA no se puede pedir. */
+    aiModel:
+      options.aiModel !== undefined
+        ? options.aiModel
+        : options.config.ai.apiKey
+          ? createAnthropicModel(options.config.ai.apiKey)
+          : null,
     load: loadRepo(db),
     health: healthRepo(db),
     logos: logosRepo(

@@ -164,6 +164,8 @@ export interface SessionItemRecord {
   notes: string | null;
   rating: number | null;
   ownerUserId: string | null;
+  /** Propuesta con IA que la puso (ADR 0043). */
+  aiGenerationId: string | null;
   description: string | null;
   coachingPoints: string | null;
   diagram: DrillDiagram | null;
@@ -740,6 +742,7 @@ export function trainingRepo(db: () => Database) {
         notes: schema.trainingSessionItems.notes,
         rating: schema.trainingSessionItems.rating,
         ownerUserId: schema.trainingSessionItems.ownerUserId,
+        aiGenerationId: schema.trainingSessionItems.aiGenerationId,
         description: schema.drills.description,
         coachingPoints: schema.drills.coachingPoints,
         diagram: schema.drills.diagram,
@@ -787,12 +790,17 @@ export function trainingRepo(db: () => Database) {
   }
 
   /** Sustituye las tareas de un bloque: las que no vienen salen; las que vienen entran o cambian. */
+  /**
+   * Sustituye las tareas de un bloque. Con `ai` (ADR 0043), las tareas nuevas quedan marcadas con
+   * la propuesta que las puso y las libres llevan las etiquetas de restricción que traía.
+   */
   async function replaceBlock(
     scope: OrgScope,
     sessionId: string,
     block: SessionBlock,
     inputs: SessionItemInput[],
     userId: string | null,
+    ai?: { generationId: string; tags: RestrictionTag[][] },
   ): Promise<"saved" | "unknown_drill" | "unknown_item" | "unknown_content"> {
     const drillIds = [...new Set(inputs.map((i) => i.drillId).filter((x): x is string => !!x))];
     const drillRows =
@@ -818,7 +826,11 @@ export function trainingRepo(db: () => Database) {
     const contentIds = [...new Set(inputs.flatMap((i) => i.contentIds ?? []))];
     if (!(await validContentIds(scope, contentIds, null))) return "unknown_content";
     const existing = await db()
-      .select({ id: schema.trainingSessionItems.id, block: schema.trainingSessionItems.block })
+      .select({
+        id: schema.trainingSessionItems.id,
+        block: schema.trainingSessionItems.block,
+        restrictionTags: schema.trainingSessionItems.restrictionTags,
+      })
       .from(schema.trainingSessionItems)
       .where(
         and(
@@ -827,6 +839,10 @@ export function trainingRepo(db: () => Database) {
         ),
       );
     const inBlock = new Set(existing.filter((e) => e.block === block).map((e) => e.id));
+    // Una tarea libre conserva sus etiquetas (las que trajo una propuesta con IA) al editarla.
+    const tagsOf = new Map(
+      existing.map((e) => [e.id, Array.isArray(e.restrictionTags) ? e.restrictionTags : []]),
+    );
     for (const i of inputs) if (i.id && !inBlock.has(i.id)) return "unknown_item";
     const keep = new Set(inputs.map((i) => i.id).filter((x): x is string => !!x));
     await db().transaction(async (tx) => {
@@ -861,7 +877,9 @@ export function trainingRepo(db: () => Database) {
             ? Array.isArray(drill.restrictionTags)
               ? drill.restrictionTags
               : []
-            : [],
+            : input.id
+              ? (tagsOf.get(input.id) ?? [])
+              : (ai?.tags[index] ?? []),
           notes: clean(input.notes),
         };
         if (input.id) {
@@ -879,6 +897,7 @@ export function trainingRepo(db: () => Database) {
             organizationId: scope.organizationId,
             sessionId,
             ownerUserId: userId,
+            aiGenerationId: ai?.generationId ?? null,
             ...values,
           });
         }
@@ -1011,6 +1030,13 @@ export function trainingRepo(db: () => Database) {
           : {}),
         ...(patch.methodology
           ? { methodology: { ...(base.methodology ?? {}), ...patch.methodology } }
+          : {}),
+        ...(patch.methodologyNotes !== undefined
+          ? {
+              methodologyNotes: patch.methodologyNotes?.trim()
+                ? patch.methodologyNotes.trim()
+                : null,
+            }
           : {}),
       };
       await db()

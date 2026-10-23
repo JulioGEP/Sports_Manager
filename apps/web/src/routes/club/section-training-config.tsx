@@ -1,6 +1,7 @@
 import {
   DEFAULT_INSIGHT_THRESHOLDS,
   MicrocycleTemplateResponseSchema,
+  SectionEquipmentResponseSchema,
   SectionMatchConfigResponseSchema,
   TRAINING_CONTENT_KINDS,
   TRAINING_TRACKING_LEVELS,
@@ -8,6 +9,7 @@ import {
   type InsightThresholds,
   type MicrocycleDay,
   type MicrocycleTemplate,
+  type SectionEquipment,
   type TrainingConfigResponse,
   type TrainingContent,
   type TrainingContentKind,
@@ -122,12 +124,14 @@ export function SectionTrainingConfigPage() {
       <TrackingCard data={data} canWrite={canWrite} onSaved={() => void reload()} />
       <ThresholdsCard data={data} canWrite={canWrite} onSaved={() => void reload()} />
       <MethodologyCard data={data} canWrite={canWrite} onSaved={() => void reload()} />
+      <NotesCard data={data} canWrite={canWrite} onSaved={() => void reload()} />
       <ContentsCard
         data={data}
         actions={actions.map((a) => ({ code: a.code, name: a.name }))}
         canWrite={canWrite}
         onSaved={() => void reload()}
       />
+      <EquipmentCard data={data} canWrite={canWrite} onSaved={() => void reload()} />
       <TemplatesCard data={data} canWrite={canWrite} onSaved={() => void reload()} />
     </div>
   );
@@ -1257,6 +1261,281 @@ function TemplateSheet({
         </div>
         <p className="text-secondary text-muted">{t("timeHint")}</p>
         {error ? <Alert kind="error">{error}</Alert> : null}
+      </form>
+    </Sheet>
+  );
+}
+
+// --- Cómo entrenamos aquí (ADR 0043) ---
+
+function NotesCard({
+  data,
+  canWrite,
+  onSaved,
+}: {
+  data: TrainingConfigResponse;
+  canWrite: boolean;
+  onSaved: () => void;
+}) {
+  const t = useT("trainingConfig.notes");
+  const c = useT("common");
+  const { busy, patch } = usePatchSettings(data.section.id, onSaved);
+  const [notes, setNotes] = useState(data.settings.methodologyNotes ?? "");
+  useEffect(() => setNotes(data.settings.methodologyNotes ?? ""), [data.settings.methodologyNotes]);
+  return (
+    <Card
+      title={t("title")}
+      description={t("description")}
+      footer={
+        canWrite ? (
+          <Button
+            action="save"
+            loading={busy}
+            onClick={() => void patch({ methodologyNotes: notes.trim() || null })}
+          >
+            {c("save")}
+          </Button>
+        ) : null
+      }
+    >
+      <Field label={t("label")} hint={t("hint")}>
+        {(id, describedBy) => (
+          <textarea
+            id={id}
+            aria-describedby={describedBy}
+            rows={5}
+            maxLength={2000}
+            disabled={!canWrite}
+            className="w-full rounded-field border border-control bg-surface px-4 py-3 text-body text-ink outline-none focus:border-2 focus:border-club disabled:bg-raised"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+          />
+        )}
+      </Field>
+    </Card>
+  );
+}
+
+// --- Material (ADR 0043) ---
+
+function EquipmentCard({
+  data,
+  canWrite,
+  onSaved,
+}: {
+  data: TrainingConfigResponse;
+  canWrite: boolean;
+  onSaved: () => void;
+}) {
+  const t = useT("trainingConfig.equipment");
+  const c = useT("common");
+  const errors = useT("errors");
+  const toast = useToast();
+  const [sheet, setSheet] = useState<"new" | SectionEquipment | null>(null);
+  const [removing, setRemoving] = useState<SectionEquipment | null>(null);
+
+  async function remove(item: SectionEquipment) {
+    setRemoving(null);
+    try {
+      await apiFetch(`/api/org/sections/${data.section.id}/equipment/${item.id}`, {
+        method: "DELETE",
+      });
+      toast("success", t("removed", { name: item.name }));
+      onSaved();
+    } catch (err) {
+      toast("error", errors(errorKey(err)));
+    }
+  }
+
+  return (
+    <Card
+      title={t("title")}
+      description={t("description")}
+      padded={false}
+      actions={
+        canWrite ? (
+          <Button action="add" size="sm" onClick={() => setSheet("new")}>
+            {t("new")}
+          </Button>
+        ) : null
+      }
+    >
+      <DataList<SectionEquipment>
+        caption={t("title")}
+        rows={data.equipment}
+        getKey={(item) => item.id}
+        empty={<EmptyState icon={<Icon.Barbell weight="duotone" />} title={t("empty")} />}
+        columns={[
+          {
+            key: "name",
+            header: t("table.name"),
+            cell: (item) => <span className="font-medium text-ink">{item.name}</span>,
+          },
+          {
+            key: "quantity",
+            header: t("table.quantity"),
+            cell: (item) => <span className="font-mono">{item.quantity ?? "—"}</span>,
+          },
+          {
+            key: "notes",
+            header: t("table.notes"),
+            cell: (item) => <span className="text-secondary text-muted">{item.notes ?? "—"}</span>,
+          },
+        ]}
+        mobileRow={(item) => ({
+          title: item.name,
+          subtitle: [item.quantity ? String(item.quantity) : null, item.notes]
+            .filter(Boolean)
+            .join(" · "),
+        })}
+        rowActions={
+          canWrite
+            ? (item): RowAction[] => [
+                { key: "edit", label: c("edit"), action: "edit", onClick: () => setSheet(item) },
+                {
+                  key: "remove",
+                  label: c("remove"),
+                  action: "delete",
+                  tone: "danger",
+                  onClick: () => setRemoving(item),
+                },
+              ]
+            : undefined
+        }
+      />
+      {canWrite && sheet ? (
+        <EquipmentSheet
+          sectionId={data.section.id}
+          item={sheet === "new" ? null : sheet}
+          onClose={() => setSheet(null)}
+          onSaved={() => {
+            setSheet(null);
+            onSaved();
+          }}
+        />
+      ) : null}
+      <ConfirmDialog
+        open={removing !== null}
+        title={t("confirmRemoveTitle", { name: removing?.name ?? "" })}
+        body={t("confirmRemoveBody")}
+        confirmLabel={c("remove")}
+        confirmAction="delete"
+        cancelLabel={c("cancel")}
+        onConfirm={() => removing && void remove(removing)}
+        onCancel={() => setRemoving(null)}
+      />
+    </Card>
+  );
+}
+
+function EquipmentSheet({
+  sectionId,
+  item,
+  onClose,
+  onSaved,
+}: {
+  sectionId: string;
+  item: SectionEquipment | null;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const t = useT("trainingConfig.equipment.sheet");
+  const c = useT("common");
+  const errors = useT("errors");
+  const toast = useToast();
+  const [name, setName] = useState(item?.name ?? "");
+  const [quantity, setQuantity] = useState(item?.quantity ? String(item.quantity) : "");
+  const [notes, setNotes] = useState(item?.notes ?? "");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function submit(e: FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setError(null);
+    const amount = Math.round(Number(quantity));
+    const body = {
+      name: name.trim(),
+      quantity: quantity.trim() && amount >= 1 ? Math.min(9999, amount) : null,
+      notes: notes.trim() || null,
+    };
+    try {
+      await apiFetch(
+        item
+          ? `/api/org/sections/${sectionId}/equipment/${item.id}`
+          : `/api/org/sections/${sectionId}/equipment`,
+        { method: item ? "PATCH" : "POST", body, schema: SectionEquipmentResponseSchema },
+      );
+      toast("success", item ? t("saved") : t("created", { name: body.name }));
+      onSaved();
+    } catch (err) {
+      setError(
+        err instanceof ApiClientError && err.status === 409 ? t("taken") : errors(errorKey(err)),
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Sheet
+      open
+      onClose={onClose}
+      closeLabel={c("close")}
+      title={item ? t("editTitle", { name: item.name }) : t("newTitle")}
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose}>
+            {c("cancel")}
+          </Button>
+          <Button
+            action={item ? "save" : "add"}
+            type="submit"
+            form="equipment-form"
+            loading={busy}
+            disabled={!name.trim()}
+          >
+            {item ? c("save") : t("submit")}
+          </Button>
+        </>
+      }
+    >
+      <form id="equipment-form" className="flex flex-col gap-4" onSubmit={(e) => void submit(e)}>
+        {error ? <Alert kind="error">{error}</Alert> : null}
+        <Field label={t("name")}>
+          {(id) => (
+            <Input
+              id={id}
+              required
+              maxLength={80}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          )}
+        </Field>
+        <Field label={t("quantity")}>
+          {(id) => (
+            <Input
+              id={id}
+              type="number"
+              inputMode="numeric"
+              min={1}
+              max={9999}
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
+            />
+          )}
+        </Field>
+        <Field label={t("notes")}>
+          {(id) => (
+            <Input
+              id={id}
+              maxLength={200}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+            />
+          )}
+        </Field>
       </form>
     </Sheet>
   );

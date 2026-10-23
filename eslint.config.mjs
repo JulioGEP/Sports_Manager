@@ -22,6 +22,10 @@ const dataLayerOnly = [
   },
   { name: "better-auth", message: "Solo la capa de datos (apps/api/src/data) usa Better Auth." },
   { name: "resend", message: "Solo la capa de datos (apps/api/src/data) envía emails." },
+  {
+    name: "@anthropic-ai/sdk",
+    message: "Solo la capa de datos (apps/api/src/data) llama al modelo de IA.",
+  },
 ];
 const dataLayerOnlyPatterns = [
   {
@@ -31,6 +35,7 @@ const dataLayerOnlyPatterns = [
       "@netlify/database/*",
       "better-auth/*",
       "resend/*",
+      "@anthropic-ai/sdk/*",
     ],
     message: "Solo la capa de datos (apps/api/src/data) accede a la base.",
   },
@@ -47,6 +52,7 @@ export default tseslint.config(
       "netlify/database/migrations/**",
       "apps/web/next-env.d.ts",
       "apps/api/netlify/functions/api/handler.mjs",
+      "apps/api/netlify/functions/ai-draft-background/worker.mjs",
     ],
   },
   js.configs.recommended,

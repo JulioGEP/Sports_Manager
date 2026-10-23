@@ -43,6 +43,7 @@ import { events } from "./events.ts";
 import { matches } from "./matches.ts";
 import { organizations } from "./organizations.ts";
 import { players, seasons, sections, teams } from "./structure.ts";
+import { aiGenerations } from "./training-ai.ts";
 
 /**
  * Planificación de entrenamientos, carga, disponibilidad y salud (Fase 1, bloques 21 a 26,
@@ -305,10 +306,15 @@ export const trainingSessionItems = pgTable(
     notes: text("notes"),
     rating: integer("rating"),
     ownerUserId: uuid("owner_user_id").references(() => users.id, { onDelete: "set null" }),
+    /** Propuesta con IA que la puso (ADR 0043): mide cuántas tareas propuestas se quedan. */
+    aiGenerationId: uuid("ai_generation_id").references(() => aiGenerations.id, {
+      onDelete: "set null",
+    }),
     ...timestamps,
   },
   (t) => [
     index("training_session_items_organization_id_idx").on(t.organizationId),
+    index("training_session_items_ai_generation_id_idx").on(t.aiGenerationId),
     index("training_session_items_session_id_idx").on(t.sessionId),
     index("training_session_items_drill_id_idx").on(t.drillId),
     check("training_session_items_block_check", inList(t.block, SESSION_BLOCKS)),

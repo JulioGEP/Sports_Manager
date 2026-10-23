@@ -1,7 +1,9 @@
 import {
   InvitationSentResponseSchema,
   LOCALES,
+  AI_MAX_WEEKLY_QUOTA,
   PlatformAdminsResponseSchema,
+  PlatformAiResponseSchema,
   PlatformOrganizationDetailSchema,
   PlatformOrganizationResponseSchema,
   type InvitationSentResponse,
@@ -220,6 +222,8 @@ export function PlatformClubPage() {
         </Card>
       </div>
 
+      <AiCard base={base} slug={slug} />
+
       {lastLink ? (
         <CopyLink
           url={lastLink.url}
@@ -376,5 +380,121 @@ function InviteAdminSheet({
         {error ? <Alert kind="error">{error}</Alert> : null}
       </form>
     </Sheet>
+  );
+}
+
+/**
+ * Propuesta con IA del club (ADR 0043): cuántas propuestas por semana puede pedir, cuántas lleva
+ * y, en 30 días, cuántas, cuántas fallaron, cuántas se aplicaron, lo que costaron y cuántas de las
+ * tareas propuestas siguen en su sesión.
+ */
+function AiCard({ base, slug }: { base: string; slug: string }) {
+  const t = useT("platform.ai");
+  const c = useT("common");
+  const errors = useT("errors");
+  const intl = useIntl();
+  const toast = useToast();
+  const client = useQueryClient();
+  const ai = useQuery({
+    queryKey: ["platform", "organization", slug, "ai"],
+    queryFn: () => apiFetch(`${base}/ai`, { schema: PlatformAiResponseSchema, club: null }),
+    retry: false,
+  });
+  const [quota, setQuota] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  if (!ai.data) return null;
+  const data = ai.data;
+  const value = quota ?? String(data.weeklyQuota);
+  const parsed = Math.round(Number(value));
+  const valid = value.trim() !== "" && parsed >= 0 && parsed <= AI_MAX_WEEKLY_QUOTA;
+
+  async function save(e: FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      const next = await apiFetch(`${base}/ai`, {
+        method: "PUT",
+        body: { weeklyQuota: parsed },
+        schema: PlatformAiResponseSchema,
+        club: null,
+      });
+      client.setQueryData(["platform", "organization", slug, "ai"], next);
+      setQuota(null);
+      toast("success", t("saved"));
+    } catch (err) {
+      toast("error", errors(errorKey(err)));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const { last30 } = data;
+  return (
+    <Card title={t("title")} description={t("description")}>
+      <div className="flex flex-col gap-5">
+        {!data.configured ? <Alert kind="warning">{t("notConfigured")}</Alert> : null}
+        <form className="flex flex-wrap items-end gap-3" onSubmit={(e) => void save(e)}>
+          <div className="w-40">
+            <Field label={t("quota")}>
+              {(id) => (
+                <Input
+                  id={id}
+                  type="number"
+                  inputMode="numeric"
+                  min={0}
+                  max={AI_MAX_WEEKLY_QUOTA}
+                  value={value}
+                  onChange={(e) => setQuota(e.target.value)}
+                />
+              )}
+            </Field>
+          </div>
+          <Button
+            type="submit"
+            action="save"
+            loading={busy}
+            disabled={!valid || parsed === data.weeklyQuota}
+          >
+            {c("save")}
+          </Button>
+          <p className="basis-full text-secondary text-muted">{t("quotaHint")}</p>
+        </form>
+        <Definitions
+          items={[
+            { term: t("model"), detail: <span className="font-mono">{data.model}</span> },
+            {
+              term: t("week"),
+              detail: (
+                <span className="font-mono">
+                  {data.week.used}/{data.weeklyQuota}
+                </span>
+              ),
+            },
+            { term: t("requests"), detail: <span className="font-mono">{last30.requests}</span> },
+            { term: t("failed"), detail: <span className="font-mono">{last30.failed}</span> },
+            { term: t("applied"), detail: <span className="font-mono">{last30.applied}</span> },
+            {
+              term: t("cost"),
+              detail: (
+                <span className="font-mono">
+                  {intl.formatNumber(last30.costUsd, { style: "currency", currency: "USD" })}
+                </span>
+              ),
+            },
+            {
+              term: t("kept"),
+              detail: (
+                <span className="font-mono">
+                  {last30.keptShare === null
+                    ? "—"
+                    : intl.formatNumber(last30.keptShare, { style: "percent" })}
+                </span>
+              ),
+            },
+          ]}
+        />
+        <p className="text-secondary text-muted">{t("keptHint")}</p>
+      </div>
+    </Card>
   );
 }

@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "netlify dev --filter @sportsmanager/api",
     "build": "pnpm --filter @sportsmanager/api build && pnpm --filter @sportsmanager/web build",
-    "lint": "eslint .",
+    "lint": "node --max-old-space-size=4096 node_modules/eslint/bin/eslint.js .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "pnpm -r --if-present typecheck",

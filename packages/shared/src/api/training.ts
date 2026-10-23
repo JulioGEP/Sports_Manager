@@ -51,6 +51,16 @@ export const MicrocycleTemplateSchema = z.object({
 });
 export type MicrocycleTemplate = z.infer<typeof MicrocycleTemplateSchema>;
 
+/** Material del inventario de una sección (ADR 0043). */
+export const SectionEquipmentSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  quantity: z.number().int().nullable(),
+  notes: z.string().nullable(),
+});
+export type SectionEquipment = z.infer<typeof SectionEquipmentSchema>;
+export const SectionEquipmentResponseSchema = z.object({ equipment: SectionEquipmentSchema });
+
 /** Ajustes de entrenamiento de una sección: seguimiento, umbrales, metodología, contenidos y semanas tipo. */
 export const TrainingConfigResponseSchema = z.object({
   section: z.object({ id: z.string(), name: z.string(), sportCode: z.string() }),
@@ -59,6 +69,7 @@ export const TrainingConfigResponseSchema = z.object({
   contents: z.array(TrainingContentSchema),
   categories: z.array(Ref),
   templates: z.array(MicrocycleTemplateSchema),
+  equipment: z.array(SectionEquipmentSchema),
   access: z.object({ configure: z.boolean() }),
 });
 export type TrainingConfigResponse = z.infer<typeof TrainingConfigResponseSchema>;
@@ -225,6 +236,8 @@ export const SessionItemSchema = z.object({
   coachingPoints: z.string().nullable(),
   diagram: DrillDiagramSchema.nullable(),
   audioUrl: z.string().nullable(),
+  /** La puso una propuesta con IA (ADR 0043) y sigue en la sesión. */
+  fromAi: z.boolean(),
 });
 export type SessionItem = z.infer<typeof SessionItemSchema>;
 

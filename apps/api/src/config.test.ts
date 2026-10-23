@@ -69,4 +69,31 @@ describe("configuración", () => {
     expect(config.secureCookies).toBe(true);
     expect(config.email.debugLog).toBe(false);
   });
+
+  it("la IA (ADR 0043): sin token no está configurada; modelo por defecto y dónde se genera", () => {
+    const local = loadConfig(base);
+    expect(local.ai).toEqual({
+      apiKey: null,
+      model: "claude-opus-5-5",
+      configured: false,
+      runner: "inline",
+    });
+    const netlify = loadConfig({
+      NODE_ENV: "production",
+      BETTER_AUTH_SECRET: "x".repeat(32),
+      ANTHROPIC_API_KEY: "sk-ant-x",
+      AI_MODEL: "claude-sonnet-5-5",
+    });
+    expect(netlify.ai).toEqual({
+      apiKey: "sk-ant-x",
+      model: "claude-sonnet-5-5",
+      configured: true,
+      runner: "background",
+    });
+    expect(loadConfig({ ...base, NETLIFY_DEV: "true" }).ai.runner).toBe("background");
+    expect(loadConfig({ ...base, ANTHROPIC_API_KEY: " ", AI_MODEL: "" }).ai).toMatchObject({
+      configured: false,
+      model: "claude-opus-5-5",
+    });
+  });
 });

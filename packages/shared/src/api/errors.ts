@@ -10,6 +10,10 @@ export const API_ERROR_CODES = [
   "invitation_email_mismatch",
   "payload_too_large",
   "unsupported_media_type",
+  /** Cuota semanal de propuestas con IA agotada (ADR 0043). */
+  "quota_exceeded",
+  /** La IA no está configurada o el club no la tiene. */
+  "ai_unavailable",
   "internal",
 ] as const;
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];

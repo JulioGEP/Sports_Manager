@@ -15,6 +15,7 @@
     "serve:local": "node scripts/serve-local.mjs"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "0.136.0",
     "@hono/zod-openapi": "1.6.3",
     "@netlify/blobs": "^11.1.5",
     "@netlify/database": "2.0.1",

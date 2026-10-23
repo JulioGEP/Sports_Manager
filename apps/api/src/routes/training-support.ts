@@ -306,6 +306,7 @@ export const itemDto = (i: SessionItemRecord, slug: string) => ({
   coachingPoints: i.coachingPoints,
   diagram: i.diagram,
   audioUrl: i.drillId ? drillAudioUrlFor(i.audioBlobKey, slug, i.drillId) : null,
+  fromAi: i.aiGenerationId !== null,
 });
 
 // --- Partidos, MD y carga de partido ---

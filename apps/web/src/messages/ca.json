@@ -858,6 +858,22 @@
       "forbidden": "Aquest email no està autoritzat com a administrador de plataforma.",
       "exists": "Aquest compte ja existeix. Entra amb la contrasenya o recupera-la.",
       "backToLogin": "Ja tinc compte"
+    },
+    "ai": {
+      "title": "Proposta amb IA",
+      "description": "Propostes de sessió que aquest club pot demanar cada setmana. Tots els clubs fan servir el mateix token.",
+      "notConfigured": "Falta ANTHROPIC_API_KEY a Netlify: cap club pot demanar propostes.",
+      "quota": "Propostes per setmana",
+      "quotaHint": "0 l'apaga en aquest club. Com a màxim, 100.",
+      "saved": "Quota desada.",
+      "model": "Model",
+      "week": "Aquesta setmana",
+      "requests": "Propostes en 30 dies",
+      "failed": "Fallides",
+      "applied": "Aplicades",
+      "cost": "Cost en 30 dies",
+      "kept": "Tasques que es queden",
+      "keptHint": "Tasques proposades que segueixen a la seva sessió, sobre les aplicades. És la mesura de si la IA ajuda."
     }
   },
   "apiStatus": {
@@ -911,7 +927,9 @@
     "INVALID_TOKEN": "L'enllaç no és vàlid o ha caducat. Demana'n un de nou.",
     "rate_limited": "Massa intents. Espera un moment i torna-ho a provar.",
     "network": "Sense connexió amb el servidor.",
-    "unknown": "S'ha produït un error inesperat."
+    "unknown": "S'ha produït un error inesperat.",
+    "quota_exceeded": "El club ha gastat les propostes amb IA d'aquesta setmana. Es renoven dilluns.",
+    "ai_unavailable": "La proposta amb IA no està disponible en aquest club."
   },
   "audit": {
     "organization": {
@@ -3397,7 +3415,8 @@
       "court": "Mode pista",
       "print": "Imprimir",
       "copy": "Copiar a un altre dia",
-      "remove": "Treure la planificació"
+      "remove": "Treure la planificació",
+      "propose": "Proposar amb IA"
     },
     "summary": {
       "plannedMinutes": "Minuts planificats",
@@ -3428,7 +3447,8 @@
       "removed": "Tasca treta.",
       "rated": "Valoració: {rating}",
       "none": "Aquesta sessió encara no té tasques",
-      "noneHint": "Les afegeix el cos tècnic de l'equip, cadascú als seus blocs."
+      "noneHint": "Les afegeix el cos tècnic de l'equip, cadascú als seus blocs.",
+      "fromAi": "IA"
     },
     "item": {
       "setsReps": "{sets} × {reps}",
@@ -3613,7 +3633,8 @@
         "submit": "Aplicar",
         "done": "{count, plural, =0 {No s'ha aplicat a cap dia.} one {Aplicada a # sessió.} other {Aplicada a # sessions.}}",
         "noMatch": "Aquesta setmana no té partit: la setmana tipus compta els dies des d'ell."
-      }
+      },
+      "propose": "Proposar la setmana amb IA"
     },
     "season": {
       "title": "Pla de temporada",
@@ -4488,6 +4509,37 @@
       "created": "{name} creada.",
       "saved": "Setmana tipus desada.",
       "nameTaken": "Ja hi ha una setmana tipus amb aquest nom."
+    },
+    "notes": {
+      "title": "Com entrenem aquí",
+      "description": "La metodologia de la secció amb les vostres paraules. La proposta amb IA la té en compte a cada sessió.",
+      "label": "Metodologia",
+      "hint": "Fins a 2000 caràcters. Sense noms d'esportistes."
+    },
+    "equipment": {
+      "title": "Material",
+      "description": "El que hi ha per entrenar. La proposta amb IA planifica només amb aquest material.",
+      "new": "Afegir material",
+      "empty": "Sense material",
+      "table": {
+        "name": "Material",
+        "quantity": "Quantitat",
+        "notes": "Notes"
+      },
+      "removed": "{name} tret.",
+      "confirmRemoveTitle": "Treure {name}?",
+      "confirmRemoveBody": "Deixa de comptar per a les propostes amb IA.",
+      "sheet": {
+        "newTitle": "Material nou",
+        "editTitle": "Editar {name}",
+        "name": "Nom",
+        "quantity": "Quantitat",
+        "notes": "Notes",
+        "submit": "Afegir material",
+        "taken": "Ja hi ha material amb aquest nom a la secció.",
+        "created": "{name} afegit.",
+        "saved": "Material desat."
+      }
     }
   },
   "storeCategories": {
@@ -4825,5 +4877,94 @@
       "attempts": "{count, plural, one {# intent} other {# intents}}"
     },
     "syncWaiting": "Holded demana una pausa pel seu límit de peticions: continuem d'aquí a {seconds} s · en queden {remaining}"
+  },
+  "aiDraft": {
+    "title": "Proposar amb IA",
+    "description": "Un esborrany amb el criteri d'un expert en «{profile}». El revises i decideixes tu.",
+    "quota": "{remaining, plural, one {Et queda # proposta} other {Et queden # propostes}} de {limit} aquesta setmana. Es renova el {date}.",
+    "quotaEmpty": "El club ha gastat les {limit} propostes d'aquesta setmana. Es renova el {date}.",
+    "sessions": "Entrenaments que planificar",
+    "sessionsHint": "Una proposta pot cobrir diversos entrenaments de la setmana i compta com una.",
+    "noEvents": "No hi ha entrenaments a l'agenda aquesta setmana.",
+    "planned": "Ja té tasques",
+    "objective": "Objectiu",
+    "objectiveHint": "Si el deixes buit, el proposa la IA.",
+    "emphasis": "Què vols potenciar",
+    "emphasisHint": "Reparteix 100 punts. El que pesi més tindrà més minuts a la part principal.",
+    "axisValue": "{axis}: {points} punts",
+    "emphasisReady": "100 punts repartits.",
+    "emphasisLeft": "{points, plural, one {Queda # punt per repartir.} other {Queden # punts per repartir.}}",
+    "emphasisOver": "{points, plural, one {Sobra # punt.} other {Sobren # punts.}}",
+    "emphasisReset": "Tornar al repartiment de la secció",
+    "intensity": "Intensitat",
+    "intensities": {
+      "low": "Suau",
+      "medium": "Mitjana",
+      "high": "Alta"
+    },
+    "equipment": "Material d'avui",
+    "equipmentHint": "Desmarca el que avui no tinguis.",
+    "noEquipment": "La secció no té inventari de material. S'afegeix als seus ajustos d'entrenament.",
+    "extraEquipment": "Un altre material",
+    "context": "Context",
+    "contextHint": "El que no és a les dades: com venen, l'últim resultat, el temps. No escriguis dades de salut. Els noms de la plantilla es canvien per una referència abans d'enviar-ho.",
+    "libraryOnly": "Només tasques de la biblioteca",
+    "libraryOnlyHint": "Si no, pot proposar tasques noves, marcades com a noves.",
+    "includeVariants": "Variants per a jugadors amb restriccions",
+    "submit": "Proposar amb IA",
+    "recent": "Propostes recents",
+    "status": {
+      "queued": "A la cua",
+      "running": "Generant-se",
+      "ready": "Llesta",
+      "failed": "No ha sortit",
+      "applied": "Aplicada"
+    },
+    "waitingTitle": "Preparant la proposta",
+    "waiting": "Pensant amb el criteri d'un expert en «{profile}». Sol trigar un o dos minuts.",
+    "waitingClose": "Pots tancar: la proposta t'espera a Propostes recents.",
+    "failures": {
+      "not_configured": "La proposta amb IA no està configurada.",
+      "model_error": "El servei d'IA no ha respost.",
+      "invalid_output": "La IA no ha tornat una proposta que es pugui fer servir.",
+      "refused": "La IA no ha volgut fer aquesta proposta.",
+      "timeout": "La IA ha trigat massa."
+    },
+    "failedQuota": "No gasta quota: la pots tornar a demanar.",
+    "retry": "Tornar al formulari",
+    "summary": "Resum",
+    "why": "Per què",
+    "objectiveLabel": "Objectiu",
+    "targetRpe": "RPE previst",
+    "contents": "Continguts",
+    "plannedMinutes": "{planned} de {available} min",
+    "replaces": "Ja té tasques: en aplicar se substitueixen les dels blocs proposats.",
+    "warnings": "Revisa",
+    "newDrill": "Nova",
+    "fromLibrary": "De la biblioteca: {name}",
+    "howTo": "Com es fa",
+    "drillFields": {
+      "description": "Descripció",
+      "rules": "Regles",
+      "coachingPoints": "Punts clau",
+      "variants": "Variants",
+      "organization": "Organització",
+      "material": "Material"
+    },
+    "equipmentNeeded": "Material",
+    "checks": {
+      "someone": "Un jugador",
+      "unknown_session": "La IA va proposar una sessió que no s'havia demanat i s'ha tret.",
+      "unknown_drill": "«{title}» citava una tasca que no és a la biblioteca: queda com a tasca lliure.",
+      "block_moved": "Una tasca anava en un bloc que aquesta secció no fa servir: passa a la part principal.",
+      "player_out": "{name} està de baixa i s'ha tret de «{title}».",
+      "restriction": "{name} té restriccions ({tags}) que xoquen amb «{title}».",
+      "max_minutes": "{name} suma {minutes} minuts i el seu màxim és {max}.",
+      "over_time": "Les tasques sumen {planned} minuts i la sessió dura {available}.",
+      "trimmed": "«{title}» no hi cap: un bloc admet com a màxim 20 tasques."
+    },
+    "saveNewDrills": "Desar les tasques noves a la biblioteca de l'equip",
+    "apply": "Aplicar a les sessions",
+    "applied": "{count, plural, one {Proposta aplicada a # sessió. Queda en esborrany perquè la revisis.} other {Proposta aplicada a # sessions. Queden en esborrany perquè les revisis.}}"
   }
 }

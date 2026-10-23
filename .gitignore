@@ -13,6 +13,8 @@ coverage/
 next-env.d.ts
 apps/api/netlify/functions/api/handler.mjs
 apps/api/netlify/functions/api/handler.mjs.map
+apps/api/netlify/functions/ai-draft-background/worker.mjs
+apps/api/netlify/functions/ai-draft-background/worker.mjs.map
 
 # Pruebas de interfaz
 apps/web/test-results/
