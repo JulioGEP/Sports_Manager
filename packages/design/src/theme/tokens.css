@@ -89,16 +89,21 @@
   color-scheme: dark;
 }
 
-/* Forma Envolvente: app de familias y entrenadores. Es la forma por defecto. */
+/*
+ * Forma Envolvente: app de familias y entrenadores. Es la forma por defecto.
+ * Los radios de la forma van en --shape-*; las capas del club (esquinas y botones, más abajo) los
+ * convierten en los --r-* que usan los componentes.
+ */
 :root,
 [data-shape="envolvente"] {
-  --r-card: 24px;
-  --r-sheet: 28px;
-  --r-hero: 0 0 32px 32px;
-  --r-control: 999px;
-  --r-field: 16px;
-  --r-chip: 999px;
-  --r-row: 999px;
+  --shape-card: 24px;
+  --shape-sheet: 28px;
+  --shape-hero-top: 0px;
+  --shape-hero-bottom: 32px;
+  --shape-control: 999px;
+  --shape-field: 16px;
+  --shape-chip: 999px;
+  --shape-row: 999px;
   --r-tabbar: 28px;
   --h-control: 48px;
   --h-row: 64px;
@@ -110,13 +115,14 @@
 
 /* Forma Precisa: panel de gestión en escritorio. */
 [data-shape="precisa"] {
-  --r-card: 10px;
-  --r-sheet: 12px;
-  --r-hero: 16px;
-  --r-control: 8px;
-  --r-field: 8px;
-  --r-chip: 6px;
-  --r-row: 0;
+  --shape-card: 10px;
+  --shape-sheet: 12px;
+  --shape-hero-top: 16px;
+  --shape-hero-bottom: 16px;
+  --shape-control: 8px;
+  --shape-field: 8px;
+  --shape-chip: 6px;
+  --shape-row: 0px;
   --r-tabbar: 0;
   --h-control: 44px;
   --h-row: 52px;
@@ -126,14 +132,258 @@
   --sh-float: 0 8px 24px rgba(11, 13, 18, 0.12);
 }
 
+/*
+ * Identidad visual del club (ADR 0043). Cada club elige una opción de cada capa; la web las pone
+ * como atributos en el elemento raíz (data-type, data-buttons, data-icons, data-bg, data-hero,
+ * data-nav, data-corners). Sin atributo, el aspecto de siempre. Las reglas de cada opción van
+ * detrás de la de por defecto: a igual especificidad, gana la última.
+ */
+
+/* Esquinas: tarjetas, campos, paneles, etiquetas, filas y portada. */
+:root,
+[data-corners="sistema"] {
+  --r-card: var(--shape-card);
+  --r-sheet: var(--shape-sheet);
+  --r-field: var(--shape-field);
+  --r-chip: var(--shape-chip);
+  --r-row: var(--shape-row);
+  --r-hero: var(--shape-hero-top) var(--shape-hero-top) var(--shape-hero-bottom)
+    var(--shape-hero-bottom);
+}
+[data-corners="redondeadas"] {
+  --r-card: calc(var(--shape-card) + 8px);
+  --r-sheet: calc(var(--shape-sheet) + 6px);
+  --r-field: calc(var(--shape-field) + 6px);
+  --r-chip: var(--shape-chip);
+  --r-row: var(--shape-row);
+  --r-hero: calc(var(--shape-hero-top) * 1.5) calc(var(--shape-hero-top) * 1.5)
+    calc(var(--shape-hero-bottom) * 1.5) calc(var(--shape-hero-bottom) * 1.5);
+}
+[data-corners="rectas"] {
+  --r-card: 4px;
+  --r-sheet: 6px;
+  --r-field: 4px;
+  --r-chip: 4px;
+  --r-row: min(var(--shape-row), 6px);
+  --r-hero: min(var(--shape-hero-top), 4px) min(var(--shape-hero-top), 4px)
+    min(var(--shape-hero-bottom), 4px) min(var(--shape-hero-bottom), 4px);
+}
+
+/* Botones y controles: radio, peso del verbo y relieve. La altura sigue siendo la de la forma. */
+:root,
+[data-buttons="sistema"] {
+  --r-control: var(--shape-control);
+  --btn-weight: 500;
+  --btn-tracking: normal;
+  --btn-primary-shadow: none;
+  --btn-secondary-shadow: none;
+}
+[data-buttons="pildora"] {
+  --r-control: 999px;
+  --btn-weight: 600;
+}
+[data-buttons="suave"] {
+  --r-control: calc(var(--shape-field) * 0.5 + 6px);
+  --btn-weight: 500;
+}
+[data-buttons="recta"] {
+  --r-control: 3px;
+  --btn-weight: 700;
+  --btn-tracking: 0.01em;
+}
+[data-buttons="relieve"] {
+  --r-control: calc(var(--shape-field) * 0.25 + 8px);
+  --btn-weight: 600;
+  --btn-primary-shadow: 0 3px 0 0 var(--club-deep);
+  --btn-secondary-shadow: 0 2px 0 0 var(--control-border);
+}
+
+/*
+ * Tipografía: pareja de títulos y texto. Las fuentes las autoaloja la web; aquí solo se nombran,
+ * con el nombre de la versión variable y el de la estática. Las cifras siguen en Geist Mono.
+ * --type-tracking escala el espaciado negativo de los títulos (1, el de Geist; 0, ninguno).
+ */
+:root,
+[data-type="moderna"] {
+  --type-body:
+    "Geist Variable", "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --type-display: var(--type-body);
+  --type-display-weight: 600;
+  --type-tracking: 1;
+}
+[data-type="clasica"] {
+  --type-body: "Source Sans 3 Variable", "Source Sans 3", ui-sans-serif, system-ui, sans-serif;
+  --type-display: "Fraunces Variable", "Fraunces", Georgia, "Times New Roman", serif;
+  --type-display-weight: 600;
+  --type-tracking: 0.3;
+}
+[data-type="deportiva"] {
+  --type-body: "Archivo Variable", "Archivo", ui-sans-serif, system-ui, sans-serif;
+  --type-display: "Oswald Variable", "Oswald", "Arial Narrow", ui-sans-serif, sans-serif;
+  --type-display-weight: 600;
+  --type-tracking: -0.4;
+}
+[data-type="amable"] {
+  --type-body: "Nunito Variable", "Nunito", ui-rounded, ui-sans-serif, system-ui, sans-serif;
+  --type-display: var(--type-body);
+  --type-display-weight: 800;
+  --type-tracking: 0.4;
+}
+[data-type="geometrica"] {
+  --type-body: "Montserrat Variable", "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  --type-display: var(--type-body);
+  --type-display-weight: 700;
+  --type-tracking: 0.6;
+}
+
+/*
+ * Fondo de las pantallas. "Neutro" y "Teñido" cambian el tinte de los neutros en el motor; aquí
+ * solo van los que pintan algo encima del color de la página.
+ */
+:root,
+[data-bg] {
+  --page-background: var(--surface-page);
+}
+[data-bg="degradado"] {
+  --page-background: linear-gradient(180deg, var(--club-100) 0, var(--surface-page) 520px) top /
+    100% 520px no-repeat var(--surface-page);
+}
+[data-bg="trama"] {
+  --page-background: radial-gradient(
+      circle at 1px 1px,
+      color-mix(in srgb, var(--club-text) 16%, transparent) 1px,
+      transparent 1.5px
+    )
+    0 0 / 18px 18px var(--surface-page);
+}
+
+/*
+ * Navegación (barra lateral, cabecera móvil y barra inferior): clara con los neutros, en el color
+ * del club o oscura. Los colores de las dos últimas los calcula el motor (--navc-*, --navd-*).
+ */
+:root,
+[data-nav="claro"] {
+  --nav-bg: var(--surface);
+  --nav-ink: var(--text);
+  --nav-muted: var(--text-muted);
+  --nav-hover: var(--surface-raised);
+  --nav-active: var(--club-soft);
+  --nav-active-ink: var(--club-soft-text);
+  --nav-accent: var(--club-text);
+  --nav-edge: var(--border);
+  --nav-line: var(--line);
+  --nav-crest-ring: transparent;
+}
+[data-nav="club"] {
+  --nav-bg: var(--navc-bg);
+  --nav-ink: var(--navc-ink);
+  --nav-muted: var(--navc-muted);
+  --nav-hover: var(--navc-hover);
+  --nav-active: var(--navc-active);
+  --nav-active-ink: var(--navc-active-ink);
+  --nav-accent: var(--navc-accent);
+  --nav-edge: var(--navc-edge);
+  --nav-line: var(--navc-edge);
+  --nav-crest-ring: var(--navc-crest-ring);
+}
+[data-nav="oscuro"] {
+  --nav-bg: var(--navd-bg);
+  --nav-ink: var(--navd-ink);
+  --nav-muted: var(--navd-muted);
+  --nav-hover: var(--navd-hover);
+  --nav-active: var(--navd-active);
+  --nav-active-ink: var(--navd-active-ink);
+  --nav-accent: var(--navd-accent);
+  --nav-edge: var(--navd-edge);
+  --nav-line: var(--navd-edge);
+  --nav-crest-ring: var(--navd-crest-ring);
+}
+
+/* Iconos de deporte propios: grosor del trazo y relleno según el estilo de iconos del club. */
+:root,
+[data-icons="duotono"] {
+  --icon-stroke: 1.75;
+  --icon-sport-fill: var(--icon-duo);
+}
+[data-icons="linea"] {
+  --icon-stroke: 1.75;
+  --icon-sport-fill: none;
+}
+[data-icons="fina"] {
+  --icon-stroke: 1.25;
+  --icon-sport-fill: none;
+}
+[data-icons="gruesa"] {
+  --icon-stroke: 2.4;
+  --icon-sport-fill: none;
+}
+[data-icons="relleno"] {
+  --icon-stroke: 1.75;
+  --icon-sport-fill: color-mix(in srgb, currentColor 38%, transparent);
+}
+
+/*
+ * Portada del club (DESIGN.md 7): una capa decorativa detrás del contenido. El velo del degradado
+ * va hacia el color que da más contraste al texto (--hero-shade), así el texto nunca pierde. Va en
+ * variables para que una muestra con su propio data-hero (los ajustes) se pinte con el suyo.
+ */
+:root,
+[data-hero="liso"] {
+  --hero-art: none;
+  --hero-art-mask: none;
+  --hero-art-opacity: 1;
+}
+[data-hero="degradado"] {
+  --hero-art: linear-gradient(
+    115deg,
+    transparent 15%,
+    color-mix(in srgb, var(--hero-shade) 30%, transparent) 100%
+  );
+  --hero-art-mask: none;
+  --hero-art-opacity: 1;
+}
+[data-hero="rayas"] {
+  --hero-art: repeating-linear-gradient(
+    90deg,
+    transparent 0 22px,
+    color-mix(in srgb, var(--club-second) 30%, transparent) 22px 44px
+  );
+  --hero-art-mask: linear-gradient(90deg, transparent 35%, #000 85%);
+  --hero-art-opacity: 1;
+}
+[data-hero="banda"] {
+  --hero-art: linear-gradient(
+    115deg,
+    transparent 0 64%,
+    color-mix(in srgb, var(--club-second) 72%, transparent) 64% 74%,
+    transparent 74%
+  );
+  --hero-art-mask: none;
+  --hero-art-opacity: 1;
+}
+[data-hero="escudo"] {
+  --hero-art: var(--club-logo, none) no-repeat right -32px center / auto 150%;
+  --hero-art-mask: none;
+  --hero-art-opacity: 0.16;
+}
+.club-hero-art {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: var(--hero-art);
+  mask-image: var(--hero-art-mask);
+  opacity: var(--hero-art-opacity);
+}
+
+@layer base {
+  /* Títulos con la letra de títulos del club; las cifras (font-mono) siguen mandando. */
+  :where(h1, h2, h3, .text-display, .text-title1, .text-title2) {
+    font-family: var(--type-display);
+  }
+}
+
 html {
-  font-family:
-    "Geist",
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    "Segoe UI",
-    sans-serif;
+  font-family: var(--type-body);
   font-size: 16px;
   color: var(--text);
   background: var(--surface-page);

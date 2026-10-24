@@ -21,7 +21,7 @@ export function AuthShell({
   description?: ReactNode;
   children: ReactNode;
   footer?: ReactNode;
-  club?: { name: string; logoUrl: string | null } | null | undefined;
+  club?: { name: string; logoUrl: string | null; motto?: string | null } | null | undefined;
   /** Entrada del negocio: subtítulo de administración en vez del lema del producto. */
   platform?: boolean | undefined;
 }) {
@@ -43,6 +43,7 @@ export function AuthShell({
             <>
               <Crest name={club.name} logoUrl={club.logoUrl} size="lg" />
               <strong className="text-title2 text-ink">{club.name}</strong>
+              {club.motto ? <span className="text-secondary text-muted">{club.motto}</span> : null}
             </>
           ) : (
             <>

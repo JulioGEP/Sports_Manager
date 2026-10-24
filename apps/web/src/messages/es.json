@@ -423,12 +423,11 @@
   },
   "settings": {
     "title": "Ajustes del club",
-    "description": "Nombre, idioma, marca y logo; temporadas, tipos de socio y cobros. Lo que cambies aquí lo ve todo el club.",
+    "description": "Nombre, idioma y zona horaria; la identidad del club (escudo, colores, letra, voz); temporadas, tipos de socio, cobros y contabilidad. Lo que cambies aquí lo ve todo el club.",
     "forbidden": "No puedes editar los ajustes de este club.",
     "tabs": {
       "general": "General",
-      "brand": "Marca",
-      "logo": "Logo",
+      "identity": "Identidad",
       "seasons": "Temporadas",
       "memberTypes": "Tipos de socio",
       "payments": "Cobros",
@@ -443,27 +442,242 @@
       "defaultLocale": "Idioma por defecto",
       "defaultLocaleHint": "Idioma de los emails y de la interfaz para quien no haya elegido otro.",
       "saved": "Cambios guardados.",
-      "voice": "Voz del club",
-      "voiceHint": "Cómo habla el club a su gente en los avisos y mensajes del día a día. Dinero, bajas y datos personales usan siempre un tono profesional.",
       "timezone": "Zona horaria",
       "timezoneHint": "La agenda se pinta en esta zona, sea cual sea la del dispositivo."
     },
-    "brand": {
-      "title": "Colores de marca",
-      "description": "Tiñen botones, enlaces y la cabecera del club.",
-      "primary": "Color principal",
-      "primaryHint": "Botones y elementos destacados.",
-      "secondary": "Color secundario",
-      "secondaryHint": "Acentos y detalles.",
-      "preview": "Vista previa",
-      "previewHint": "Así se verá la cabecera con los colores elegidos.",
-      "previewNav": "Inicio",
-      "previewButton": "Invitar",
-      "saved": "Colores guardados."
+    "identity": {
+      "intro": {
+        "title": "La plataforma de tu club, distinta a la de cualquier otro",
+        "body": "Escudo, colores, letra, botones, iconos, fondo, portada, navegación, esquinas, lema y voz. Lo que eliges se ve al momento en toda la plataforma, solo para ti, hasta que lo guardas."
+      },
+      "colors": {
+        "title": "Colores",
+        "description": "El principal tiñe botones, enlaces y la portada; el secundario, la franja y el aro del escudo.",
+        "primary": "Color principal",
+        "primaryHint": "Botones y elementos destacados.",
+        "secondary": "Color secundario",
+        "secondaryHint": "Franja de la portada, aro del escudo, rayas y banda."
+      },
+      "palettes": {
+        "title": "Paletas",
+        "hint": "Un punto de partida. Después ajusta cada color a tu gusto.",
+        "names": {
+          "redGold": "Rojo y oro",
+          "greenGold": "Verde y oro",
+          "navyRed": "Marino y rojo",
+          "maroonWhite": "Granate y blanco",
+          "skyWhite": "Celeste y blanco",
+          "blackGold": "Negro y oro",
+          "orangeBlack": "Naranja y negro",
+          "purpleYellow": "Morado y amarillo",
+          "whiteBlue": "Blanco y azul",
+          "yellowBlack": "Amarillo y negro",
+          "greenWhite": "Verde y blanco",
+          "blueWhite": "Azul y blanco"
+        }
+      },
+      "typography": {
+        "title": "Tipografía",
+        "description": "La letra de títulos y textos. Las cifras siguen en su letra de números, alineadas.",
+        "sample": "Entreno a las 18:30",
+        "options": {
+          "moderna": {
+            "name": "Moderna",
+            "hint": "Limpia y precisa. La de siempre."
+          },
+          "clasica": {
+            "name": "Clásica",
+            "hint": "Títulos con serifa. Para clubes con historia."
+          },
+          "deportiva": {
+            "name": "Deportiva",
+            "hint": "Títulos estrechos y rotundos, como un marcador."
+          },
+          "amable": {
+            "name": "Amable",
+            "hint": "Redondeada y cercana. Para escuelas y deporte base."
+          },
+          "geometrica": {
+            "name": "Geométrica",
+            "hint": "Formas puras y títulos con peso."
+          }
+        }
+      },
+      "buttons": {
+        "title": "Botones",
+        "description": "Forma y peso de botones y controles. La altura no cambia: se siguen tocando bien.",
+        "sample": "Guardar",
+        "options": {
+          "sistema": {
+            "name": "Del sistema",
+            "hint": "Píldora en el móvil, esquinas suaves en el ordenador."
+          },
+          "pildora": {
+            "name": "Píldora",
+            "hint": "Redondos en todas partes y con más peso."
+          },
+          "suave": {
+            "name": "Suave",
+            "hint": "Esquinas amables, ni redondo ni recto."
+          },
+          "recta": {
+            "name": "Recta",
+            "hint": "Esquinas vivas y verbo en negrita."
+          },
+          "relieve": {
+            "name": "Relieve",
+            "hint": "Con sombra debajo, como una tecla."
+          }
+        }
+      },
+      "icons": {
+        "title": "Iconos",
+        "description": "El trazo de todos los iconos de la plataforma, también los de deporte.",
+        "options": {
+          "duotono": {
+            "name": "Duotono",
+            "hint": "Trazo y relleno suave con el color del club."
+          },
+          "linea": {
+            "name": "Línea",
+            "hint": "Solo trazo, limpio."
+          },
+          "fina": {
+            "name": "Fina",
+            "hint": "Trazo fino y ligero."
+          },
+          "gruesa": {
+            "name": "Gruesa",
+            "hint": "Trazo grueso, se ve de lejos."
+          },
+          "relleno": {
+            "name": "Relleno",
+            "hint": "Macizos, con mucha presencia."
+          }
+        }
+      },
+      "background": {
+        "title": "Fondo",
+        "description": "El fondo de las pantallas, detrás de las tarjetas. El texto mantiene su contraste en todos.",
+        "options": {
+          "liso": {
+            "name": "Liso",
+            "hint": "Gris con un toque del color del club."
+          },
+          "neutro": {
+            "name": "Neutro",
+            "hint": "Grises puros, sin tinte."
+          },
+          "tenido": {
+            "name": "Teñido",
+            "hint": "El color del club se nota en todo el fondo."
+          },
+          "degradado": {
+            "name": "Degradado",
+            "hint": "Un velo del color del club arriba."
+          },
+          "trama": {
+            "name": "Trama",
+            "hint": "Puntos finos en el color del club."
+          }
+        }
+      },
+      "hero": {
+        "title": "Portada",
+        "description": "La cabecera del inicio, donde el club manda.",
+        "noLogo": "Sube el escudo para verlo de fondo en la portada. Mientras tanto, se ve lisa.",
+        "options": {
+          "liso": {
+            "name": "Lisa",
+            "hint": "El color principal, sin más."
+          },
+          "degradado": {
+            "name": "Degradado",
+            "hint": "Un velo que da profundidad."
+          },
+          "rayas": {
+            "name": "Rayas",
+            "hint": "Rayas del secundario, como la camiseta."
+          },
+          "banda": {
+            "name": "Banda",
+            "hint": "Una banda diagonal del secundario."
+          },
+          "escudo": {
+            "name": "Escudo",
+            "hint": "El escudo en grande, de fondo."
+          }
+        }
+      },
+      "nav": {
+        "title": "Navegación",
+        "description": "La barra lateral en el ordenador y las barras de arriba y de abajo en el móvil.",
+        "options": {
+          "claro": {
+            "name": "Clara",
+            "hint": "Blanca; el color del club, en lo activo."
+          },
+          "club": {
+            "name": "Del club",
+            "hint": "En el color principal del club."
+          },
+          "oscuro": {
+            "name": "Oscura",
+            "hint": "Casi negra, con un tinte del club."
+          }
+        }
+      },
+      "corners": {
+        "title": "Esquinas",
+        "description": "Tarjetas, campos, paneles y la portada.",
+        "options": {
+          "sistema": {
+            "name": "Del sistema",
+            "hint": "Redondeadas en el móvil, precisas en el ordenador."
+          },
+          "redondeadas": {
+            "name": "Redondeadas",
+            "hint": "Más suaves en todas partes."
+          },
+          "rectas": {
+            "name": "Rectas",
+            "hint": "Esquinas vivas, aire técnico."
+          }
+        }
+      },
+      "motto": {
+        "title": "Lema",
+        "description": "Una frase corta bajo el nombre del club, en la portada y en las invitaciones.",
+        "label": "Lema del club",
+        "hint": "Opcional. {count} de {max} caracteres.",
+        "example": "Juntos desde 1952"
+      },
+      "voice": {
+        "title": "Voz del club",
+        "description": "Cómo habla el club a su gente en toda la plataforma: saludos, avisos, pantallas vacías, partidos, retos y agenda. Dinero, salud, errores, accesos y bajas suenan siempre igual: claros y profesionales.",
+        "sample": "Así suena"
+      },
+      "preview": {
+        "title": "Vista previa",
+        "hint": "La portada y una tarjeta, con lo que estás eligiendo.",
+        "heroLabel": "Vista previa de la portada",
+        "cardTitle": "Alevín A",
+        "chip": "Convocatoria",
+        "primary": "Pasar lista",
+        "secondary": "Ver plantilla"
+      },
+      "bar": {
+        "label": "Cambios sin guardar",
+        "dirty": "Estás viendo la plataforma con tus cambios. Nadie más los ve hasta que guardes.",
+        "save": "Guardar identidad",
+        "discard": "Descartar",
+        "saved": "Identidad guardada. Ya la ve todo el club.",
+        "discarded": "Cambios descartados."
+      }
     },
     "logo": {
-      "title": "Subir logo",
-      "hint": "PNG, JPEG o WebP de hasta {mb} MB. Se muestra en la cabecera, en el login y en el selector de clubes.",
+      "title": "Escudo",
+      "hint": "PNG, JPEG o WebP de hasta {mb} MB. Sale en la navegación, en la portada, en el login, en la pestaña del navegador y en el selector de clubes.",
       "drop": "Arrastra el logo aquí",
       "choose": "o haz clic para elegir un fichero",
       "uploading": "Subiendo…",
@@ -594,8 +808,8 @@
       "done": "Hecho",
       "logo": "Sube el logo del club",
       "logoAction": "Subir logo",
-      "colors": "Elige los colores de marca",
-      "colorsAction": "Elegir colores",
+      "colors": "Elige los colores y la identidad del club",
+      "colorsAction": "Elegir identidad",
       "season": "Crea la temporada actual",
       "seasonAction": "Crear temporada",
       "section": "Crea la primera sección",

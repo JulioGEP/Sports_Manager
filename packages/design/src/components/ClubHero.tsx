@@ -18,18 +18,30 @@ export interface ClubHeroProps {
   subtitle?: string;
   /** Una línea de contexto: el próximo partido, por ejemplo. */
   meta?: string;
+  /** Lema del club (ADR 0043), bajo el nombre. */
+  motto?: string | null | undefined;
   /** Hasta dos acciones. Usa ClubHeroButton. */
   actions?: ReactNode;
   ariaLabel?: string;
 }
 
-export function ClubHero({ clubName, crest, subtitle, meta, actions, ariaLabel }: ClubHeroProps) {
+export function ClubHero({
+  clubName,
+  crest,
+  subtitle,
+  meta,
+  motto,
+  actions,
+  ariaLabel,
+}: ClubHeroProps) {
   return (
     <section
       aria-label={ariaLabel ?? `Portada de ${clubName}`}
-      className="flex flex-col overflow-hidden bg-hero text-hero-ink [border-radius:var(--r-hero)]"
+      className="relative isolate flex flex-col overflow-hidden bg-hero text-hero-ink [border-radius:var(--r-hero)]"
     >
-      <div className="flex flex-wrap items-end justify-between gap-6 p-5 lg:p-7">
+      {/* Estilo de portada del club (ADR 0043): degradado, rayas, banda o escudo de fondo. */}
+      <div className="club-hero-art" aria-hidden="true" />
+      <div className="relative flex flex-wrap items-end justify-between gap-6 p-5 lg:p-7">
         <div className="flex min-w-0 items-center gap-3 lg:gap-4">
           <div className="grid size-12 shrink-0 place-items-center overflow-hidden rounded-full bg-hero-crest font-semibold text-hero-crest-ink ring-2 ring-club-second lg:size-18 lg:ring-3">
             {crest}
@@ -37,12 +49,13 @@ export function ClubHero({ clubName, crest, subtitle, meta, actions, ariaLabel }
           <div className="flex min-w-0 flex-col gap-0.5">
             {subtitle && <span className="text-secondary text-hero-sub">{subtitle}</span>}
             <h2 className="truncate text-title1 lg:text-display-lg">{clubName}</h2>
+            {motto && <span className="text-body font-medium text-hero-ink">{motto}</span>}
             {meta && <span className="text-secondary text-hero-sub">{meta}</span>}
           </div>
         </div>
         {actions && <div className="flex flex-wrap gap-2.5">{actions}</div>}
       </div>
-      <div className="h-1.5 bg-club-second" aria-hidden="true" />
+      <div className="relative h-1.5 bg-club-second" aria-hidden="true" />
     </section>
   );
 }

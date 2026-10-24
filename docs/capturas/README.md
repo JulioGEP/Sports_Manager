@@ -1,4 +1,4 @@
-# Capturas de la interfaz (Bloques 14 a 26, pizarra animada, tienda, pasarela y contabilidad)
+# Capturas de la interfaz (Bloques 14 a 26, pizarra animada, tienda, pasarela y contabilidad, identidad del club)
 
 Capturas que generan las pruebas de interfaz (`pnpm test:ui`) contra la API real con base embebida, con el front de Vite + React + Tailwind sobre el design system del producto (`packages/design`, ADR 0027). Escritorio a 1280x800; móvil, Pixel 7. La fuente viva es el artefacto `capturas-interfaz` de CI; esta carpeta es la foto de la revisión del club completo (ADR 0031), con el design system 1.3: todo botón lleva el icono de su acción (rueda dentada para editar, cubo de basura rojo para eliminar, más para añadir); la fila es el objeto (se abre tocándola, con acciones como iconos silenciosos sin borde); la paleta de mandos ⌘K encuentra personas, equipos, pantallas y acciones; y la plantilla de un equipo se ve como un tablero por posición: secciones por deporte, socios, agenda e instalaciones, cuotas y "ver como", sobre lo que ya había de los bloques 11 a 13 (ADR 0028, 0029 y 0030), más el alcance por cargo y la gestión de acceso por rol del Bloque 19 (ADR 0033): el cuerpo técnico, la dirección y la fisio ven solo su parte del club, y "Personal" gana la pestaña "Acceso", y el partido en directo del Bloque 20 (ADR 0034): configuración del motor por sección, consola en la banda a pantalla completa y en tres zonas con el banquillo arrastrable (ADR 0037), estadísticas e histórico, y el entrenamiento de los bloques 21 a 26 (ADR 0039): semana del equipo con "A tener en cuenta", sesión por bloques con su cierre y modo pista, biblioteca con pizarra, carga, enfermería, salud y "Mi bienestar".
 
@@ -238,19 +238,19 @@ Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negoci
 
 ![Ajustes del club: datos generales](escritorio-20-ajustes-general.png)
 
-### Ajustes del club: colores de marca con vista previa del motor de tema
+### Ajustes del club, Identidad (ADR 0043): vista previa, escudo, paletas y colores, tipografía, botones, iconos, fondo, portada, navegación, esquinas, lema y voz
 
-![Ajustes del club: colores de marca](escritorio-21-ajustes-marca.png)
+![Ajustes del club: identidad](escritorio-21-ajustes-identidad.png)
 
-### Ajustes del club: la marca cambia al guardar
+### Identidad: vista previa en directo en toda la app antes de guardar (letra deportiva, navegación del club, portada a rayas, voz vestuario y lema)
 
-![Ajustes del club: marca guardada](escritorio-22-ajustes-marca-guardada.png)
+![Ajustes del club: identidad en vista previa](escritorio-22-ajustes-identidad-vista-previa.png)
 
-### Ajustes del club: subir logo
+### Inicio del club con su identidad guardada: habla con su voz y lleva su lema
 
-![Ajustes del club: subir logo](escritorio-23-ajustes-logo.png)
+![Inicio con la identidad del club](escritorio-23-inicio-identidad-propia.png)
 
-### Ajustes del club: logo subido y visible en la cabecera
+### Ajustes del club: escudo subido y visible en la navegación
 
 ![Ajustes del club: logo subido](escritorio-24-ajustes-logo-subido.png)
 
@@ -652,9 +652,17 @@ Las mismas pantallas en un móvil, con la forma envolvente del design system: ca
 
 ![Ajustes del club: datos generales (móvil)](movil-20-ajustes-general.png)
 
-### Ajustes del club: colores de marca con vista previa
+### Ajustes del club: identidad
 
-![Ajustes del club: colores de marca (móvil)](movil-21-ajustes-marca.png)
+![Ajustes del club: identidad (móvil)](movil-21-ajustes-identidad.png)
+
+### Identidad: vista previa en directo
+
+![Ajustes del club: identidad en vista previa (móvil)](movil-22-ajustes-identidad-vista-previa.png)
+
+### Inicio con la identidad del club
+
+![Inicio con la identidad del club (móvil)](movil-23-inicio-identidad-propia.png)
 
 ### Inicio operativo
 

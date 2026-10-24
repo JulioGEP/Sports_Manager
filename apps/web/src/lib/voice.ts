@@ -14,10 +14,11 @@ const copy = createCopy({ es: es as CopyFile, ca: ca as CopyFile, en: en as Copy
  */
 export function useVoice() {
   const { locale } = useLocale();
-  const { branding } = useReadyClub();
+  // La voz con el borrador de los ajustes encima: la vista previa también cambia estos textos.
+  const { look } = useReadyClub();
   return useCallback(
     (key: string, vars?: Record<string, string | number>) =>
-      copy(locale, key, { voice: branding.voice, ...(vars ? { vars } : {}) }),
-    [locale, branding.voice],
+      copy(locale, key, { voice: look.voice, ...(vars ? { vars } : {}) }),
+    [locale, look.voice],
   );
 }

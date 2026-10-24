@@ -23,7 +23,10 @@ export interface ClubThemeOptions {
   secondary: string;
   /** Modo de color. Por defecto, claro. */
   mode?: Mode;
-  /** Intensidad del tinte de los neutros, de 0 a 1. La estrategia Portada usa 0.6. */
+  /**
+   * Intensidad del tinte de los neutros, de 0 a 2. La estrategia Portada usa 0.6; el fondo
+   * "neutro" del club usa 0 y el "teñido", 1,25 (ADR 0043).
+   */
   tint?: number;
 }
 
@@ -146,6 +149,23 @@ function firstWithContrast(candidates: string[], bg: string, min: number): strin
   return candidates[candidates.length - 1] ?? bg;
 }
 
+/** Mezcla dos colores en sRGB: `t` es cuánto de `b` lleva el resultado (0, solo `a`; 1, solo `b`). */
+export function mixHex(a: string, b: string, t: number): string {
+  const x = parseHex(a);
+  const y = parseHex(b);
+  return (
+    "#" +
+    x
+      .map((v, i) =>
+        Math.round((v * (1 - t) + (y[i] ?? 0) * t) * 255)
+          .toString(16)
+          .padStart(2, "0"),
+      )
+      .join("")
+      .toUpperCase()
+  );
+}
+
 function withAlpha(hex: string, alpha: number): string {
   const [r, g, b] = parseHex(hex).map((x) => Math.round(x * 255));
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
@@ -166,7 +186,7 @@ export function clubScale(hex: string): Record<Step, string> {
 
 export function buildClubTheme(opts: ClubThemeOptions): ClubTheme {
   const mode: Mode = opts.mode ?? "light";
-  const tint = Math.min(1, Math.max(0, opts.tint ?? 0.6));
+  const tint = Math.min(2, Math.max(0, opts.tint ?? 0.6));
   const warnings: string[] = [];
 
   const p = toOklch(opts.primary);
@@ -278,7 +298,64 @@ export function buildClubTheme(opts: ClubThemeOptions): ClubTheme {
     }
   }
 
+  Object.assign(vars, navVars(club, vars, S, o));
+
   return { vars, warnings, swapped, mode };
+}
+
+/**
+ * Navegación en el color del club o en oscuro (ADR 0043). El texto de la barra cumple 4,5:1 sobre
+ * su fondo y el elemento activo se distingue 3:1 del fondo, para cualquier club. La barra clara usa
+ * los neutros de siempre y no necesita nada de aquí.
+ */
+function navVars(
+  club: string,
+  vars: Record<string, string>,
+  S: Record<Step, string>,
+  o: OKLCH,
+): Record<string, string> {
+  const fill = vars["--club-fill"] ?? club;
+  const onFill = vars["--club-on-fill"] ?? inkOn(fill);
+  // Activo en la barra del club: la pastilla se invierte (blanco o tinta) y el texto va en el color
+  // legible del club. Un tinte del relleno no llega a 4,5:1 con rojos y azules medios.
+  const activeClubInk = onFill === WHITE ? (vars["--club-text"] ?? fill) : fill;
+
+  const dark = oklchToHex(0.2, Math.min(o.C, 0.05), o.h);
+  const light = "#F2F3F5";
+  const activeDark = firstWithContrast([fill, S[500], S[400], S[300], S[200]], dark, 3);
+
+  return {
+    "--navc-bg": fill,
+    "--navc-ink": onFill,
+    "--navc-muted": firstWithContrast(
+      [mixHex(onFill, fill, 0.24), mixHex(onFill, fill, 0.14), onFill],
+      fill,
+      4.5,
+    ),
+    "--navc-hover": mixHex(fill, onFill, 0.1),
+    "--navc-active": onFill,
+    "--navc-active-ink": activeClubInk,
+    "--navc-accent": onFill,
+    "--navc-edge": mixHex(fill, onFill, 0.2),
+    "--navc-crest-ring": withAlpha(onFill, 0.7),
+
+    "--navd-bg": dark,
+    "--navd-ink": light,
+    "--navd-muted": firstWithContrast(
+      [mixHex(dark, light, 0.68), mixHex(dark, light, 0.8), light],
+      dark,
+      4.5,
+    ),
+    "--navd-hover": mixHex(dark, light, 0.08),
+    "--navd-active": activeDark,
+    "--navd-active-ink": inkOn(activeDark),
+    "--navd-accent": firstWithContrast([S[300], S[200], S[100], WHITE], dark, 4.5),
+    "--navd-edge": mixHex(dark, light, 0.12),
+    "--navd-crest-ring": "transparent",
+
+    /** Velo de la portada (degradado): oscurece si el texto es blanco y aclara si es tinta. */
+    "--hero-shade": luminance(vars["--hero-ink"] ?? onFill) > 0.5 ? "#000000" : WHITE,
+  };
 }
 
 /** Aplica el tema en un elemento (normalmente document.documentElement). */

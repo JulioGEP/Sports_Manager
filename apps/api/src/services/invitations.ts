@@ -1,6 +1,7 @@
 import {
   playerDisplayName,
   WEB_PATHS,
+  type ClubVoice,
   type Invitation,
   type InvitationSentResponse,
   type Locale,
@@ -62,7 +63,11 @@ export async function sendInvitationEmail(
       url,
       expiresDays: config.invitationTtlDays,
     },
-    { brandColor: organization.brandPrimaryColor },
+    {
+      brandColor: organization.brandPrimaryColor,
+      voice: organization.voice as ClubVoice,
+      motto: organization.motto,
+    },
   );
   const sent = await data.email.send({
     organizationId: organization.id,

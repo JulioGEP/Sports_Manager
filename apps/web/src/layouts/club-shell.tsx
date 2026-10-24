@@ -1,10 +1,11 @@
+import { DEFAULT_CLUB_STYLE, DEFAULT_CLUB_VOICE } from "@sportsmanager/shared";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router";
 import { CommandPalette, PaletteButton, usePaletteShortcut } from "@/components/command-palette";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { ViewAsBanner, ViewAsSheet } from "@/components/view-as";
 import { ClubProvider, clubPaths, useClub, type ClubState } from "@/lib/club";
-import { useT } from "@/lib/intl";
+import { useT, VoiceProvider } from "@/lib/intl";
 import { useMediaQuery } from "@/lib/media";
 import { useSignOut } from "@/lib/session";
 import { DESKTOP_QUERY, setShape } from "@/lib/theme";
@@ -14,6 +15,7 @@ import {
   ButtonLink,
   Crest,
   Icon,
+  IconStyleProvider,
   Menu,
   MenuDivider,
   MenuItem,
@@ -25,16 +27,42 @@ import {
 export function ClubShell() {
   return (
     <ClubProvider>
-      <ClubFrame>
-        <Outlet />
-      </ClubFrame>
+      <ClubLook>
+        <ClubFrame>
+          <Outlet />
+        </ClubFrame>
+      </ClubLook>
     </ClubProvider>
+  );
+}
+
+/**
+ * Identidad del club (ADR 0043) para todo lo que hay dentro: su voz en los textos y el peso de los
+ * iconos. Los colores, la letra, los botones y el resto los pinta `applyClubLook` en la raíz.
+ */
+function ClubLook({ children }: { children: ReactNode }) {
+  const { look } = useClub();
+  return (
+    <VoiceProvider voice={look?.voice ?? DEFAULT_CLUB_VOICE}>
+      <IconStyleProvider style={look?.style.icons ?? DEFAULT_CLUB_STYLE.icons}>
+        {children}
+      </IconStyleProvider>
+    </VoiceProvider>
+  );
+}
+
+/** Escudo en la navegación: con aro cuando la barra va en el color del club, para que no se funda. */
+function NavCrest({ name, logoUrl }: { name: string; logoUrl: string | null | undefined }) {
+  return (
+    <span className="inline-flex shrink-0 rounded-full ring-2 ring-nav-crest-ring">
+      <Crest name={name} logoUrl={logoUrl} />
+    </span>
   );
 }
 
 function ClubFrame({ children }: { children: ReactNode }) {
   const t = useT("nav");
-  const { slug, state } = useClub();
+  const { slug, state, look } = useClub();
   const desktop = useMediaQuery(DESKTOP_QUERY);
   const navigate = useNavigate();
   const location = useLocation();
@@ -52,7 +80,8 @@ function ClubFrame({ children }: { children: ReactNode }) {
     }
   }, [state.kind, navigate, location.pathname, location.search]);
 
-  const branding = "branding" in state ? state.branding : null;
+  // La marca con el borrador de los ajustes encima (vista previa en directo, ADR 0043).
+  const branding = "branding" in state ? look : null;
   const me = state.kind === "ready" || state.kind === "no_membership" ? state.me : null;
   const permissions = state.kind === "ready" ? state.org.actor.permissions : [];
   const memberships =
@@ -179,6 +208,7 @@ function ClubFrame({ children }: { children: ReactNode }) {
   const userMenu = me ? (
     <Menu
       label={t("userMenu")}
+      triggerClassName="text-nav-ink hover:bg-nav-hover"
       trigger={
         <>
           <Avatar name={me.user.name} size="sm" />
@@ -229,21 +259,21 @@ function ClubFrame({ children }: { children: ReactNode }) {
   if (desktop) {
     return (
       <div className="grid min-h-screen grid-cols-[264px_minmax(0,1fr)]">
-        <aside className="sticky top-0 flex h-screen flex-col gap-6 border-r border-border bg-surface px-4 py-5">
+        <aside className="sticky top-0 flex h-screen flex-col gap-6 border-r border-nav-edge bg-nav px-4 py-5">
           <Link
             to={paths.home}
             className="flex items-center gap-3 no-underline"
             aria-label={clubName}
           >
-            <Crest name={clubName || "SM"} logoUrl={branding?.logoUrl} />
-            <span className="truncate text-body font-semibold text-ink">{clubName}</span>
+            <NavCrest name={clubName || "SM"} logoUrl={branding?.logoUrl} />
+            <span className="truncate text-body font-semibold text-nav-ink">{clubName}</span>
           </Link>
           {state.kind === "ready" ? <PaletteButton onClick={togglePalette} /> : null}
           <nav className="flex flex-col gap-4 overflow-y-auto" aria-label={t("mainNav")}>
             {groups.map((g) => (
               <div key={g.key} className="flex flex-col gap-1">
                 {g.label ? (
-                  <span className="px-3 pt-1 pb-1 text-label uppercase tracking-wide text-muted">
+                  <span className="px-3 pt-1 pb-1 text-label uppercase tracking-wide text-nav-muted">
                     {g.label}
                   </span>
                 ) : null}
@@ -255,8 +285,8 @@ function ClubFrame({ children }: { children: ReactNode }) {
                     className={({ isActive }) =>
                       `flex h-(--h-control) items-center gap-3 rounded-control px-3 text-body font-medium no-underline transition-colors ${
                         isActive
-                          ? "bg-club-soft text-club-soft-text"
-                          : "text-muted hover:bg-raised hover:text-ink"
+                          ? "bg-nav-active text-nav-active-ink"
+                          : "text-nav-muted hover:bg-nav-hover hover:text-nav-ink"
                       }`
                     }
                   >
@@ -285,14 +315,14 @@ function ClubFrame({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-3 border-b border-line bg-surface px-5">
+      <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-3 border-b border-nav-line bg-nav px-5">
         <Link
           to={paths.home}
           className="flex min-w-0 items-center gap-3 no-underline"
           aria-label={clubName}
         >
-          <Crest name={clubName || "SM"} logoUrl={branding?.logoUrl} />
-          <span className="truncate text-body font-semibold text-ink">{clubName}</span>
+          <NavCrest name={clubName || "SM"} logoUrl={branding?.logoUrl} />
+          <span className="truncate text-body font-semibold text-nav-ink">{clubName}</span>
         </Link>
         <div className="flex items-center gap-1">
           {state.kind === "ready" ? <PaletteButton compact onClick={togglePalette} /> : null}
@@ -308,7 +338,7 @@ function ClubFrame({ children }: { children: ReactNode }) {
       {mobileLinks.length > 1 ? (
         <nav
           aria-label={t("mainNav")}
-          className="fixed inset-x-4 bottom-4 z-30 grid h-16 grid-flow-col auto-cols-fr items-center rounded-tabbar bg-surface px-2 shadow-float"
+          className="fixed inset-x-4 bottom-4 z-30 grid h-16 grid-flow-col auto-cols-fr items-center rounded-tabbar bg-nav px-2 shadow-float"
         >
           {mobileLinks.map((l) => (
             <NavLink
@@ -317,14 +347,14 @@ function ClubFrame({ children }: { children: ReactNode }) {
               end={l.end}
               className={({ isActive }) =>
                 `flex h-full flex-col items-center justify-center gap-0.5 rounded-control text-label no-underline ${
-                  isActive ? "text-club-text" : "text-muted"
+                  isActive ? "text-nav-accent" : "text-nav-muted"
                 }`
               }
             >
               {({ isActive }) => (
                 <>
                   <span
-                    className={`grid h-7 w-12 place-items-center rounded-chip ${isActive ? "bg-club-soft" : ""}`}
+                    className={`grid h-7 w-12 place-items-center rounded-chip ${isActive ? "bg-nav-active text-nav-active-ink" : ""}`}
                   >
                     <l.icon size={22} weight="duotone" aria-hidden="true" />
                   </span>
@@ -340,8 +370,8 @@ function ClubFrame({ children }: { children: ReactNode }) {
               aria-haspopup="dialog"
               className={`flex h-full flex-col items-center justify-center gap-0.5 rounded-control text-label ${
                 moreLinks.some((l) => location.pathname.startsWith(l.to))
-                  ? "text-club-text"
-                  : "text-muted"
+                  ? "text-nav-accent"
+                  : "text-nav-muted"
               }`}
             >
               <span className="grid h-7 w-12 place-items-center rounded-chip">

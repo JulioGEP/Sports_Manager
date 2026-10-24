@@ -56,3 +56,4 @@ Las decisiones no se editan una vez aceptadas. Si cambian, se escribe una nueva 
 | 0040 | Pizarra animada: arrastrar, grabar el movimiento por capas y la voz | Aceptada |
 | 0041 | Tienda del club: productos con stock, pedidos cobrados como una cuota y catálogo público para la web del club | Aceptada |
 | 0042 | Pasarela de pago con Stripe Connect y contabilidad conectada con Holded | Aceptada |
+| 0043 | Identidad del club: escudo, colores, estilo y voz en una pestaña, y la voz en toda la app | Aceptada |

@@ -31,6 +31,34 @@ describe("plantillas de email", () => {
     expect(subjects.size).toBe(LOCALES.length);
   });
 
+  it("la invitación habla con la voz del club y lleva su lema (ADR 0043)", () => {
+    const content = {
+      template: "invitation" as const,
+      clubName: "Club A",
+      inviterName: "Ana Admin",
+      roleName: "Entrenador",
+      url,
+      expiresDays: 7,
+    };
+    const near = renderEmail("es", content, { brandColor: "#d71920" });
+    const pro = renderEmail("es", content, { brandColor: "#d71920", voice: "profesional" });
+    const locker = renderEmail("es", content, {
+      brandColor: "#d71920",
+      voice: "vestuario",
+      motto: "Juntos desde 1952",
+    });
+    expect(near.subject).toBe("Club A te invita a unirte");
+    expect(pro.subject).toBe("Invitación a Club A");
+    expect(locker.subject).toBe("Club A te quiere en el equipo");
+    expect(locker.text).toContain("te ha fichado para Club A como Entrenador");
+    expect(locker.html).toContain("Juntos desde 1952");
+    // Lo informativo no cambia con la voz.
+    for (const email of [near, pro, locker]) {
+      expect(email.text).toContain("El enlace caduca en 7 días.");
+      expect(email.text).toContain(url);
+    }
+  });
+
   it("restablecer contraseña: nombre, club, minutos y enlace", () => {
     const email = renderEmail(
       "ca",

@@ -1,6 +1,7 @@
 import { schema, type Database } from "@sportsmanager/db";
 import type { ORGANIZATION_STATUSES } from "@sportsmanager/shared";
 import {
+  normalizeMotto,
   ROLE_CODES,
   type LocalizedText,
   type OrganizationCreate,
@@ -177,6 +178,14 @@ export function organizationsRepo(db: () => Database) {
       if (patch.brandSecondaryColor !== undefined)
         values.brandSecondaryColor = patch.brandSecondaryColor;
       if (patch.voice !== undefined) values.voice = patch.voice;
+      if (patch.style?.typography !== undefined) values.styleTypography = patch.style.typography;
+      if (patch.style?.buttons !== undefined) values.styleButtons = patch.style.buttons;
+      if (patch.style?.icons !== undefined) values.styleIcons = patch.style.icons;
+      if (patch.style?.background !== undefined) values.styleBackground = patch.style.background;
+      if (patch.style?.hero !== undefined) values.styleHero = patch.style.hero;
+      if (patch.style?.nav !== undefined) values.styleNav = patch.style.nav;
+      if (patch.style?.corners !== undefined) values.styleCorners = patch.style.corners;
+      if (patch.motto !== undefined) values.motto = normalizeMotto(patch.motto);
       if (Object.keys(values).length === 0) {
         const rows = await db()
           .select()
