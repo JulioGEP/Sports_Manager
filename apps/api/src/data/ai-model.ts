@@ -2,7 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import type { AiUsage } from "@sportsmanager/shared";
 
 /**
- * Cliente del modelo de la propuesta con IA (ADR 0043). Como Resend con el email, solo la capa
+ * Cliente del modelo de la propuesta con IA (ADR 0044). Como Resend con el email, solo la capa
  * de datos habla con el proveedor: el resto de la API recibe texto y consumo, nunca el SDK. Un
  * único token del proveedor, en la variable `ANTHROPIC_API_KEY` de Netlify, para todos los clubes.
  */

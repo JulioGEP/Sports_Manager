@@ -11,7 +11,7 @@ import {
 import { SESSION_BLOCKS, SESSION_STATUSES, TRAINING_CONTENT_KINDS } from "../training.ts";
 import { SectionEquipmentSchema } from "./training.ts";
 
-/** Contratos de la propuesta de sesión con IA (ADR 0043). */
+/** Contratos de la propuesta de sesión con IA (ADR 0044). */
 
 const Ref = z.object({ id: z.string(), name: z.string() });
 

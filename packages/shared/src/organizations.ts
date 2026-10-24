@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ClubMottoSchema, ClubStyleSchema } from "./club-style.ts";
 import { LocaleSchema } from "./locales.ts";
 import { ClubVoiceSchema } from "./structure.ts";
 import { OrganizationSlugSchema } from "./tenancy.ts";
@@ -37,6 +38,10 @@ export const OrganizationBrandingSchema = z.object({
   logoUrl: z.string().nullable(),
   /** Voz del club (DESIGN.md 11): tiñe los textos de relación de la web. */
   voice: ClubVoiceSchema,
+  /** Identidad visual (ADR 0043): tipografía, botones, iconos, fondo, portada, navegación y esquinas. */
+  style: ClubStyleSchema,
+  /** Lema del club, o nulo si no tiene. */
+  motto: z.string().nullable(),
 });
 export type OrganizationBranding = z.infer<typeof OrganizationBrandingSchema>;
 
@@ -47,6 +52,9 @@ export const OrganizationUpdateSchema = z.object({
   brandPrimaryColor: BrandColorSchema.optional(),
   brandSecondaryColor: BrandColorSchema.optional(),
   voice: ClubVoiceSchema.optional(),
+  /** Identidad visual (ADR 0043): solo cambia lo que se manda. */
+  style: ClubStyleSchema.partial().optional(),
+  motto: ClubMottoSchema.optional(),
   /** Zona horaria IANA del club (Bloque 16), por ejemplo `Europe/Madrid`. */
   timezone: z
     .string()

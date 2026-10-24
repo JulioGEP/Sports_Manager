@@ -186,7 +186,7 @@ export interface DataLayerOptions {
   audioStore?: BlobStore;
   /** Almacén de las fotos de producto de la tienda (ADR 0041). Mismo criterio que los logos. */
   storeImageStore?: BlobStore;
-  /** Modelo de la propuesta con IA (ADR 0043). Por defecto, Anthropic si hay token; en tests, uno falso. */
+  /** Modelo de la propuesta con IA (ADR 0044). Por defecto, Anthropic si hay token; en tests, uno falso. */
   aiModel?: AiModelClient | null;
 }
 

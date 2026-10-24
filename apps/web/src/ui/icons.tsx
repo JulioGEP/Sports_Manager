@@ -1,0 +1,97 @@
+import * as Phosphor from "@phosphor-icons/react";
+import { themed } from "./icon-style";
+
+/**
+ * Iconografía: Phosphor en peso duotono (DESIGN.md, sección 8) más los iconos de deporte propios.
+ * Siempre con `aria-hidden` cuando decoran y `aria-label` en los botones que solo llevan icono.
+ * El peso lo pone el estilo de iconos del club (ADR 0043, `icon-style.tsx`).
+ */
+
+export const ArrowCounterClockwise = themed(Phosphor.ArrowCounterClockwise);
+export const ArrowDown = themed(Phosphor.ArrowDown);
+export const ArrowLeft = themed(Phosphor.ArrowLeft);
+export const ArrowRight = themed(Phosphor.ArrowRight);
+export const ArrowSquareOut = themed(Phosphor.ArrowSquareOut);
+export const ArrowsLeftRight = themed(Phosphor.ArrowsLeftRight);
+export const ArrowUp = themed(Phosphor.ArrowUp);
+export const Backpack = themed(Phosphor.Backpack);
+export const Barbell = themed(Phosphor.Barbell);
+export const Binoculars = themed(Phosphor.Binoculars);
+export const Brain = themed(Phosphor.Brain);
+export const Buildings = themed(Phosphor.Buildings);
+export const Bus = themed(Phosphor.Bus);
+export const CalendarBlank = themed(Phosphor.CalendarBlank);
+export const CaretDown = themed(Phosphor.CaretDown);
+export const CaretRight = themed(Phosphor.CaretRight);
+export const ChartBar = themed(Phosphor.ChartBar);
+export const Check = themed(Phosphor.Check);
+export const CheckCircle = themed(Phosphor.CheckCircle);
+export const ClipboardText = themed(Phosphor.ClipboardText);
+export const Clock = themed(Phosphor.Clock);
+export const ClockCounterClockwise = themed(Phosphor.ClockCounterClockwise);
+export const Code = themed(Phosphor.Code);
+export const Coins = themed(Phosphor.Coins);
+export const CornersIn = themed(Phosphor.CornersIn);
+export const CornersOut = themed(Phosphor.CornersOut);
+export const Copy = themed(Phosphor.Copy);
+export const DeviceRotate = themed(Phosphor.DeviceRotate);
+export const DotsThree = themed(Phosphor.DotsThree);
+export const DotsThreeVertical = themed(Phosphor.DotsThreeVertical);
+export const DownloadSimple = themed(Phosphor.DownloadSimple);
+export const Envelope = themed(Phosphor.Envelope);
+export const Eye = themed(Phosphor.Eye);
+export const FlagCheckered = themed(Phosphor.FlagCheckered);
+export const Gear = themed(Phosphor.Gear);
+export const HandHeart = themed(Phosphor.HandHeart);
+export const Heartbeat = themed(Phosphor.Heartbeat);
+export const House = themed(Phosphor.House);
+export const IdentificationCard = themed(Phosphor.IdentificationCard);
+export const Image = themed(Phosphor.Image);
+export const Info = themed(Phosphor.Info);
+export const Key = themed(Phosphor.Key);
+export const Lifebuoy = themed(Phosphor.Lifebuoy);
+export const Lightning = themed(Phosphor.Lightning);
+export const ListChecks = themed(Phosphor.ListChecks);
+export const MapPin = themed(Phosphor.MapPin);
+export const Microphone = themed(Phosphor.Microphone);
+export const Minus = themed(Phosphor.Minus);
+export const MagnifyingGlass = themed(Phosphor.MagnifyingGlass);
+export const Medal = themed(Phosphor.Medal);
+export const Package = themed(Phosphor.Package);
+export const Palette = themed(Phosphor.Palette);
+export const Pause = themed(Phosphor.Pause);
+export const PencilSimple = themed(Phosphor.PencilSimple);
+export const PersonSimpleRun = themed(Phosphor.PersonSimpleRun);
+export const Play = themed(Phosphor.Play);
+export const Plus = themed(Phosphor.Plus);
+export const Printer = themed(Phosphor.Printer);
+export const Pulse = themed(Phosphor.Pulse);
+export const Receipt = themed(Phosphor.Receipt);
+export const Record = themed(Phosphor.Record);
+export const Rows = themed(Phosphor.Rows);
+export const ShieldCheck = themed(Phosphor.ShieldCheck);
+export const ShoppingBag = themed(Phosphor.ShoppingBag);
+export const SignOut = themed(Phosphor.SignOut);
+export const Sliders = themed(Phosphor.Sliders);
+export const SlidersHorizontal = themed(Phosphor.SlidersHorizontal);
+export const SquaresFour = themed(Phosphor.SquaresFour);
+export const Star = themed(Phosphor.Star);
+export const Stop = themed(Phosphor.Stop);
+export const Storefront = themed(Phosphor.Storefront);
+export const TShirt = themed(Phosphor.TShirt);
+export const Tag = themed(Phosphor.Tag);
+export const Target = themed(Phosphor.Target);
+export const ThumbsDown = themed(Phosphor.ThumbsDown);
+export const ThumbsUp = themed(Phosphor.ThumbsUp);
+export const Trash = themed(Phosphor.Trash);
+export const Trophy = themed(Phosphor.Trophy);
+export const Ticket = themed(Phosphor.Ticket);
+export const Timer = themed(Phosphor.Timer);
+export const UserCircle = themed(Phosphor.UserCircle);
+export const UserPlus = themed(Phosphor.UserPlus);
+export const Users = themed(Phosphor.Users);
+export const UsersThree = themed(Phosphor.UsersThree);
+export const Warning = themed(Phosphor.Warning);
+export const X = themed(Phosphor.X);
+
+export { SportIcons } from "@sportsmanager/design";

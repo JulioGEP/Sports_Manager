@@ -1,5 +1,5 @@
 import { NetlifyDB } from "@netlify/database-dev";
-import { LOGO_MAX_BYTES } from "@sportsmanager/shared";
+import { CLUB_MOTTO_MAX, DEFAULT_CLUB_STYLE, LOGO_MAX_BYTES } from "@sportsmanager/shared";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createApp, type App } from "../app.ts";
 import { loadConfig } from "../config.ts";
@@ -119,6 +119,8 @@ describe("marca y logos por club", () => {
       brandSecondaryColor: "#e8b52a",
       logoUrl: null,
       voice: "cercana",
+      style: DEFAULT_CLUB_STYLE,
+      motto: null,
     });
     expect(
       await (await request("GET", "/api/org/branding", hostOf("club-b"))).json(),
@@ -191,6 +193,54 @@ describe("marca y logos por club", () => {
       name: "Club B",
       brandPrimaryColor: "#d71920",
     });
+  });
+
+  it("identidad visual y lema (ADR 0043): opciones cerradas, cambio parcial y solo en su club", async () => {
+    const admin = cookies.get(adminA.id)!;
+    const patch = async (body: unknown, cookie: string | undefined = admin) =>
+      request("PATCH", "/api/org", hostOf("club-a"), { cookie, body });
+
+    // Opciones fuera del catálogo, lema demasiado largo y sin permiso.
+    expect((await patch({ style: { typography: "comic-sans" } })).status).toBe(400);
+    expect((await patch({ style: { nav: "neon" } })).status).toBe(400);
+    expect((await patch({ motto: "x".repeat(CLUB_MOTTO_MAX + 1) })).status).toBe(400);
+    expect((await patch({ style: { hero: "rayas" } }, cookies.get(coachA.id))).status).toBe(403);
+
+    // Un cambio parcial deja el resto de opciones como estaban.
+    const ok = await patch({
+      style: { typography: "deportiva", buttons: "recta", hero: "rayas", nav: "club" },
+      motto: "  Juntos desde 1952  ",
+    });
+    expect(ok.status, await ok.clone().text()).toBe(200);
+    const expected = {
+      ...DEFAULT_CLUB_STYLE,
+      typography: "deportiva",
+      buttons: "recta",
+      hero: "rayas",
+      nav: "club",
+    };
+    expect(await ok.json()).toMatchObject({
+      organization: { style: expected, motto: "Juntos desde 1952" },
+    });
+    expect(
+      await (await request("GET", "/api/org/branding", hostOf("club-a"))).json(),
+    ).toMatchObject({ style: expected, motto: "Juntos desde 1952" });
+    expect((await patch({ style: { icons: "relleno" } })).status).toBe(200);
+    expect(
+      await (await request("GET", "/api/org/branding", hostOf("club-a"))).json(),
+    ).toMatchObject({ style: { ...expected, icons: "relleno" } });
+
+    // El otro club no se entera, y un lema vacío es quitarlo.
+    expect(
+      await (await request("GET", "/api/org/branding", hostOf("club-b"))).json(),
+    ).toMatchObject({ style: DEFAULT_CLUB_STYLE, motto: null });
+    expect((await patch({ motto: "   " })).status).toBe(200);
+    expect(
+      await (await request("GET", "/api/org/branding", hostOf("club-a"))).json(),
+    ).toMatchObject({ motto: null });
+
+    // Deja el club A como estaba para el resto de pruebas.
+    expect((await patch({ style: DEFAULT_CLUB_STYLE })).status).toBe(200);
   });
 
   it("logo: validación, subida, servicio con caché, aislamiento y borrado", async () => {

@@ -18,7 +18,7 @@ const stubPgNative = {
 };
 
 /**
- * Dos funciones: la API y el trabajo en segundo plano de la propuesta con IA (ADR 0043).
+ * Dos funciones: la API y el trabajo en segundo plano de la propuesta con IA (ADR 0044).
  * @type {import("esbuild").BuildOptions}
  */
 const options = {

@@ -51,7 +51,7 @@ export const MicrocycleTemplateSchema = z.object({
 });
 export type MicrocycleTemplate = z.infer<typeof MicrocycleTemplateSchema>;
 
-/** Material del inventario de una sección (ADR 0043). */
+/** Material del inventario de una sección (ADR 0044). */
 export const SectionEquipmentSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -236,7 +236,7 @@ export const SessionItemSchema = z.object({
   coachingPoints: z.string().nullable(),
   diagram: DrillDiagramSchema.nullable(),
   audioUrl: z.string().nullable(),
-  /** La puso una propuesta con IA (ADR 0043) y sigue en la sesión. */
+  /** La puso una propuesta con IA (ADR 0044) y sigue en la sesión. */
   fromAi: z.boolean(),
 });
 export type SessionItem = z.infer<typeof SessionItemSchema>;

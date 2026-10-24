@@ -1,6 +1,6 @@
 # Design System · [NOMBRE DEL PRODUCTO]
 
-SaaS de gestión de clubes deportivos · Versión 1.3 · 22 de octubre de 2026
+SaaS de gestión de clubes deportivos · Versión 1.4 · 23 de octubre de 2026
 
 Este documento es la fuente de verdad del diseño. Todo lo que se construya en la app debe salir de aquí. Si algo no está definido, se pregunta antes de inventarlo.
 
@@ -26,7 +26,7 @@ Este documento es la fuente de verdad del diseño. Todo lo que se construya en l
 
 ## 1. Principios
 
-**El club es el protagonista.** Cada club personaliza su app con su escudo, su color principal y su secundario. El producto se reconoce por su forma, su tipografía y su comportamiento, no por su logo.
+**El club es el protagonista.** Cada club personaliza su app con su escudo, su color principal y su secundario, y elige cómo se ve y cómo habla su plataforma: letra, botones, iconos, fondo, portada, navegación, esquinas, lema y voz (sección 19). Siempre entre opciones del sistema: ninguna combinación rompe el contraste ni las medidas. El producto se reconoce por su comportamiento, no por su logo.
 
 **Móvil primero, gestión en escritorio.** Hay dos contextos de uso con dos formas distintas (sección 6). La app de familias y entrenadores es redonda y envolvente. El panel de gestión es preciso y denso.
 
@@ -52,6 +52,7 @@ El tema se construye en cuatro capas que se aplican en el elemento raíz.
 | Club | Color principal y secundario, escala, neutros teñidos, portada, iconos | `src/theme/clubTheme.ts` (en tiempo de ejecución) |
 | Modo | Claro (por defecto) u oscuro (opcional, lo elige el usuario) | `data-theme="light"` o `"dark"` |
 | Forma | Envolvente (app móvil) o Precisa (gestión en escritorio) | `data-shape="envolvente"` o `"precisa"` |
+| Identidad | Letra, botones, iconos, fondo, portada, navegación y esquinas del club (sección 19) | `data-type`, `data-buttons`, `data-icons`, `data-bg`, `data-hero`, `data-nav`, `data-corners` |
 
 ```html
 <html data-theme="light" data-shape="envolvente">
@@ -107,7 +108,7 @@ Nunca se usa en botones ni en texto, salvo en el caso de 3.2. Motivo: las accion
 
 ### 3.4 Neutros
 
-Los neutros se tiñen ligeramente con el matiz del club (intensidad 0,6). Así toda la app respira el club sin gritar.
+Los neutros se tiñen ligeramente con el matiz del club (intensidad 0,6). Así toda la app respira el club sin gritar. El fondo del club (sección 19) cambia la intensidad: 0 en "Neutro" (grises puros) y 1,25 en "Teñido". El texto secundario cumple 4,5:1 con cualquiera.
 
 | Variable | Clase | Uso |
 | --- | --- | --- |
@@ -152,7 +153,7 @@ El alta es autosuficiente: el club elige sus colores sin ayuda. El motor devuelv
 
 ## 4. Tipografía
 
-Una sola familia: **Geist** para todo y **Geist Mono** para cifras. Las dos en Google Fonts, con licencia abierta. Texto base de 16 px.
+Por defecto, una sola familia: **Geist** para todo y **Geist Mono** para cifras. Cada club puede elegir otra pareja de títulos y texto (sección 19); la escala, los tamaños y las cifras en Geist Mono no cambian. Todas con licencia abierta y autoalojadas. Texto base de 16 px.
 
 | Estilo | Móvil | Escritorio (≥ 1024 px) | Clase Tailwind | Uso |
 | --- | --- | --- | --- | --- |
@@ -209,7 +210,7 @@ Dos contextos, dos formas. La forma se decide por **contexto de uso**, no solo p
 | Portada | esquinas inferiores de 32 px | radio 16 px dentro del contenido |
 | Barra inferior | flotante, radio 28 px | no existe: navegación lateral |
 
-Clases: `rounded-card`, `rounded-control`, `rounded-field`, `rounded-chip`, `rounded-row`, `rounded-sheet`, `rounded-tabbar`, `shadow-card`, `shadow-row`, `shadow-float`. Cambian solas según `data-shape`.
+Clases: `rounded-card`, `rounded-control`, `rounded-field`, `rounded-chip`, `rounded-row`, `rounded-sheet`, `rounded-tabbar`, `shadow-card`, `shadow-row`, `shadow-float`. Cambian solas según `data-shape` y según los botones y las esquinas que elige el club (sección 19): la forma pone la base (`--shape-*`) y el club la ajusta. La altura de botones y campos nunca cambia.
 
 **Disciplina con la píldora.** Si todo es píldora, la app se vuelve infantil. Píldora solo en botones, etiquetas, controles segmentados, filas de lista y barra inferior. Tarjetas y campos, nunca.
 
@@ -219,7 +220,9 @@ Clases: `rounded-card`, `rounded-control`, `rounded-field`, `rounded-chip`, `rou
 
 Es el patrón donde el club manda. Componente: `ClubHero`.
 
-**Anatomía.** Fondo en color principal (`bg-hero`), escudo de 48 px (72 px en escritorio) con aro de 2 px del secundario, nombre del club en Display, una línea de equipo y temporada, una línea de contexto (próximo partido), hasta dos acciones y franja de 6 px del secundario abajo.
+**Anatomía.** Fondo en color principal (`bg-hero`), escudo de 48 px (72 px en escritorio) con aro de 2 px del secundario, nombre del club en Display, el lema del club si tiene, una línea de equipo y temporada, una línea de contexto (próximo partido), hasta dos acciones y franja de 6 px del secundario abajo.
+
+**Estilo de portada.** El club elige una capa decorativa detrás del contenido (`.club-hero-art`): lisa, degradado (un velo hacia el color que más contraste da al texto, `--hero-shade`), rayas verticales del secundario que se desvanecen hacia el texto, banda diagonal del secundario o el escudo en grande de fondo. El texto nunca va sobre la parte más cargada.
 
 **Dónde va.** En el inicio del club y en la vista de familia. No se repite en pantallas internas.
 
@@ -229,7 +232,7 @@ Es el patrón donde el club manda. Componente: `ClubHero`.
 
 ## 8. Iconografía
 
-- **Estilo:** duotono de club. Trazo neutro y relleno suave con el color del club (`--icon-duo`).
+- **Estilo:** duotono de club por defecto. Trazo neutro y relleno suave con el color del club (`--icon-duo`). Cada club puede elegir línea, fina, gruesa o relleno (sección 19); las pantallas siguen escribiendo `weight="duotone"` donde el icono decora y nada donde acompaña a un verbo, y el catálogo de la web lo traduce.
 - **Librería base:** Phosphor (licencia MIT), peso duotone. Hay que configurar el color de la capa de relleno a `var(--icon-duo)`. Verificad la propiedad exacta en la versión de la librería que instaléis.
 - **Iconos de deporte propios:** en `icons/sport/` (balón, silbato, cronómetro, trofeo, camiseta, pista, pesa, prueba física). Rejilla de 24 px, trazo de 1,75. Si hace falta uno nuevo, se dibuja en la misma rejilla.
 - **Tamaños:** 16 px en línea, 22 px por defecto, 26 px en listas, 36 px en estados vacíos.
@@ -459,7 +462,7 @@ Reglas:
 
 ## 11. Voz y tono
 
-Cada club elige su voz en la configuración. Los textos están en `src/i18n/*.json`.
+Cada club elige su voz en la configuración (Ajustes, Identidad). Los textos del design system están en `src/i18n/*.json`; los de la web, en `apps/web/src/messages`: el diccionario es la voz `cercana` y `messages/voices/*.json` reescribe encima, para `profesional` y `vestuario`, los momentos de relación de toda la app (saludos, pantallas vacías, avisos tras guardar, partidos, retos, agenda). La invitación por email también habla con la voz del club.
 
 | Voz | Así suena | Para quién encaja |
 | --- | --- | --- |
@@ -467,7 +470,7 @@ Cada club elige su voz en la configuración. Los textos están en `src/i18n/*.js
 | `profesional` | Un banco moderno: el dato primero, cero adornos | Clubes grandes, gimnasios |
 | `vestuario` | Un entrenador motivador: energía y jerga de juego | Clubes de competición, crossfit |
 
-**La voz del club no llega a los momentos sensibles.** Con `lockSensitive` activado (por defecto y recomendado), dinero, errores, datos personales, protección del menor y bajas usan siempre la voz profesional. Si un club lo desactiva, usan su voz, salvo `vestuario`, que pasa a `cercana`: nunca hay bromas cuando falla un pago.
+**La voz del club no llega a los momentos sensibles.** Con `lockSensitive` activado (por defecto y recomendado), dinero, errores, datos personales, protección del menor y bajas usan siempre la voz profesional. Si un club lo desactiva, usan su voz, salvo `vestuario`, que pasa a `cercana`: nunca hay bromas cuando falla un pago. En la web, esas claves no tienen capa de voz y una prueba lo vigila (cuotas, pagos, salud, bienestar, errores, bajas, confirmaciones).
 
 | Momento | Tipo | Cercana | Profesional | Vestuario |
 | --- | --- | --- | --- | --- |
@@ -625,6 +628,8 @@ Antes de crear o cambiar cualquier interfaz:
 | 2. Color | Cada club define principal y secundario | Un solo color | Identidad real de los clubes y solución para clubes blancos |
 | 2. Color | Sin marca del producto dentro del club | Sello discreto | El club es el protagonista |
 | 3. Tipografía | Geist y Geist Mono | Barlow Condensed, Archivo expandida | Coherencia y una sola familia que mantener |
+| 3. Tipografía | Cinco parejas elegibles por club (1.4), cifras siempre en Geist Mono | Fuente subida por el club | Plataformas distintas sin perder legibilidad ni las cifras alineadas |
+| 4. Identidad | Siete capas cerradas (letra, botones, iconos, fondo, portada, navegación, esquinas) con vista previa en directo en toda la app | CSS o colores libres por club | Cada club, una plataforma propia; ninguna combinación rompe contraste ni medidas |
 | 3. Tipografía | Texto base de 16 px, móvil primero | 14 y 15 px | Público principal: familias y entrenadores en el móvil |
 | 4. Forma | Envolvente en móvil, Precisa en gestión | Suave | Firma reconocible donde se ve y orden donde se trabaja |
 | 4. Forma | Asistencia con dos botones | Un toque alterna; todos presentes por defecto | Claridad del estado en cada fila |
@@ -647,10 +652,38 @@ Antes de crear o cambiar cualquier interfaz:
 ## 18. Pendiente
 
 - Nombre del producto y logotipo (solo para acceso, alta, facturación y web).
-- Flujo de alta del club: colores, escudo y voz con vista previa en directo y los avisos del motor.
+- Flujo de alta del club: reutilizar la pestaña Identidad (colores, escudo, estilo y voz con vista previa en directo y los avisos del motor).
+- Modo oscuro por club: el motor ya lo genera; falta revisar las pantallas con él.
 - Navegación lateral del panel de gestión en escritorio.
 - Validar la propuesta de movimiento.
 - Revisión nativa de catalán e inglés. Traducción de euskera y gallego.
 - Validación legal del chat dentro del protocolo de protección de cada club.
 - Comprobar en la versión instalada de Phosphor cómo se asigna el color del relleno duotono.
 - Tableros de referencia: canvas del design system en claude.ai.
+
+---
+
+## 19. Identidad del club
+
+Además de sus colores y su escudo, cada club elige una opción de cada capa (ADR 0043). Las opciones viven en `packages/shared/src/club-style.ts`; la web las pone como atributos en la raíz y `src/theme/tokens.css` declara, por opción, las variables que leen los componentes. Un componente nunca pregunta qué opción hay: lee variables.
+
+| Capa | Atributo | Opciones | Qué cambia |
+| --- | --- | --- | --- |
+| Tipografía | `data-type` | moderna (Geist), clásica (Fraunces y Source Sans 3), deportiva (Oswald y Archivo), amable (Nunito), geométrica (Montserrat) | `--type-body`, `--type-display`, peso y espaciado de los títulos (`--type-display-weight`, `--type-tracking`) |
+| Botones | `data-buttons` | sistema, píldora, suave, recta, relieve | `--r-control`, `--btn-weight`, `--btn-tracking`, sombra del principal y del secundario |
+| Iconos | `data-icons` | duotono, línea, fina, gruesa, relleno | Peso de Phosphor (`IconStyleProvider`), `--icon-stroke` y `--icon-sport-fill` de los iconos de deporte |
+| Fondo | `data-bg` | liso, neutro, teñido, degradado, trama | Tinte de los neutros en el motor y `--page-background` |
+| Portada | `data-hero` | lisa, degradado, rayas, banda, escudo | `--hero-art`, `--hero-art-mask`, `--hero-art-opacity` (sección 7) |
+| Navegación | `data-nav` | clara, del club, oscura | `--nav-*` y las clases `bg-nav`, `text-nav-ink`, `text-nav-muted`, `bg-nav-active`… |
+| Esquinas | `data-corners` | sistema, redondeadas, rectas | `--r-card`, `--r-field`, `--r-sheet`, `--r-chip`, `--r-row`, `--r-hero` |
+
+Reglas:
+
+- **Los valores por defecto son el aspecto de siempre.** Un club que no toca nada se ve como antes de la 1.4.
+- **La navegación del club y la oscura las calcula el motor** (`--navc-*`, `--navd-*`): texto de la barra con el mismo contraste que el de los botones del club, texto secundario a 4,5:1 y el elemento activo invertido para que se lea en cualquier color. Lo prueba `clubTheme.test.ts`.
+- **La altura y la zona táctil no cambian** con ningún estilo de botón.
+- **Las cifras siguen en Geist Mono** con cualquier tipografía.
+- **Las muestras de los ajustes** llevan su propio atributo y se pintan con su opción, porque cada variable se declara en el selector de la opción.
+- **El lema** (hasta 80 caracteres) sale bajo el nombre en la portada y en la invitación.
+- **El icono de la pestaña** es el escudo del club o sus iniciales sobre su color.
+

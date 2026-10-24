@@ -158,7 +158,7 @@ export const DrillUpdateSchema = DrillCreateSchema.omit({ scope: true, sectionId
   });
 export type DrillUpdate = z.infer<typeof DrillUpdateSchema>;
 
-// --- Material de la sección (ADR 0043) ---
+// --- Material de la sección (ADR 0044) ---
 
 /**
  * Inventario de material de una sección: balones, conos, kettlebells, esterillas. Lo usa la
@@ -620,7 +620,7 @@ export const TrainingSettingsSchema = z.object({
   /** Por categoría (id): reparto objetivo de contenidos. */
   methodology: z.record(z.string(), MethodologyTargetSchema),
   /**
-   * "Cómo entrenamos aquí" (ADR 0043): la metodología de la sección en palabras del club. La
+   * "Cómo entrenamos aquí" (ADR 0044): la metodología de la sección en palabras del club. La
    * propuesta con IA la lee encima del perfil del deporte.
    */
   methodologyNotes: z.string().max(2000).nullable(),

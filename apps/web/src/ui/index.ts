@@ -26,3 +26,4 @@ export {
   type StatusKind,
 } from "@sportsmanager/design";
 export * as Icon from "./icons";
+export { IconStyleProvider } from "./icon-style";

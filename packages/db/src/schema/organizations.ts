@@ -2,6 +2,14 @@ import {
   AI_DEFAULT_WEEKLY_QUOTA,
   AI_MAX_WEEKLY_QUOTA,
   BRAND_COLOR_PATTERN,
+  CLUB_BACKGROUNDS,
+  CLUB_BUTTON_STYLES,
+  CLUB_CORNERS,
+  CLUB_HERO_STYLES,
+  CLUB_ICON_STYLES,
+  CLUB_MOTTO_MAX,
+  CLUB_NAV_STYLES,
+  CLUB_TYPOGRAPHIES,
   CLUB_VOICES,
   LOCALES,
   ORGANIZATION_SLUG_PATTERN,
@@ -32,6 +40,19 @@ export const organizations = pgTable(
     status: text("status").notNull().default("active"),
     /** Voz del club (DESIGN.md 11, Bloque 11): cercana, profesional o vestuario. */
     voice: text("voice").notNull().default("cercana"),
+    /**
+     * Identidad visual (ADR 0043): opciones cerradas del design system. Los valores por defecto son
+     * el aspecto de siempre, así que un club que no toca nada se ve igual.
+     */
+    styleTypography: text("style_typography").notNull().default("moderna"),
+    styleButtons: text("style_buttons").notNull().default("sistema"),
+    styleIcons: text("style_icons").notNull().default("duotono"),
+    styleBackground: text("style_background").notNull().default("liso"),
+    styleHero: text("style_hero").notNull().default("liso"),
+    styleNav: text("style_nav").notNull().default("claro"),
+    styleCorners: text("style_corners").notNull().default("sistema"),
+    /** Lema del club en la portada (ADR 0043). Nulo: sin lema. */
+    motto: text("motto"),
     /** Zona horaria IANA (Bloque 16): la agenda se genera y se pinta en ella. */
     timezone: text("timezone").notNull().default("Europe/Madrid"),
     /** Cómo cobra el club (Bloque 18): a mano o por Stripe en su cuenta conectada. */
@@ -44,7 +65,7 @@ export const organizations = pgTable(
      * productos públicos. Nula: catálogo público apagado.
      */
     publicApiKey: text("public_api_key").unique(),
-    /** Propuestas de sesión con IA por semana (ADR 0043). Lo fija la plataforma; 0 la apaga. */
+    /** Propuestas de sesión con IA por semana (ADR 0044). Lo fija la plataforma; 0 la apaga. */
     aiWeeklyQuota: integer("ai_weekly_quota").notNull().default(AI_DEFAULT_WEEKLY_QUOTA),
     ...timestamps,
   },
@@ -61,6 +82,17 @@ export const organizations = pgTable(
     ),
     check("organizations_status_check", inList(t.status, ORGANIZATION_STATUSES)),
     check("organizations_voice_check", inList(t.voice, CLUB_VOICES)),
+    check("organizations_style_typography_check", inList(t.styleTypography, CLUB_TYPOGRAPHIES)),
+    check("organizations_style_buttons_check", inList(t.styleButtons, CLUB_BUTTON_STYLES)),
+    check("organizations_style_icons_check", inList(t.styleIcons, CLUB_ICON_STYLES)),
+    check("organizations_style_background_check", inList(t.styleBackground, CLUB_BACKGROUNDS)),
+    check("organizations_style_hero_check", inList(t.styleHero, CLUB_HERO_STYLES)),
+    check("organizations_style_nav_check", inList(t.styleNav, CLUB_NAV_STYLES)),
+    check("organizations_style_corners_check", inList(t.styleCorners, CLUB_CORNERS)),
+    check(
+      "organizations_motto_length",
+      sql`${t.motto} is null or char_length(${t.motto}) between 1 and ${sql.raw(String(CLUB_MOTTO_MAX))}`,
+    ),
     check("organizations_payments_provider_check", inList(t.paymentsProvider, PAYMENT_PROVIDERS)),
     check(
       "organizations_stripe_account_status_check",

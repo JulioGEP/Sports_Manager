@@ -22,6 +22,18 @@ export default {
       expires: "The link expires in {days} days.",
       ignore: "If you were not expecting this invitation, you can ignore this message.",
     },
+    invitationVoice: {
+      profesional: {
+        subject: "Invitation to {club}",
+        greeting: "Hello,",
+        body: "{inviter} has given you access to {club} with the role of {role}.",
+      },
+      vestuario: {
+        subject: "{club} wants you on the team",
+        greeting: "Hi!",
+        body: "{inviter} has signed you up for {club} as {role}. See you in the dressing room!",
+      },
+    },
     passwordReset: {
       subject: "Reset your password",
       greeting: "Hello, {name}.",

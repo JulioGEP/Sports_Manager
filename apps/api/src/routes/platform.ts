@@ -457,7 +457,7 @@ export function createPlatformRoutes(config: ApiConfig, data: DataLayer) {
     },
   );
 
-  // --- Propuesta con IA (ADR 0043): cuota semanal por club, uso y coste ---
+  // --- Propuesta con IA (ADR 0044): cuota semanal por club, uso y coste ---
 
   async function aiDto(organization: OrganizationRow, scope: OrgScope) {
     const from = weekStartOf(localDate(organization.timezone, new Date()));

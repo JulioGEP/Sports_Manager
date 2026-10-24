@@ -25,7 +25,7 @@ import { Button, Icon, StatusChip, useToast, type StatusKind } from "@/ui";
 // --- Etiquetas ---
 
 /**
- * Bloques de la sesión según la sección (ADR 0043): las de actividad y los deportes individuales
+ * Bloques de la sesión según la sección (ADR 0044): las de actividad y los deportes individuales
  * los llaman a su manera ("Secuencia principal", "Fuerza / técnica y WOD") y no enseñan los que no
  * usan (porteros en yoga). Los deportes de equipo, con los nombres de siempre.
  */

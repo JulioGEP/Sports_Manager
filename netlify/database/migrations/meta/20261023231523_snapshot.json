@@ -1,6 +1,6 @@
 {
-  "id": "0215374a-4d6a-45d8-87d4-dfb12f47242c",
-  "prevId": "f8afdd54-3eec-4ba2-be15-b1549c5bf2cd",
+  "id": "37b0d1c8-9368-46bf-94f8-0d7da4821715",
+  "prevId": "05bbbe7b-e9fa-496e-bfd4-522ad81a39e6",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -593,6 +593,61 @@
           "notNull": true,
           "default": "'cercana'"
         },
+        "style_typography": {
+          "name": "style_typography",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'moderna'"
+        },
+        "style_buttons": {
+          "name": "style_buttons",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'sistema'"
+        },
+        "style_icons": {
+          "name": "style_icons",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'duotono'"
+        },
+        "style_background": {
+          "name": "style_background",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'liso'"
+        },
+        "style_hero": {
+          "name": "style_hero",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'liso'"
+        },
+        "style_nav": {
+          "name": "style_nav",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'claro'"
+        },
+        "style_corners": {
+          "name": "style_corners",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'sistema'"
+        },
+        "motto": {
+          "name": "motto",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "timezone": {
           "name": "timezone",
           "type": "text",
@@ -705,6 +760,38 @@
         "organizations_voice_check": {
           "name": "organizations_voice_check",
           "value": "\"organizations\".\"voice\" in ('cercana', 'profesional', 'vestuario')"
+        },
+        "organizations_style_typography_check": {
+          "name": "organizations_style_typography_check",
+          "value": "\"organizations\".\"style_typography\" in ('moderna', 'clasica', 'deportiva', 'amable', 'geometrica')"
+        },
+        "organizations_style_buttons_check": {
+          "name": "organizations_style_buttons_check",
+          "value": "\"organizations\".\"style_buttons\" in ('sistema', 'pildora', 'suave', 'recta', 'relieve')"
+        },
+        "organizations_style_icons_check": {
+          "name": "organizations_style_icons_check",
+          "value": "\"organizations\".\"style_icons\" in ('duotono', 'linea', 'fina', 'gruesa', 'relleno')"
+        },
+        "organizations_style_background_check": {
+          "name": "organizations_style_background_check",
+          "value": "\"organizations\".\"style_background\" in ('liso', 'neutro', 'tenido', 'degradado', 'trama')"
+        },
+        "organizations_style_hero_check": {
+          "name": "organizations_style_hero_check",
+          "value": "\"organizations\".\"style_hero\" in ('liso', 'degradado', 'rayas', 'banda', 'escudo')"
+        },
+        "organizations_style_nav_check": {
+          "name": "organizations_style_nav_check",
+          "value": "\"organizations\".\"style_nav\" in ('claro', 'club', 'oscuro')"
+        },
+        "organizations_style_corners_check": {
+          "name": "organizations_style_corners_check",
+          "value": "\"organizations\".\"style_corners\" in ('sistema', 'redondeadas', 'rectas')"
+        },
+        "organizations_motto_length": {
+          "name": "organizations_motto_length",
+          "value": "\"organizations\".\"motto\" is null or char_length(\"organizations\".\"motto\") between 1 and 80"
         },
         "organizations_payments_provider_check": {
           "name": "organizations_payments_provider_check",

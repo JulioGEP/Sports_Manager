@@ -87,7 +87,7 @@ export interface AccountingConfig {
 }
 
 /**
- * Propuesta de sesión con IA (ADR 0043). Un solo token del proveedor para todos los clubes, en la
+ * Propuesta de sesión con IA (ADR 0044). Un solo token del proveedor para todos los clubes, en la
  * variable `ANTHROPIC_API_KEY` de Netlify. Sin token, la función existe pero no se puede pedir.
  */
 export interface AiConfig {

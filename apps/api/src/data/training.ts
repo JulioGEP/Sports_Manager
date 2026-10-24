@@ -164,7 +164,7 @@ export interface SessionItemRecord {
   notes: string | null;
   rating: number | null;
   ownerUserId: string | null;
-  /** Propuesta con IA que la puso (ADR 0043). */
+  /** Propuesta con IA que la puso (ADR 0044). */
   aiGenerationId: string | null;
   description: string | null;
   coachingPoints: string | null;
@@ -791,7 +791,7 @@ export function trainingRepo(db: () => Database) {
 
   /** Sustituye las tareas de un bloque: las que no vienen salen; las que vienen entran o cambian. */
   /**
-   * Sustituye las tareas de un bloque. Con `ai` (ADR 0043), las tareas nuevas quedan marcadas con
+   * Sustituye las tareas de un bloque. Con `ai` (ADR 0044), las tareas nuevas quedan marcadas con
    * la propuesta que las puso y las libres llevan las etiquetas de restricción que traía.
    */
   async function replaceBlock(

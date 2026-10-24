@@ -1,4 +1,4 @@
-# 0043. Propuesta de sesión con IA: un perfil de coach por tipo de sección, encima de las reglas
+# 0044. Propuesta de sesión con IA: un perfil de coach por tipo de sección, encima de las reglas
 
 Estado: aceptada. Fecha: 2026-10-23. Construye el "borrador de sesión con IA" que la 0039 dejó para después, encima de sus reglas explicables.
 

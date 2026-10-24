@@ -36,7 +36,7 @@ import {
 } from "../data/index.ts";
 
 /**
- * Propuesta de sesión con IA (ADR 0043): reunir el contexto, generar en segundo plano y validar.
+ * Propuesta de sesión con IA (ADR 0044): reunir el contexto, generar en segundo plano y validar.
  * La API arma el contexto con lo que ya sabe el club, sin datos personales: los jugadores van como
  * J1, J2…, y los nombres que alguien escriba en el texto libre se cambian por su referencia.
  */

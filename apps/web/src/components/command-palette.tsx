@@ -182,7 +182,7 @@ export function PaletteButton({
         onClick={onClick}
         aria-label={t("open")}
         aria-keyshortcuts="Meta+K Control+K"
-        className="inline-grid size-(--h-control) shrink-0 place-items-center rounded-control text-ink transition-colors hover:bg-raised"
+        className="inline-grid size-(--h-control) shrink-0 place-items-center rounded-control text-nav-ink transition-colors hover:bg-nav-hover"
       >
         <Icon.MagnifyingGlass size={22} aria-hidden="true" />
       </button>

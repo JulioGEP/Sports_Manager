@@ -73,7 +73,7 @@ const blockLabelsOf = (profile: AiCoachProfile) =>
   aiProfileBlocks(profile).map((block) => ({ block, label: profile.blocks[block]!.label }));
 
 /**
- * Propuesta de sesión con IA (ADR 0043). Pedirla y aplicarla es de quien planifica el equipo
+ * Propuesta de sesión con IA (ADR 0044). Pedirla y aplicarla es de quien planifica el equipo
  * (lleva la parte principal); verla, de quien lee el entrenamiento del equipo. El material de la
  * sección lo edita quien edita su biblioteca y su metodología.
  */

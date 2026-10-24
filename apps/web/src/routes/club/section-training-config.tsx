@@ -1266,7 +1266,7 @@ function TemplateSheet({
   );
 }
 
-// --- Cómo entrenamos aquí (ADR 0043) ---
+// --- Cómo entrenamos aquí (ADR 0044) ---
 
 function NotesCard({
   data,
@@ -1316,7 +1316,7 @@ function NotesCard({
   );
 }
 
-// --- Material (ADR 0043) ---
+// --- Material (ADR 0044) ---
 
 function EquipmentCard({
   data,

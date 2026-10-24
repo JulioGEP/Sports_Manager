@@ -12,7 +12,7 @@ const BodySchema = z.object({
 });
 
 /**
- * Trabajo en segundo plano de la propuesta con IA (ADR 0043). Netlify responde 202 a quien llama
+ * Trabajo en segundo plano de la propuesta con IA (ADR 0044). Netlify responde 202 a quien llama
  * y deja correr la función hasta 15 minutos: el modelo puede tardar minutos en una semana entera.
  * Solo atiende ids firmados por la API, y una propuesta solo se genera una vez (la toma quien la
  * encuentra en cola), así que repetir la llamada no gasta de nuevo.

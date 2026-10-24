@@ -306,7 +306,7 @@ export const trainingSessionItems = pgTable(
     notes: text("notes"),
     rating: integer("rating"),
     ownerUserId: uuid("owner_user_id").references(() => users.id, { onDelete: "set null" }),
-    /** Propuesta con IA que la puso (ADR 0043): mide cuántas tareas propuestas se quedan. */
+    /** Propuesta con IA que la puso (ADR 0044): mide cuántas tareas propuestas se quedan. */
     aiGenerationId: uuid("ai_generation_id").references(() => aiGenerations.id, {
       onDelete: "set null",
     }),

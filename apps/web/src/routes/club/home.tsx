@@ -60,7 +60,7 @@ export function ClubHome() {
   const eventKinds = useT("eventKinds");
   const roles = useT("roles");
   const positions = useT("positions");
-  const { me, org, branding, slug } = useReadyClub();
+  const { me, org, branding, look, slug } = useReadyClub();
   const intl = useIntl();
   const navigate = useNavigate();
   const paths = clubPaths(slug);
@@ -202,6 +202,7 @@ export function ClubHome() {
         clubName={org.organization.name}
         crest={<Crest name={org.organization.name} logoUrl={branding.logoUrl} size="lg" />}
         subtitle={subtitle}
+        motto={look.motto}
         {...(meta ? { meta } : {})}
         ariaLabel={t("hero.label", { club: org.organization.name })}
         actions={

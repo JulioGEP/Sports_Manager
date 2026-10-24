@@ -23,7 +23,7 @@ import { createSeeder } from "../data/testing/seed.ts";
 import { signGeneration, verifyGeneration } from "../services/ai-drafts.ts";
 
 /**
- * Propuesta de sesión con IA (ADR 0043) contra una base real y un modelo falso: el formulario con
+ * Propuesta de sesión con IA (ADR 0044) contra una base real y un modelo falso: el formulario con
  * el perfil de la sección, la petición sin datos personales, la validación, aplicar a las
  * sesiones, la cuota semanal por club (que no gasta lo que falla), el material de la sección, la
  * plataforma y el aislamiento entre equipos y clubes.

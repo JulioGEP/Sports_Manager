@@ -22,6 +22,18 @@ export default {
       expires: "L'enllaç caduca d'aquí a {days} dies.",
       ignore: "Si no esperaves aquesta invitació, pots ignorar aquest missatge.",
     },
+    invitationVoice: {
+      profesional: {
+        subject: "Invitació a {club}",
+        greeting: "Hola:",
+        body: "{inviter} t'ha donat accés a {club} amb el rol de {role}.",
+      },
+      vestuario: {
+        subject: "{club} et vol a l'equip",
+        greeting: "Hola!",
+        body: "{inviter} t'ha fitxat per a {club} com a {role}. T'esperem al vestidor!",
+      },
+    },
     passwordReset: {
       subject: "Restableix la contrasenya",
       greeting: "Hola, {name}.",

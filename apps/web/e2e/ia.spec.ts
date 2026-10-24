@@ -2,7 +2,7 @@ import { expect, test, type Page, type Route } from "@playwright/test";
 import { CLUB, expectLegibleButtons, login, shot, suffix } from "./helpers";
 
 /**
- * Propuesta de sesión con IA (ADR 0043). En local no hay token del proveedor, así que el
+ * Propuesta de sesión con IA (ADR 0044). En local no hay token del proveedor, así que el
  * navegador ve la configuración real (perfil, cuota, material y semana del Sénior A) con la IA
  * activada y respuestas del modelo simuladas: el formulario de 100 puntos, la espera y el borrador
  * con su porqué. El material de la sección y la cuota del club, contra la API real.

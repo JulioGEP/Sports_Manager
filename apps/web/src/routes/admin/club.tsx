@@ -384,7 +384,7 @@ function InviteAdminSheet({
 }
 
 /**
- * Propuesta con IA del club (ADR 0043): cuántas propuestas por semana puede pedir, cuántas lleva
+ * Propuesta con IA del club (ADR 0044): cuántas propuestas por semana puede pedir, cuántas lleva
  * y, en 30 días, cuántas, cuántas fallaron, cuántas se aplicaron, lo que costaron y cuántas de las
  * tareas propuestas siguen en su sesión.
  */

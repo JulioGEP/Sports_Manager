@@ -25,7 +25,7 @@ import { organizations } from "./organizations.ts";
 import { sections, teams } from "./structure.ts";
 
 /**
- * Propuesta de sesión con IA (ADR 0043). Todo lleva `organization_id` (ADR 0015).
+ * Propuesta de sesión con IA (ADR 0044). Todo lleva `organization_id` (ADR 0015).
  */
 
 /** Inventario de material de una sección: lo que hay para entrenar. */

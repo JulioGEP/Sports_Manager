@@ -70,7 +70,7 @@ describe("configuración", () => {
     expect(config.email.debugLog).toBe(false);
   });
 
-  it("la IA (ADR 0043): sin token no está configurada; modelo por defecto y dónde se genera", () => {
+  it("la IA (ADR 0044): sin token no está configurada; modelo por defecto y dónde se genera", () => {
     const local = loadConfig(base);
     expect(local.ai).toEqual({
       apiKey: null,

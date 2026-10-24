@@ -423,12 +423,11 @@
   },
   "settings": {
     "title": "Club settings",
-    "description": "Name, language, brand and logo; seasons, member types and payments. Whatever you change here, the whole club sees.",
+    "description": "Name, language and time zone; the club's identity (crest, colours, type, voice); seasons, member types, payments and accounting. What you change here, the whole club sees.",
     "forbidden": "You cannot edit this club's settings.",
     "tabs": {
       "general": "General",
-      "brand": "Brand",
-      "logo": "Logo",
+      "identity": "Identity",
       "seasons": "Seasons",
       "memberTypes": "Member types",
       "payments": "Payments",
@@ -443,27 +442,242 @@
       "defaultLocale": "Default language",
       "defaultLocaleHint": "Language of emails and of the interface for anyone who has not chosen another.",
       "saved": "Changes saved.",
-      "voice": "Club voice",
-      "voiceHint": "How the club talks to its people in everyday notices and messages. Money, departures and personal data always use a professional tone.",
       "timezone": "Time zone",
       "timezoneHint": "The agenda is shown in this zone, whatever the device's zone is."
     },
-    "brand": {
-      "title": "Brand colours",
-      "description": "They colour buttons, links and the club header.",
-      "primary": "Primary colour",
-      "primaryHint": "Buttons and highlighted elements.",
-      "secondary": "Secondary colour",
-      "secondaryHint": "Accents and details.",
-      "preview": "Preview",
-      "previewHint": "This is how the header will look with the chosen colours.",
-      "previewNav": "Home",
-      "previewButton": "Invite",
-      "saved": "Colours saved."
+    "identity": {
+      "intro": {
+        "title": "Your club's platform, unlike anyone else's",
+        "body": "Crest, colours, type, buttons, icons, background, cover, navigation, corners, motto and voice. What you choose shows instantly across the platform, only for you, until you save it."
+      },
+      "colors": {
+        "title": "Colours",
+        "description": "The primary colour tints buttons, links and the cover; the secondary, the stripe and the crest ring.",
+        "primary": "Primary colour",
+        "primaryHint": "Buttons and highlighted elements.",
+        "secondary": "Secondary colour",
+        "secondaryHint": "Cover stripe, crest ring, stripes and sash."
+      },
+      "palettes": {
+        "title": "Palettes",
+        "hint": "A starting point. Then fine-tune each colour.",
+        "names": {
+          "redGold": "Red and gold",
+          "greenGold": "Green and gold",
+          "navyRed": "Navy and red",
+          "maroonWhite": "Maroon and white",
+          "skyWhite": "Sky blue and white",
+          "blackGold": "Black and gold",
+          "orangeBlack": "Orange and black",
+          "purpleYellow": "Purple and yellow",
+          "whiteBlue": "White and blue",
+          "yellowBlack": "Yellow and black",
+          "greenWhite": "Green and white",
+          "blueWhite": "Blue and white"
+        }
+      },
+      "typography": {
+        "title": "Typography",
+        "description": "The typeface for titles and text. Figures keep their number font, aligned.",
+        "sample": "Training at 18:30",
+        "options": {
+          "moderna": {
+            "name": "Modern",
+            "hint": "Clean and precise. The usual one."
+          },
+          "clasica": {
+            "name": "Classic",
+            "hint": "Serif titles. For clubs with history."
+          },
+          "deportiva": {
+            "name": "Sporty",
+            "hint": "Narrow, bold titles, like a scoreboard."
+          },
+          "amable": {
+            "name": "Friendly",
+            "hint": "Rounded and warm. For schools and grassroots."
+          },
+          "geometrica": {
+            "name": "Geometric",
+            "hint": "Pure shapes and weighty titles."
+          }
+        }
+      },
+      "buttons": {
+        "title": "Buttons",
+        "description": "Shape and weight of buttons and controls. Height stays the same: still easy to tap.",
+        "sample": "Save",
+        "options": {
+          "sistema": {
+            "name": "System",
+            "hint": "Pill on mobile, soft corners on desktop."
+          },
+          "pildora": {
+            "name": "Pill",
+            "hint": "Round everywhere and bolder."
+          },
+          "suave": {
+            "name": "Soft",
+            "hint": "Gentle corners, neither round nor square."
+          },
+          "recta": {
+            "name": "Square",
+            "hint": "Sharp corners and a bold verb."
+          },
+          "relieve": {
+            "name": "Raised",
+            "hint": "With a shadow underneath, like a key."
+          }
+        }
+      },
+      "icons": {
+        "title": "Icons",
+        "description": "The stroke of every icon on the platform, sport icons included.",
+        "options": {
+          "duotono": {
+            "name": "Duotone",
+            "hint": "Stroke and a soft fill in the club colour."
+          },
+          "linea": {
+            "name": "Line",
+            "hint": "Stroke only, clean."
+          },
+          "fina": {
+            "name": "Thin",
+            "hint": "Thin, light stroke."
+          },
+          "gruesa": {
+            "name": "Bold",
+            "hint": "Thick stroke, visible from afar."
+          },
+          "relleno": {
+            "name": "Filled",
+            "hint": "Solid, with plenty of presence."
+          }
+        }
+      },
+      "background": {
+        "title": "Background",
+        "description": "The screen background, behind the cards. Text keeps its contrast in all of them.",
+        "options": {
+          "liso": {
+            "name": "Plain",
+            "hint": "Grey with a touch of the club colour."
+          },
+          "neutro": {
+            "name": "Neutral",
+            "hint": "Pure greys, no tint."
+          },
+          "tenido": {
+            "name": "Tinted",
+            "hint": "The club colour shows across the background."
+          },
+          "degradado": {
+            "name": "Gradient",
+            "hint": "A veil of the club colour at the top."
+          },
+          "trama": {
+            "name": "Pattern",
+            "hint": "Fine dots in the club colour."
+          }
+        }
+      },
+      "hero": {
+        "title": "Cover",
+        "description": "The home header, where the club rules.",
+        "noLogo": "Upload the crest to see it in the cover background. Meanwhile, it shows plain.",
+        "options": {
+          "liso": {
+            "name": "Plain",
+            "hint": "The primary colour, nothing else."
+          },
+          "degradado": {
+            "name": "Gradient",
+            "hint": "A veil that adds depth."
+          },
+          "rayas": {
+            "name": "Stripes",
+            "hint": "Secondary stripes, like the kit."
+          },
+          "banda": {
+            "name": "Sash",
+            "hint": "A diagonal sash in the secondary."
+          },
+          "escudo": {
+            "name": "Crest",
+            "hint": "The crest, large, in the background."
+          }
+        }
+      },
+      "nav": {
+        "title": "Navigation",
+        "description": "The sidebar on desktop and the top and bottom bars on mobile.",
+        "options": {
+          "claro": {
+            "name": "Light",
+            "hint": "White; the club colour on what's active."
+          },
+          "club": {
+            "name": "Club",
+            "hint": "In the club's primary colour."
+          },
+          "oscuro": {
+            "name": "Dark",
+            "hint": "Almost black, with a club tint."
+          }
+        }
+      },
+      "corners": {
+        "title": "Corners",
+        "description": "Cards, fields, panels and the cover.",
+        "options": {
+          "sistema": {
+            "name": "System",
+            "hint": "Rounded on mobile, precise on desktop."
+          },
+          "redondeadas": {
+            "name": "Rounded",
+            "hint": "Softer everywhere."
+          },
+          "rectas": {
+            "name": "Square",
+            "hint": "Sharp corners, a technical feel."
+          }
+        }
+      },
+      "motto": {
+        "title": "Motto",
+        "description": "A short line under the club name, on the cover and in invitations.",
+        "label": "Club motto",
+        "hint": "Optional. {count} of {max} characters.",
+        "example": "Together since 1952"
+      },
+      "voice": {
+        "title": "Club voice",
+        "description": "How the club speaks to its people across the platform: greetings, notices, empty screens, matches, challenges and agenda. Money, health, errors, access and leaving always sound the same: clear and professional.",
+        "sample": "How it sounds"
+      },
+      "preview": {
+        "title": "Preview",
+        "hint": "The cover and a card, with what you are choosing.",
+        "heroLabel": "Cover preview",
+        "cardTitle": "Under-11 A",
+        "chip": "Called up",
+        "primary": "Take attendance",
+        "secondary": "View roster"
+      },
+      "bar": {
+        "label": "Unsaved changes",
+        "dirty": "You are seeing the platform with your changes. Nobody else sees them until you save.",
+        "save": "Save identity",
+        "discard": "Discard",
+        "saved": "Identity saved. The whole club sees it now.",
+        "discarded": "Changes discarded."
+      }
     },
     "logo": {
-      "title": "Upload logo",
-      "hint": "PNG, JPEG or WebP up to {mb} MB. Shown in the header, on the login page and in the club selector.",
+      "title": "Crest",
+      "hint": "PNG, JPEG or WebP up to {mb} MB. Shown in the navigation, the cover, the login, the browser tab and the club picker.",
       "drop": "Drag the logo here",
       "choose": "or click to choose a file",
       "uploading": "Uploading…",
@@ -594,8 +808,8 @@
       "done": "Done",
       "logo": "Upload the club logo",
       "logoAction": "Upload logo",
-      "colors": "Pick the brand colours",
-      "colorsAction": "Pick colours",
+      "colors": "Choose the club's colours and identity",
+      "colorsAction": "Choose identity",
       "season": "Create the current season",
       "seasonAction": "Create season",
       "section": "Create the first section",

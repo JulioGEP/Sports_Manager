@@ -18,7 +18,7 @@ import { isUniqueViolation } from "./db.ts";
 import { mintOrgScope, type OrgScope } from "./scope.ts";
 
 /**
- * Propuesta de sesión con IA (ADR 0043): el inventario de material de cada sección, la cuota
+ * Propuesta de sesión con IA (ADR 0044): el inventario de material de cada sección, la cuota
  * semanal del club y el registro de cada propuesta. Toda consulta lleva el ámbito del club
  * (ADR 0015), salvo la del trabajo en segundo plano, que solo conoce el id de la propuesta y saca
  * el club de su fila.

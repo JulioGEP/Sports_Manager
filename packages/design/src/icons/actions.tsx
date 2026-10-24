@@ -96,7 +96,7 @@ export const actionIcons = {
   signOut: SignOut,
   /** Hacer actual, marcar como la temporada o el plan en vigor. */
   current: Star,
-  /** Proponer con IA: pedir un borrador que el cuerpo técnico revisa (ADR 0043). */
+  /** Proponer con IA: pedir un borrador que el cuerpo técnico revisa (ADR 0044). */
   propose: Sparkle,
 } satisfies Record<string, Icon>;
 

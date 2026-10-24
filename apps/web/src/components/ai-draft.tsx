@@ -32,7 +32,7 @@ import {
 } from "@/ui";
 
 /**
- * Propuesta de sesión con IA (ADR 0043): el formulario (qué entrenamientos, objetivo, 100 puntos de
+ * Propuesta de sesión con IA (ADR 0044): el formulario (qué entrenamientos, objetivo, 100 puntos de
  * énfasis, intensidad, material y contexto), la espera mientras se genera y el borrador con su
  * porqué, que quien planifica aplica a las sesiones o descarta. Nada se aplica solo.
  */

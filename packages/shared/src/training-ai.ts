@@ -12,7 +12,7 @@ import {
 } from "./training.ts";
 
 /**
- * Propuesta de sesión con IA (ADR 0043). Encima de las reglas explicables de la ADR 0039: las
+ * Propuesta de sesión con IA (ADR 0044). Encima de las reglas explicables de la ADR 0039: las
  * reglas detectan, la IA redacta un borrador y el cuerpo técnico decide. Todo lo que es dato vive
  * aquí y es puro: los perfiles de coach por tipo de sección, el formato de la petición y de la
  * propuesta, el prompt y la validación de lo que devuelve el modelo. La API reúne el contexto,
@@ -675,7 +675,7 @@ export const aiProfileBlocks = (profile: AiCoachProfile): SessionBlock[] =>
   SESSION_BLOCKS.filter((b) => profile.blocks[b] !== undefined);
 
 /**
- * Nombre de los bloques de la sesión en una sección (ADR 0043): las de actividad y los deportes
+ * Nombre de los bloques de la sesión en una sección (ADR 0044): las de actividad y los deportes
  * individuales llaman a sus bloques a su manera ("Secuencia principal", "WOD"). Los deportes de
  * equipo usan los de siempre: devuelve vacío y la web pone sus textos.
  */

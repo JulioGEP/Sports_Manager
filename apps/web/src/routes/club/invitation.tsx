@@ -12,7 +12,7 @@ import { ApiClientError, apiFetch, errorKey, setCurrentClub } from "@/lib/api";
 import { isValidClubSlug } from "@/lib/club";
 import { useLocale, useT } from "@/lib/intl";
 import { useSession, useSignOut } from "@/lib/session";
-import { applyClubColors } from "@/lib/theme";
+import { applyClubLook } from "@/lib/theme";
 import { Alert, Button, ButtonLink, Field, Input, StatusChip } from "@/ui";
 
 /** Aceptar una invitación: `/<club>/invitations/<token>`. Crea la cuenta o une la sesión actual. */
@@ -46,8 +46,7 @@ export function InvitationPage() {
     retry: false,
   });
   useEffect(() => {
-    if (branding.data)
-      applyClubColors(branding.data.brandPrimaryColor, branding.data.brandSecondaryColor);
+    if (branding.data) applyClubLook(branding.data);
   }, [branding.data]);
 
   const invitation = useQuery({
@@ -97,7 +96,7 @@ export function InvitationPage() {
   }
 
   const clubInfo = branding.data
-    ? { name: branding.data.name, logoUrl: branding.data.logoUrl }
+    ? { name: branding.data.name, logoUrl: branding.data.logoUrl, motto: branding.data.motto }
     : null;
 
   if (
