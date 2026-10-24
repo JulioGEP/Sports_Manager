@@ -1072,6 +1072,22 @@
       "forbidden": "Ese email no está autorizado como administrador de plataforma.",
       "exists": "Esa cuenta ya existe. Entra con tu contraseña o recupérala.",
       "backToLogin": "Ya tengo cuenta"
+    },
+    "ai": {
+      "title": "Propuesta con IA",
+      "description": "Propuestas de sesión que este club puede pedir cada semana. Todos los clubes usan el mismo token.",
+      "notConfigured": "Falta ANTHROPIC_API_KEY en Netlify: ningún club puede pedir propuestas.",
+      "quota": "Propuestas por semana",
+      "quotaHint": "0 la apaga en este club. Como mucho, 100.",
+      "saved": "Cuota guardada.",
+      "model": "Modelo",
+      "week": "Esta semana",
+      "requests": "Propuestas en 30 días",
+      "failed": "Fallidas",
+      "applied": "Aplicadas",
+      "cost": "Coste en 30 días",
+      "kept": "Tareas que se quedan",
+      "keptHint": "Tareas propuestas que siguen en su sesión, sobre las aplicadas. Es la medida de si la IA ayuda."
     }
   },
   "apiStatus": {
@@ -1125,7 +1141,9 @@
     "INVALID_TOKEN": "El enlace no es válido o ha caducado. Pide uno nuevo.",
     "rate_limited": "Demasiados intentos. Espera un momento y vuelve a probar.",
     "network": "Sin conexión con el servidor.",
-    "unknown": "Ha ocurrido un error inesperado."
+    "unknown": "Ha ocurrido un error inesperado.",
+    "quota_exceeded": "El club ha gastado las propuestas con IA de esta semana. Se renuevan el lunes.",
+    "ai_unavailable": "La propuesta con IA no está disponible en este club."
   },
   "audit": {
     "organization": {
@@ -3611,7 +3629,8 @@
       "court": "Modo pista",
       "print": "Imprimir",
       "copy": "Copiar a otro día",
-      "remove": "Quitar planificación"
+      "remove": "Quitar planificación",
+      "propose": "Proponer con IA"
     },
     "summary": {
       "plannedMinutes": "Minutos planificados",
@@ -3642,7 +3661,8 @@
       "removed": "Tarea quitada.",
       "rated": "Valoración: {rating}",
       "none": "Esta sesión aún no tiene tareas",
-      "noneHint": "Las añade el cuerpo técnico del equipo, cada uno en sus bloques."
+      "noneHint": "Las añade el cuerpo técnico del equipo, cada uno en sus bloques.",
+      "fromAi": "IA"
     },
     "item": {
       "setsReps": "{sets} × {reps}",
@@ -3827,7 +3847,8 @@
         "submit": "Aplicar",
         "done": "{count, plural, =0 {No se ha aplicado a ningún día.} one {Aplicada a # sesión.} other {Aplicada a # sesiones.}}",
         "noMatch": "Esta semana no tiene partido: la semana tipo cuenta los días desde él."
-      }
+      },
+      "propose": "Proponer la semana con IA"
     },
     "season": {
       "title": "Plan de temporada",
@@ -4702,6 +4723,37 @@
       "created": "{name} creada.",
       "saved": "Semana tipo guardada.",
       "nameTaken": "Ya hay una semana tipo con ese nombre."
+    },
+    "notes": {
+      "title": "Cómo entrenamos aquí",
+      "description": "La metodología de la sección con vuestras palabras. La propuesta con IA la tiene en cuenta en cada sesión.",
+      "label": "Metodología",
+      "hint": "Hasta 2000 caracteres. Sin nombres de deportistas."
+    },
+    "equipment": {
+      "title": "Material",
+      "description": "Lo que hay para entrenar. La propuesta con IA planifica solo con este material.",
+      "new": "Añadir material",
+      "empty": "Sin material",
+      "table": {
+        "name": "Material",
+        "quantity": "Cantidad",
+        "notes": "Notas"
+      },
+      "removed": "{name} quitado.",
+      "confirmRemoveTitle": "¿Quitar {name}?",
+      "confirmRemoveBody": "Deja de contar para las propuestas con IA.",
+      "sheet": {
+        "newTitle": "Nuevo material",
+        "editTitle": "Editar {name}",
+        "name": "Nombre",
+        "quantity": "Cantidad",
+        "notes": "Notas",
+        "submit": "Añadir material",
+        "taken": "Ya hay material con ese nombre en la sección.",
+        "created": "{name} añadido.",
+        "saved": "Material guardado."
+      }
     }
   },
   "storeCategories": {
@@ -5039,5 +5091,94 @@
       "attempts": "{count, plural, one {# intento} other {# intentos}}"
     },
     "syncWaiting": "Holded pide una pausa por su límite de peticiones: seguimos en {seconds} s · quedan {remaining}"
+  },
+  "aiDraft": {
+    "title": "Proponer con IA",
+    "description": "Un borrador con el criterio de un experto en «{profile}». Lo revisas y decides tú.",
+    "quota": "{remaining, plural, one {Te queda # propuesta} other {Te quedan # propuestas}} de {limit} esta semana. Se renueva el {date}.",
+    "quotaEmpty": "El club ha gastado las {limit} propuestas de esta semana. Se renueva el {date}.",
+    "sessions": "Entrenamientos que planificar",
+    "sessionsHint": "Una propuesta puede cubrir varios entrenamientos de la semana y cuenta como una.",
+    "noEvents": "No hay entrenamientos en la agenda esta semana.",
+    "planned": "Ya tiene tareas",
+    "objective": "Objetivo",
+    "objectiveHint": "Si lo dejas vacío, lo propone la IA.",
+    "emphasis": "Qué quieres potenciar",
+    "emphasisHint": "Reparte 100 puntos. Lo que más pese tendrá más minutos en la parte principal.",
+    "axisValue": "{axis}: {points} puntos",
+    "emphasisReady": "100 puntos repartidos.",
+    "emphasisLeft": "{points, plural, one {Queda # punto por repartir.} other {Quedan # puntos por repartir.}}",
+    "emphasisOver": "{points, plural, one {Sobra # punto.} other {Sobran # puntos.}}",
+    "emphasisReset": "Volver al reparto de la sección",
+    "intensity": "Intensidad",
+    "intensities": {
+      "low": "Suave",
+      "medium": "Media",
+      "high": "Alta"
+    },
+    "equipment": "Material de hoy",
+    "equipmentHint": "Desmarca lo que hoy no tengas.",
+    "noEquipment": "La sección no tiene inventario de material. Se añade en sus ajustes de entrenamiento.",
+    "extraEquipment": "Otro material",
+    "context": "Contexto",
+    "contextHint": "Lo que no está en los datos: cómo vienen, el último resultado, el tiempo. No escribas datos de salud. Los nombres de la plantilla se cambian por una referencia antes de enviarlo.",
+    "libraryOnly": "Solo tareas de la biblioteca",
+    "libraryOnlyHint": "Si no, puede proponer tareas nuevas, marcadas como nuevas.",
+    "includeVariants": "Variantes para jugadores con restricciones",
+    "submit": "Proponer con IA",
+    "recent": "Propuestas recientes",
+    "status": {
+      "queued": "En cola",
+      "running": "Generándose",
+      "ready": "Lista",
+      "failed": "No salió",
+      "applied": "Aplicada"
+    },
+    "waitingTitle": "Preparando la propuesta",
+    "waiting": "Pensando con el criterio de un experto en «{profile}». Suele tardar uno o dos minutos.",
+    "waitingClose": "Puedes cerrar: la propuesta te espera en Propuestas recientes.",
+    "failures": {
+      "not_configured": "La propuesta con IA no está configurada.",
+      "model_error": "El servicio de IA no ha respondido.",
+      "invalid_output": "La IA no ha devuelto una propuesta que se pueda usar.",
+      "refused": "La IA no ha querido hacer esta propuesta.",
+      "timeout": "La IA ha tardado demasiado."
+    },
+    "failedQuota": "No gasta cuota: puedes volver a pedirla.",
+    "retry": "Volver al formulario",
+    "summary": "Resumen",
+    "why": "Por qué",
+    "objectiveLabel": "Objetivo",
+    "targetRpe": "RPE previsto",
+    "contents": "Contenidos",
+    "plannedMinutes": "{planned} de {available} min",
+    "replaces": "Ya tiene tareas: al aplicar se sustituyen las de los bloques propuestos.",
+    "warnings": "Revisa",
+    "newDrill": "Nueva",
+    "fromLibrary": "De la biblioteca: {name}",
+    "howTo": "Cómo se hace",
+    "drillFields": {
+      "description": "Descripción",
+      "rules": "Reglas",
+      "coachingPoints": "Puntos clave",
+      "variants": "Variantes",
+      "organization": "Organización",
+      "material": "Material"
+    },
+    "equipmentNeeded": "Material",
+    "checks": {
+      "someone": "Un jugador",
+      "unknown_session": "La IA propuso una sesión que no se había pedido y se ha quitado.",
+      "unknown_drill": "«{title}» citaba una tarea que no está en la biblioteca: queda como tarea libre.",
+      "block_moved": "Una tarea iba en un bloque que esta sección no usa: pasa a la parte principal.",
+      "player_out": "{name} está de baja y se ha quitado de «{title}».",
+      "restriction": "{name} tiene restricciones ({tags}) que chocan con «{title}».",
+      "max_minutes": "{name} suma {minutes} minutos y su máximo es {max}.",
+      "over_time": "Las tareas suman {planned} minutos y la sesión dura {available}.",
+      "trimmed": "«{title}» no cabe: un bloque admite como mucho 20 tareas."
+    },
+    "saveNewDrills": "Guardar las tareas nuevas en la biblioteca del equipo",
+    "apply": "Aplicar a las sesiones",
+    "applied": "{count, plural, one {Propuesta aplicada a # sesión. Queda en borrador para que la revises.} other {Propuesta aplicada a # sesiones. Quedan en borrador para que las revises.}}"
   }
 }

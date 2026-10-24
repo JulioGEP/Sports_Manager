@@ -16,11 +16,13 @@ const FORBIDDEN = [
   "@netlify/database",
   "better-auth",
   "resend",
+  "@anthropic-ai/sdk",
 ];
 const SKIP_DIRS = new Set(["node_modules", ".next", ".netlify", "dist", "coverage"]);
 /** Ficheros generados por la build (no commiteados) que no son código fuente. */
 const GENERATED_FILES = new Set([
   join("apps", "api", "netlify", "functions", "api", "handler.mjs"),
+  join("apps", "api", "netlify", "functions", "ai-draft-background", "worker.mjs"),
 ]);
 const SOURCE_EXT = /\.(ts|tsx|mts|cts|js|mjs|cjs|jsx)$/;
 

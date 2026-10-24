@@ -55,6 +55,9 @@ Notas:
 | `STRIPE_WEBHOOK_SECRET` | pendiente | el del endpoint de prueba | Marcada como secreto. Secreto de firma del webhook de Connect `POST /api/webhooks/stripe` |
 | `INTEGRATIONS_SECRET` | secreto propio | secreto propio, distinto | Marcada como secreto, mínimo 32 caracteres (`openssl rand -base64 48`). Cifra las claves de contabilidad de los clubes (ADR 0042). Sin ella, ningún club puede conectar Holded. Cambiarla deja ilegibles las claves guardadas: cada club tendría que volver a pegar la suya |
 | `LOGO_STORE` | no definida | no definida | Solo local: `memory` sustituye Netlify Blobs (servidor local y pruebas de interfaz, ADR 0025). Fuera de local la API se niega a arrancar con ese valor |
+| `ANTHROPIC_API_KEY` | token del proveedor | opcional | Marcada como secreto, ámbito Functions. Un único token para todos los clubes (ADR 0044). Sin ella, la propuesta con IA no aparece |
+| `AI_MODEL` | no definida (`claude-opus-5-5`) | no definida | Solo para comparar modelos, por ejemplo `claude-sonnet-5-5` |
+| `AI_RUNNER` | no definida (`background`) | no definida | `inline` genera la propuesta dentro de la petición: solo local sin Netlify y tests |
 
 ### Primer administrador de plataforma (ADR 0026)
 
@@ -63,6 +66,13 @@ Notas:
 3. A partir de ahí, la entrada del negocio es `https://hubsports.netlify.app/admin/login`. Las cuentas de club (por ejemplo `admin@demo.test`) no entran ahí.
 
 Hazlo nada más desplegar: mientras la cuenta no exista, cualquiera que conozca un email autorizado podría crearla.
+
+### Propuesta con IA (ADR 0044)
+
+1. En la consola del proveedor (console.anthropic.com), crear una clave para el proyecto y fijar un límite de gasto mensual: un solo token es una sola factura para todos los clubes.
+2. En Netlify, proyecto `hubsports` → Project configuration → Environment variables → Add a variable: `ANTHROPIC_API_KEY`, marcada como secreto, ámbito Functions, contexto Production (y Deploy Previews si se quiere probar en ellas).
+3. Volver a desplegar. La API manda cada propuesta a la función en segundo plano `ai-draft-background` (hasta 15 minutos), que se publica con la build.
+4. La cuota de cada club (5 por semana por defecto, 0 la apaga) se cambia en `/admin`, en la ficha del club. Ahí se ven también las propuestas, los fallos, el coste y las tareas que se quedan en 30 días.
 
 ## Base de datos y entornos
 

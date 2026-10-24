@@ -1,7 +1,10 @@
 import {
+  sessionBlockLabels,
+  unusedSessionBlocks,
   type AvailabilityDto,
   type InsightDto,
   type RestrictionTag,
+  type SessionBlock,
   type TrainingContent,
 } from "@sportsmanager/shared";
 import { useState } from "react";
@@ -10,7 +13,7 @@ import { Link } from "react-router";
 import { apiFetch, errorKey } from "@/lib/api";
 import { clubPaths, useReadyClub } from "@/lib/club";
 import { useDates } from "@/lib/dates";
-import { useT } from "@/lib/intl";
+import { useLocale, useT } from "@/lib/intl";
 import { Button, Icon, StatusChip, useToast, type StatusKind } from "@/ui";
 
 /**
@@ -20,6 +23,22 @@ import { Button, Icon, StatusChip, useToast, type StatusKind } from "@/ui";
  */
 
 // --- Etiquetas ---
+
+/**
+ * Bloques de la sesión según la sección (ADR 0044): las de actividad y los deportes individuales
+ * los llaman a su manera ("Secuencia principal", "Fuerza / técnica y WOD") y no enseñan los que no
+ * usan (porteros en yoga). Los deportes de equipo, con los nombres de siempre.
+ */
+export function useSessionBlocks(sportCode: string) {
+  const blocksT = useT("sessionBlocks");
+  const { locale } = useLocale();
+  const labels = sessionBlockLabels(sportCode);
+  const unused = new Set(unusedSessionBlocks(sportCode));
+  return {
+    label: (block: SessionBlock) => labels[block]?.[locale] ?? blocksT(block),
+    used: (block: SessionBlock) => !unused.has(block),
+  };
+}
 
 const availabilityKind: Record<AvailabilityDto["status"], StatusKind> = {
   available: "success",

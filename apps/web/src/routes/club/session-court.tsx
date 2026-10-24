@@ -6,6 +6,7 @@ import {
   DrillAnimationPlayer,
   RestrictionTags,
   useLoadFormat,
+  useSessionBlocks,
   useShortDate,
 } from "@/components/training-ui";
 import { clubPaths, useReadyClub } from "@/lib/club";
@@ -56,7 +57,7 @@ export function SessionCourtPage() {
 
 function Court({ data }: { data: SessionDetailResponse }) {
   const t = useT("session.court");
-  const blocksT = useT("sessionBlocks");
+  const blocksT = useSessionBlocks(data.section.sportCode).label;
   const { slug } = useReadyClub();
   const paths = clubPaths(slug);
   const dates = useShortDate();

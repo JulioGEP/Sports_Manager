@@ -158,6 +158,21 @@ export const DrillUpdateSchema = DrillCreateSchema.omit({ scope: true, sectionId
   });
 export type DrillUpdate = z.infer<typeof DrillUpdateSchema>;
 
+// --- Material de la sección (ADR 0044) ---
+
+/**
+ * Inventario de material de una sección: balones, conos, kettlebells, esterillas. Lo usa la
+ * propuesta con IA para no planificar con lo que no hay, y la delegación para prepararlo.
+ */
+export const SectionEquipmentCreateSchema = z.object({
+  name: z.string().trim().min(1).max(80),
+  quantity: z.number().int().min(1).max(9999).nullable().optional(),
+  notes: z.string().trim().max(200).nullable().optional(),
+});
+export type SectionEquipmentCreate = z.infer<typeof SectionEquipmentCreateSchema>;
+export const SectionEquipmentUpdateSchema = SectionEquipmentCreateSchema.partial();
+export type SectionEquipmentUpdate = z.infer<typeof SectionEquipmentUpdateSchema>;
+
 // --- Planificación ---
 
 /** Día respecto al partido: `MD` el día del partido, `MD-3` tres días antes, `MD+1` el siguiente. */
@@ -604,6 +619,11 @@ export const TrainingSettingsSchema = z.object({
   thresholds: InsightThresholdsSchema,
   /** Por categoría (id): reparto objetivo de contenidos. */
   methodology: z.record(z.string(), MethodologyTargetSchema),
+  /**
+   * "Cómo entrenamos aquí" (ADR 0044): la metodología de la sección en palabras del club. La
+   * propuesta con IA la lee encima del perfil del deporte.
+   */
+  methodologyNotes: z.string().max(2000).nullable(),
 });
 export type TrainingSettings = z.infer<typeof TrainingSettingsSchema>;
 
@@ -612,6 +632,7 @@ export const TrainingSettingsPatchSchema = z.object({
   formative: z.boolean().nullable().optional(),
   thresholds: InsightThresholdsSchema.partial().optional(),
   methodology: z.record(z.string(), MethodologyTargetSchema).optional(),
+  methodologyNotes: z.string().trim().max(2000).nullable().optional(),
 });
 export type TrainingSettingsPatch = z.infer<typeof TrainingSettingsPatchSchema>;
 
@@ -620,6 +641,7 @@ export const DEFAULT_TRAINING_SETTINGS: TrainingSettings = {
   formative: null,
   thresholds: DEFAULT_INSIGHT_THRESHOLDS,
   methodology: {},
+  methodologyNotes: null,
 };
 
 /** Ajustes efectivos: los de por defecto con lo que la sección haya cambiado encima. */
@@ -635,6 +657,7 @@ export function resolveTrainingSettings(
       ...(stripUndefined(p.thresholds ?? {}) as Partial<InsightThresholds>),
     },
     methodology: p.methodology ?? {},
+    methodologyNotes: p.methodologyNotes?.trim() ? p.methodologyNotes.trim() : null,
   };
 }
 

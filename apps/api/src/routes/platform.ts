@@ -8,18 +8,22 @@ import {
   MeResponseSchema,
   OrganizationCreateSchema,
   PlatformAdminsResponseSchema,
+  PlatformAiResponseSchema,
+  PlatformAiUpdateSchema,
   PlatformInvitationCreateSchema,
   PlatformOrganizationDetailSchema,
   PlatformOrganizationResponseSchema,
   PlatformOrganizationsResponseSchema,
   PlatformOrganizationUpdateSchema,
   SportsResponseSchema,
+  weekStartOf,
   type Locale,
   type PlatformOrganization,
 } from "@sportsmanager/shared";
 import type { ApiConfig } from "../config.ts";
 import {
   isLogoContentType,
+  localDate,
   logoUrlFor,
   sniffImageType,
   type DataLayer,
@@ -450,6 +454,94 @@ export function createPlatformRoutes(config: ApiConfig, data: DataLayer) {
           memberSince: m.memberSince.toISOString(),
         }));
       return c.json({ admins }, 200);
+    },
+  );
+
+  // --- Propuesta con IA (ADR 0044): cuota semanal por club, uso y coste ---
+
+  async function aiDto(organization: OrganizationRow, scope: OrgScope) {
+    const from = weekStartOf(localDate(organization.timezone, new Date()));
+    const [used, stats] = await Promise.all([
+      data.ai.usedThisWeek(scope, from),
+      data.ai.stats(scope, new Date(Date.now() - 30 * 86_400_000)),
+    ]);
+    return {
+      configured: config.ai.configured,
+      model: config.ai.model,
+      weeklyQuota: organization.aiWeeklyQuota,
+      week: { from, used },
+      last30: {
+        requests: stats.requests,
+        failed: stats.failed,
+        applied: stats.applied,
+        costUsd: Math.round(stats.costMicros / 10_000) / 100,
+        keptShare:
+          stats.appliedItems > 0
+            ? Math.round((stats.keptItems / stats.appliedItems) * 100) / 100
+            : null,
+      },
+    };
+  }
+
+  app.openapi(
+    createRoute({
+      method: "get",
+      path: "/api/platform/organizations/{slug}/ai",
+      tags: ["Plataforma"],
+      summary:
+        "Propuesta con IA de un club: cuota semanal, uso de la semana y, en 30 días, llamadas, fallos, coste y tareas que se quedan",
+      security: [{ sessionCookie: [] }],
+      request: { params: slugParam },
+      responses: {
+        200: {
+          description: "IA del club",
+          content: { "application/json": { schema: PlatformAiResponseSchema } },
+        },
+        404: error("No existe"),
+        ...errors,
+      },
+    }),
+    async (c) => {
+      const { organization, scope } = await load(c.req.valid("param").slug);
+      return c.json(await aiDto(organization, scope), 200);
+    },
+  );
+
+  app.openapi(
+    createRoute({
+      method: "put",
+      path: "/api/platform/organizations/{slug}/ai",
+      tags: ["Plataforma"],
+      summary: "Cambia la cuota semanal de propuestas con IA de un club (0 la apaga)",
+      security: [{ sessionCookie: [] }],
+      request: {
+        params: slugParam,
+        body: {
+          content: { "application/json": { schema: PlatformAiUpdateSchema } },
+          required: true,
+        },
+      },
+      responses: {
+        200: {
+          description: "IA del club",
+          content: { "application/json": { schema: PlatformAiResponseSchema } },
+        },
+        404: error("No existe"),
+        ...errors,
+      },
+    }),
+    async (c) => {
+      const { weeklyQuota } = c.req.valid("json");
+      const { organization, scope } = await load(c.req.valid("param").slug);
+      await data.ai.setWeeklyQuota(scope, weeklyQuota);
+      await data.audit.record({
+        actorUserId: c.get("sessionUser").id,
+        organizationId: organization.id,
+        action: "organization.ai_updated",
+        target: organization.slug,
+        details: { weeklyQuota },
+      });
+      return c.json(await aiDto({ ...organization, aiWeeklyQuota: weeklyQuota }, scope), 200);
     },
   );
 

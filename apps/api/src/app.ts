@@ -21,6 +21,7 @@ import { createPlatformSetupRoutes } from "./routes/platform-setup.ts";
 import { createPlayerRoutes } from "./routes/players.ts";
 import { createStructureRoutes } from "./routes/structure.ts";
 import { createTrainingRoutes } from "./routes/training.ts";
+import { createTrainingAiRoutes } from "./routes/training-ai.ts";
 import { createPlayerHealthRoutes } from "./routes/player-health.ts";
 import { createPublicStoreRoutes } from "./routes/public-store.ts";
 import { createStoreRoutes } from "./routes/store.ts";
@@ -89,6 +90,7 @@ export function createApp(options: AppOptions = {}) {
   app.route("/", createChallengeRoutes(config, data));
   app.route("/", createMatchRoutes(config, data));
   app.route("/", createTrainingRoutes(config, data));
+  app.route("/", createTrainingAiRoutes(config, data));
   app.route("/", createLoadRoutes(config, data));
   app.route("/", createPlayerHealthRoutes(config, data));
   app.route("/", createPlatformRoutes(config, data));

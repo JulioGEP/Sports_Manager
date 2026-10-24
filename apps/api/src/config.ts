@@ -1,4 +1,5 @@
 import {
+  AI_DEFAULT_MODEL,
   DEFAULT_INVITATION_TTL_DAYS,
   EMAIL_TRANSPORTS,
   type EmailTransport,
@@ -40,6 +41,12 @@ const EnvSchema = z.object({
     (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
     z.string().min(32, "INTEGRATIONS_SECRET necesita al menos 32 caracteres.").optional(),
   ),
+  ANTHROPIC_API_KEY: optionalString,
+  AI_MODEL: optionalString,
+  AI_RUNNER: z.preprocess(
+    (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
+    z.enum(["background", "inline"]).optional(),
+  ),
   LOGO_STORE: z.preprocess(
     (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
     z.enum(["netlify", "memory"]).optional(),
@@ -79,6 +86,22 @@ export interface AccountingConfig {
   configured: boolean;
 }
 
+/**
+ * Propuesta de sesión con IA (ADR 0044). Un solo token del proveedor para todos los clubes, en la
+ * variable `ANTHROPIC_API_KEY` de Netlify. Sin token, la función existe pero no se puede pedir.
+ */
+export interface AiConfig {
+  apiKey: string | null;
+  /** Modelo; `AI_MODEL` lo cambia (por ejemplo, para comparar dos modelos). */
+  model: string;
+  configured: boolean;
+  /**
+   * Dónde se genera: en una función en segundo plano de Netlify (hasta 15 minutos) o en el propio
+   * proceso, que solo sirve en local sin Netlify y en tests.
+   */
+  runner: "background" | "inline";
+}
+
 export interface ApiConfig {
   /** Dominio base de la plataforma, sin protocolo. Los clubes viven en `<slug>.<baseDomain>`. */
   baseDomain: string;
@@ -99,6 +122,7 @@ export interface ApiConfig {
   email: EmailConfig;
   payments: PaymentsConfig;
   accounting: AccountingConfig;
+  ai: AiConfig;
   /**
    * Emails que cuentan como administradores de plataforma además de la tabla `platform_admins`
    * (ADR 0023). Es la vía para el primer administrador, sin contraseñas sembradas.
@@ -159,6 +183,13 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     accounting: {
       secret: integrationsSecret,
       configured: integrationsSecret !== null,
+    },
+    ai: {
+      apiKey: parsed.ANTHROPIC_API_KEY ?? null,
+      model: parsed.AI_MODEL ?? AI_DEFAULT_MODEL,
+      configured: Boolean(parsed.ANTHROPIC_API_KEY),
+      runner:
+        parsed.AI_RUNNER ?? (isLocal && parsed.NETLIFY_DEV !== "true" ? "inline" : "background"),
     },
   };
 }

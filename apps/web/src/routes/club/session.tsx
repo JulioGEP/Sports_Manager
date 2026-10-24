@@ -20,6 +20,7 @@ import { AttendanceToggle } from "@sportsmanager/design";
 import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useDeferredValue, useState, type FormEvent, type ReactNode } from "react";
 import { Link, useNavigate, useParams } from "react-router";
+import { AiDraftAction } from "@/components/ai-draft";
 import {
   AvailabilityChip,
   ContentChips,
@@ -29,6 +30,7 @@ import {
   RestrictionTags,
   RpeScale,
   useLoadFormat,
+  useSessionBlocks,
   useShortDate,
 } from "@/components/training-ui";
 import { ApiClientError, apiFetch, errorKey } from "@/lib/api";
@@ -191,7 +193,6 @@ function SessionEditor({ data }: { data: SessionDetailResponse }) {
   const c = useT("common");
   const ins = useT("insights");
   const ss = useT("sessionStatus");
-  const blocksT = useT("sessionBlocks");
   const errors = useT("errors");
   const toast = useToast();
   const client = useQueryClient();
@@ -211,6 +212,7 @@ function SessionEditor({ data }: { data: SessionDetailResponse }) {
   const [savingBlock, setSavingBlock] = useState<SessionBlock | null>(null);
 
   const { session, items, roster, access, contents } = data;
+  const sessionBlocks = useSessionBlocks(data.section.sportCode);
   const players = roster.map((r) => ({ id: r.playerId, name: r.name }));
   const ready = roster.filter(
     (r) => r.availability.status === "available" || r.availability.status === "limited",
@@ -218,7 +220,7 @@ function SessionEditor({ data }: { data: SessionDetailResponse }) {
   const blockItems = (block: SessionBlock) =>
     items.filter((i) => i.block === block).sort((a, b) => a.sortOrder - b.sortOrder);
   const visibleBlocks = SESSION_BLOCKS.filter(
-    (b) => access.blocks.includes(b) || items.some((i) => i.block === b),
+    (b) => (access.blocks.includes(b) && sessionBlocks.used(b)) || items.some((i) => i.block === b),
   );
   const anyEdit = access.header || access.blocks.length > 0 || access.close;
 
@@ -301,6 +303,14 @@ function SessionEditor({ data }: { data: SessionDetailResponse }) {
         description={session.objective ?? t("noObjective")}
         actions={
           <>
+            {access.header && session.status !== "done" ? (
+              <AiDraftAction
+                teamId={session.team.id}
+                date={session.date}
+                eventIds={[session.eventId]}
+                label={t("actions.propose")}
+              />
+            ) : null}
             {access.close ? (
               <Button action="finish" onClick={() => setClosing(true)}>
                 {session.status === "done" ? t("actions.reclose") : t("actions.close")}
@@ -453,7 +463,7 @@ function SessionEditor({ data }: { data: SessionDetailResponse }) {
         return (
           <Card
             key={block}
-            title={blocksT(block)}
+            title={sessionBlocks.label(block)}
             description={
               list.length > 0 ? fmt.minutes(minutes) : editable ? t("blocks.empty") : undefined
             }
@@ -505,12 +515,15 @@ function SessionEditor({ data }: { data: SessionDetailResponse }) {
                       ) : null}
                       <div className="flex min-w-0 flex-1 flex-col gap-1.5">
                         <div className="flex flex-wrap items-baseline justify-between gap-2">
-                          <h3 className="text-body font-semibold text-ink">
+                          <h3 className="flex flex-wrap items-center gap-2 text-body font-semibold text-ink">
                             {item.drillId ? (
                               <Link to={paths.drill(item.drillId)}>{item.title}</Link>
                             ) : (
                               item.title
                             )}
+                            {item.fromAi ? (
+                              <StatusChip kind="info">{t("blocks.fromAi")}</StatusChip>
+                            ) : null}
                           </h3>
                           <span className="font-mono text-secondary text-ink">
                             {fmt.minutes(item.minutes)}
@@ -1079,7 +1092,7 @@ function ItemSheet({
   const t = useT("session.itemSheet");
   const st = useT("session");
   const c = useT("common");
-  const blocksT = useT("sessionBlocks");
+  const blocksT = useSessionBlocks(data.section.sportCode).label;
   const v = editor.value;
   const [title, setTitle] = useState(v.title ?? "");
   const [minutes, setMinutes] = useState(String(v.minutes));

@@ -5,6 +5,7 @@ import {
   DrillBoard,
   RestrictionTags,
   useLoadFormat,
+  useSessionBlocks,
   useShortDate,
 } from "@/components/training-ui";
 import { clubPaths, useReadyClub } from "@/lib/club";
@@ -35,7 +36,7 @@ export function SessionPrintPage() {
 function PrintSheet({ data }: { data: SessionDetailResponse }) {
   const t = useT("session.print");
   const st = useT("session");
-  const blocksT = useT("sessionBlocks");
+  const blocksT = useSessionBlocks(data.section.sportCode).label;
   const ss = useT("sessionStatus");
   const { slug, branding } = useReadyClub();
   const paths = clubPaths(slug);

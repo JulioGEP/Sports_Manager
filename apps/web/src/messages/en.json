@@ -1072,6 +1072,22 @@
       "forbidden": "That email is not authorised as a platform administrator.",
       "exists": "That account already exists. Sign in with your password or recover it.",
       "backToLogin": "I already have an account"
+    },
+    "ai": {
+      "title": "AI proposals",
+      "description": "Session proposals this club can request each week. Every club uses the same token.",
+      "notConfigured": "ANTHROPIC_API_KEY is missing in Netlify: no club can request proposals.",
+      "quota": "Proposals per week",
+      "quotaHint": "0 turns it off for this club. At most 100.",
+      "saved": "Quota saved.",
+      "model": "Model",
+      "week": "This week",
+      "requests": "Proposals in 30 days",
+      "failed": "Failed",
+      "applied": "Applied",
+      "cost": "Cost in 30 days",
+      "kept": "Tasks that stay",
+      "keptHint": "Proposed tasks still in their session, out of those applied. It measures whether the AI helps."
     }
   },
   "apiStatus": {
@@ -1125,7 +1141,9 @@
     "INVALID_TOKEN": "The link is not valid or has expired. Request a new one.",
     "rate_limited": "Too many attempts. Wait a moment and try again.",
     "network": "No connection to the server.",
-    "unknown": "An unexpected error occurred."
+    "unknown": "An unexpected error occurred.",
+    "quota_exceeded": "The club has used this week's AI proposals. They renew on Monday.",
+    "ai_unavailable": "AI proposals are not available in this club."
   },
   "audit": {
     "organization": {
@@ -3611,7 +3629,8 @@
       "court": "Court mode",
       "print": "Print",
       "copy": "Copy to another day",
-      "remove": "Remove plan"
+      "remove": "Remove plan",
+      "propose": "Propose with AI"
     },
     "summary": {
       "plannedMinutes": "Planned minutes",
@@ -3642,7 +3661,8 @@
       "removed": "Drill removed.",
       "rated": "Rating: {rating}",
       "none": "This session has no drills yet",
-      "noneHint": "The team's coaching staff add them, each in their own blocks."
+      "noneHint": "The team's coaching staff add them, each in their own blocks.",
+      "fromAi": "AI"
     },
     "item": {
       "setsReps": "{sets} × {reps}",
@@ -3827,7 +3847,8 @@
         "submit": "Apply",
         "done": "{count, plural, =0 {Not applied to any day.} one {Applied to # session.} other {Applied to # sessions.}}",
         "noMatch": "This week has no match: the template counts the days from it."
-      }
+      },
+      "propose": "Propose the week with AI"
     },
     "season": {
       "title": "Season plan",
@@ -4702,6 +4723,37 @@
       "created": "{name} created.",
       "saved": "Template week saved.",
       "nameTaken": "There is already a template week with that name."
+    },
+    "notes": {
+      "title": "How we train here",
+      "description": "The section's methodology in your own words. AI proposals take it into account in every session.",
+      "label": "Methodology",
+      "hint": "Up to 2000 characters. No athlete names."
+    },
+    "equipment": {
+      "title": "Equipment",
+      "description": "What you have to train with. AI proposals only plan with this equipment.",
+      "new": "Add equipment",
+      "empty": "No equipment",
+      "table": {
+        "name": "Equipment",
+        "quantity": "Quantity",
+        "notes": "Notes"
+      },
+      "removed": "{name} removed.",
+      "confirmRemoveTitle": "Remove {name}?",
+      "confirmRemoveBody": "It will no longer count for AI proposals.",
+      "sheet": {
+        "newTitle": "New equipment",
+        "editTitle": "Edit {name}",
+        "name": "Name",
+        "quantity": "Quantity",
+        "notes": "Notes",
+        "submit": "Add equipment",
+        "taken": "There is already equipment with that name in the section.",
+        "created": "{name} added.",
+        "saved": "Equipment saved."
+      }
     }
   },
   "storeCategories": {
@@ -5039,5 +5091,94 @@
       "attempts": "{count, plural, one {# attempt} other {# attempts}}"
     },
     "syncWaiting": "Holded asks for a pause because of its request limit: resuming in {seconds} s · {remaining} left"
+  },
+  "aiDraft": {
+    "title": "Propose with AI",
+    "description": "A draft built with the judgement of an expert in “{profile}”. You review it and decide.",
+    "quota": "{remaining, plural, one {# proposal left} other {# proposals left}} out of {limit} this week. It renews on {date}.",
+    "quotaEmpty": "The club has used its {limit} proposals this week. It renews on {date}.",
+    "sessions": "Sessions to plan",
+    "sessionsHint": "One proposal can cover several sessions of the week and counts as one.",
+    "noEvents": "There are no training sessions on the calendar this week.",
+    "planned": "Already has tasks",
+    "objective": "Objective",
+    "objectiveHint": "Leave it empty and the AI will suggest one.",
+    "emphasis": "What to focus on",
+    "emphasisHint": "Share out 100 points. What weighs more gets more minutes in the main part.",
+    "axisValue": "{axis}: {points} points",
+    "emphasisReady": "100 points shared out.",
+    "emphasisLeft": "{points, plural, one {# point left to share.} other {# points left to share.}}",
+    "emphasisOver": "{points, plural, one {# point too many.} other {# points too many.}}",
+    "emphasisReset": "Back to the section's split",
+    "intensity": "Intensity",
+    "intensities": {
+      "low": "Easy",
+      "medium": "Moderate",
+      "high": "Hard"
+    },
+    "equipment": "Today's equipment",
+    "equipmentHint": "Untick what you don't have today.",
+    "noEquipment": "The section has no equipment list. Add it in its training settings.",
+    "extraEquipment": "Other equipment",
+    "context": "Context",
+    "contextHint": "What isn't in the data: how they're feeling, the last result, the weather. Don't write health data. Squad names are replaced by a reference before sending.",
+    "libraryOnly": "Library tasks only",
+    "libraryOnlyHint": "Otherwise it can propose new tasks, marked as new.",
+    "includeVariants": "Variants for players with restrictions",
+    "submit": "Propose with AI",
+    "recent": "Recent proposals",
+    "status": {
+      "queued": "Queued",
+      "running": "Generating",
+      "ready": "Ready",
+      "failed": "Didn't work",
+      "applied": "Applied"
+    },
+    "waitingTitle": "Preparing the proposal",
+    "waiting": "Thinking with the judgement of an expert in “{profile}”. It usually takes a minute or two.",
+    "waitingClose": "You can close this: the proposal will be waiting in Recent proposals.",
+    "failures": {
+      "not_configured": "AI proposals are not set up.",
+      "model_error": "The AI service didn't respond.",
+      "invalid_output": "The AI didn't return a usable proposal.",
+      "refused": "The AI declined to make this proposal.",
+      "timeout": "The AI took too long."
+    },
+    "failedQuota": "It doesn't use quota: you can request it again.",
+    "retry": "Back to the form",
+    "summary": "Summary",
+    "why": "Why",
+    "objectiveLabel": "Objective",
+    "targetRpe": "Planned RPE",
+    "contents": "Contents",
+    "plannedMinutes": "{planned} of {available} min",
+    "replaces": "Already has tasks: applying replaces those in the proposed blocks.",
+    "warnings": "Check",
+    "newDrill": "New",
+    "fromLibrary": "From the library: {name}",
+    "howTo": "How it works",
+    "drillFields": {
+      "description": "Description",
+      "rules": "Rules",
+      "coachingPoints": "Key points",
+      "variants": "Variants",
+      "organization": "Organisation",
+      "material": "Equipment"
+    },
+    "equipmentNeeded": "Equipment",
+    "checks": {
+      "someone": "A player",
+      "unknown_session": "The AI proposed a session that wasn't requested and it was removed.",
+      "unknown_drill": "“{title}” referred to a task that isn't in the library: it stays as a free task.",
+      "block_moved": "A task was in a block this section doesn't use: it moves to the main part.",
+      "player_out": "{name} is out and was removed from “{title}”.",
+      "restriction": "{name} has restrictions ({tags}) that clash with “{title}”.",
+      "max_minutes": "{name} adds up to {minutes} minutes and their maximum is {max}.",
+      "over_time": "The tasks add up to {planned} minutes and the session lasts {available}.",
+      "trimmed": "“{title}” doesn't fit: a block takes at most 20 tasks."
+    },
+    "saveNewDrills": "Save the new tasks in the team's library",
+    "apply": "Apply to the sessions",
+    "applied": "{count, plural, one {Proposal applied to # session. It stays as a draft for you to review.} other {Proposal applied to # sessions. They stay as drafts for you to review.}}"
   }
 }

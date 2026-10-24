@@ -17,10 +17,17 @@ const stubPgNative = {
   },
 };
 
-/** @type {import("esbuild").BuildOptions} */
+/**
+ * Dos funciones: la API y el trabajo en segundo plano de la propuesta con IA (ADR 0044).
+ * @type {import("esbuild").BuildOptions}
+ */
 const options = {
-  entryPoints: ["src/handler.ts"],
-  outfile: "netlify/functions/api/handler.mjs",
+  entryPoints: {
+    "api/handler": "src/handler.ts",
+    "ai-draft-background/worker": "src/ai-worker.ts",
+  },
+  outdir: "netlify/functions",
+  outExtension: { ".js": ".mjs" },
   bundle: true,
   platform: "node",
   format: "esm",

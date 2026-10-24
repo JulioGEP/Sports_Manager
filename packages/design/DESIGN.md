@@ -274,6 +274,7 @@ Un botón se reconoce antes de leerse. Por eso **toda acción que tenga icono en
 | Abrir | Abrir, Ver, Ir, Entrar en un club | `ArrowRight`, detrás del verbo | `open` |
 | Entrar | Iniciar sesión, Entrar, Unirme | `SignIn` | `signIn` |
 | Salir | Cerrar sesión | `SignOut` | `signOut` |
+| Proponer | Proponer con IA, Proponer la semana | `Sparkle` | `propose` |
 
 Reglas:
 

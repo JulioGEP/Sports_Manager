@@ -11,6 +11,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
 import { useIntl } from "react-intl";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router";
+import { AiDraftAction } from "@/components/ai-draft";
 import { ContentChips, InsightList, useLoadFormat, useShortDate } from "@/components/training-ui";
 import { ApiClientError, apiFetch, errorKey } from "@/lib/api";
 import { clubPaths, useReadyClub } from "@/lib/club";
@@ -66,6 +67,7 @@ export function TeamTrainingPage() {
   const { slug, org } = useReadyClub();
   const paths = clubPaths(slug);
   const client = useQueryClient();
+  const navigate = useNavigate();
   const dates = useDates();
   const fmt = useLoadFormat();
   const [params, setParams] = useSearchParams();
@@ -164,6 +166,17 @@ export function TeamTrainingPage() {
           ) : null}
           {access.write ? (
             <>
+              <AiDraftAction
+                teamId={id}
+                date={data.week.start}
+                label={t("propose")}
+                size="sm"
+                onApplied={(result) =>
+                  result.sessions.length === 1
+                    ? void navigate(paths.session(result.sessions[0]!.sessionId))
+                    : void reload()
+                }
+              />
               <Button
                 size="sm"
                 variant="secondary"
