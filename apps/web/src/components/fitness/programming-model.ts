@@ -199,7 +199,7 @@ export function benchmarkBlock(b: BenchmarkEntry, locale: Locale): Partial<Block
     title: b.name,
     description: b.description[locale],
     format: formatOf({ scoreType: b.scoreType, timeCapSeconds: null, rmReps: null }),
-    minutes: "",
+    minutes: b.minutes ? String(b.minutes) : "",
   };
 }
 

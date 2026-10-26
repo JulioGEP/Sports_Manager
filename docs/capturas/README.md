@@ -756,6 +756,10 @@ Cuentas, con contraseña `123456`: `atleta@demo.test` (Laia Ferrer, atleta con t
 
 ![Editar un ejercicio, sin pizarra ni campos de deporte de equipo](escritorio-282-box-ejercicio-editar.png)
 
+### Workouts: los benchmarks del catálogo por familia, para repasarlos o programarlos
+
+![Workouts: los benchmarks del catálogo por familia, para repasarlos o programarlos](escritorio-283-box-workouts.png)
+
 ### Programación: la semana con un día por fila, el estado de cada WOD y los huecos sin WOD
 
 ![Programación: la semana con un día por fila, el estado de cada WOD y los huecos sin WOD](escritorio-290-box-programacion-semana.png)
@@ -1009,6 +1013,8 @@ Las mismas pantallas en un móvil, con la forma envolvente del design system: ca
 ![Ejercicios: la biblioteca del box por categoría y material (móvil)](movil-280-box-ejercicios.png)
 
 ![Un ejercicio: cómo se hace, puntos clave, errores comunes y escalados (móvil)](movil-281-box-ejercicio.png)
+
+![Workouts: los benchmarks del catálogo por familia (móvil)](movil-283-box-workouts.png)
 
 ![Programación: la semana con un día por fila (móvil)](movil-290-box-programacion-semana.png)
 

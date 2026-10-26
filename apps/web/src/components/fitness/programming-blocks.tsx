@@ -1,4 +1,5 @@
 import {
+  BENCHMARK_FAMILIES,
   BENCHMARKS,
   REP_MAXES,
   WORKOUT_BLOCK_KINDS,
@@ -434,8 +435,6 @@ export function AddBlockBar({
   );
 }
 
-const FAMILIES = ["girls", "heroes", "hybrid", "open"] as const;
-
 /** Los benchmarks del catálogo, por familia: se elige uno y llena el bloque WOD. */
 export function BenchmarkSheet({
   onPick,
@@ -456,7 +455,7 @@ export function BenchmarkSheet({
       description={t("hint")}
     >
       <div className="flex flex-col gap-5">
-        {FAMILIES.map((family) => {
+        {BENCHMARK_FAMILIES.map((family) => {
           const items = BENCHMARKS.filter((b) => b.family === family);
           if (items.length === 0) return null;
           return (

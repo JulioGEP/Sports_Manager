@@ -2,6 +2,7 @@ import {
   addDays,
   AI_FAILURES,
   AiWodGenerationResponseSchema,
+  benchmarkByCode,
   MOVEMENTS,
   WorkoutResponseSchema,
   WorkoutUpsertSchema,
@@ -151,6 +152,8 @@ function Editor({ existing }: { existing: WorkoutView | null }) {
   const movementName = useMovementName();
   const stateOf = useWorkoutState();
 
+  // `?benchmark=fran` llega desde la biblioteca de workouts con el WOD elegido; `?benchmark=1`, a elegirlo.
+  const preset = benchmarkByCode(params.get("benchmark"));
   const initial = useMemo<Draft>(
     () =>
       existing
@@ -168,7 +171,11 @@ function Editor({ existing }: { existing: WorkoutView | null }) {
             onDate: params.get("date") ?? time.today,
             title: "",
             notes: "",
-            blocks: params.get("benchmark") ? [emptyBlock("wod")] : [],
+            blocks: preset
+              ? [{ ...emptyBlock("wod"), ...benchmarkBlock(preset, locale) }]
+              : params.get("benchmark")
+                ? [emptyBlock("wod")]
+                : [],
           },
     // El borrador nace una vez por WOD: el editor se monta con `key` por id.
     [existing],
@@ -187,7 +194,7 @@ function Editor({ existing }: { existing: WorkoutView | null }) {
   const [showNotes, setShowNotes] = useState(Boolean(initial.notes));
   const [showMore, setShowMore] = useState(Boolean(initial.teamId));
   const [benchmarkFor, setBenchmarkFor] = useState<string | null>(
-    !existing && params.get("benchmark") ? (initial.blocks[0]?.key ?? null) : null,
+    !existing && !preset && params.get("benchmark") ? (initial.blocks[0]?.key ?? null) : null,
   );
   const [scheduling, setScheduling] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
