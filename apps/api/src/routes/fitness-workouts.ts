@@ -19,8 +19,13 @@ import {
   scoreIsComplete,
   scoreValue,
   weeklyStreaks,
+  daysBetween,
   WorkoutResponseSchema,
   WorkoutResultSchema,
+  WorkoutsCopiedResponseSchema,
+  WorkoutsCopySchema,
+  WorkoutsPublishedResponseSchema,
+  WorkoutsPublishSchema,
   WorkoutsResponseSchema,
   WorkoutUpsertSchema,
   WORKOUT_LEVELS,
@@ -28,6 +33,7 @@ import {
   type MovementProgress,
   type PersonalRecord,
   type RankedScore,
+  type RepMax,
   type Score,
   type WorkoutLevel,
 } from "@sportsmanager/shared";
@@ -182,15 +188,44 @@ export function createFitnessWorkoutRoutes(config: ApiConfig, data: DataLayer) {
     return { visible, writable };
   }
 
-  async function requireWritable(c: Ctx, sectionId: string) {
+  /** Si quien pide programa en una disciplina: toda, o las de las clases que da. */
+  async function canWrite(c: Ctx, sectionId: string): Promise<boolean> {
     const actor = c.get("actor");
-    if (actor.permissions.has("org.training.write")) return;
-    if (!actor.permissions.has("org.training.write_own")) throw forbidden();
+    if (actor.permissions.has("org.training.write")) return true;
+    if (!actor.permissions.has("org.training.write_own")) return false;
     const tenant = orgOf(c);
     const own = await data.memberships.ownTeamIds(tenant.scope, actor.userId);
     const season = await data.seasons.current(tenant.scope);
     const teams = season ? await data.teams.list(tenant.scope, season.id, sectionId, own) : [];
-    if (teams.length === 0) throw forbidden("Solo programas en las disciplinas de tus clases.");
+    return teams.length > 0;
+  }
+
+  async function requireWritable(c: Ctx, sectionId: string) {
+    const actor = c.get("actor");
+    if (
+      !actor.permissions.has("org.training.write") &&
+      !actor.permissions.has("org.training.write_own")
+    )
+      throw forbidden();
+    if (!(await canWrite(c, sectionId)))
+      throw forbidden("Solo programas en las disciplinas de tus clases.");
+  }
+
+  /**
+   * Las disciplinas sobre las que actúa una acción de semana: la pedida (si es del club y se ve)
+   * o todas las que se ven, y de ellas, en las que quien pide programa. Sin ninguna, prohibido.
+   */
+  async function weekSections(c: Ctx, sectionId: string | undefined): Promise<string[]> {
+    const { visible } = await sectionsOf(c);
+    if (sectionId && !visible.includes(sectionId)) throw notFound("Esa disciplina no existe.");
+    const candidates = sectionId ? [sectionId] : visible;
+    const writable: string[] = [];
+    for (const id of candidates) if (await canWrite(c, id)) writable.push(id);
+    // Quien programa todo el club y aún no tiene disciplinas no tiene nada que hacer; el coach
+    // sin clases no programa.
+    if (writable.length === 0 && !c.get("actor").permissions.has("org.training.write"))
+      throw forbidden("Solo programas en las disciplinas de tus clases.");
+    return writable;
   }
 
   // --- Programación ---
@@ -308,6 +343,104 @@ export function createFitnessWorkoutRoutes(config: ApiConfig, data: DataLayer) {
     async (c) => {
       const w = await save(c, null, c.req.valid("json"));
       return c.json({ workout: workoutDto(w, new Date(), localeOf(c)) }, 201);
+    },
+  );
+
+  // --- Acciones de semana (ADR 0050) ---
+
+  app.openapi(
+    createRoute({
+      method: "post",
+      path: "/api/org/workouts/publish",
+      tags: ["Fitness"],
+      summary:
+        "Publica ya los borradores de un rango (la semana) en las disciplinas en que quien pide programa, o en una",
+      security: [{ sessionCookie: [] }],
+      middleware: [requirePermission("org.training.read")],
+      request: body(WorkoutsPublishSchema),
+      responses: { 200: json("Publicados", WorkoutsPublishedResponseSchema), ...errors },
+    }),
+    async (c) => {
+      const input = c.req.valid("json");
+      const sections = await weekSections(c, input.sectionId);
+      const published = await data.workouts.publishRange(
+        orgOf(c).scope,
+        input.from,
+        input.to,
+        sections,
+      );
+      if (published > 0)
+        await audit(c, "workout.updated", `${input.from} – ${input.to}`, {
+          action: "publish_week",
+          published,
+          sectionId: input.sectionId ?? null,
+        });
+      return c.json({ published }, 200);
+    },
+  );
+
+  app.openapi(
+    createRoute({
+      method: "post",
+      path: "/api/org/workouts/copy",
+      tags: ["Fitness"],
+      summary:
+        "Copia los WODs de unos días (la semana anterior) a otros como borradores, sin pisar los días que ya tienen WOD",
+      security: [{ sessionCookie: [] }],
+      middleware: [requirePermission("org.training.read")],
+      request: body(WorkoutsCopySchema),
+      responses: { 200: json("Copiados", WorkoutsCopiedResponseSchema), ...errors },
+    }),
+    async (c) => {
+      const tenant = orgOf(c);
+      const input = c.req.valid("json");
+      const sections = await weekSections(c, input.sectionId);
+      const source = await data.workouts.list(
+        tenant.scope,
+        input.from,
+        addDays(input.from, input.days - 1),
+        { sectionIds: sections },
+      );
+      let created = 0;
+      let skipped = 0;
+      for (const w of source) {
+        const result = await data.workouts.upsert(
+          tenant.scope,
+          {
+            sectionId: w.section.id,
+            teamId: w.team?.id ?? null,
+            onDate: addDays(input.to, daysBetween(input.from, w.onDate)),
+            title: w.title,
+            notes: w.notes,
+            status: "draft",
+            publishAt: null,
+            blocks: w.blocks.map((b) => ({
+              kind: b.kind,
+              title: b.title,
+              description: b.description,
+              scoreType: b.scoreType,
+              timeCapSeconds: b.timeCapSeconds,
+              movementCode: b.movementCode,
+              percent: b.percent,
+              rmReps: b.rmReps as RepMax | null,
+              scaled: b.scaled,
+              rx: b.rx,
+              rxPlus: b.rxPlus,
+            })),
+          },
+          c.get("sessionUser").id,
+        );
+        if (result.outcome === "saved") created += 1;
+        else skipped += 1;
+      }
+      if (created > 0)
+        await audit(c, "workout.created", `${input.to} (${input.days})`, {
+          action: "copy_week",
+          from: input.from,
+          created,
+          skipped,
+        });
+      return c.json({ created, skipped }, 200);
     },
   );
 

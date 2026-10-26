@@ -41,13 +41,17 @@ La ve todo el box, el atleta incluido. La escriben el dueño y los coaches. El b
 
 ### Programación con criterio de UX
 
-La semana es una lista por días con cada WOD legible y sus acciones: editar, duplicar, mover y publicar. Los días con clase y sin WOD tienen un hueco con atajos. Desde la semana se publican todos los borradores, o se copia la semana anterior.
+**La semana** es una lista con un día por fila. Arriba, la semana con flechas ("Esta semana", "La semana que viene") y la disciplina. Cada WOD dice su estado en palabras (borrador, publicado, se publica a tal hora) y enseña sus bloques en una línea legible. Desde él se edita, se duplica o se mueve a otro día, y se publica ya.
 
-El editor se organiza en dos columnas: editar a un lado y lo que verá el atleta al otro. Cada bloque se define por su tipo y su formato:
-- **WOD y accesorios:** por tiempo con cap en minutos, AMRAP, EMOM, repeticiones, distancia o calorías.
-- **Fuerza:** series al porcentaje del 1RM o buscar una máxima.
+Los días con clase y sin WOD salen como un hueco con "Programar" y tres atajos: un benchmark, la propuesta con IA o copiar otro día. "Publicar semana" publica todos los borradores de una vez. Con la semana vacía, "Copiar la semana anterior" pasa a ser el botón visible.
 
-El formato decide el marcador. Los escalados van plegados, y un WOD se puede rellenar desde un benchmark. Abajo hay una barra de publicación: guardar borrador, publicar o programar para una hora. Dos rutas nuevas en la API: publicar un rango y copiar días.
+**El editor** tiene dos columnas: editar a un lado y "Así lo ve el atleta" al otro. En móvil, dos pestañas. El día se cambia con flechas y la disciplina ya viene elegida. Cada bloque se define por su tipo y su formato, y el formato decide el marcador:
+- **WOD y accesorios:** por tiempo con cap en minutos, AMRAP, EMOM, repeticiones, distancia, calorías o sin marcador.
+- **Fuerza:** series al porcentaje del 1RM, buscar una máxima o sin marcador.
+
+Los escalados van plegados y un bloque se puede rellenar desde un benchmark. Abajo, una barra fija: guardar borrador, publicar o programar para una hora. Salir con cambios sin guardar pide confirmación.
+
+**En la API**, dos rutas nuevas con los permisos de guardar un WOD y su registro en la actividad: publicar un rango de días y copiar días. Copiar crea borradores y nunca pisa un día que ya tiene WOD.
 
 ### El resto
 

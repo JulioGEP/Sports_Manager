@@ -1,4 +1,4 @@
-# Capturas de la interfaz (Bloques 14 a 26, pizarra animada, tienda, pasarela y contabilidad, identidad del club, mejoras de la plataforma, clubs de fitness)
+# Capturas de la interfaz (Bloques 14 a 26, pizarra animada, tienda, pasarela y contabilidad, identidad del club, mejoras de la plataforma, clubs de fitness y su revisión)
 
 Capturas que generan las pruebas de interfaz (`pnpm test:ui`) contra la API real con base embebida, con el front de Vite + React + Tailwind sobre el design system del producto (`packages/design`, ADR 0027). Escritorio a 1280x800; móvil, Pixel 7. La fuente viva es el artefacto `capturas-interfaz` de CI; esta carpeta es la foto de la revisión del club completo (ADR 0031), con el design system 1.3: todo botón lleva el icono de su acción (rueda dentada para editar, cubo de basura rojo para eliminar, más para añadir); la fila es el objeto (se abre tocándola, con acciones como iconos silenciosos sin borde); la paleta de mandos ⌘K encuentra personas, equipos, pantallas y acciones; y la plantilla de un equipo se ve como un tablero por posición: secciones por deporte, socios, agenda e instalaciones, cuotas y "ver como", sobre lo que ya había de los bloques 11 a 13 (ADR 0028, 0029 y 0030), más el alcance por cargo y la gestión de acceso por rol del Bloque 19 (ADR 0033): el cuerpo técnico, la dirección y la fisio ven solo su parte del club, y "Personal" gana la pestaña "Acceso", y el partido en directo del Bloque 20 (ADR 0034): configuración del motor por sección, consola en la banda a pantalla completa y en tres zonas con el banquillo arrastrable (ADR 0037), estadísticas e histórico, y el entrenamiento de los bloques 21 a 26 (ADR 0039): semana del equipo con "A tener en cuenta", sesión por bloques con su cierre y modo pista, biblioteca con pizarra, carga, enfermería, salud y "Mi bienestar".
 
@@ -730,6 +730,36 @@ Cuentas, con contraseña `123456`: `atleta@demo.test` (Laia Ferrer, atleta con t
 
 ![Plataforma: el tipo de cada club](escritorio-272-plataforma-tipo-de-club.png)
 
+## Revisión del box (ADR 0050): ejercicios y programación
+
+### Ejercicios: la biblioteca del box por categoría y material
+
+![Ejercicios: la biblioteca del box por categoría y material](escritorio-280-box-ejercicios.png)
+
+### Un ejercicio: cómo se hace, puntos clave, errores comunes y escalados
+
+![Un ejercicio: cómo se hace, puntos clave, errores comunes y escalados](escritorio-281-box-ejercicio.png)
+
+### Editar un ejercicio, sin pizarra ni campos de deporte de equipo
+
+![Editar un ejercicio, sin pizarra ni campos de deporte de equipo](escritorio-282-box-ejercicio-editar.png)
+
+### Programación: la semana con un día por fila, el estado de cada WOD y los huecos sin WOD
+
+![Programación: la semana con un día por fila, el estado de cada WOD y los huecos sin WOD](escritorio-290-box-programacion-semana.png)
+
+### Editor del WOD: bloques por formato y "Así lo ve el atleta" al lado
+
+![Editor del WOD: bloques por formato y "Así lo ve el atleta" al lado](escritorio-291-box-programacion-editor.png)
+
+### Editor del WOD: la vista del atleta y la barra de publicación
+
+![Editor del WOD: la vista del atleta y la barra de publicación](escritorio-292-box-programacion-vista-previa.png)
+
+### Una semana vacía: copiar la anterior o programar cada día
+
+![Una semana vacía: copiar la anterior o programar cada día](escritorio-293-box-programacion-dia-vacio.png)
+
 ## Móvil
 
 Las mismas pantallas en un móvil, con la forma envolvente del design system: cabecera con el escudo, barra de pestañas flotante abajo con cuatro destinos y "Más", listas en filas cápsula y hojas que ocupan todo el ancho.
@@ -957,3 +987,15 @@ Las mismas pantallas en un móvil, con la forma envolvente del design system: ca
 ![Inicio de la dueña: lo que pide atención, cifras, clases de hoy y programación de la semana (móvil)](movil-265-box-duena-inicio.png)
 
 ![Tarifas y bonos con su derecho de uso (móvil)](movil-267-box-duena-tarifas.png)
+
+### Revisión del box (móvil): ejercicios y programación
+
+![Ejercicios: la biblioteca del box por categoría y material (móvil)](movil-280-box-ejercicios.png)
+
+![Un ejercicio: cómo se hace, puntos clave, errores comunes y escalados (móvil)](movil-281-box-ejercicio.png)
+
+![Programación: la semana con un día por fila (móvil)](movil-290-box-programacion-semana.png)
+
+![Editor del WOD: la pestaña Editar (móvil)](movil-291-box-programacion-editor.png)
+
+![Editor del WOD: la pestaña Vista previa (móvil)](movil-292-box-programacion-vista-previa.png)
