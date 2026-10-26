@@ -43,7 +43,7 @@ export function ClubShell() {
 function ClubLook({ children }: { children: ReactNode }) {
   const { look } = useClub();
   return (
-    <VoiceProvider voice={look?.voice ?? DEFAULT_CLUB_VOICE}>
+    <VoiceProvider voice={look?.voice ?? DEFAULT_CLUB_VOICE} model={look?.clubModel}>
       <IconStyleProvider style={look?.style.icons ?? DEFAULT_CLUB_STYLE.icons}>
         {children}
       </IconStyleProvider>
@@ -62,6 +62,7 @@ function NavCrest({ name, logoUrl }: { name: string; logoUrl: string | null | un
 
 function ClubFrame({ children }: { children: ReactNode }) {
   const t = useT("nav");
+  const fx = useT("fitness.common.nav");
   const { slug, state, look } = useClub();
   const desktop = useMediaQuery(DESKTOP_QUERY);
   const navigate = useNavigate();
@@ -206,6 +207,103 @@ function ClubFrame({ children }: { children: ReactNode }) {
       ].filter((l): l is NavLinkItem => l !== null),
     },
   ].filter((g) => g.links.length > 0);
+  /**
+   * Un club de fitness (ADR 0049) se navega por lo que se hace cada día: el atleta reserva, mira el
+   * WOD y su progreso; el coach da clases y programa; el dueño, además, lleva el negocio. Los
+   * cinco primeros destinos son la barra del móvil.
+   */
+  const fitness = look?.clubModel === "fitness" && state.kind === "ready" && actor !== null;
+  const staffView = has("org.events.read");
+  const athleteView = athletePlayerId !== null && !staffView;
+  const link = (to: string, label: string, icon: typeof Icon.House, end = false): NavLinkItem => ({
+    to,
+    label,
+    icon,
+    end,
+  });
+  const fitnessGroups: typeof groups = !fitness
+    ? []
+    : [
+        {
+          key: "home",
+          label: null,
+          links: [
+            link(paths.home, fx("today"), Icon.House, true),
+            ...(athleteView
+              ? [
+                  link(paths.classes, fx("book"), Icon.CalendarBlank),
+                  link(paths.wod, fx("wod"), Icon.Barbell),
+                  link(paths.progress, fx("progress"), Icon.ChartBar),
+                ]
+              : []),
+            ...(staffView
+              ? [
+                  link(paths.classes, fx("classes"), Icon.CalendarBlank),
+                  ...(has("org.training.read")
+                    ? [link(paths.programming, fx("programming"), Icon.Barbell)]
+                    : []),
+                  ...(has("org.players.read")
+                    ? [link(paths.athletes, fx("athletes"), Icon.UsersThree)]
+                    : []),
+                ]
+              : []),
+            ...(!athleteView && !staffView && has("org.family.read")
+              ? [link(paths.family, fx("family"), Icon.HandHeart)]
+              : []),
+          ],
+        },
+        {
+          key: "community",
+          label: fx("groupCommunity"),
+          links: [
+            ...(athleteView ? [link(paths.myPlan, fx("myPlan"), Icon.Ticket)] : []),
+            ...(athleteView || has("org.community.write")
+              ? [link(paths.messages, fx("messages"), Icon.Envelope)]
+              : []),
+            link(paths.announcements, fx("announcements"), Icon.Info),
+            link(paths.ranking, fx("ranking"), Icon.Trophy),
+            link(paths.timer, fx("timer"), Icon.Timer),
+            athleteView || !has("org.training.read")
+              ? link(paths.library, fx("library"), Icon.Target)
+              : link(paths.drills, fx("library"), Icon.Target),
+            ...(staffView ? [link(paths.tv, fx("tv"), Icon.CornersOut)] : []),
+          ],
+        },
+        {
+          key: "business",
+          label: fx("groupBusiness"),
+          links: [
+            ...(has("org.fees.read") ? [link(paths.plans, fx("plans"), Icon.Ticket)] : []),
+            ...(has("org.club_members.read")
+              ? [link(paths.leads, fx("leads"), Icon.UserPlus)]
+              : []),
+            ...(has("org.fees.read") ? [link(paths.metrics, fx("metrics"), Icon.Pulse)] : []),
+            has("org.fees.read")
+              ? link(paths.fees, fx("payments"), Icon.Coins)
+              : link(paths.fees, fx("myPayments"), Icon.Coins),
+            ...(has("org.store.read") || actor?.canShop
+              ? [link(paths.store, fx("store"), Icon.Storefront)]
+              : []),
+          ],
+        },
+        {
+          key: "management",
+          label: fx("groupManagement"),
+          links: [
+            ...(has("org.structure.write")
+              ? [link(paths.classTypes, fx("classTypes"), Icon.Clock)]
+              : []),
+            ...(has("org.members.read") ? [link(paths.staff, fx("staff"), Icon.Users)] : []),
+            ...(has("org.facilities.read")
+              ? [link(paths.facilities, fx("rooms"), Icon.Buildings)]
+              : []),
+            ...(has("org.settings.write")
+              ? [link(paths.settings, fx("settings"), Icon.SlidersHorizontal)]
+              : []),
+          ],
+        },
+      ].filter((g) => g.links.length > 0);
+  if (fitness) groups.splice(0, groups.length, ...fitnessGroups);
   const links = groups.flatMap((g) => g.links);
   /** La barra inferior admite cinco destinos (DESIGN.md 9.10): los cuatro primeros y "Más". */
   const mobileLinks = links.length > 5 ? links.slice(0, 4) : links;

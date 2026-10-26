@@ -1,0 +1,17 @@
+{
+  "players.title": "Athletes",
+  "players.description": "Everyone who trains at the box: profile, plan, contact and status.",
+  "sections.title": "Disciplines",
+  "sections.description": "The box's disciplines (CrossFit, HYROX, weightlifting…) with their class types.",
+  "agenda.title": "Calendar",
+  "agenda.description": "Classes, events and competitions at the box.",
+  "facilities.title": "Rooms",
+  "facilities.description": "The box's rooms and areas, with their hours and what's booked in them.",
+  "fees.title": "Payments",
+  "fees.description": "Plans, charges and payments at the box.",
+  "drills.title": "Movements",
+  "drills.description": "The box's movements and exercises, with explanations and video.",
+  "store.description": "What the box sells to its athletes: apparel, gear, supplements and extras. Charged like any other payment.",
+  "shop.title": "Box shop",
+  "shop.description": "Apparel, gear and extras from the box. Paid like any other charge."
+}

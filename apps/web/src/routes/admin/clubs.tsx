@@ -1,10 +1,12 @@
 import {
+  CLUB_MODELS,
   LOCALES,
   OrganizationCreateSchema,
   PlatformOrganizationResponseSchema,
   PlatformOrganizationsResponseSchema,
   SportsResponseSchema,
   slugify,
+  type ClubModel,
   type Locale,
   type PlatformOrganization,
 } from "@sportsmanager/shared";
@@ -26,6 +28,7 @@ import {
   Icon,
   Input,
   PageHeader,
+  Segmented,
   Select,
   Sheet,
   StatusChip,
@@ -43,6 +46,7 @@ export function PlatformClubsPage() {
   const t = useT("platform.clubs");
   const c = useT("common");
   const statuses = useT("status");
+  const models = useT("platform.clubModels");
   const errors = useT("errors");
   const intl = useIntl();
   const [createOpen, setCreateOpen] = useState(false);
@@ -112,6 +116,15 @@ export function PlatformClubsPage() {
               ),
             },
             {
+              key: "model",
+              header: t("table.model"),
+              cell: (o) => (
+                <StatusChip kind={o.clubModel === "fitness" ? "club" : "neutral"}>
+                  {models(o.clubModel)}
+                </StatusChip>
+              ),
+            },
+            {
               key: "members",
               header: t("table.members"),
               cell: (o) => o.counts.members,
@@ -132,7 +145,7 @@ export function PlatformClubsPage() {
           mobileRow={(o) => ({
             leading: <Crest name={o.name} logoUrl={o.logoUrl} />,
             title: <Link to={`/admin/clubs/${o.slug}`}>{o.name}</Link>,
-            subtitle: `/${o.slug}`,
+            subtitle: `/${o.slug} · ${models(o.clubModel)}`,
             trailing: <StatusChip kind={statusKind[o.status]}>{statuses(o.status)}</StatusChip>,
           })}
           href={(o) => `/admin/clubs/${o.slug}`}
@@ -147,6 +160,7 @@ function CreateSheet({ open, onClose }: { open: boolean; onClose: () => void }) 
   const t = useT("platform.createDrawer");
   const c = useT("common");
   const locales = useT("locales");
+  const models = useT("platform.clubModels");
   const errors = useT("errors");
   const { locale } = useLocale();
   const toast = useToast();
@@ -163,6 +177,7 @@ function CreateSheet({ open, onClose }: { open: boolean; onClose: () => void }) 
     slugEdited: false,
     defaultLocale: "es" as Locale,
     defaultSportCode: "",
+    clubModel: "sports" as ClubModel,
   });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -176,6 +191,7 @@ function CreateSheet({ open, onClose }: { open: boolean; onClose: () => void }) 
       slug: form.slug,
       defaultLocale: form.defaultLocale,
       defaultSportCode: sportCode,
+      clubModel: form.clubModel,
       brandPrimaryColor: brandTokens["--color-brand-primary"],
       brandSecondaryColor: brandTokens["--color-brand-secondary"],
     });
@@ -192,7 +208,14 @@ function CreateSheet({ open, onClose }: { open: boolean; onClose: () => void }) 
         club: null,
       });
       toast("success", t("created", { name: res.organization.name }));
-      setForm({ name: "", slug: "", slugEdited: false, defaultLocale: "es", defaultSportCode: "" });
+      setForm({
+        name: "",
+        slug: "",
+        slugEdited: false,
+        defaultLocale: "es",
+        defaultSportCode: "",
+        clubModel: "sports",
+      });
       await client.invalidateQueries({ queryKey: ["platform", "organizations"] });
       onClose();
       void navigate(`/admin/clubs/${res.organization.slug}`);
@@ -260,6 +283,26 @@ function CreateSheet({ open, onClose }: { open: boolean; onClose: () => void }) 
             />
           )}
         </Field>
+        <div className="flex flex-col gap-2">
+          <Segmented
+            label={t("model")}
+            value={form.clubModel}
+            onChange={(clubModel) => {
+              // Un club de fitness arranca con CrossFit si el catálogo lo tiene.
+              const crossfit = sports.data?.sports.find((s) => s.code === "crossfit");
+              setForm({
+                ...form,
+                clubModel,
+                defaultSportCode:
+                  clubModel === "fitness" && crossfit && !form.defaultSportCode
+                    ? crossfit.code
+                    : form.defaultSportCode,
+              });
+            }}
+            options={CLUB_MODELS.map((m) => ({ key: m, label: models(m) }))}
+          />
+          <p className="text-secondary text-muted">{models(`${form.clubModel}Hint`)}</p>
+        </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label={t("locale")}>
             {(id) => (

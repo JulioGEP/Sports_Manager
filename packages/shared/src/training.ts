@@ -522,7 +522,7 @@ export type HealthConsentSet = z.infer<typeof HealthConsentSetSchema>;
 
 // --- Tests físicos ---
 
-export const PHYSICAL_TEST_UNITS = ["s", "cm", "m", "km_h", "level", "count"] as const;
+export const PHYSICAL_TEST_UNITS = ["s", "cm", "m", "km_h", "level", "count", "kg"] as const;
 export type PhysicalTestUnit = (typeof PHYSICAL_TEST_UNITS)[number];
 export const PHYSICAL_TEST_DIRECTIONS = ["higher_better", "lower_better"] as const;
 export type PhysicalTestDirection = (typeof PHYSICAL_TEST_DIRECTIONS)[number];

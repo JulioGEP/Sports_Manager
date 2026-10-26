@@ -121,6 +121,7 @@ describe("marca y logos por club", () => {
       voice: "cercana",
       style: DEFAULT_CLUB_STYLE,
       motto: null,
+      clubModel: "sports",
     });
     expect(
       await (await request("GET", "/api/org/branding", hostOf("club-b"))).json(),

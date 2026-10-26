@@ -12,6 +12,7 @@ import {
   SECTION_KINDS,
   SECTION_STATUSES,
   TEAM_STAFF_ROLES,
+  TEAM_BOOKING_MODES,
   TEAM_STATUSES,
 } from "@sportsmanager/shared";
 import { sql } from "drizzle-orm";
@@ -156,6 +157,8 @@ export const teams = pgTable(
     name: text("name").notNull(),
     /** Aforo del grupo (secciones de actividad). Nulo: sin límite. */
     capacity: integer("capacity"),
+    /** Plantilla fija o clase abierta a quien reserve (ADR 0049). */
+    bookingMode: text("booking_mode").notNull().default("roster"),
     status: text("status").notNull().default("active"),
     ...timestamps,
   },
@@ -166,6 +169,7 @@ export const teams = pgTable(
     index("teams_category_id_idx").on(t.categoryId),
     check("teams_status_check", inList(t.status, TEAM_STATUSES)),
     check("teams_capacity_check", sql`${t.capacity} is null or ${t.capacity} >= 1`),
+    check("teams_booking_mode_check", inList(t.bookingMode, TEAM_BOOKING_MODES)),
   ],
 );
 

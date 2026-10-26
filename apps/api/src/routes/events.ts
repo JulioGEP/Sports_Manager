@@ -73,6 +73,8 @@ export const eventDto = (e: EventRecord): EventSummary => ({
   homeAway: e.homeAway,
   notes: e.notes,
   seriesId: e.seriesId,
+  capacity: e.capacity,
+  coach: e.coach,
   attendance: e.attendance,
 });
 
@@ -416,6 +418,7 @@ export function createEventRoutes(config: ApiConfig, data: DataLayer) {
       if (result.outcome === "unknown_team") throw badRequest("Ese equipo no es de este club.");
       if (result.outcome === "unknown_facility")
         throw badRequest("Esa instalación no es de este club.");
+      if (result.outcome === "unknown_coach") throw badRequest("Ese coach no es del club.");
       await audit(c, tenant, "event.created", result.event.title, {
         kind: body.kind,
         created: result.created,
@@ -484,6 +487,7 @@ export function createEventRoutes(config: ApiConfig, data: DataLayer) {
       if (result.outcome === "unknown_team") throw badRequest("Ese equipo no es de este club.");
       if (result.outcome === "unknown_facility")
         throw badRequest("Esa instalación no es de este club.");
+      if (result.outcome === "unknown_coach") throw badRequest("Ese coach no es del club.");
       if (result.outcome === "invalid_range")
         throw badRequest("El evento tiene que acabar después de empezar.");
       await audit(c, tenant, "event.updated", result.event.title, body);
@@ -659,6 +663,7 @@ export function createEventRoutes(config: ApiConfig, data: DataLayer) {
       if (result.outcome === "unknown_team") throw notFound("Ese equipo no existe.");
       if (result.outcome === "unknown_facility")
         throw badRequest("Alguna instalación no es de este club.");
+      if (result.outcome === "unknown_coach") throw badRequest("Algún coach no es del club.");
       const generated = body.generate
         ? await data.schedules.generate(
             tenant.scope,

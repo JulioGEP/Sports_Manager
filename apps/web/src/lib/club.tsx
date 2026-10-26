@@ -309,4 +309,32 @@ export const clubPaths = (slug: string) => ({
   athlete: `/${slug}/me`,
   /** Lo que entrena el deportista con cuenta propia (ADR 0046): su plan de estos días. */
   athleteTraining: `/${slug}/me/training`,
+  /**
+   * Clubs de fitness (ADR 0049). El atleta: reservar, la clase, el WOD con su clasificación, su
+   * progreso, su tarifa, los mensajes y anuncios del box, el timer y los movimientos. El coach: sus
+   * clases, la programación y los atletas. El dueño: el horario, las tarifas, los leads, las
+   * métricas, el ranking y la pantalla del box.
+   */
+  classes: `/${slug}/classes`,
+  classDetail: (id: string) => `/${slug}/classes/${id}`,
+  wod: `/${slug}/wod`,
+  leaderboard: (blockId: string) => `/${slug}/leaderboard/${blockId}`,
+  progress: `/${slug}/progress`,
+  myPlan: `/${slug}/my-plan`,
+  messages: `/${slug}/messages`,
+  messageThread: (playerId: string) => `/${slug}/messages/${playerId}`,
+  announcements: `/${slug}/announcements`,
+  timer: `/${slug}/timer`,
+  library: `/${slug}/library`,
+  programming: `/${slug}/programming`,
+  workoutNew: `/${slug}/programming/new`,
+  workoutEdit: (id: string) => `/${slug}/programming/${id}`,
+  athletes: `/${slug}/athletes`,
+  athleteFile: (id: string) => `/${slug}/athletes/${id}`,
+  classTypes: `/${slug}/class-types`,
+  plans: `/${slug}/plans`,
+  leads: `/${slug}/leads`,
+  metrics: `/${slug}/metrics`,
+  ranking: `/${slug}/ranking`,
+  tv: `/${slug}/tv`,
 });

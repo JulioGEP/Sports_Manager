@@ -16,6 +16,10 @@ export { isUniqueViolation } from "./db.ts";
 import { emailOutboxRepo } from "./email/outbox.ts";
 import { attendanceRepo, eventsRepo, facilitiesRepo, schedulesRepo } from "./events.ts";
 import { feesRepo } from "./fees.ts";
+import { bookingsRepo } from "./bookings.ts";
+import { communityRepo } from "./community.ts";
+import { fitnessInsightsRepo } from "./fitness-insights.ts";
+import { workoutsRepo } from "./workouts.ts";
 import { createNetlifyStoreImageStore, storeRepo } from "./store.ts";
 import type { ResendLike } from "./email/resend.ts";
 import { createEmailSender, type EmailSender } from "./email/sender.ts";
@@ -44,7 +48,14 @@ import { trainingRepo } from "./training.ts";
 import { usersRepo } from "./users.ts";
 
 export type { OrgScope } from "./scope.ts";
-export type { AiGenerationRecord, NewGeneration, SectionEquipmentRecord } from "./ai.ts";
+export type {
+  AiGenerationRecord,
+  AiWodRecord,
+  ClaimedGeneration,
+  NewGeneration,
+  NewWodGeneration,
+  SectionEquipmentRecord,
+} from "./ai.ts";
 export type {
   ClubSuggestionRecord,
   PlatformSuggestionRecord,
@@ -90,6 +101,27 @@ export type {
 } from "./events.ts";
 export { dayRange, fromLocal, localParts, weekRange } from "./events.ts";
 export type { FeesSummaryRecord, PersonFeesRecord } from "./fees.ts";
+export type {
+  AttendeeRecord,
+  ClassFilter,
+  ClassRecord,
+  MyBookingRecord,
+  PlayerBookingContext,
+  SubscriptionRecord,
+} from "./bookings.ts";
+export { entitlementOf } from "./bookings.ts";
+export type {
+  BenchmarkRow,
+  BodyRow,
+  PersonalRecordRow,
+  ResultRecord,
+  ResultWithPlayer,
+  WorkoutBlockRecord,
+  WorkoutRecord,
+} from "./workouts.ts";
+export { workoutVisible } from "./workouts.ts";
+export type { AnnouncementRecord, LeadRecord, MessageRecord } from "./community.ts";
+export type { AthleteRowRecord } from "./fitness-insights.ts";
 export type {
   AccountingConnectionPatch,
   AccountingConnectionRow,
@@ -270,6 +302,11 @@ export function createDataLayer(options: DataLayerOptions) {
           : null,
     load: loadRepo(db),
     health: healthRepo(db),
+    /** Clubs de fitness (ADR 0049): reservas y tarifas, programación y marcas, comunidad, cifras. */
+    bookings: bookingsRepo(db),
+    workouts: workoutsRepo(db),
+    community: communityRepo(db),
+    fitness: fitnessInsightsRepo(db),
     logos: logosRepo(
       db,
       options.logoStore ??

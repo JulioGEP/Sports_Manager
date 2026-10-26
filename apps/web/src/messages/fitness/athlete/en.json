@@ -1,0 +1,366 @@
+{
+  "booking": {
+    "lateTitle": "Cancel late?",
+    "lateBody": "The free cancellation window has passed. Under the box's policy, it may count as a session on your plan."
+  },
+  "score": {
+    "completedInCap": "I finished within the time cap",
+    "time": "Time",
+    "timeHint": "Minutes and seconds: 8:47",
+    "repsAtCap": "Reps completed at the cap",
+    "rounds": "Rounds",
+    "extraReps": "Extra reps",
+    "load": "Load (kg)",
+    "reps": "Reps",
+    "distance": "Meters",
+    "calories": "Calories"
+  },
+  "home": {
+    "greeting": "Hi, {name}",
+    "restrictionTitle": "You have an open restriction",
+    "restrictionUntil": "Until {date}. Your coach scales the WOD to what you can do.",
+    "restrictionBody": "Your coach scales the WOD to what you can do.",
+    "next": {
+      "eyebrow": "Your next class",
+      "none": "No class booked",
+      "schedule": "Schedule",
+      "emptyTitle": "You have no classes booked",
+      "emptyHint": "Check the schedule and grab your spot."
+    },
+    "wod": {
+      "eyebrow": "Today's WOD",
+      "none": "Not published yet",
+      "open": "See WOD",
+      "noneHint": "The box publishes the WOD before class. Check back soon."
+    },
+    "streak": "{count, plural, one {week in a row} other {weeks in a row}}",
+    "classesThisMonth": "{count, plural, one {class this month} other {classes this month}}",
+    "lastRecord": "Latest PR · {movement} {reps}RM",
+    "noRecord": "No PRs logged yet",
+    "plan": {
+      "title": "Your plan",
+      "open": "See plan",
+      "none": "You don't have an active plan. Ask at the box."
+    },
+    "box": {
+      "title": "The box",
+      "announcements": "Announcements",
+      "new": "New",
+      "noAnnouncements": "No new announcements.",
+      "unreadAnnouncements": "{count, plural, one {# unread announcement} other {# unread announcements}}",
+      "unreadMessages": "{count, plural, one {# new message} other {# new messages}}",
+      "messages": "Message the box"
+    },
+    "shortcuts": "Shortcuts"
+  },
+  "classes": {
+    "title": "Book",
+    "description": "Classes for the next few days. You can book {days, plural, one {# day} other {# days}} ahead.",
+    "noPlanTitle": "No active plan",
+    "noPlanAction": "See my plan",
+    "noPlanBody": "You need a plan to book. Talk to the box.",
+    "days": "Days",
+    "emptyTitle": "No classes this day",
+    "emptyHint": "Try another day.",
+    "policy": "Cancel for free up to {hours, plural, one {# hour} other {# hours}} before. If a spot opens up, the first person on the waitlist gets it."
+  },
+  "class": {
+    "missing": "Class",
+    "details": "The class",
+    "position": "Waitlisted · spot {position}",
+    "notBooked": "Not booked",
+    "coach": "Coach",
+    "room": "Room",
+    "opens": "Booking opens",
+    "closes": "Booking closes",
+    "freeCancel": "Free cancellation until",
+    "attendees": "{count, plural, one {# athlete coming} other {# athletes coming}}",
+    "hidden": "{count, plural, one {# prefers not to appear on the list} other {# prefer not to appear on the list}}",
+    "onlyHidden": "Everyone coming prefers not to appear on the list.",
+    "noAttendees": "Nobody's in yet. Be the first!",
+    "you": "you",
+    "wod": "WOD",
+    "leaderboard": "Class leaderboard",
+    "noWod": "The WOD isn't published yet",
+    "noWodHint": "You'll see it here once the box publishes it."
+  },
+  "wod": {
+    "title": "WOD",
+    "description": "Today's workout, with your loads. Log your score when you finish.",
+    "days": "Days",
+    "emptyTitle": "No WOD published",
+    "emptyFuture": "The box will publish it before class.",
+    "emptyHint": "There was no WOD published that day.",
+    "editResult": "Edit score",
+    "addResult": "Log score",
+    "leaderboard": "Leaderboard ({count})"
+  },
+  "result": {
+    "pr": "New PR! It's in your records now.",
+    "saved": "Score logged.",
+    "removed": "Score deleted.",
+    "description": "Pick your level and log your score.",
+    "remove": "Delete",
+    "level": "Level",
+    "missingScore": "This block needs a score.",
+    "effort": "How did it go?",
+    "effortLevel": {
+      "1": "Easy",
+      "2": "Comfortable",
+      "3": "Challenging",
+      "4": "Very hard",
+      "5": "All out"
+    },
+    "effortHint": "Optional. From 1 (easy) to 5 (all out).",
+    "note": "Note (optional)"
+  },
+  "leaderboard": {
+    "backClass": "The class",
+    "backWod": "WOD",
+    "backProgramming": "Programming",
+    "title": "Leaderboard",
+    "classOnly": "Only athletes who came to this class.",
+    "description": "Every score at the box for this block.",
+    "everyone": "See the whole box",
+    "levelFilter": "Level",
+    "all": "All",
+    "closed": "The box doesn't publish leaderboards.",
+    "emptyTitle": "No scores yet",
+    "emptyHint": "Be the first to log yours.",
+    "you": "you",
+    "hidden": "{count, plural, one {# athlete prefers not to appear on the leaderboard.} other {# athletes prefer not to appear on the leaderboard.}}"
+  },
+  "progress": {
+    "title": "Progress",
+    "description": "Your classes, records and benchmarks. Your measurements are yours alone.",
+    "streak": "{count, plural, one {week in a row} other {weeks in a row}} · your best: {best}",
+    "thisMonth": "{count, plural, one {class this month} other {classes this month}}",
+    "total": "{count, plural, one {class in total} other {classes in total}}",
+    "prevMonth": "Previous month",
+    "nextMonth": "Next month",
+    "dayTrained": "{day}: you trained",
+    "dayBooked": "{day}: class booked",
+    "legendTrained": "Trained",
+    "legendBooked": "Booked",
+    "removed": "Deleted.",
+    "saved": "Saved.",
+    "mix": {
+      "title": "What you've worked on",
+      "description": "Blocks with a score in the last 30 days.",
+      "empty": "Log scores to see your mix."
+    },
+    "records": {
+      "title": "Personal records",
+      "description": "Your maxes per movement. We use them to work out your loads in every WOD.",
+      "add": "Add record",
+      "emptyTitle": "No records yet",
+      "emptyHint": "Add your maxes or log them in a WOD strength block.",
+      "estimated": "1RM estimated from your maxes",
+      "real": "Actual 1RM",
+      "percentTable": "Percentage table",
+      "history": "{count, plural, one {History (# record)} other {History (# records)}}",
+      "fromWod": "from the WOD",
+      "remove": "Delete record",
+      "removeTitle": "Delete this record?",
+      "removeBody": "It disappears from your history and your loads are calculated without it."
+    },
+    "benchmarks": {
+      "title": "Benchmarks",
+      "description": "Named WODs you repeat to see how you improve.",
+      "add": "Add benchmark",
+      "emptyTitle": "No benchmarks yet",
+      "emptyHint": "Fran, Grace, Murph… log your time and beat yourself.",
+      "best": "Your best",
+      "remove": "Delete score",
+      "removeTitle": "Delete this score?",
+      "removeBody": "It disappears from your benchmarks."
+    },
+    "body": {
+      "title": "Measurements",
+      "shared": "Shared with your coach. You can stop sharing below.",
+      "private": "Only you can see them.",
+      "add": "Add measurements",
+      "emptyTitle": "No measurements",
+      "emptyHint": "Log your weight or measurements to see how they change.",
+      "date": "Date",
+      "fields": {
+        "weightKg": "Weight (kg)",
+        "bodyFatPct": "Body fat (%)",
+        "waistCm": "Waist (cm)",
+        "hipCm": "Hips (cm)",
+        "chestCm": "Chest (cm)",
+        "armCm": "Arm (cm)",
+        "thighCm": "Thigh (cm)"
+      },
+      "actions": "Actions",
+      "remove": "Delete measurements",
+      "removeTitle": "Delete these measurements?",
+      "removeBody": "They disappear from your history.",
+      "sheetTitle": "Add measurements",
+      "sheetDescription": "Fill in only what you want. They're private unless you share them.",
+      "missing": "Log at least one measurement."
+    },
+    "privacy": {
+      "title": "Privacy",
+      "description": "You decide what others see.",
+      "saved": "Privacy updated.",
+      "hideFromAttendees": {
+        "label": "Show me on the class list",
+        "hint": "Other athletes see your name in the classes you book."
+      },
+      "hideFromLeaderboards": {
+        "label": "Show me on the leaderboard",
+        "hint": "Your scores appear on the box leaderboard."
+      },
+      "shareBodyWithCoach": {
+        "label": "Share measurements with my coach",
+        "hint": "Your coach sees your weight and measurements on your profile."
+      }
+    },
+    "recordSheet": {
+      "title": "Add record",
+      "description": "Your max on a movement: load for a number of reps.",
+      "movement": "Movement",
+      "reps": "Reps",
+      "load": "Load (kg)",
+      "loadError": "Enter the load for your record.",
+      "date": "Date"
+    },
+    "benchmarkSheet": {
+      "title": "Add benchmark",
+      "benchmark": "Benchmark",
+      "level": "Level",
+      "missingScore": "Your score is missing.",
+      "date": "Date"
+    },
+    "families": {
+      "girls": "Girls",
+      "heroes": "Heroes",
+      "hybrid": "Hybrid",
+      "open": "Other"
+    }
+  },
+  "plan": {
+    "title": "My plan",
+    "description": "What you've signed up for, what you have left and your bookings.",
+    "payments": "My payments",
+    "domiciledTitle": "Plan on autopay",
+    "domiciledBody": "Done. The box will charge you automatically every period.",
+    "domicileCancelled": "Autopay wasn't set up. You can do it whenever you like.",
+    "emptyTitle": "You don't have a plan",
+    "emptyHint": "Talk to the box to sign up.",
+    "domiciled": "Autopay",
+    "domicile": "Set up autopay",
+    "pastDue": "The last payment failed. Check your card or account, or talk to the box.",
+    "paused": "Paused until {date}.",
+    "domicileHint": "Pay by card or SEPA direct debit and forget about it every month.",
+    "bookings": "My bookings",
+    "upcoming": "Upcoming",
+    "history": "History",
+    "noUpcoming": "You have no classes booked",
+    "noHistory": "No history yet",
+    "book": "Book"
+  },
+  "messages": {
+    "title": "Messages",
+    "description": "Talk to the box. The team will reply.",
+    "minorTitle": "Messages are for adults only",
+    "minorBody": "For anything you need, talk to the box in person or through your family.",
+    "emptyTitle": "No messages yet",
+    "emptyHint": "Ask whatever you need: schedules, plans, how to scale a movement.",
+    "you": "You",
+    "label": "Message",
+    "placeholder": "Write your message",
+    "send": "Send"
+  },
+  "announcements": {
+    "title": "Announcements",
+    "description": "What the box has to say to its athletes.",
+    "descriptionWriter": "Tell the whole box or one discipline about something.",
+    "new": "New announcement",
+    "emptyTitle": "No announcements",
+    "emptyWriter": "Post the first one: an event, a schedule change, a competition.",
+    "emptyHint": "When the box posts something, you'll see it here.",
+    "pinned": "Pinned",
+    "unread": "New",
+    "everyone": "Whole box",
+    "edit": "Edit",
+    "remove": "Take down",
+    "readCount": "{count, plural, =0 {No one has read it yet} one {Read by # person} other {Read by # people}}",
+    "removeTitle": "Take down this announcement?",
+    "removeBody": "Nobody will see it anymore.",
+    "keep": "Keep",
+    "removed": "Announcement taken down.",
+    "sheet": {
+      "updated": "Announcement updated.",
+      "published": "Announcement posted.",
+      "editTitle": "Edit announcement",
+      "newTitle": "New announcement",
+      "publish": "Post",
+      "title": "Title",
+      "body": "Text",
+      "audience": "Who it's for",
+      "all": "Whole box",
+      "section": "One discipline",
+      "discipline": "Discipline",
+      "choose": "Pick one",
+      "pin": "Pin it to the top"
+    }
+  },
+  "timer": {
+    "title": "Timer",
+    "description": "For training at the box or at home. A ten-second countdown and beeps.",
+    "mode": "Clock type",
+    "modes": {
+      "fortime": "For time",
+      "amrap": "AMRAP",
+      "emom": "EMOM",
+      "tabata": "Tabata"
+    },
+    "hints": {
+      "fortime": "Counts up until you finish or hit the cap.",
+      "amrap": "As many rounds as possible in the time. Add each round with the button.",
+      "emom": "Each interval starts a new round.",
+      "tabata": "Work and rest on a loop. The classic: 20 s and 10 s, 8 rounds."
+    },
+    "cap": "Time cap (minutes)",
+    "capHint": "0 for no cap.",
+    "minutes": "Minutes",
+    "interval": "Interval (seconds)",
+    "rounds": "Rounds",
+    "work": "Work (seconds)",
+    "rest": "Rest (seconds)",
+    "start": "Start",
+    "clock": "Clock",
+    "phase": {
+      "prep": "Get ready",
+      "rest": "Rest",
+      "done": "Time",
+      "work": "Go",
+      "ready": "Ready"
+    },
+    "roundOf": "Round {round} of {total}",
+    "capAt": "Cap at {minutes} min",
+    "roundsDone": "{count, plural, one {# round} other {# rounds}}",
+    "addRound": "+1 round",
+    "pause": "Pause",
+    "resume": "Resume",
+    "finish": "Done",
+    "reset": "Reset",
+    "finalTime": "Your time: {time}"
+  },
+  "library": {
+    "title": "Movements",
+    "description": "Technique for every movement, explained by the box.",
+    "search": "Search",
+    "searchPlaceholder": "Snatch, double unders…",
+    "discipline": "Discipline",
+    "all": "All",
+    "emptyTitle": "The box hasn't added movements yet",
+    "noMatch": "Nothing matches that search",
+    "emptyHint": "Once the box adds them, you'll see them here with their video.",
+    "videoOf": "Video: {name}",
+    "keyPoints": "Key points",
+    "watch": "Watch video"
+  }
+}

@@ -26,6 +26,13 @@ import { createPlayerHealthRoutes } from "./routes/player-health.ts";
 import { createPublicStoreRoutes } from "./routes/public-store.ts";
 import { createStoreRoutes } from "./routes/store.ts";
 import { createSuggestionRoutes } from "./routes/suggestions.ts";
+import { createFitnessAiRoutes } from "./routes/fitness-ai.ts";
+import { createFitnessClassRoutes } from "./routes/fitness-classes.ts";
+import { createFitnessCommunityRoutes } from "./routes/fitness-community.ts";
+import { createFitnessInsightRoutes } from "./routes/fitness-insights.ts";
+import { createFitnessPlanRoutes } from "./routes/fitness-plans.ts";
+import { createFitnessWorkoutRoutes } from "./routes/fitness-workouts.ts";
+import { createPublicClassRoutes } from "./routes/public-classes.ts";
 import { createAccountingService } from "./services/accounting/index.ts";
 import { DEPLOY_CONTEXT_HEADER } from "./tenancy.ts";
 
@@ -36,7 +43,7 @@ export interface AppOptions {
   data?: DataLayer;
 }
 
-export const API_VERSION = "0.15.0";
+export const API_VERSION = "0.16.0";
 
 export function createApp(options: AppOptions = {}) {
   const config = options.config ?? loadConfig();
@@ -94,6 +101,15 @@ export function createApp(options: AppOptions = {}) {
   app.route("/", createTrainingAiRoutes(config, data));
   app.route("/", createLoadRoutes(config, data));
   app.route("/", createPlayerHealthRoutes(config, data));
+  // Clubs de fitness (ADR 0049): clases y reservas, tarifas, el WOD, comunidad y cifras del box.
+  app.route("/", createFitnessClassRoutes(config, data));
+  app.route("/", createFitnessPlanRoutes(config, data, { accounting }));
+  app.route("/", createFitnessWorkoutRoutes(config, data));
+  app.route("/", createFitnessCommunityRoutes(config, data));
+  app.route("/", createFitnessInsightRoutes(config, data));
+  app.route("/", createFitnessAiRoutes(config, data));
+  // La web del box: su horario y la clase de prueba, con la clave publicable del club.
+  app.route("/", createPublicClassRoutes(config, data));
   // Mejoras de la plataforma (ADR 0047): lo que la administración del club sugiere y vota.
   app.route("/", createSuggestionRoutes(config, data));
   app.route("/", createPlatformRoutes(config, data));

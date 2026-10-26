@@ -119,6 +119,11 @@ export const PERMISSIONS = [
    * ver la hoja de ruta. Solo la administración: habla con la plataforma en nombre del club.
    */
   "org.suggestions",
+  /**
+   * Comunidad (ADR 0049): publicar anuncios del club y escribir a los atletas adultos en nombre
+   * del club. La administración y el cuerpo técnico.
+   */
+  "org.community.write",
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
 
@@ -185,6 +190,7 @@ export const ROLE_PERMISSIONS: Record<RoleCode, readonly Permission[]> = {
     // Un club sin fisioterapia también tiene que poder decir quién no está disponible.
     "org.availability.write",
     "org.suggestions",
+    "org.community.write",
     // Salud no: la administración no la ve por defecto (ADR 0039); se le abre por excepción.
   ],
   staff: [...STAFF_READ],
@@ -200,6 +206,7 @@ export const ROLE_PERMISSIONS: Record<RoleCode, readonly Permission[]> = {
     "org.training.write_own",
     "org.load.read",
     "org.load.write_own",
+    "org.community.write",
   ],
   guardian: ["org.settings.read", "org.family.read", "org.family.write"],
   /**

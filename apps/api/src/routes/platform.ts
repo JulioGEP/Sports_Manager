@@ -17,6 +17,7 @@ import {
   PlatformOrganizationUpdateSchema,
   SportsResponseSchema,
   weekStartOf,
+  type ClubModel,
   type Locale,
   type PlatformOrganization,
 } from "@sportsmanager/shared";
@@ -82,6 +83,7 @@ export function createPlatformRoutes(config: ApiConfig, data: DataLayer) {
       status: org.status as PlatformOrganization["status"],
       defaultLocale: org.defaultLocale as Locale,
       sport,
+      clubModel: org.clubModel as ClubModel,
       brandPrimaryColor: org.brandPrimaryColor,
       brandSecondaryColor: org.brandSecondaryColor,
       logoUrl: logo ? absoluteApiUrl(logo, config, host) : null,

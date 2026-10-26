@@ -83,6 +83,9 @@ export const EventCreateSchema = z
     opponent: ShortName.nullable().optional(),
     homeAway: z.enum(HOME_AWAY).nullable().optional(),
     notes: Text.nullable().optional(),
+    /** Clase abierta (ADR 0049): aforo propio y quién la da. */
+    capacity: z.number().int().min(1).max(999).nullable().optional(),
+    coachUserId: z.string().uuid().nullable().optional(),
     /** Repite cada semana hasta esta fecha incluida: genera una fila por semana (sin motor de recurrencia). */
     repeatWeeklyUntil: DateOnlySchema.nullable().optional(),
   })
@@ -104,6 +107,8 @@ export const EventUpdateSchema = z.object({
   opponent: ShortName.nullable().optional(),
   homeAway: z.enum(HOME_AWAY).nullable().optional(),
   notes: Text.nullable().optional(),
+  capacity: z.number().int().min(1).max(999).nullable().optional(),
+  coachUserId: z.string().uuid().nullable().optional(),
 });
 export type EventUpdate = z.infer<typeof EventUpdateSchema>;
 
@@ -114,6 +119,9 @@ export const TeamScheduleSlotSchema = z
     startsAt: TimeOfDaySchema,
     endsAt: TimeOfDaySchema,
     facilityId: z.string().uuid().nullable().optional(),
+    /** Clase abierta (ADR 0049): quién la da y su aforo, si no es el del tipo de clase. */
+    coachUserId: z.string().uuid().nullable().optional(),
+    capacity: z.number().int().min(1).max(999).nullable().optional(),
   })
   .refine((s) => s.startsAt < s.endsAt, {
     message: "La sesión tiene que acabar después de empezar.",

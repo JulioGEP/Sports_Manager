@@ -28,6 +28,8 @@ import {
   Stat,
   StatusChip,
 } from "@/ui";
+import { useClubModel, useFitnessRole } from "@/lib/fitness";
+import { FitnessHome } from "@/routes/fitness";
 import { AthleteHomePanel } from "./athlete-home";
 import { useAthletePlan } from "./athlete-training";
 import { SectionCard } from "./sections";
@@ -58,6 +60,14 @@ type AlertKey = keyof OperationsSummary;
  * (DESIGN.md 7). Para quien no administra, el panel de su cargo; para la familia, los suyos.
  */
 export function ClubHome() {
+  const model = useClubModel();
+  const role = useFitnessRole();
+  // Un club de fitness (ADR 0049) tiene su propio inicio; la familia de un atleta menor, el de siempre.
+  if (model === "fitness" && role !== "guardian") return <FitnessHome />;
+  return <SportsClubHome />;
+}
+
+function SportsClubHome() {
   const t = useT("home");
   const eventKinds = useT("eventKinds");
   const roles = useT("roles");

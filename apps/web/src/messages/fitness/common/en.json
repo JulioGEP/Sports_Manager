@@ -1,0 +1,134 @@
+{
+  "nav": {
+    "today": "Today",
+    "book": "Book",
+    "classes": "Classes",
+    "wod": "WOD",
+    "progress": "Progress",
+    "myPlan": "My plan",
+    "messages": "Messages",
+    "announcements": "Announcements",
+    "ranking": "Leaderboard",
+    "timer": "Timer",
+    "library": "Movements",
+    "programming": "Programming",
+    "athletes": "Athletes",
+    "plans": "Plans",
+    "leads": "Leads",
+    "metrics": "Metrics",
+    "tv": "Box screen",
+    "classTypes": "Schedule",
+    "payments": "Payments",
+    "myPayments": "My payments",
+    "store": "Shop",
+    "staff": "Team",
+    "rooms": "Rooms",
+    "settings": "Settings",
+    "family": "My family",
+    "groupBox": "The box",
+    "groupCommunity": "Community",
+    "groupBusiness": "Business",
+    "groupManagement": "Management"
+  },
+  "roles": {
+    "athlete": "Athlete",
+    "coach": "Coach",
+    "owner": "Owner"
+  },
+  "bookingStatus": {
+    "booked": "Booked",
+    "waitlist": "Waitlisted",
+    "cancelled": "Cancelled",
+    "late_cancel": "Late cancel",
+    "no_show": "No-show",
+    "attended": "Attended"
+  },
+  "block": {
+    "not_open_yet": "Booking not open yet",
+    "closed": "Booking closed",
+    "already_booked": "Already booked",
+    "full": "Full",
+    "no_plan": "You need a plan",
+    "plan_paused": "Your plan is paused",
+    "plan_expired": "Your plan doesn't cover that day",
+    "not_covered": "Your plan doesn't include it",
+    "no_sessions_left": "No sessions left on your plan",
+    "daily_limit": "Daily class limit reached"
+  },
+  "action": {
+    "book": "Book",
+    "waitlist": "Join the waitlist",
+    "cancel": "Cancel booking",
+    "leaveWaitlist": "Leave the waitlist",
+    "booked": "Booked. See you at the box!",
+    "waitlisted": "You're on the waitlist, spot {position}.",
+    "cancelled": "Booking cancelled.",
+    "lateCancelled": "Cancelled late: it counts as a session.",
+    "promoted": "The spot went to the first person on the waitlist."
+  },
+  "spots": {
+    "left": "{count, plural, one {# spot left} other {# spots left}}",
+    "full": "Full",
+    "open": "No cap",
+    "of": "{booked}/{capacity}",
+    "waitlist": "{count, plural, one {# waiting} other {# waiting}}"
+  },
+  "levels": {
+    "scaled": "Scaled",
+    "rx": "RX",
+    "rx_plus": "RX+"
+  },
+  "scoreTypes": {
+    "time": "For time",
+    "rounds_reps": "Rounds and reps",
+    "load": "Load",
+    "reps": "Reps",
+    "distance": "Distance",
+    "calories": "Calories",
+    "none": "No score"
+  },
+  "blockKinds": {
+    "warmup": "Warm-up",
+    "strength": "Strength",
+    "skill": "Skill",
+    "wod": "WOD",
+    "accessory": "Accessory",
+    "cooldown": "Cool-down"
+  },
+  "workoutStatus": {
+    "draft": "Draft",
+    "published": "Published"
+  },
+  "entitlements": {
+    "none": "No classes",
+    "unlimited": "Unlimited",
+    "per_week": "{count, plural, one {# class a week} other {# classes a week}}",
+    "per_month": "{count, plural, one {# class a month} other {# classes a month}}",
+    "pack": "{count, plural, one {# session pack} other {# session pack}}"
+  },
+  "subscriptionStatus": {
+    "active": "Active",
+    "paused": "Paused",
+    "cancelled": "Cancelled",
+    "expired": "Expired"
+  },
+  "usage": {
+    "unlimited": "Unlimited classes",
+    "remaining": "{remaining, plural, one {# session left} other {# sessions left}} of {limit}",
+    "until": "Until {date}"
+  },
+  "streak": "{count, plural, one {# week in a row} other {# weeks in a row}}",
+  "classesThisMonth": "{count, plural, one {# class this month} other {# classes this month}}",
+  "coachOf": "With {name}",
+  "noCoach": "No coach assigned",
+  "loading": "Loading…",
+  "retry": "Try again",
+  "save": "Save",
+  "cancel": "Cancel",
+  "close": "Close",
+  "saved": "Saved.",
+  "today": "Today",
+  "tomorrow": "Tomorrow",
+  "kg": "{value} kg",
+  "percentOf": "{percent}% of your 1RM"
+}
