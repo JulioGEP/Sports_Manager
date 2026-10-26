@@ -423,18 +423,15 @@
   },
   "settings": {
     "title": "Ajustes del club",
-    "description": "Nombre, idioma y zona horaria; la identidad del club (escudo, colores, letra, voz); temporadas, tipos de socio, cobros y contabilidad. Lo que cambies aquí lo ve todo el club.",
+    "description": "Los datos y la identidad del club, sus temporadas y tipos de socio, cómo cobra y su web. Lo que cambies aquí lo ve todo el club.",
     "forbidden": "No puedes editar los ajustes de este club.",
     "tabs": {
       "general": "General",
       "identity": "Identidad",
-      "seasons": "Temporadas",
-      "memberTypes": "Tipos de socio",
-      "payments": "Cobros",
-      "setup": "Puesta en marcha",
-      "activity": "Actividad",
-      "developers": "Desarrolladores",
-      "accounting": "Contabilidad"
+      "seasons": "Temporadas y socios",
+      "payments": "Cobros y contabilidad",
+      "developers": "Web del club",
+      "activity": "Actividad"
     },
     "general": {
       "title": "Datos del club",
@@ -800,7 +797,11 @@
       },
       "manualToggle": "Tengo cuenta: escribir su id",
       "returned": "Has vuelto de Stripe. Estado de la cuenta actualizado.",
-      "conflictNotReady": "La cuenta de Stripe del club todavía no puede cobrar: termina el alta en Stripe."
+      "conflictNotReady": "La cuenta de Stripe del club todavía no puede cobrar: termina el alta en Stripe.",
+      "groups": {
+        "gateway": "Pasarela de pago",
+        "accounting": "Contabilidad"
+      }
     },
     "setup": {
       "title": "Puesta en marcha",

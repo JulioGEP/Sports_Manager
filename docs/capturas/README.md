@@ -184,7 +184,7 @@ Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negoci
 
 ![Planes](escritorio-98c-cuotas-planes.png)
 
-### Ajustes: cómo cobra el club, con Stripe preparado y sin claves
+### Ajustes, Cobros y contabilidad: cómo cobra el club, con Stripe preparado y sin claves
 
 ![Ajustes de cobro](escritorio-99-ajustes-cobros.png)
 
@@ -192,11 +192,11 @@ Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negoci
 
 ![Pasarela y contabilidad](escritorio-123-cuotas-pasarela-y-contabilidad.png)
 
-### Ajustes, Cobros: la cuenta de Stripe del club, que se da de alta desde aquí
+### Ajustes, Cobros y contabilidad: la cuenta de Stripe del club, que se da de alta desde aquí
 
 ![Cuenta de Stripe del club](escritorio-124-ajustes-cuenta-de-stripe.png)
 
-### Ajustes, Contabilidad: conectar Holded con su clave de API
+### Ajustes, Cobros y contabilidad: conectar Holded con su clave de API, debajo de la pasarela (ADR 0045)
 
 ![Conectar Holded](escritorio-125-ajustes-conectar-holded.png)
 
@@ -234,7 +234,7 @@ Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negoci
 
 ![Nueva excepción](escritorio-14b-personal-excepcion.png)
 
-### Ajustes del club: datos generales y zona horaria
+### Ajustes del club, General (ADR 0045): la puesta en marcha mientras falte algo, y los datos y la zona horaria
 
 ![Ajustes del club: datos generales](escritorio-20-ajustes-general.png)
 
@@ -254,15 +254,15 @@ Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negoci
 
 ![Ajustes del club: logo subido](escritorio-24-ajustes-logo-subido.png)
 
-### Ajustes: nueva temporada (hoja)
+### Ajustes, Temporadas y socios: nueva temporada (hoja)
 
 ![Nueva temporada](escritorio-33-temporada-nueva.png)
 
-### Ajustes: tipos de socio
+### Ajustes, Temporadas y socios: las temporadas y, debajo, los tipos de socio
 
 ![Tipos de socio](escritorio-99b-ajustes-tipos-socio.png)
 
-### Ajustes: puesta en marcha del club
+### Ajustes, General: puesta en marcha del club
 
 ![Puesta en marcha](escritorio-99c-ajustes-puesta-en-marcha.png)
 
@@ -548,9 +548,9 @@ Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negoci
 
 ![Venta en el mostrador](escritorio-119-tienda-mostrador.png)
 
-### Ajustes, Desarrolladores: clave publicable, endpoints, código para pegar y prueba en vivo
+### Ajustes, Web del club: clave publicable, endpoints, código para pegar y prueba en vivo
 
-![Desarrolladores](escritorio-120-ajustes-desarrolladores.png)
+![Web del club](escritorio-120-ajustes-desarrolladores.png)
 
 ### El deportista adulto compra lo suyo: sin la cena de un equipo que no es el suyo
 

@@ -23,14 +23,15 @@ import {
 } from "@sportsmanager/shared";
 import { brandTokens } from "@sportsmanager/shared/design";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { useIntl } from "react-intl";
 import { useSearchParams } from "react-router";
+import { useAccountingStatus } from "@/components/accounting";
 import { ApiClientError, apiFetch, errorKey } from "@/lib/api";
 import { clubPaths, useReadyClub } from "@/lib/club";
 import { useDates } from "@/lib/dates";
 import { useT } from "@/lib/intl";
-import { AccountingTab } from "./settings-accounting";
+import { AccountingSection } from "./settings-accounting";
 import { DevelopersTab } from "./settings-developers";
 import { IdentityTab } from "./settings-identity";
 import {
@@ -54,60 +55,59 @@ import {
   type RowAction,
 } from "@/ui";
 
-const TABS = [
-  "general",
-  "identity",
-  "seasons",
-  "memberTypes",
-  "payments",
-  "accounting",
-  "developers",
-  "setup",
-  "activity",
-] as const;
+/**
+ * Seis pestañas, una por función (ADR 0045). La que absorbe a otra conserva su clave: así los
+ * enlaces de siempre (`?tab=seasons&new=1`, `?tab=payments`) siguen abriendo lo mismo.
+ */
+const TABS = ["general", "identity", "seasons", "payments", "developers", "activity"] as const;
 type Tab = (typeof TABS)[number];
 
-/** Pestañas de antes que ahora viven en Identidad (ADR 0043): los enlaces viejos siguen valiendo. */
-const TAB_ALIASES: Record<string, Tab> = { brand: "identity", logo: "identity" };
+/**
+ * Pestañas de antes (ADR 0043 y 0045): los enlaces viejos llevan a donde vive ahora lo que abrían.
+ * Si comparte pestaña con otra cosa, `section` baja hasta su bloque.
+ */
+const TAB_ALIASES: Record<string, { tab: Tab; section?: string }> = {
+  brand: { tab: "identity" },
+  logo: { tab: "identity" },
+  setup: { tab: "general" },
+  memberTypes: { tab: "seasons" },
+  accounting: { tab: "payments", section: "settings-accounting" },
+};
 
 /**
- * Ajustes del club (Bloque 5; Bloque 14-18): datos, identidad (escudo, colores, letra, botones,
- * iconos, fondo, portada, navegación, esquinas, lema y voz, ADR 0043), temporadas, tipos de socio,
- * cobros, la puesta en marcha que antes vivía en la portada y la actividad.
+ * Ajustes del club (Bloque 5; Bloque 14-18; ADR 0045), por función: General (la puesta en marcha
+ * mientras falte algo y los datos del club), Identidad (ADR 0043), Temporadas y socios, Cobros y
+ * contabilidad (ADR 0042), Web del club (ADR 0041) y Actividad.
  */
 export function SettingsPage() {
   const t = useT("settings");
   const { org } = useReadyClub();
   const [params, setParams] = useSearchParams();
   const raw = params.get("tab") ?? "";
+  const alias = TAB_ALIASES[raw];
   const tab: Tab = (TABS as readonly string[]).includes(raw)
     ? (raw as Tab)
-    : (TAB_ALIASES[raw] ?? "general");
+    : (alias?.tab ?? "general");
   const permissions = org.actor.permissions;
 
   if (!permissions.includes("org.settings.write") || org.organization.view !== "full") {
     return <Alert kind="error">{t("forbidden")}</Alert>;
   }
   const o = org.organization;
+  const canSeasons = permissions.includes("org.structure.write");
+  const canMemberTypes = permissions.includes("org.club_members.write");
   const items = [
     { key: "general" as const, label: t("tabs.general") },
     { key: "identity" as const, label: t("tabs.identity") },
-    ...(permissions.includes("org.structure.write")
+    ...(canSeasons || canMemberTypes
       ? [{ key: "seasons" as const, label: t("tabs.seasons") }]
       : []),
-    ...(permissions.includes("org.club_members.write")
-      ? [{ key: "memberTypes" as const, label: t("tabs.memberTypes") }]
-      : []),
+    // Pasarela de pago y contabilidad (ADR 0042) juntas: es el mismo dinero, del cobro al asiento.
     ...(permissions.includes("org.fees.read")
-      ? [
-          { key: "payments" as const, label: t("tabs.payments") },
-          // Contabilidad (ADR 0042): Holded con la clave cifrada, cómo salen las cuotas y lo enviado.
-          { key: "accounting" as const, label: t("tabs.accounting") },
-        ]
+      ? [{ key: "payments" as const, label: t("tabs.payments") }]
       : []),
-    // Desarrolladores (ADR 0041): la clave del catálogo público para la web del club.
+    // Web del club (ADR 0041): la clave del catálogo público y el código para pegar.
     { key: "developers" as const, label: t("tabs.developers") },
-    { key: "setup" as const, label: t("tabs.setup") },
     ...(permissions.includes("org.activity.read")
       ? [{ key: "activity" as const, label: t("tabs.activity") }]
       : []),
@@ -123,23 +123,56 @@ export function SettingsPage() {
         items={items}
       />
       {tab === "general" ? (
-        <GeneralTab
-          key={o.id}
-          name={o.name}
-          defaultLocale={o.defaultLocale}
-          timezone={o.timezone}
-        />
+        <div className="flex flex-col gap-6">
+          <SetupCard />
+          <GeneralTab
+            key={o.id}
+            name={o.name}
+            defaultLocale={o.defaultLocale}
+            timezone={o.timezone}
+          />
+        </div>
       ) : null}
       {tab === "identity" ? <IdentityTab key={o.id} /> : null}
-      {tab === "seasons" ? <SeasonsTab /> : null}
-      {tab === "memberTypes" ? <MemberTypesTab /> : null}
-      {tab === "payments" ? <PaymentsTab /> : null}
-      {tab === "accounting" ? <AccountingTab /> : null}
+      {tab === "seasons" ? (
+        <div className="flex flex-col gap-6">
+          {canSeasons ? <SeasonsCard /> : null}
+          {canMemberTypes ? <MemberTypesCard /> : null}
+        </div>
+      ) : null}
+      {tab === "payments" ? <PaymentsTab section={alias?.section} /> : null}
       {tab === "developers" ? <DevelopersTab /> : null}
-      {tab === "setup" ? <SetupTab /> : null}
       {tab === "activity" ? <ActivityTab /> : null}
     </div>
   );
+}
+
+/** Un bloque de una pestaña que junta varias tarjetas de lo mismo, con su nombre encima. */
+function SettingsGroup({
+  id,
+  title,
+  children,
+}: {
+  id?: string;
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <section id={id} aria-label={title} className="flex scroll-mt-20 flex-col gap-3">
+      <h2 className="text-label font-medium uppercase tracking-wide text-muted">{title}</h2>
+      {children}
+    </section>
+  );
+}
+
+/** Baja una vez hasta un bloque de la pestaña cuando lo de encima ya ha cargado y no lo empuja. */
+function useScrollToSection(section: string | undefined, ready: boolean) {
+  const done = useRef(false);
+  useEffect(() => {
+    if (!section || !ready || done.current) return;
+    done.current = true;
+    document.getElementById(section)?.scrollIntoView({ block: "start" });
+  }, [section, ready]);
 }
 
 const COMMON_ZONES = [
@@ -273,9 +306,9 @@ function GeneralTab({
   );
 }
 
-// --- Temporadas (antes en la pantalla de equipos) ---
+// --- Temporadas y socios: temporadas (antes en la pantalla de equipos) ---
 
-function SeasonsTab() {
+function SeasonsCard() {
   const t = useT("settings.seasons");
   const errors = useT("errors");
   const toast = useToast();
@@ -538,9 +571,9 @@ function SeasonSheet({
   );
 }
 
-// --- Tipos de socio ---
+// --- Temporadas y socios: tipos de socio ---
 
-function MemberTypesTab() {
+function MemberTypesCard() {
   const t = useT("settings.memberTypes");
   const errors = useT("errors");
   const toast = useToast();
@@ -774,9 +807,9 @@ function RenameTypeSheet({
   );
 }
 
-// --- Cobros (Bloque 18; Stripe Connect, ADR 0042): proveedor y cuenta de Stripe del club ---
+// --- Cobros y contabilidad (Bloque 18; ADR 0042 y 0045): la pasarela y Holded, una sola pestaña ---
 
-function PaymentsTab() {
+function PaymentsTab({ section }: { section: string | undefined }) {
   const t = useT("settings.payments");
   const c = useT("common");
   const providers = useT("paymentProviders");
@@ -790,6 +823,9 @@ function PaymentsTab() {
     queryKey: ["org", slug, "fees", "settings"],
     queryFn: () => apiFetch("/api/org/fees/settings", { schema: PaymentsSettingsResponseSchema }),
   });
+  // La misma consulta que pinta la contabilidad: con las dos cargadas, la pasarela ya no crece.
+  const accounting = useAccountingStatus();
+  useScrollToSection(section, !settings.isPending && !accounting.isPending);
   const back = params.get("stripe");
   const handled = useRef(false);
 
@@ -816,24 +852,34 @@ function PaymentsTab() {
     // Solo al volver de Stripe: el resto de dependencias no cambian el gesto.
   }, [back]);
 
-  if (settings.isPending) return <p className="text-body text-muted">{c("loading")}</p>;
-  if (settings.isError || !settings.data)
-    return <Alert kind="error">{errors(errorKey(settings.error))}</Alert>;
   return (
-    <PaymentsForm
-      key={`${settings.data.payments.provider}:${settings.data.payments.stripeAccountId ?? ""}:${settings.data.payments.stripeAccountStatus ?? ""}`}
-      initial={settings.data.payments}
-      canWrite={canWrite}
-      labels={{ t, c, providers, errors }}
-      onSaved={async () => {
-        await client.invalidateQueries({ queryKey: ["org", slug, "fees", "settings"] });
-        await refresh();
-        toast("success", t("saved"));
-      }}
-      onRefreshed={(payments) =>
-        client.setQueryData(["org", slug, "fees", "settings"], { payments })
-      }
-    />
+    <div className="flex flex-col gap-8">
+      <SettingsGroup title={t("groups.gateway")}>
+        {settings.isPending ? (
+          <p className="text-body text-muted">{c("loading")}</p>
+        ) : settings.isError || !settings.data ? (
+          <Alert kind="error">{errors(errorKey(settings.error))}</Alert>
+        ) : (
+          <PaymentsForm
+            key={`${settings.data.payments.provider}:${settings.data.payments.stripeAccountId ?? ""}:${settings.data.payments.stripeAccountStatus ?? ""}`}
+            initial={settings.data.payments}
+            canWrite={canWrite}
+            labels={{ t, c, providers, errors }}
+            onSaved={async () => {
+              await client.invalidateQueries({ queryKey: ["org", slug, "fees", "settings"] });
+              await refresh();
+              toast("success", t("saved"));
+            }}
+            onRefreshed={(payments) =>
+              client.setQueryData(["org", slug, "fees", "settings"], { payments })
+            }
+          />
+        )}
+      </SettingsGroup>
+      <SettingsGroup id="settings-accounting" title={t("groups.accounting")}>
+        <AccountingSection />
+      </SettingsGroup>
+    </div>
   );
 }
 
@@ -1091,9 +1137,14 @@ function PaymentsForm({
   );
 }
 
-// --- Puesta en marcha (antes "primeros pasos" en la portada) ---
+// --- Puesta en marcha (antes "primeros pasos" en la portada; en General desde la ADR 0045) ---
 
-function SetupTab() {
+/**
+ * Lo que le falta al club para estar listo, a la entrada de los ajustes. No es un ajuste: es una
+ * guía que lleva a cada sitio. Mientras carga no se pinta (no se ve un paso a medias que ya está
+ * hecho) y, con todo hecho, se va.
+ */
+function SetupCard() {
   const t = useT("settings.setup");
   const { slug, org, branding } = useReadyClub();
   const paths = clubPaths(slug);
@@ -1146,6 +1197,9 @@ function SetupTab() {
     { key: "invite", done: staff > 0 || pending > 0, to: `${paths.staff}?invite=1` },
   ] as const;
   const done = steps.filter((s) => s.done).length;
+  if ([summary, members, invitations].some((q) => q.isLoading) || done === steps.length) {
+    return null;
+  }
 
   return (
     <Card
