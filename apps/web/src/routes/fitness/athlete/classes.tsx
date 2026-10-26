@@ -34,7 +34,7 @@ export function AthleteClassesPage() {
 
       {classes.data ? (
         classes.data.plan ? (
-          <Card>
+          <Card className="pt-5">
             <PlanLine plan={classes.data.plan} compact />
           </Card>
         ) : (

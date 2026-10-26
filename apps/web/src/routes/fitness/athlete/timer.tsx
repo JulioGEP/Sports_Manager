@@ -265,7 +265,7 @@ export function TimerPage() {
       <PageHeader title={t("title")} description={t("description")} />
 
       {startedAt === null ? (
-        <Card>
+        <Card className="pt-5">
           <div className="flex flex-col gap-5">
             <Segmented
               label={t("mode")}
