@@ -140,5 +140,10 @@ export const AUDIT_ACTIONS = [
   "physical_test.created",
   "physical_test.updated",
   "physical_test.results_recorded",
+  "suggestion.created",
+  "suggestion.updated",
+  "suggestion.voted",
+  "suggestion.unvoted",
+  "suggestion.reordered",
 ] as const;
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];

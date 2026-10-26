@@ -50,6 +50,7 @@ export const Image = themed(Phosphor.Image);
 export const Info = themed(Phosphor.Info);
 export const Key = themed(Phosphor.Key);
 export const Lifebuoy = themed(Phosphor.Lifebuoy);
+export const Lightbulb = themed(Phosphor.Lightbulb);
 export const Lightning = themed(Phosphor.Lightning);
 export const ListChecks = themed(Phosphor.ListChecks);
 export const MapPin = themed(Phosphor.MapPin);

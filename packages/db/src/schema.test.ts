@@ -885,4 +885,74 @@ describe("esquema del Bloque 2 (Postgres embebido con todas las migraciones)", (
     );
     expect(inv[0]!.invited_by).toBeNull();
   });
+
+  it("mejoras de la plataforma (ADR 0046): lo público lleva título público, fecha por mes o trimestre y un voto por club", async () => {
+    const insert =
+      "insert into suggestions (organization_id, created_by, title, body, area, status, public_title, eta) values ($1, $2, $3, 'Cuerpo', $4, $5, $6, $7) returning id";
+    const { rows } = await client.query<{ id: string }>(insert, [
+      orgId,
+      userId,
+      "Exportar socios",
+      "people",
+      "submitted",
+      null,
+      null,
+    ]);
+    const suggestion = rows[0]!.id;
+    // Publicada sin versión pública, no.
+    expect(
+      await errorCode(client, insert, [orgId, userId, "X", "people", "open", null, null]),
+    ).toBe(CHECK_VIOLATION);
+    expect(
+      await errorCode(client, insert, [orgId, userId, "X", "people", "open", "X", "2027-Q1"]),
+    ).toBeNull();
+    // Fecha aproximada: mes o trimestre, nunca un día.
+    for (const eta of ["2027-13", "2027-Q5", "2027-01-15"])
+      expect(
+        await errorCode(client, insert, [orgId, userId, "X", "people", "open", "X", eta]),
+        eta,
+      ).toBe(CHECK_VIOLATION);
+    expect(
+      await errorCode(client, insert, [orgId, userId, "X", "nada", "submitted", null, null]),
+    ).toBe(CHECK_VIOLATION);
+    expect(
+      await errorCode(client, "update suggestions set status = 'won' where id = $1", [suggestion]),
+    ).toBe(CHECK_VIOLATION);
+    expect(
+      await errorCode(client, "update suggestions set merged_into_id = id where id = $1", [
+        suggestion,
+      ]),
+    ).toBe(CHECK_VIOLATION);
+
+    const vote =
+      "insert into suggestion_votes (suggestion_id, organization_id, user_id) values ($1, $2, $3)";
+    expect(await errorCode(client, vote, [suggestion, orgId, userId])).toBeNull();
+    expect(await errorCode(client, vote, [suggestion, orgId, null])).toBe(UNIQUE_VIOLATION);
+
+    // Sin la sugerencia no quedan votos; sin el club, la sugerencia sigue (otros la han votado).
+    await client.query("delete from suggestions where id = $1", [suggestion]);
+    expect(
+      (await client.query("select 1 from suggestion_votes where suggestion_id = $1", [suggestion]))
+        .rowCount,
+    ).toBe(0);
+    const { rows: tmp } = await client.query<{ id: string }>(
+      "insert into organizations (slug, name, default_locale, default_sport_id, brand_primary_color, brand_secondary_color) values ('club-mejora', 'Mejora', 'es', $1, '#111111', '#222222') returning id",
+      [sportId],
+    );
+    const { rows: kept } = await client.query<{ id: string }>(insert, [
+      tmp[0]!.id,
+      userId,
+      "Algo",
+      "other",
+      "open",
+      "Algo",
+      null,
+    ]);
+    await client.query("delete from organizations where id = $1", [tmp[0]!.id]);
+    const { rows: after } = await client.query<{ organization_id: string | null }>(
+      "select organization_id from suggestions where id = $1",
+      [kept[0]!.id],
+    );
+    expect(after[0]!.organization_id).toBeNull();
+  });
 });

@@ -7,6 +7,7 @@ import { PlatformAuditPage } from "@/routes/admin/audit";
 import { PlatformClubPage } from "@/routes/admin/club";
 import { PlatformClubsPage } from "@/routes/admin/clubs";
 import { PlatformSetupPage } from "@/routes/admin/setup";
+import { PlatformSuggestionsPage } from "@/routes/admin/suggestions";
 import { PlatformSystemPage } from "@/routes/admin/system";
 import { ForgotPasswordPage } from "@/routes/auth/forgot";
 import { LoginPage } from "@/routes/auth/login";
@@ -32,6 +33,7 @@ import { MatchStatsPage } from "@/routes/club/match-stats";
 import { PlayerPage } from "@/routes/club/player";
 import { PlayerPerformancePage } from "@/routes/club/player-performance";
 import { PlayersPage } from "@/routes/club/players";
+import { RoadmapPage } from "@/routes/club/roadmap";
 import { SectionPage } from "@/routes/club/section";
 import { SectionMatchConfigPage } from "@/routes/club/section-match-config";
 import { SectionMethodologyPage } from "@/routes/club/section-methodology";
@@ -93,6 +95,8 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <PlatformClubsPage /> },
       { path: "clubs/:slug", element: <PlatformClubPage /> },
+      // Mejoras de la plataforma (ADR 0046): la bandeja y la hoja de ruta.
+      { path: "suggestions", element: <PlatformSuggestionsPage /> },
       { path: "audit", element: <PlatformAuditPage /> },
       { path: "system", element: <PlatformSystemPage /> },
     ],
@@ -153,6 +157,8 @@ export const router = createBrowserRouter([
       { path: "sections/:id/training-config", element: <SectionTrainingConfigPage /> },
       { path: "sections/:id/methodology", element: <SectionMethodologyPage /> },
       { path: "me", element: <AthletePage /> },
+      // Mejoras de la plataforma (ADR 0046): la administración del club sugiere, vota y ve la hoja de ruta.
+      { path: "roadmap", element: <RoadmapPage /> },
     ],
   },
   { path: "*", element: <Navigate to="/" replace /> },

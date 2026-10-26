@@ -48,3 +48,6 @@ export const quotaExceeded = (
 ) => new ApiError(429, "quota_exceeded", message);
 export const aiUnavailable = (message = "La propuesta con IA no está disponible en este club.") =>
   new ApiError(503, "ai_unavailable", message);
+export const suggestionLimit = (
+  message = "Tu club ha enviado muchas sugerencias en las últimas 24 horas. Vuelve a probar mañana.",
+) => new ApiError(429, "suggestion_limit", message);

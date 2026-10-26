@@ -72,14 +72,16 @@ export function PlatformShell() {
       label: t("clubs"),
       icon: Icon.Buildings,
       end: false,
-      match: /^\/admin(\/clubs)?(\/[^/]+)?$/,
+      // La lista y la ficha de cada club; no las otras pantallas del panel.
+      match: /^\/admin(\/clubs\/[^/]+)?\/?$/,
     },
+    { to: "/admin/suggestions", label: t("suggestions"), icon: Icon.Lightbulb, end: false },
     { to: "/admin/audit", label: t("audit"), icon: Icon.Pulse, end: false },
     { to: "/admin/system", label: t("system"), icon: Icon.Info, end: false },
   ];
 
   const nav = (
-    <nav className="flex gap-1 lg:flex-col" aria-label={t("mainNav")}>
+    <nav className="flex flex-wrap gap-1 lg:flex-col lg:flex-nowrap" aria-label={t("mainNav")}>
       {links.map((l) => (
         <NavLink
           key={l.to}

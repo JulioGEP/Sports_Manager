@@ -1,4 +1,4 @@
-# Capturas de la interfaz (Bloques 14 a 26, pizarra animada, tienda, pasarela y contabilidad, identidad del club)
+# Capturas de la interfaz (Bloques 14 a 26, pizarra animada, tienda, pasarela y contabilidad, identidad del club, mejoras de la plataforma)
 
 Capturas que generan las pruebas de interfaz (`pnpm test:ui`) contra la API real con base embebida, con el front de Vite + React + Tailwind sobre el design system del producto (`packages/design`, ADR 0027). Escritorio a 1280x800; móvil, Pixel 7. La fuente viva es el artefacto `capturas-interfaz` de CI; esta carpeta es la foto de la revisión del club completo (ADR 0031), con el design system 1.3: todo botón lleva el icono de su acción (rueda dentada para editar, cubo de basura rojo para eliminar, más para añadir); la fila es el objeto (se abre tocándola, con acciones como iconos silenciosos sin borde); la paleta de mandos ⌘K encuentra personas, equipos, pantallas y acciones; y la plantilla de un equipo se ve como un tablero por posición: secciones por deporte, socios, agenda e instalaciones, cuotas y "ver como", sobre lo que ya había de los bloques 11 a 13 (ADR 0028, 0029 y 0030), más el alcance por cargo y la gestión de acceso por rol del Bloque 19 (ADR 0033): el cuerpo técnico, la dirección y la fisio ven solo su parte del club, y "Personal" gana la pestaña "Acceso", y el partido en directo del Bloque 20 (ADR 0034): configuración del motor por sección, consola en la banda a pantalla completa y en tres zonas con el banquillo arrastrable (ADR 0037), estadísticas e histórico, y el entrenamiento de los bloques 21 a 26 (ADR 0039): semana del equipo con "A tener en cuenta", sesión por bloques con su cierre y modo pista, biblioteca con pizarra, carga, enfermería, salud y "Mi bienestar".
 
@@ -400,6 +400,42 @@ Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negoci
 
 ![Panel del negocio: sistema](escritorio-57-negocio-sistema.png)
 
+## Mejoras de la plataforma (ADR 0046)
+
+Solo la administración del club. Lo que un club envía lo ven ese club y la plataforma; lo publicado lo ven todos los clubes, sin saber quién lo pidió.
+
+### Hoja de ruta del club: lo que viene en orden y con fecha aproximada, lo que está en estudio para votar y lo último disponible
+
+![Hoja de ruta del club](escritorio-130-mejoras-hoja-de-ruta.png)
+
+### Detalle de una mejora: estado, fecha aproximada, votos y el voto del club
+
+![Detalle de una mejora](escritorio-131-mejoras-detalle.png)
+
+### Sugerir una mejora: el formulario avisa de las parecidas que ya están en la hoja de ruta para votarlas
+
+![Sugerir una mejora](escritorio-132-mejoras-sugerir.png)
+
+### Sugerencias del club con su estado
+
+![Sugerencias del club](escritorio-133-mejoras-sugerencias-del-club.png)
+
+### Negocio: la bandeja de lo que piden los clubes, por revisar
+
+![Mejoras por revisar](escritorio-134-negocio-mejoras-por-revisar.png)
+
+### Negocio: revisar una sugerencia (estado, versión pública, fecha aproximada y respuesta al club)
+
+![Revisar una sugerencia](escritorio-135-negocio-mejoras-revisar.png)
+
+### Negocio: la hoja de ruta con su orden y las flechas para ordenarla
+
+![Hoja de ruta en el negocio](escritorio-136-negocio-mejoras-hoja-de-ruta.png)
+
+### El club ve en qué ha quedado su sugerencia, con la respuesta de la plataforma
+
+![Respuesta de la plataforma](escritorio-137-mejoras-respuesta.png)
+
 ## Varios clubes con un único login
 
 ### La misma cuenta acepta la invitación al club nuevo (otra ruta)
@@ -751,3 +787,9 @@ Las mismas pantallas en un móvil, con la forma envolvente del design system: ca
 ![Catálogo de la tienda (móvil)](movil-111-tienda-catalogo.png)
 
 ![Mis pedidos (móvil)](movil-114-tienda-mis-pedidos.png)
+
+### Mejoras de la plataforma (móvil): la hoja de ruta y la respuesta al club
+
+![Hoja de ruta (móvil)](movil-130-mejoras-hoja-de-ruta.png)
+
+![Respuesta de la plataforma (móvil)](movil-137-mejoras-respuesta.png)

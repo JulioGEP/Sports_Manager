@@ -302,6 +302,8 @@ export function CommandPalette({
       { key: "newProduct", perm: "org.store.write", to: `${paths.store}?tab=products&new=1` },
       { key: "counterSale", perm: "org.store.write", to: `${paths.store}?counter=1` },
       { key: "developers", perm: "org.settings.write", to: `${paths.settings}?tab=developers` },
+      // Mejoras de la plataforma (ADR 0046).
+      { key: "suggest", perm: "org.suggestions", to: `${paths.roadmap}?new=1` },
     ];
     for (const a of actions) {
       if (has(a.perm))

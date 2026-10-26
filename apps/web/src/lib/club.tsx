@@ -307,4 +307,6 @@ export const clubPaths = (slug: string) => ({
   sectionTrainingConfig: (id: string) => `/${slug}/sections/${id}/training-config`,
   sectionMethodology: (id: string) => `/${slug}/sections/${id}/methodology`,
   athlete: `/${slug}/me`,
+  /** Mejoras de la plataforma (ADR 0046): hoja de ruta y sugerencias del club. Solo la administración. */
+  roadmap: `/${slug}/roadmap`,
 });

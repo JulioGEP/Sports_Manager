@@ -25,6 +25,7 @@ import { createTrainingAiRoutes } from "./routes/training-ai.ts";
 import { createPlayerHealthRoutes } from "./routes/player-health.ts";
 import { createPublicStoreRoutes } from "./routes/public-store.ts";
 import { createStoreRoutes } from "./routes/store.ts";
+import { createSuggestionRoutes } from "./routes/suggestions.ts";
 import { createAccountingService } from "./services/accounting/index.ts";
 import { DEPLOY_CONTEXT_HEADER } from "./tenancy.ts";
 
@@ -35,7 +36,7 @@ export interface AppOptions {
   data?: DataLayer;
 }
 
-export const API_VERSION = "0.14.0";
+export const API_VERSION = "0.15.0";
 
 export function createApp(options: AppOptions = {}) {
   const config = options.config ?? loadConfig();
@@ -93,6 +94,8 @@ export function createApp(options: AppOptions = {}) {
   app.route("/", createTrainingAiRoutes(config, data));
   app.route("/", createLoadRoutes(config, data));
   app.route("/", createPlayerHealthRoutes(config, data));
+  // Mejoras de la plataforma (ADR 0046): lo que la administración del club sugiere y vota.
+  app.route("/", createSuggestionRoutes(config, data));
   app.route("/", createPlatformRoutes(config, data));
   app.route("/", createPlatformSetupRoutes(config, data));
 

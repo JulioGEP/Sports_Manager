@@ -46,7 +46,8 @@
     "viewAs": "Ver el club como…",
     "training": "Entrenamiento",
     "athlete": "Mi bienestar",
-    "store": "Tienda"
+    "store": "Tienda",
+    "roadmap": "Mejoras"
   },
   "auth": {
     "login": {
@@ -964,7 +965,8 @@
       "apiError": "La API no responde.",
       "forbiddenTitle": "Solo administradores de plataforma",
       "forbiddenBody": "Tu cuenta ({email}) no es administradora de plataforma.",
-      "switchAccount": "Entrar con otra cuenta"
+      "switchAccount": "Entrar con otra cuenta",
+      "suggestions": "Mejoras"
     },
     "clubs": {
       "title": "Clubes",
@@ -1089,6 +1091,83 @@
       "cost": "Coste en 30 días",
       "kept": "Tareas que se quedan",
       "keptHint": "Tareas propuestas que siguen en su sesión, sobre las aplicadas. Es la medida de si la IA ayuda."
+    },
+    "suggestions": {
+      "title": "Mejoras",
+      "description": "Lo que piden los clubes y la hoja de ruta que ven todos. Ningún club ve qué ha pedido otro.",
+      "create": "Añadir a la hoja de ruta",
+      "createHint": "Una mejora que no ha pedido ningún club. Sale publicada al momento.",
+      "createSubmit": "Añadir mejora",
+      "created": "Mejora añadida a la hoja de ruta.",
+      "saved": "Sugerencia guardada: {status}.",
+      "fromPlatform": "Plataforma",
+      "tabs": {
+        "inbox": "Por revisar",
+        "roadmap": "Hoja de ruta",
+        "released": "Disponibles",
+        "closed": "Cerradas"
+      },
+      "coming": "Lo que viene",
+      "comingHint": "En desarrollo y planificadas, en el orden que ven los clubes. Ordénalas con las flechas.",
+      "open": "En estudio",
+      "openHint": "Publicadas para votar, lo más votado primero.",
+      "emptyInbox": "Nada por revisar",
+      "emptyComing": "Nada planificado",
+      "emptyOpen": "Nada en estudio",
+      "emptyReleased": "Aún no ha salido ninguna mejora",
+      "emptyClosed": "Nada descartado ni unido",
+      "moveUp": "Subir",
+      "moveDown": "Bajar",
+      "noEta": "Sin fecha",
+      "quarters": "Trimestre",
+      "months": "Mes",
+      "votes": "{count, plural, =0 {Sin votos} one {# voto} other {# votos}}",
+      "table": {
+        "suggestion": "Sugerencia",
+        "improvement": "Mejora",
+        "author": "Quién",
+        "sent": "Enviada",
+        "rank": "Orden",
+        "status": "Estado",
+        "eta": "Cuándo",
+        "votes": "Votos",
+        "merged": "Peticiones unidas",
+        "published": "Publicada",
+        "released": "Disponible desde",
+        "reviewed": "Revisada"
+      },
+      "form": {
+        "title": "Revisar sugerencia",
+        "fromClub": "Pedida por {club}",
+        "original": "Lo que escribió el club",
+        "sentBy": "{name}, {date}",
+        "status": "Estado",
+        "statusHint": {
+          "submitted": "Solo la ven el club que la pidió y la plataforma.",
+          "open": "Sale en la hoja de ruta para que los clubes la voten.",
+          "planned": "Sale en lo que viene, al final. Después, ordénala con las flechas.",
+          "in_progress": "Sale delante de lo planificado.",
+          "released": "Sale como disponible y ya no se vota.",
+          "declined": "No sale en la hoja de ruta. Explica el porqué al club.",
+          "merged": "Sus votos pasan a la otra mejora y el club que la pidió la verá unida."
+        },
+        "mergeInto": "Unir a",
+        "mergeHint": "La mejora que pide lo mismo. Mejor una publicada.",
+        "mergePlaceholder": "Elige una mejora",
+        "mergeRequired": "Elige a qué mejora unirla.",
+        "publicTitle": "Título público",
+        "publicBody": "Descripción pública",
+        "publicHint": "Lo que ven todos los clubes. Sin el nombre del club ni datos de nadie.",
+        "publicLater": "Se usa al publicarla. Sin el nombre del club ni datos de nadie.",
+        "titleRequired": "El título público necesita al menos 3 letras.",
+        "area": "Parte de la aplicación",
+        "areaPlaceholder": "Elige una",
+        "eta": "Fecha aproximada",
+        "etaHint": "Un trimestre o un mes, nunca un día.",
+        "response": "Respuesta al club",
+        "responseHint": "Solo la ve {club}.",
+        "invalid": "Escribe un título de al menos 3 letras y elige la parte de la aplicación."
+      }
     }
   },
   "apiStatus": {
@@ -1144,7 +1223,8 @@
     "network": "Sin conexión con el servidor.",
     "unknown": "Ha ocurrido un error inesperado.",
     "quota_exceeded": "El club ha gastado las propuestas con IA de esta semana. Se renuevan el lunes.",
-    "ai_unavailable": "La propuesta con IA no está disponible en este club."
+    "ai_unavailable": "La propuesta con IA no está disponible en este club.",
+    "suggestion_limit": "Tu club ha enviado muchas sugerencias en las últimas 24 horas. Vuelve a probar mañana."
   },
   "audit": {
     "organization": {
@@ -1350,6 +1430,13 @@
       "disconnected": "Contabilidad desconectada",
       "synced": "Cuotas enviadas a contabilidad",
       "retried": "Envíos a contabilidad reintentados"
+    },
+    "suggestion": {
+      "created": "Mejora sugerida",
+      "updated": "Sugerencia revisada",
+      "voted": "Mejora votada",
+      "unvoted": "Voto a una mejora quitado",
+      "reordered": "Hoja de ruta reordenada"
     }
   },
   "team": {
@@ -3342,7 +3429,8 @@
       "infirmary": "Enfermería",
       "newProduct": "Nuevo producto de la tienda",
       "counterSale": "Venta en el mostrador",
-      "developers": "Catálogo público para la web"
+      "developers": "Catálogo público para la web",
+      "suggest": "Sugerir una mejora"
     },
     "keys": {
       "move": "moverse",
@@ -5181,5 +5269,126 @@
     "saveNewDrills": "Guardar las tareas nuevas en la biblioteca del equipo",
     "apply": "Aplicar a las sesiones",
     "applied": "{count, plural, one {Propuesta aplicada a # sesión. Queda en borrador para que la revises.} other {Propuesta aplicada a # sesiones. Quedan en borrador para que las revises.}}"
+  },
+  "suggestionStatus": {
+    "submitted": "Recibida",
+    "open": "En estudio",
+    "planned": "Planificada",
+    "in_progress": "En desarrollo",
+    "released": "Disponible",
+    "declined": "Descartada",
+    "merged": "Unida a otra"
+  },
+  "suggestionAreas": {
+    "structure": "Secciones, equipos y deportistas",
+    "people": "Socios y personal",
+    "agenda": "Agenda e instalaciones",
+    "training": "Entrenamiento",
+    "matches": "Partidos",
+    "fees": "Cuotas y cobros",
+    "store": "Tienda",
+    "family": "Familias",
+    "communication": "Avisos y comunicación",
+    "settings": "Ajustes e identidad",
+    "other": "Otra cosa"
+  },
+  "roadmap": {
+    "title": "Mejoras de la plataforma",
+    "description": "Propón mejoras, vota las que están en estudio y mira qué viene y cuándo.",
+    "suggest": "Sugerir una mejora",
+    "onlyAdmins": "Solo la administración del club puede sugerir mejoras y ver la hoja de ruta.",
+    "tabs": {
+      "roadmap": "Hoja de ruta",
+      "mine": "Sugerencias del club"
+    },
+    "coming": {
+      "title": "Lo que viene",
+      "description": "En este orden. Las fechas son aproximadas y pueden moverse.",
+      "empty": "Aún no hay nada planificado",
+      "emptyHint": "Cuando se planifique una mejora, saldrá aquí en su orden y con su fecha aproximada."
+    },
+    "open": {
+      "title": "En estudio",
+      "description": "Vota las que más te importan: un voto por club. Lo más votado se estudia antes.",
+      "empty": "No hay mejoras en estudio",
+      "emptyHint": "Sugiere la tuya: si encaja, se publica aquí para que otros clubes la voten."
+    },
+    "released": {
+      "title": "Ya disponible",
+      "description": "Lo último que ha llegado a la plataforma."
+    },
+    "table": {
+      "rank": "Orden",
+      "improvement": "Mejora",
+      "status": "Estado",
+      "eta": "Cuándo",
+      "votes": "Votos",
+      "released": "Disponible desde",
+      "suggestion": "Sugerencia",
+      "sent": "Enviada"
+    },
+    "eta": {
+      "quarter": "T{quarter} {year}"
+    },
+    "noEta": "Sin fecha",
+    "votes": "{count, plural, =0 {Sin votos} one {# club la ha votado} other {# clubes la han votado}}",
+    "votesShort": "{count, plural, =0 {Sin votos} one {# voto} other {# votos}}",
+    "vote": "Votar",
+    "voteThis": "Votar esta mejora",
+    "unvote": "Quitar mi voto",
+    "votedShort": "Votada",
+    "votedByClub": "Tu club la ha votado",
+    "requestedByClub": "Pedida por tu club",
+    "voted": "Voto guardado para «{title}».",
+    "unvoted": "Voto quitado.",
+    "detail": {
+      "rank": "Orden",
+      "rankValue": "Número {rank} de lo que viene",
+      "eta": "Cuándo, aproximadamente",
+      "released": "Disponible desde",
+      "votes": "Votos"
+    },
+    "statusHelp": {
+      "open": "En estudio: los votos de los clubes ayudan a decidir si se hace y cuándo.",
+      "planned": "Planificada: ya tiene su sitio en lo que viene.",
+      "in_progress": "En desarrollo: ya se está haciendo.",
+      "released": "Disponible: ya la puedes usar."
+    },
+    "mine": {
+      "empty": "Tu club aún no ha sugerido nada",
+      "emptyHint": "Cuenta qué os falta. Aquí verás en qué queda cada sugerencia.",
+      "seeInRoadmap": "Ver en la hoja de ruta",
+      "mergedInto": "Pide lo mismo que «{title}» y se han unido: tu voto cuenta ahí.",
+      "mergedPending": "Pide lo mismo que otra petición y se han unido: tu voto cuenta ahí.",
+      "statusHelp": {
+        "submitted": "Recibida. La plataforma la revisará y te contestará aquí.",
+        "open": "Publicada en la hoja de ruta, en estudio: otros clubes ya pueden votarla.",
+        "planned": "Planificada: tiene su sitio en lo que viene.",
+        "in_progress": "En desarrollo: ya se está haciendo.",
+        "released": "Disponible: ya la puedes usar.",
+        "declined": "Descartada por ahora. Lee la respuesta de la plataforma.",
+        "merged": "Pide lo mismo que otra petición y se han unido."
+      },
+      "response": "Respuesta de la plataforma",
+      "publicTitle": "En la hoja de ruta como",
+      "sent": "Enviada",
+      "sentBy": "{date} por {name}",
+      "written": "Lo que escribió tu club"
+    },
+    "form": {
+      "title": "Sugerir una mejora",
+      "description": "La lee el equipo de la plataforma. Si encaja, se publica sin el nombre del club para que otros clubes la voten.",
+      "titleLabel": "Qué te gustaría poder hacer",
+      "titleHint": "Una frase. Por ejemplo: Exportar los socios a Excel.",
+      "similarTitle": "Puede que ya esté en la hoja de ruta",
+      "similarHint": "Si es la misma, vótala: suma más que pedirla otra vez.",
+      "areaLabel": "Parte de la aplicación",
+      "areaPlaceholder": "Elige una",
+      "bodyLabel": "Para qué lo necesitas",
+      "bodyHint": "Cuenta el problema y cómo lo resolvéis hoy. Sin datos personales de nadie.",
+      "submit": "Enviar sugerencia",
+      "sent": "Sugerencia enviada. Aquí verás en qué queda.",
+      "invalid": "Escribe un título de al menos 3 letras, elige la parte de la aplicación y cuenta para qué lo necesitas (10 letras como mínimo)."
+    }
   }
 }
