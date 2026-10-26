@@ -48,7 +48,8 @@
     "athlete": "My wellbeing",
     "store": "Shop",
     "myProfile": "My profile",
-    "athleteTraining": "My plan"
+    "athleteTraining": "My plan",
+    "roadmap": "Improvements"
   },
   "auth": {
     "login": {
@@ -1006,7 +1007,8 @@
       "apiError": "The API is not responding.",
       "forbiddenTitle": "Platform administrators only",
       "forbiddenBody": "Your account ({email}) is not a platform administrator.",
-      "switchAccount": "Sign in with another account"
+      "switchAccount": "Sign in with another account",
+      "suggestions": "Improvements"
     },
     "clubs": {
       "title": "Clubs",
@@ -1131,6 +1133,83 @@
       "cost": "Cost in 30 days",
       "kept": "Tasks that stay",
       "keptHint": "Proposed tasks still in their session, out of those applied. It measures whether the AI helps."
+    },
+    "suggestions": {
+      "title": "Improvements",
+      "description": "What clubs ask for and the roadmap everyone sees. No club sees what another club asked for.",
+      "create": "Add to the roadmap",
+      "createHint": "An improvement no club has asked for. It is published right away.",
+      "createSubmit": "Add improvement",
+      "created": "Improvement added to the roadmap.",
+      "saved": "Suggestion saved: {status}.",
+      "fromPlatform": "Platform",
+      "tabs": {
+        "inbox": "To review",
+        "roadmap": "Roadmap",
+        "released": "Available",
+        "closed": "Closed"
+      },
+      "coming": "Coming next",
+      "comingHint": "In progress and planned, in the order clubs see. Reorder with the arrows.",
+      "open": "Under consideration",
+      "openHint": "Published for voting, most voted first.",
+      "emptyInbox": "Nothing to review",
+      "emptyComing": "Nothing planned",
+      "emptyOpen": "Nothing under consideration",
+      "emptyReleased": "No improvement has shipped yet",
+      "emptyClosed": "Nothing declined or merged",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "noEta": "No date",
+      "quarters": "Quarter",
+      "months": "Month",
+      "votes": "{count, plural, =0 {No votes} one {# vote} other {# votes}}",
+      "table": {
+        "suggestion": "Suggestion",
+        "improvement": "Improvement",
+        "author": "Who",
+        "sent": "Sent",
+        "rank": "Order",
+        "status": "Status",
+        "eta": "When",
+        "votes": "Votes",
+        "merged": "Merged requests",
+        "published": "Published",
+        "released": "Available since",
+        "reviewed": "Reviewed"
+      },
+      "form": {
+        "title": "Review suggestion",
+        "fromClub": "Requested by {club}",
+        "original": "What the club wrote",
+        "sentBy": "{name}, {date}",
+        "status": "Status",
+        "statusHint": {
+          "submitted": "Only the club that asked for it and the platform can see it.",
+          "open": "Shows in the roadmap so clubs can vote for it.",
+          "planned": "Shows last in what is coming next. Then reorder it with the arrows.",
+          "in_progress": "Shows ahead of what is planned.",
+          "released": "Shows as available and can no longer be voted.",
+          "declined": "Does not show in the roadmap. Tell the club why.",
+          "merged": "Its votes move to the other improvement and the club that asked will see it merged."
+        },
+        "mergeInto": "Merge into",
+        "mergeHint": "The improvement that asks for the same thing. Preferably a published one.",
+        "mergePlaceholder": "Choose an improvement",
+        "mergeRequired": "Choose which improvement to merge it into.",
+        "publicTitle": "Public title",
+        "publicBody": "Public description",
+        "publicHint": "What every club sees. Without the club's name or anyone's data.",
+        "publicLater": "Used when it is published. Without the club's name or anyone's data.",
+        "titleRequired": "The public title needs at least 3 letters.",
+        "area": "Part of the app",
+        "areaPlaceholder": "Choose one",
+        "eta": "Approximate date",
+        "etaHint": "A quarter or a month, never a day.",
+        "response": "Reply to the club",
+        "responseHint": "Only {club} can see it.",
+        "invalid": "Write a title of at least 3 letters and choose the part of the app."
+      }
     }
   },
   "apiStatus": {
@@ -1187,7 +1266,8 @@
     "network": "No connection to the server.",
     "unknown": "An unexpected error occurred.",
     "quota_exceeded": "The club has used this week's AI proposals. They renew on Monday.",
-    "ai_unavailable": "AI proposals are not available in this club."
+    "ai_unavailable": "AI proposals are not available in this club.",
+    "suggestion_limit": "Your club has sent a lot of suggestions in the last 24 hours. Try again tomorrow."
   },
   "audit": {
     "organization": {
@@ -1395,6 +1475,13 @@
       "disconnected": "Accounting disconnected",
       "synced": "Fees sent to accounting",
       "retried": "Accounting sends retried"
+    },
+    "suggestion": {
+      "created": "Improvement suggested",
+      "updated": "Suggestion reviewed",
+      "voted": "Improvement voted",
+      "unvoted": "Vote on an improvement removed",
+      "reordered": "Roadmap reordered"
     }
   },
   "team": {
@@ -3429,7 +3516,8 @@
       "infirmary": "Medical room",
       "newProduct": "New shop product",
       "counterSale": "Counter sale",
-      "developers": "Public catalog for the website"
+      "developers": "Public catalog for the website",
+      "suggest": "Suggest an improvement"
     },
     "keys": {
       "move": "move",
@@ -5309,5 +5397,126 @@
     "noItems": "This session has no tasks for you.",
     "conflict": "Check first",
     "keys": "Key points"
+  },
+  "suggestionStatus": {
+    "submitted": "Received",
+    "open": "Under consideration",
+    "planned": "Planned",
+    "in_progress": "In progress",
+    "released": "Available",
+    "declined": "Declined",
+    "merged": "Merged"
+  },
+  "suggestionAreas": {
+    "structure": "Sections, teams and athletes",
+    "people": "Members and staff",
+    "agenda": "Calendar and facilities",
+    "training": "Training",
+    "matches": "Matches",
+    "fees": "Fees and payments",
+    "store": "Shop",
+    "family": "Families",
+    "communication": "Notices and communication",
+    "settings": "Settings and identity",
+    "other": "Something else"
+  },
+  "roadmap": {
+    "title": "Platform improvements",
+    "description": "Suggest improvements, vote for the ones under consideration and see what is coming and when.",
+    "suggest": "Suggest an improvement",
+    "onlyAdmins": "Only the club's administrators can suggest improvements and see the roadmap.",
+    "tabs": {
+      "roadmap": "Roadmap",
+      "mine": "Club suggestions"
+    },
+    "coming": {
+      "title": "Coming next",
+      "description": "In this order. Dates are approximate and may move.",
+      "empty": "Nothing planned yet",
+      "emptyHint": "When an improvement is planned, it will show up here in order and with its approximate date."
+    },
+    "open": {
+      "title": "Under consideration",
+      "description": "Vote for the ones that matter most to you: one vote per club. The most voted are considered first.",
+      "empty": "No improvements under consideration",
+      "emptyHint": "Suggest yours: if it fits, it is published here so other clubs can vote for it."
+    },
+    "released": {
+      "title": "Now available",
+      "description": "The latest to reach the platform."
+    },
+    "table": {
+      "rank": "Order",
+      "improvement": "Improvement",
+      "status": "Status",
+      "eta": "When",
+      "votes": "Votes",
+      "released": "Available since",
+      "suggestion": "Suggestion",
+      "sent": "Sent"
+    },
+    "eta": {
+      "quarter": "Q{quarter} {year}"
+    },
+    "noEta": "No date",
+    "votes": "{count, plural, =0 {No votes} one {# club has voted for it} other {# clubs have voted for it}}",
+    "votesShort": "{count, plural, =0 {No votes} one {# vote} other {# votes}}",
+    "vote": "Vote",
+    "voteThis": "Vote for this improvement",
+    "unvote": "Remove my vote",
+    "votedShort": "Voted",
+    "votedByClub": "Your club has voted for it",
+    "requestedByClub": "Requested by your club",
+    "voted": "Vote saved for “{title}”.",
+    "unvoted": "Vote removed.",
+    "detail": {
+      "rank": "Order",
+      "rankValue": "Number {rank} coming next",
+      "eta": "When, approximately",
+      "released": "Available since",
+      "votes": "Votes"
+    },
+    "statusHelp": {
+      "open": "Under consideration: club votes help decide whether and when it gets done.",
+      "planned": "Planned: it already has its place in what is coming next.",
+      "in_progress": "In progress: it is being built.",
+      "released": "Available: you can already use it."
+    },
+    "mine": {
+      "empty": "Your club has not suggested anything yet",
+      "emptyHint": "Tell us what you are missing. You will see here what happens to each suggestion.",
+      "seeInRoadmap": "See it in the roadmap",
+      "mergedInto": "It asks for the same as “{title}” and they were merged: your vote counts there.",
+      "mergedPending": "It asks for the same as another request and they were merged: your vote counts there.",
+      "statusHelp": {
+        "submitted": "Received. The platform will review it and reply here.",
+        "open": "Published in the roadmap, under consideration: other clubs can now vote for it.",
+        "planned": "Planned: it has its place in what is coming next.",
+        "in_progress": "In progress: it is being built.",
+        "released": "Available: you can already use it.",
+        "declined": "Declined for now. Read the platform's reply.",
+        "merged": "It asks for the same as another request and they were merged."
+      },
+      "response": "Reply from the platform",
+      "publicTitle": "In the roadmap as",
+      "sent": "Sent",
+      "sentBy": "{date} by {name}",
+      "written": "What your club wrote"
+    },
+    "form": {
+      "title": "Suggest an improvement",
+      "description": "The platform team reads it. If it fits, it is published without the club's name so other clubs can vote for it.",
+      "titleLabel": "What would you like to be able to do",
+      "titleHint": "One sentence. For example: Export members to Excel.",
+      "similarTitle": "It may already be in the roadmap",
+      "similarHint": "If it is the same, vote for it: that counts for more than asking again.",
+      "areaLabel": "Part of the app",
+      "areaPlaceholder": "Choose one",
+      "bodyLabel": "What you need it for",
+      "bodyHint": "Describe the problem and how you solve it today. No one's personal data.",
+      "submit": "Send suggestion",
+      "sent": "Suggestion sent. You will see here what happens to it.",
+      "invalid": "Write a title of at least 3 letters, choose the part of the app and explain what you need it for (at least 10 letters)."
+    }
   }
 }

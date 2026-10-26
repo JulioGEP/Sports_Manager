@@ -275,6 +275,7 @@ Un botón se reconoce antes de leerse. Por eso **toda acción que tenga icono en
 | Entrar | Iniciar sesión, Entrar, Unirme | `SignIn` | `signIn` |
 | Salir | Cerrar sesión | `SignOut` | `signOut` |
 | Proponer | Proponer con IA, Proponer la semana | `Sparkle` | `propose` |
+| Votar | Votar, Quitar mi voto (una mejora de la hoja de ruta) | `ArrowFatUp` | `vote` |
 
 Reglas:
 

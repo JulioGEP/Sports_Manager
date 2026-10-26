@@ -43,6 +43,7 @@ import {
 } from "../http/errors.ts";
 import { requireSession } from "../http/session.ts";
 import { invitationDto, sendInvitationEmail } from "../services/invitations.ts";
+import { createPlatformSuggestionRoutes } from "./suggestions.ts";
 import { absoluteApiUrl, organizationUrl } from "../tenancy.ts";
 
 const error = (description: string) => ({
@@ -63,6 +64,8 @@ const slugParam = z.object({ slug: z.string().min(1).max(63) });
 export function createPlatformRoutes(config: ApiConfig, data: DataLayer) {
   const app = new OpenAPIHono<AppEnv>();
   app.use("/api/platform/*", requireSession(data), requirePlatformAdmin(data));
+  // Bandeja de mejoras y hoja de ruta (ADR 0047): detrás de la misma cadena.
+  app.route("/", createPlatformSuggestionRoutes(data));
 
   function dto(
     org: OrganizationRow,

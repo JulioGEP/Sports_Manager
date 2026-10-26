@@ -309,4 +309,6 @@ export const clubPaths = (slug: string) => ({
   athlete: `/${slug}/me`,
   /** Lo que entrena el deportista con cuenta propia (ADR 0046): su plan de estos días. */
   athleteTraining: `/${slug}/me/training`,
+  /** Mejoras de la plataforma (ADR 0047): hoja de ruta y sugerencias del club. Solo la administración. */
+  roadmap: `/${slug}/roadmap`,
 });

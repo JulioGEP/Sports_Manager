@@ -114,6 +114,11 @@ export const PERMISSIONS = [
   /** Salud: lesiones con diagnóstico, readaptación y consentimiento. Área aparte (decisión 2). */
   "org.health.read",
   "org.health.write",
+  /**
+   * Mejoras de la plataforma (ADR 0047): sugerirlas, seguir las del club, votar las publicadas y
+   * ver la hoja de ruta. Solo la administración: habla con la plataforma en nombre del club.
+   */
+  "org.suggestions",
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
 
@@ -179,6 +184,7 @@ export const ROLE_PERMISSIONS: Record<RoleCode, readonly Permission[]> = {
     "org.load.write",
     // Un club sin fisioterapia también tiene que poder decir quién no está disponible.
     "org.availability.write",
+    "org.suggestions",
     // Salud no: la administración no la ve por defecto (ADR 0039); se le abre por excepción.
   ],
   staff: [...STAFF_READ],

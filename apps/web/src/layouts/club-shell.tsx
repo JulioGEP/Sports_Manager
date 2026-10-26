@@ -203,6 +203,10 @@ function ClubFrame({ children }: { children: ReactNode }) {
         has("org.settings.write")
           ? { to: paths.settings, label: t("settings"), icon: Icon.SlidersHorizontal, end: false }
           : null,
+        // Mejoras de la plataforma (ADR 0047): la administración habla con la plataforma.
+        has("org.suggestions")
+          ? { to: paths.roadmap, label: t("roadmap"), icon: Icon.Lightbulb, end: false }
+          : null,
       ].filter((l): l is NavLinkItem => l !== null),
     },
   ].filter((g) => g.links.length > 0);

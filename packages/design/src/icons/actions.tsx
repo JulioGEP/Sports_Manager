@@ -1,6 +1,7 @@
 import {
   Archive,
   ArrowCounterClockwise,
+  ArrowFatUp,
   ArrowLeft,
   ArrowRight,
   Camera,
@@ -98,6 +99,8 @@ export const actionIcons = {
   current: Star,
   /** Proponer con IA: pedir un borrador que el cuerpo técnico revisa (ADR 0044). */
   propose: Sparkle,
+  /** Votar una mejora de la hoja de ruta y quitar el voto (ADR 0047). */
+  vote: ArrowFatUp,
 } satisfies Record<string, Icon>;
 
 export type ActionKind = keyof typeof actionIcons;

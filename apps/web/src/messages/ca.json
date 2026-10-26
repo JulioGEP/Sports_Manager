@@ -48,7 +48,8 @@
     "athlete": "El meu benestar",
     "store": "Botiga",
     "myProfile": "La meva fitxa",
-    "athleteTraining": "El meu pla"
+    "athleteTraining": "El meu pla",
+    "roadmap": "Millores"
   },
   "auth": {
     "login": {
@@ -1006,7 +1007,8 @@
       "apiError": "L'API no respon.",
       "forbiddenTitle": "Només administradors de plataforma",
       "forbiddenBody": "El teu compte ({email}) no és administrador de plataforma.",
-      "switchAccount": "Entrar amb un altre compte"
+      "switchAccount": "Entrar amb un altre compte",
+      "suggestions": "Millores"
     },
     "clubs": {
       "title": "Clubs",
@@ -1131,6 +1133,83 @@
       "cost": "Cost en 30 dies",
       "kept": "Tasques que es queden",
       "keptHint": "Tasques proposades que segueixen a la seva sessió, sobre les aplicades. És la mesura de si la IA ajuda."
+    },
+    "suggestions": {
+      "title": "Millores",
+      "description": "El que demanen els clubs i el full de ruta que veuen tots. Cap club veu què ha demanat un altre.",
+      "create": "Afegir al full de ruta",
+      "createHint": "Una millora que no ha demanat cap club. Surt publicada a l'instant.",
+      "createSubmit": "Afegir millora",
+      "created": "Millora afegida al full de ruta.",
+      "saved": "Suggeriment desat: {status}.",
+      "fromPlatform": "Plataforma",
+      "tabs": {
+        "inbox": "Per revisar",
+        "roadmap": "Full de ruta",
+        "released": "Disponibles",
+        "closed": "Tancats"
+      },
+      "coming": "El que ve",
+      "comingHint": "En desenvolupament i planificades, en l'ordre que veuen els clubs. Ordena-les amb les fletxes.",
+      "open": "En estudi",
+      "openHint": "Publicades per votar, el més votat primer.",
+      "emptyInbox": "Res per revisar",
+      "emptyComing": "Res planificat",
+      "emptyOpen": "Res en estudi",
+      "emptyReleased": "Encara no ha sortit cap millora",
+      "emptyClosed": "Res descartat ni unit",
+      "moveUp": "Pujar",
+      "moveDown": "Baixar",
+      "noEta": "Sense data",
+      "quarters": "Trimestre",
+      "months": "Mes",
+      "votes": "{count, plural, =0 {Sense vots} one {# vot} other {# vots}}",
+      "table": {
+        "suggestion": "Suggeriment",
+        "improvement": "Millora",
+        "author": "Qui",
+        "sent": "Enviat",
+        "rank": "Ordre",
+        "status": "Estat",
+        "eta": "Quan",
+        "votes": "Vots",
+        "merged": "Peticions unides",
+        "published": "Publicada",
+        "released": "Disponible des de",
+        "reviewed": "Revisat"
+      },
+      "form": {
+        "title": "Revisar suggeriment",
+        "fromClub": "Demanat per {club}",
+        "original": "El que va escriure el club",
+        "sentBy": "{name}, {date}",
+        "status": "Estat",
+        "statusHint": {
+          "submitted": "Només el veuen el club que el va demanar i la plataforma.",
+          "open": "Surt al full de ruta perquè els clubs el votin.",
+          "planned": "Surt en el que ve, al final. Després, ordena'l amb les fletxes.",
+          "in_progress": "Surt davant del que està planificat.",
+          "released": "Surt com a disponible i ja no es vota.",
+          "declined": "No surt al full de ruta. Explica-li el perquè al club.",
+          "merged": "Els seus vots passen a l'altra millora i el club que el va demanar el veurà unit."
+        },
+        "mergeInto": "Unir a",
+        "mergeHint": "La millora que demana el mateix. Millor una de publicada.",
+        "mergePlaceholder": "Tria una millora",
+        "mergeRequired": "Tria a quina millora unir-lo.",
+        "publicTitle": "Títol públic",
+        "publicBody": "Descripció pública",
+        "publicHint": "El que veuen tots els clubs. Sense el nom del club ni dades de ningú.",
+        "publicLater": "Es fa servir en publicar-lo. Sense el nom del club ni dades de ningú.",
+        "titleRequired": "El títol públic necessita almenys 3 lletres.",
+        "area": "Part de l'aplicació",
+        "areaPlaceholder": "Tria'n una",
+        "eta": "Data aproximada",
+        "etaHint": "Un trimestre o un mes, mai un dia.",
+        "response": "Resposta al club",
+        "responseHint": "Només la veu {club}.",
+        "invalid": "Escriu un títol d'almenys 3 lletres i tria la part de l'aplicació."
+      }
     }
   },
   "apiStatus": {
@@ -1187,7 +1266,8 @@
     "network": "Sense connexió amb el servidor.",
     "unknown": "S'ha produït un error inesperat.",
     "quota_exceeded": "El club ha gastat les propostes amb IA d'aquesta setmana. Es renoven dilluns.",
-    "ai_unavailable": "La proposta amb IA no està disponible en aquest club."
+    "ai_unavailable": "La proposta amb IA no està disponible en aquest club.",
+    "suggestion_limit": "El teu club ha enviat molts suggeriments les últimes 24 hores. Torna-ho a provar demà."
   },
   "audit": {
     "organization": {
@@ -1395,6 +1475,13 @@
       "disconnected": "Comptabilitat desconnectada",
       "synced": "Quotes enviades a comptabilitat",
       "retried": "Enviaments a comptabilitat reintentats"
+    },
+    "suggestion": {
+      "created": "Millora suggerida",
+      "updated": "Suggeriment revisat",
+      "voted": "Millora votada",
+      "unvoted": "Vot a una millora retirat",
+      "reordered": "Full de ruta reordenat"
     }
   },
   "team": {
@@ -3429,7 +3516,8 @@
       "infirmary": "Infermeria",
       "newProduct": "Nou producte de la botiga",
       "counterSale": "Venda al taulell",
-      "developers": "Catàleg públic per al web"
+      "developers": "Catàleg públic per al web",
+      "suggest": "Suggerir una millora"
     },
     "keys": {
       "move": "moure's",
@@ -5309,5 +5397,126 @@
     "noItems": "Aquesta sessió no té tasques per a tu.",
     "conflict": "Consulta-ho",
     "keys": "Claus"
+  },
+  "suggestionStatus": {
+    "submitted": "Rebut",
+    "open": "En estudi",
+    "planned": "Planificada",
+    "in_progress": "En desenvolupament",
+    "released": "Disponible",
+    "declined": "Descartat",
+    "merged": "Unit a un altre"
+  },
+  "suggestionAreas": {
+    "structure": "Seccions, equips i esportistes",
+    "people": "Socis i personal",
+    "agenda": "Agenda i instal·lacions",
+    "training": "Entrenament",
+    "matches": "Partits",
+    "fees": "Quotes i cobraments",
+    "store": "Botiga",
+    "family": "Famílies",
+    "communication": "Avisos i comunicació",
+    "settings": "Configuració i identitat",
+    "other": "Una altra cosa"
+  },
+  "roadmap": {
+    "title": "Millores de la plataforma",
+    "description": "Proposa millores, vota les que estan en estudi i mira què ve i quan.",
+    "suggest": "Suggerir una millora",
+    "onlyAdmins": "Només l'administració del club pot suggerir millores i veure el full de ruta.",
+    "tabs": {
+      "roadmap": "Full de ruta",
+      "mine": "Suggeriments del club"
+    },
+    "coming": {
+      "title": "El que ve",
+      "description": "En aquest ordre. Les dates són aproximades i es poden moure.",
+      "empty": "Encara no hi ha res planificat",
+      "emptyHint": "Quan es planifiqui una millora, sortirà aquí en el seu ordre i amb la data aproximada."
+    },
+    "open": {
+      "title": "En estudi",
+      "description": "Vota les que més t'importen: un vot per club. El més votat s'estudia abans.",
+      "empty": "No hi ha millores en estudi",
+      "emptyHint": "Suggereix la teva: si encaixa, es publica aquí perquè altres clubs la votin."
+    },
+    "released": {
+      "title": "Ja disponible",
+      "description": "El darrer que ha arribat a la plataforma."
+    },
+    "table": {
+      "rank": "Ordre",
+      "improvement": "Millora",
+      "status": "Estat",
+      "eta": "Quan",
+      "votes": "Vots",
+      "released": "Disponible des de",
+      "suggestion": "Suggeriment",
+      "sent": "Enviat"
+    },
+    "eta": {
+      "quarter": "T{quarter} {year}"
+    },
+    "noEta": "Sense data",
+    "votes": "{count, plural, =0 {Sense vots} one {# club l'ha votada} other {# clubs l'han votada}}",
+    "votesShort": "{count, plural, =0 {Sense vots} one {# vot} other {# vots}}",
+    "vote": "Votar",
+    "voteThis": "Votar aquesta millora",
+    "unvote": "Treure el meu vot",
+    "votedShort": "Votada",
+    "votedByClub": "El teu club l'ha votada",
+    "requestedByClub": "Demanada pel teu club",
+    "voted": "Vot desat per a «{title}».",
+    "unvoted": "Vot retirat.",
+    "detail": {
+      "rank": "Ordre",
+      "rankValue": "Número {rank} del que ve",
+      "eta": "Quan, aproximadament",
+      "released": "Disponible des de",
+      "votes": "Vots"
+    },
+    "statusHelp": {
+      "open": "En estudi: els vots dels clubs ajuden a decidir si es fa i quan.",
+      "planned": "Planificada: ja té el seu lloc en el que ve.",
+      "in_progress": "En desenvolupament: ja s'està fent.",
+      "released": "Disponible: ja la pots fer servir."
+    },
+    "mine": {
+      "empty": "El teu club encara no ha suggerit res",
+      "emptyHint": "Explica què us falta. Aquí veuràs com acaba cada suggeriment.",
+      "seeInRoadmap": "Veure-la al full de ruta",
+      "mergedInto": "Demana el mateix que «{title}» i s'han unit: el teu vot hi compta.",
+      "mergedPending": "Demana el mateix que una altra petició i s'han unit: el teu vot hi compta.",
+      "statusHelp": {
+        "submitted": "Rebut. La plataforma el revisarà i et respondrà aquí.",
+        "open": "Publicat al full de ruta, en estudi: altres clubs ja el poden votar.",
+        "planned": "Planificat: té el seu lloc en el que ve.",
+        "in_progress": "En desenvolupament: ja s'està fent.",
+        "released": "Disponible: ja el pots fer servir.",
+        "declined": "Descartat de moment. Llegeix la resposta de la plataforma.",
+        "merged": "Demana el mateix que una altra petició i s'han unit."
+      },
+      "response": "Resposta de la plataforma",
+      "publicTitle": "Al full de ruta com a",
+      "sent": "Enviat",
+      "sentBy": "{date} per {name}",
+      "written": "El que va escriure el teu club"
+    },
+    "form": {
+      "title": "Suggerir una millora",
+      "description": "La llegeix l'equip de la plataforma. Si encaixa, es publica sense el nom del club perquè altres clubs la votin.",
+      "titleLabel": "Què t'agradaria poder fer",
+      "titleHint": "Una frase. Per exemple: Exportar els socis a Excel.",
+      "similarTitle": "Potser ja és al full de ruta",
+      "similarHint": "Si és la mateixa, vota-la: suma més que demanar-la un altre cop.",
+      "areaLabel": "Part de l'aplicació",
+      "areaPlaceholder": "Tria'n una",
+      "bodyLabel": "Per a què ho necessites",
+      "bodyHint": "Explica el problema i com el resoleu avui. Sense dades personals de ningú.",
+      "submit": "Enviar suggeriment",
+      "sent": "Suggeriment enviat. Aquí veuràs com acaba.",
+      "invalid": "Escriu un títol d'almenys 3 lletres, tria la part de l'aplicació i explica per a què ho necessites (10 lletres com a mínim)."
+    }
   }
 }

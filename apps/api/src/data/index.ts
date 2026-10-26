@@ -38,12 +38,18 @@ import { playerProfileRepo } from "./player-profile.ts";
 import { playersRepo } from "./players.ts";
 import { rolesRepo } from "./roles.ts";
 import { sportsRepo } from "./sports.ts";
+import { suggestionsRepo } from "./suggestions.ts";
 import { categoriesRepo, seasonsRepo, sectionsRepo, teamsRepo } from "./structure.ts";
 import { trainingRepo } from "./training.ts";
 import { usersRepo } from "./users.ts";
 
 export type { OrgScope } from "./scope.ts";
 export type { AiGenerationRecord, NewGeneration, SectionEquipmentRecord } from "./ai.ts";
+export type {
+  ClubSuggestionRecord,
+  PlatformSuggestionRecord,
+  RoadmapItemRecord,
+} from "./suggestions.ts";
 export {
   createFakeModel,
   NO_USAGE,
@@ -253,6 +259,8 @@ export function createDataLayer(options: DataLayerOptions) {
     matches: matchesRepo(db),
     training: trainingRepo(db),
     ai: aiRepo(db),
+    /** Mejoras de la plataforma (ADR 0047): lo único que cruza clubes. */
+    suggestions: suggestionsRepo(db),
     /** Nulo sin token del proveedor: la propuesta con IA no se puede pedir. */
     aiModel:
       options.aiModel !== undefined
