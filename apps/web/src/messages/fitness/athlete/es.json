@@ -55,14 +55,17 @@
   },
   "classes": {
     "title": "Reservar",
-    "description": "Las clases de los próximos días. Puedes reservar con {days, plural, one {# día} other {# días}} de antelación.",
+    "description": "La semana del box, clase a clase. Puedes reservar con {days, plural, one {# día} other {# días}} de antelación.",
     "noPlanTitle": "Sin tarifa activa",
     "noPlanAction": "Ver mi tarifa",
     "noPlanBody": "Para reservar necesitas una tarifa. Habla con el box.",
-    "days": "Días",
-    "emptyTitle": "No hay clases este día",
-    "emptyHint": "Prueba con otro día.",
-    "policy": "Cancela gratis hasta {hours, plural, one {# hora} other {# horas}} antes. Si se libera una plaza, entra el primero de la espera."
+    "emptyTitle": "No hay clases esta semana",
+    "emptyHint": "Prueba con la semana que viene.",
+    "policy": "Cancela gratis hasta {hours, plural, one {# hora} other {# horas}} antes. Si se libera una plaza, entra el primero de la espera.",
+    "mineThisWeek": "{count, plural, =0 {Aún no tienes reservas esta semana} one {Tienes # reserva esta semana} other {Tienes # reservas esta semana}}",
+    "seeClass": "Ver la clase",
+    "discipline": "Disciplina",
+    "wodReady": "Publicado"
   },
   "class": {
     "missing": "Clase",
