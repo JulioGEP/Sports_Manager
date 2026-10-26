@@ -1328,7 +1328,8 @@
       "logo_updated": "Logo cambiado",
       "logo_removed": "Logo quitado",
       "payments_updated": "Ajustes de cobro cambiados",
-      "stripe_onboarding_started": "Alta en Stripe iniciada"
+      "stripe_onboarding_started": "Alta en Stripe iniciada",
+      "ai_updated": "Cuota de IA cambiada"
     },
     "invitation": {
       "created": "Invitación enviada",
@@ -1480,7 +1481,12 @@
       "recorded": "Carga registrada"
     },
     "match": {
-      "loads_updated": "Carga del partido registrada"
+      "loads_updated": "Carga del partido registrada",
+      "created": "Partido creado",
+      "updated": "Partido editado",
+      "finished": "Partido terminado",
+      "removed": "Partido borrado",
+      "squad_updated": "Convocatoria cambiada"
     },
     "wellness": {
       "recorded": "Bienestar registrado"
@@ -1534,6 +1540,67 @@
       "voted": "Mejora votada",
       "unvoted": "Voto a una mejora quitado",
       "reordered": "Hoja de ruta reordenada"
+    },
+    "match_config": {
+      "updated": "Ajustes de partido cambiados"
+    },
+    "match_action": {
+      "created": "Acción de partido creada",
+      "updated": "Acción de partido editada",
+      "removed": "Acción de partido quitada"
+    },
+    "section_equipment": {
+      "created": "Material añadido",
+      "updated": "Material editado",
+      "removed": "Material quitado"
+    },
+    "ai_draft": {
+      "requested": "Propuesta de sesión pedida a la IA",
+      "applied": "Propuesta de sesión aplicada"
+    },
+    "ai_wod": {
+      "requested": "Propuesta de WOD pedida a la IA"
+    },
+    "booking_policy": {
+      "updated": "Política de reservas cambiada"
+    },
+    "class_type": {
+      "created": "Tipo de clase creado",
+      "updated": "Tipo de clase editado"
+    },
+    "booking": {
+      "created": "Reserva hecha por el box",
+      "cancelled": "Reserva cancelada por el box"
+    },
+    "class": {
+      "closed": "Clase cerrada"
+    },
+    "subscription": {
+      "created": "Tarifa dada a un atleta",
+      "updated": "Tarifa de un atleta cambiada",
+      "charges_generated": "Cargos de tarifas generados",
+      "subscribed": "Tarifa domiciliada"
+    },
+    "workout": {
+      "created": "WOD programado",
+      "updated": "WOD editado",
+      "removed": "WOD borrado"
+    },
+    "announcement": {
+      "created": "Anuncio publicado",
+      "updated": "Anuncio editado",
+      "removed": "Anuncio retirado"
+    },
+    "lead": {
+      "created": "Lead nuevo",
+      "updated": "Lead actualizado",
+      "converted": "Lead convertido en atleta"
+    },
+    "exercise": {
+      "created": "Ejercicio creado",
+      "updated": "Ejercicio editado",
+      "archived": "Ejercicio archivado",
+      "restored": "Ejercicio recuperado"
     }
   },
   "team": {

@@ -1328,7 +1328,8 @@
       "logo_updated": "Logo canviat",
       "logo_removed": "Logo tret",
       "payments_updated": "Ajustos de cobrament canviats",
-      "stripe_onboarding_started": "Alta a Stripe iniciada"
+      "stripe_onboarding_started": "Alta a Stripe iniciada",
+      "ai_updated": "Quota d'IA canviada"
     },
     "invitation": {
       "created": "Invitació enviada",
@@ -1480,7 +1481,12 @@
       "recorded": "Càrrega registrada"
     },
     "match": {
-      "loads_updated": "Càrrega del partit registrada"
+      "loads_updated": "Càrrega del partit registrada",
+      "created": "Partit creat",
+      "updated": "Partit editat",
+      "finished": "Partit acabat",
+      "removed": "Partit esborrat",
+      "squad_updated": "Convocatòria canviada"
     },
     "wellness": {
       "recorded": "Benestar registrat"
@@ -1534,6 +1540,67 @@
       "voted": "Millora votada",
       "unvoted": "Vot a una millora retirat",
       "reordered": "Full de ruta reordenat"
+    },
+    "match_config": {
+      "updated": "Ajustos de partit canviats"
+    },
+    "match_action": {
+      "created": "Acció de partit creada",
+      "updated": "Acció de partit editada",
+      "removed": "Acció de partit treta"
+    },
+    "section_equipment": {
+      "created": "Material afegit",
+      "updated": "Material editat",
+      "removed": "Material tret"
+    },
+    "ai_draft": {
+      "requested": "Proposta de sessió demanada a la IA",
+      "applied": "Proposta de sessió aplicada"
+    },
+    "ai_wod": {
+      "requested": "Proposta de WOD demanada a la IA"
+    },
+    "booking_policy": {
+      "updated": "Política de reserves canviada"
+    },
+    "class_type": {
+      "created": "Tipus de classe creat",
+      "updated": "Tipus de classe editat"
+    },
+    "booking": {
+      "created": "Reserva feta pel box",
+      "cancelled": "Reserva cancel·lada pel box"
+    },
+    "class": {
+      "closed": "Classe tancada"
+    },
+    "subscription": {
+      "created": "Tarifa donada a un atleta",
+      "updated": "Tarifa d'un atleta canviada",
+      "charges_generated": "Càrrecs de tarifes generats",
+      "subscribed": "Tarifa domiciliada"
+    },
+    "workout": {
+      "created": "WOD programat",
+      "updated": "WOD editat",
+      "removed": "WOD esborrat"
+    },
+    "announcement": {
+      "created": "Avís publicat",
+      "updated": "Avís editat",
+      "removed": "Avís retirat"
+    },
+    "lead": {
+      "created": "Lead nou",
+      "updated": "Lead actualitzat",
+      "converted": "Lead convertit en atleta"
+    },
+    "exercise": {
+      "created": "Exercici creat",
+      "updated": "Exercici editat",
+      "archived": "Exercici arxivat",
+      "restored": "Exercici recuperat"
     }
   },
   "team": {
