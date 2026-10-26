@@ -172,7 +172,7 @@ export const workouts = pgTable(
     publishAt: timestamp("publish_at", { withTimezone: true }),
     createdBy: uuid("created_by").references(() => users.id, { onDelete: "set null" }),
     /**
-     * Planificación (ADR 0052): el plan y la semana a los que sirve, el papel del día, la intención
+     * Planificación (ADR 0053): el plan y la semana a los que sirve, el papel del día, la intención
      * (dominio de tiempo, esfuerzo de 1 a 5 y cómo se tiene que sentir) y su porqué, una razón por línea.
      */
     planId: uuid("plan_id").references(() => boxPlans.id, { onDelete: "set null" }),
@@ -229,7 +229,7 @@ export const workoutBlocks = pgTable(
     scaled: text("scaled"),
     rx: text("rx"),
     rxPlus: text("rx_plus"),
-    /** Planificación (ADR 0052): capacidad, minutos previstos, ejercicios enlazados y pista. */
+    /** Planificación (ADR 0053): capacidad, minutos previstos, ejercicios enlazados y pista. */
     capacity: text("capacity"),
     plannedMinutes: integer("planned_minutes"),
     exerciseIds: jsonb("exercise_ids")

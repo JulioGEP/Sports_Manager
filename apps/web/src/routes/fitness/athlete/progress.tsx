@@ -976,7 +976,7 @@ function BodySheet({ onClose }: { onClose: () => void }) {
   );
 }
 
-/** La entrada a "Tu ciclo" (ADR 0052): el plan del box en una línea y el enlace. */
+/** La entrada a "Tu ciclo" (ADR 0053): el plan del box en una línea y el enlace. */
 function CycleTeaser() {
   const t = useT("fitness.planning.cycle");
   const cycle = useMyCycle();

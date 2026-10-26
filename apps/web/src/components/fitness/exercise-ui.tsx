@@ -43,6 +43,9 @@ export function useExercises(includeArchived: boolean) {
   });
 }
 
+/** Sin tildes ni mayúsculas, para buscar "sentadilla" y encontrar "Sentadilla". */
+export const fold = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+
 /** Un texto de varias líneas como lista: cada línea, un punto. */
 function Lines({ text }: { text: string }) {
   const items = text
@@ -75,6 +78,46 @@ function useMovementLabel() {
     const m = movementByCode(code);
     return m ? m.name[locale] : null;
   };
+}
+
+/** Fichas de filtro con su recuento: "Todos" primero y luego una por opción. */
+export function FilterChips<K extends string>({
+  label,
+  allLabel,
+  total,
+  options,
+  selected,
+  onChange,
+}: {
+  label: string;
+  allLabel: string;
+  total: number;
+  options: { key: K; label: string; count: number }[];
+  selected: K | null;
+  onChange: (key: K | null) => void;
+}) {
+  const chips = [{ key: null, label: allLabel, count: total }, ...options];
+  return (
+    <div role="group" aria-label={label} className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+      {chips.map((c) => {
+        const active = selected === c.key;
+        return (
+          <button
+            key={c.key ?? "all"}
+            type="button"
+            aria-pressed={active}
+            onClick={() => onChange(c.key)}
+            className={`inline-flex min-h-10 shrink-0 items-center gap-2 rounded-chip px-3 text-secondary transition-colors ${
+              active ? "bg-club text-on-club" : "bg-surface text-ink shadow-card hover:bg-raised"
+            }`}
+          >
+            {c.label}
+            <span className={`font-mono text-label ${active ? "" : "text-muted"}`}>{c.count}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
 }
 
 /** Una tarjeta de la biblioteca: se abre entera con un toque. */

@@ -58,7 +58,7 @@ const numberOrNull = (text: string) => {
 };
 
 /**
- * El material del box (ADR 0052): cuántas unidades hay de cada cosa, sus pesos, en qué sala y lo
+ * El material del box (ADR 0053): cuántas unidades hay de cada cosa, sus pesos, en qué sala y lo
  * que está en reparación. Con esto el validador sabe si un WOD cabe en la clase y la IA no programa
  * con lo que no hay.
  */

@@ -23,7 +23,7 @@ import { AI_FAILURES, AI_GENERATION_STATUSES } from "../training-ai.ts";
 import { AthleteLevelSchema, WorkoutViewSchema } from "./fitness.ts";
 import { AiQuotaSchema } from "./training-ai.ts";
 
-/** Contratos de la planificación del box (ADR 0052). */
+/** Contratos de la planificación del box (ADR 0053). */
 
 const Ref = z.object({ id: z.string(), name: z.string() });
 const EmphasisView = z.object(

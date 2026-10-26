@@ -332,7 +332,7 @@ export const clubPaths = (slug: string) => ({
   workoutNew: `/${slug}/programming/new`,
   workoutEdit: (id: string) => `/${slug}/programming/${id}`,
   /**
-   * Planificación del box (ADR 0052): los planes de cada disciplina, el asistente para crear uno,
+   * Planificación del box (ADR 0053): los planes de cada disciplina, el asistente para crear uno,
    * el mapa del ciclo, la semana, la revisión del domingo, la salud y el material. El atleta ve su
    * ciclo y su resumen para compartir.
    */

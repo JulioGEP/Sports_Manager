@@ -48,7 +48,7 @@ import { forbidden, notFound } from "../http/errors.ts";
 import { orgOf, todayIn, type Ctx } from "./fitness-common.ts";
 
 /**
- * Piezas comunes de la planificación del box (ADR 0052): qué disciplinas ve y planifica quien
+ * Piezas comunes de la planificación del box (ADR 0053): qué disciplinas ve y planifica quien
  * pregunta, cómo sale un plan en la API y todo lo que se calcula de una semana del plan (validación
  * de cada sesión, logística en la sala, equilibrio, cobertura por frecuencia y límites).
  */

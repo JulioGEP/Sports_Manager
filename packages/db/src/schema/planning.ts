@@ -29,7 +29,7 @@ import { organizations } from "./organizations.ts";
 import { players, sections } from "./structure.ts";
 
 /**
- * Planificación del box (ADR 0052): el material de la sala, los ajustes de la programación, el plan
+ * Planificación del box (ADR 0053): el material de la sala, los ajustes de la programación, el plan
  * con su estructura de bloques y semanas, lo que se decide en la revisión de cada domingo y el nivel
  * que cada atleta fija por capacidad. Todo lleva `organization_id` (ADR 0015).
  */

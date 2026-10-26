@@ -49,7 +49,7 @@ export const feePlans = pgTable(
     validityDays: integer("validity_days"),
     /** Tipos de clase que incluye. Nulo: todos. */
     classTeamIds: jsonb("class_team_ids").$type<string[]>(),
-    /** Planificación (ADR 0052): la tarifa incluye Clase+, el trabajo extra del Open Box. */
+    /** Planificación (ADR 0053): la tarifa incluye Clase+, el trabajo extra del Open Box. */
     includesPlus: boolean("includes_plus").notNull().default(false),
     ...timestamps,
   },

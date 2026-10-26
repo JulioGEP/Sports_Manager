@@ -86,7 +86,7 @@ export interface BlockDraft {
   scaled: string;
   rx: string;
   rxPlus: string;
-  /** Planificación (ADR 0052): capacidad, minutos previstos, pista y ejercicios enlazados. */
+  /** Planificación (ADR 0053): capacidad, minutos previstos, pista y ejercicios enlazados. */
   capacity: Capacity | "";
   plannedMinutes: string;
   track: WorkoutTrack;
@@ -239,7 +239,7 @@ export function benchmarkBlock(b: BenchmarkEntry, locale: Locale): Partial<Block
     title: b.name,
     description: b.description[locale],
     format: formatOf({ scoreType: b.scoreType, timeCapSeconds: null, rmReps: null }),
-    minutes: "",
+    minutes: b.minutes ? String(b.minutes) : "",
   };
 }
 

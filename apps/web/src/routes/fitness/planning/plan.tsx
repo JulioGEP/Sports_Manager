@@ -53,7 +53,7 @@ const STATUS_KIND = {
 } as const;
 
 /**
- * Un plan (ADR 0052): dónde está el box, el mapa del ciclo con sus bloques y sus semanas, el
+ * Un plan (ADR 0053): dónde está el box, el mapa del ciclo con sus bloques y sus semanas, el
  * reparto de los 100 puntos, las marcas de partida y lo que se puede esperar. El copiloto está a
  * un botón para cualquier cambio.
  */

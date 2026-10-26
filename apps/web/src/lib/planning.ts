@@ -20,7 +20,7 @@ import { fitnessKey } from "./fitness";
 import { useT } from "./intl";
 
 /**
- * Planificación del box (ADR 0052): las consultas de las pantallas del plan, del material y del
+ * Planificación del box (ADR 0053): las consultas de las pantallas del plan, del material y del
  * ciclo del atleta. Cuelgan de `["org", slug, "fitness", "planning", ...]`, así que cualquier
  * cambio de fitness las refresca con el resto.
  */

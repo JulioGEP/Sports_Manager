@@ -9,7 +9,7 @@ import {
 import type { BoxPlanRecord, DataLayer, OrgScope } from "../data/index.ts";
 
 /**
- * Lo que la planificación del box (ADR 0052) le cuenta a un atleta: su nivel en cada capacidad
+ * Lo que la planificación del box (ADR 0053) le cuenta a un atleta: su nivel en cada capacidad
  * (el que fija él o el que se le sugiere con sus resultados), su plan (el de la disciplina en la que
  * más entrena) y el papel de los próximos días si el box lo enseña por adelantado.
  */

@@ -65,7 +65,7 @@ import {
 import { computeReview } from "./planning-review.ts";
 
 /**
- * La IA de la planificación del box (ADR 0052): el arquitecto propone el plan a partir de un
+ * La IA de la planificación del box (ADR 0053): el arquitecto propone el plan a partir de un
  * objetivo, el programador escribe las sesiones de una semana dentro de lo que manda el plan y el
  * copiloto cambia la programación cuando pasa algo ("el jueves no hay remos"). Todo se genera en
  * segundo plano con su propio límite semanal y el coach decide qué se aplica: nada se publica solo.

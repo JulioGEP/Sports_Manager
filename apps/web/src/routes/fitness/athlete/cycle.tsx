@@ -30,7 +30,7 @@ import {
 } from "@/ui";
 
 /**
- * Tu ciclo (ADR 0052): en qué punto del plan del box estás, tus marcas de partida y lo que puedes
+ * Tu ciclo (ADR 0053): en qué punto del plan del box estás, tus marcas de partida y lo que puedes
  * esperar con tu frecuencia, tu constancia, lo que te falta esta semana y tu nivel en cada
  * capacidad. El atleta ve hacia dónde va.
  */

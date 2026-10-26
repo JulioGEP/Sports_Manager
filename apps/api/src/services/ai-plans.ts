@@ -33,7 +33,7 @@ import {
 import type { AiModelResult, AiPlanRecord, DataLayer, OrgScope } from "../data/index.ts";
 
 /**
- * La IA de la planificación del box (ADR 0052): el contexto del box en agregados (sin un solo
+ * La IA de la planificación del box (ADR 0053): el contexto del box en agregados (sin un solo
  * atleta), la generación en segundo plano con el mismo trabajo y el mismo modelo que la propuesta de
  * WOD, y la validación de lo que devuelve el modelo antes de que el coach lo vea.
  */

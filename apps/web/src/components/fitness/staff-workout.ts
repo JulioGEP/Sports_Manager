@@ -29,7 +29,7 @@ export function blockInputOf(b: WorkoutBlockView): WorkoutBlockInput {
 }
 
 /**
- * Lo que un WOD guarda de la planificación (ADR 0052): el plan, la semana, el papel del día, la
+ * Lo que un WOD guarda de la planificación (ADR 0053): el plan, la semana, el papel del día, la
  * intención y el porqué. Va en cada guardado para no perderlo al editar, publicar o mover.
  */
 export function planFieldsOf(w: WorkoutView) {

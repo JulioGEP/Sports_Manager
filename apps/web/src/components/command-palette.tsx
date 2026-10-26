@@ -294,7 +294,7 @@ export function CommandPalette({
       { key: "newAthlete", perm: "org.players.write", to: `${paths.athletes}?new=1` },
       { key: "newClassType", perm: "org.structure.write", to: `${paths.classTypes}?new=1` },
       { key: "newWorkout", perm: "org.training.read", to: paths.workoutNew },
-      // Planificación (ADR 0052): un plan nuevo y el material de la sala.
+      // Planificación (ADR 0053): un plan nuevo y el material de la sala.
       { key: "newTrainingPlan", perm: "org.training.read", to: paths.planningNew },
       { key: "equipment", perm: "org.training.read", to: paths.equipment },
       { key: "exercises", perm: "org.settings.read", to: paths.exercises },

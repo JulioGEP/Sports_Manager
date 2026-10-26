@@ -420,7 +420,7 @@ export function ProgrammingPage() {
 }
 
 /**
- * El plan de cada disciplina encima de la semana (ADR 0052): en qué semana y bloque está, el papel
+ * El plan de cada disciplina encima de la semana (ADR 0053): en qué semana y bloque está, el papel
  * de cada día y el enlace a la semana del plan, donde se escribe con su intención y su validación.
  */
 function PlanStrips({ monday, sections }: { monday: string; sections: string[] }) {

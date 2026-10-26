@@ -278,7 +278,7 @@ export function workoutDto(
     athlete?: {
       oneRm: Map<string, { kg: number; estimated: boolean }>;
       results: Map<string, ResultRecord>;
-      /** Su tarifa incluye Clase+: si no, esos bloques no se ven (ADR 0052). */
+      /** Su tarifa incluye Clase+: si no, esos bloques no se ven (ADR 0053). */
       plus?: boolean;
     };
   } = {},

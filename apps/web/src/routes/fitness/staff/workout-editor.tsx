@@ -2,6 +2,7 @@ import {
   addDays,
   AI_FAILURES,
   AiWodGenerationResponseSchema,
+  benchmarkByCode,
   DAY_ROLE_INFO,
   DAY_ROLES,
   MOVEMENTS,
@@ -84,7 +85,7 @@ interface Draft {
   title: string;
   notes: string;
   blocks: BlockDraft[];
-  /** Planificación (ADR 0052): el plan y la semana, el papel del día, la intención y el porqué. */
+  /** Planificación (ADR 0053): el plan y la semana, el papel del día, la intención y el porqué. */
   planId: string | null;
   planWeek: number | null;
   dayRole: DayRole | null;
@@ -195,6 +196,8 @@ function Editor({ existing }: { existing: WorkoutView | null }) {
     [library.data],
   );
 
+  // `?benchmark=fran` llega desde la biblioteca de workouts con el WOD elegido; `?benchmark=1`, a elegirlo.
+  const preset = benchmarkByCode(params.get("benchmark"));
   const initial = useMemo<Draft>(
     () =>
       existing
@@ -215,7 +218,11 @@ function Editor({ existing }: { existing: WorkoutView | null }) {
             onDate: params.get("date") ?? time.today,
             title: "",
             notes: "",
-            blocks: params.get("benchmark") ? [emptyBlock("wod")] : [],
+            blocks: preset
+              ? [{ ...emptyBlock("wod"), ...benchmarkBlock(preset, locale) }]
+              : params.get("benchmark")
+                ? [emptyBlock("wod")]
+                : [],
             ...fromPlanParams(params),
           },
     // El borrador nace una vez por WOD: el editor se monta con `key` por id.
@@ -238,7 +245,7 @@ function Editor({ existing }: { existing: WorkoutView | null }) {
     Boolean(initial.dayRole || initial.planId || initial.intentFeel),
   );
   const [benchmarkFor, setBenchmarkFor] = useState<string | null>(
-    !existing && params.get("benchmark") ? (initial.blocks[0]?.key ?? null) : null,
+    !existing && !preset && params.get("benchmark") ? (initial.blocks[0]?.key ?? null) : null,
   );
   const [scheduling, setScheduling] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);

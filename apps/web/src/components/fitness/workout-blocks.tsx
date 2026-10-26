@@ -39,7 +39,7 @@ export function WorkoutBlockCard({
 }: {
   block: WorkoutBlockView;
   footer?: ReactNode;
-  /** La versión del atleta (ADR 0052): su nivel en la capacidad del bloque. */
+  /** La versión del atleta (ADR 0053): su nivel en la capacidad del bloque. */
   mine?: WorkoutLevel | null;
 }) {
   const kinds = useT("fitness.common.blockKinds");

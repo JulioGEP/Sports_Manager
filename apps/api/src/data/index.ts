@@ -321,7 +321,7 @@ export function createDataLayer(options: DataLayerOptions) {
     fitness: fitnessInsightsRepo(db),
     /** Biblioteca de ejercicios del box (ADR 0050). */
     exercises: exercisesRepo(db),
-    /** Planificación del box (ADR 0052): material, planes, revisión y niveles. */
+    /** Planificación del box (ADR 0053): material, planes, revisión y niveles. */
     planning: planningRepo(db),
     logos: logosRepo(
       db,

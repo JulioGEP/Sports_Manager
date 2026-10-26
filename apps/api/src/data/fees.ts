@@ -48,7 +48,7 @@ export interface FeePlanRecord {
   sessions: number | null;
   validityDays: number | null;
   classTeamIds: string[] | null;
-  /** Incluye Clase+ (ADR 0052). */
+  /** Incluye Clase+ (ADR 0053). */
   includesPlus: boolean;
   activeAthletes: number;
 }

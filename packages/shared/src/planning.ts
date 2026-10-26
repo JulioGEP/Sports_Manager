@@ -13,7 +13,7 @@ import { DateOnlySchema } from "./structure.ts";
 import { addDays, daysBetween, weekStartOf } from "./training-load.ts";
 
 /**
- * Planificación del box (ADR 0052). Encima del WOD de cada día (ADR 0050) hay un plan: un objetivo
+ * Planificación del box (ADR 0053). Encima del WOD de cada día (ADR 0050) hay un plan: un objetivo
  * con fecha, bloques de semanas (base, desarrollo, realización, descarga) y el papel de cada día de
  * la semana. Aquí viven el vocabulario, los catálogos (capacidades, papeles, plantillas, tests) y el
  * motor que construye el plan. Todo es puro: la API decide con esto y la web lo enseña en vivo

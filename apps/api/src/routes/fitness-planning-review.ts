@@ -34,7 +34,7 @@ import {
 import { applyAdjustment, computeReview } from "./planning-review.ts";
 
 /**
- * La revisión del domingo y la salud de la programación (ADR 0052). La revisión compara lo previsto
+ * La revisión del domingo y la salud de la programación (ADR 0053). La revisión compara lo previsto
  * con lo que pasó y propone ajustes para la semana siguiente; la salud junta todo el plan: si se
  * cumple, si la gente mejora y viene más, el equilibrio real frente al del plan y lo que cuesta la IA.
  * Van en la misma app que los planes (y con su cadena de /api/org/plans/*).

@@ -20,7 +20,7 @@ import { useLocale, useT } from "@/lib/intl";
 import { Icon, StatusChip } from "@/ui";
 
 /**
- * Piezas de la planificación del box (ADR 0052): el color de cada capacidad, el papel de un día,
+ * Piezas de la planificación del box (ADR 0053): el color de cada capacidad, el papel de un día,
  * el reparto de los 100 puntos, el mapa del ciclo y las comprobaciones del validador. Las usan el
  * coach (plan, semana, revisión, salud) y el atleta (su ciclo).
  */

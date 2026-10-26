@@ -122,7 +122,7 @@ export const PlanEntitlementFieldsSchema = z.object({
   validityDays: z.number().int().min(1).max(730).nullable().optional(),
   /** Tipos de clase que incluye. Nulo o vacío: todos. */
   classTeamIds: z.array(z.string().uuid()).max(50).nullable().optional(),
-  /** Planificación (ADR 0052): incluye Clase+, el trabajo extra del Open Box. */
+  /** Planificación (ADR 0053): incluye Clase+, el trabajo extra del Open Box. */
   includesPlus: z.boolean().optional(),
 });
 
@@ -198,7 +198,7 @@ export type ScoreType = (typeof SCORE_TYPES)[number];
 export const ScoreTypeSchema = z.enum(SCORE_TYPES);
 
 /**
- * Niveles de un WOD, del más sencillo al más exigente. Iniciación (ADR 0052) es el atleta de los
+ * Niveles de un WOD, del más sencillo al más exigente. Iniciación (ADR 0053) es el atleta de los
  * primeros meses: menos volumen, variantes simples y foco en la técnica.
  */
 export const WORKOUT_LEVELS = ["foundations", "scaled", "rx", "rx_plus"] as const;
@@ -241,7 +241,7 @@ export const WorkoutBlockInputSchema = z
     scaled: LevelText.nullable().optional(),
     rx: LevelText.nullable().optional(),
     rxPlus: LevelText.nullable().optional(),
-    /** Planificación (ADR 0052): la capacidad que trabaja, sus minutos y los ejercicios que usa. */
+    /** Planificación (ADR 0053): la capacidad que trabaja, sus minutos y los ejercicios que usa. */
     capacity: CapacitySchema.nullable().optional(),
     plannedMinutes: z.number().int().min(1).max(120).nullable().optional(),
     exerciseIds: z.array(z.string().uuid()).max(12).optional(),
@@ -273,7 +273,7 @@ export const WorkoutUpsertSchema = z.object({
   publishAt: DateTimeSchema.nullable().optional(),
   blocks: z.array(WorkoutBlockInputSchema).min(1).max(12),
   /**
-   * Planificación (ADR 0052): el plan y la semana a los que sirve, el papel del día, la intención
+   * Planificación (ADR 0053): el plan y la semana a los que sirve, el papel del día, la intención
    * (dominio de tiempo, esfuerzo de 1 a 5 y cómo se tiene que sentir) y su porqué, una razón por línea.
    */
   planId: z.string().uuid().nullable().optional(),
@@ -374,24 +374,38 @@ export const PersonalRecordCreateSchema = z.object({
 });
 export type PersonalRecordCreate = z.infer<typeof PersonalRecordCreateSchema>;
 
+/** Familias de benchmarks, en el orden en que se enseñan. */
+export const BENCHMARK_FAMILIES = ["girls", "heroes", "open", "hybrid"] as const;
+export type BenchmarkFamily = (typeof BENCHMARK_FAMILIES)[number];
+
 export interface BenchmarkEntry {
   code: string;
-  /** Heroes y Girls de siempre, y pruebas de HYROX. */
-  family: "girls" | "heroes" | "hybrid" | "open";
+  /** Girls y Heroes de siempre, WODs del Open y pruebas de HYROX. */
+  family: BenchmarkFamily;
   scoreType: ScoreType;
   name: string;
   description: LocalizedText;
+  /** Duración del AMRAP o time cap, en minutos: llena los minutos del bloque. */
+  minutes?: number;
 }
 
 const bm = (
   code: string,
-  family: BenchmarkEntry["family"],
+  family: BenchmarkFamily,
   scoreType: ScoreType,
   name: string,
   es: string,
   ca: string,
   en: string,
-): BenchmarkEntry => ({ code, family, scoreType, name, description: { es, ca, en } });
+  minutes?: number,
+): BenchmarkEntry => ({
+  code,
+  family,
+  scoreType,
+  name,
+  description: { es, ca, en },
+  ...(minutes ? { minutes } : {}),
+});
 
 /** Benchmarks: los WODs con nombre que se repiten para medir el progreso. */
 export const BENCHMARKS: readonly BenchmarkEntry[] = [
@@ -430,6 +444,7 @@ export const BENCHMARKS: readonly BenchmarkEntry[] = [
     "AMRAP 20': 5 pull-ups, 10 push-ups, 15 air squats",
     "AMRAP 20': 5 pull-ups, 10 flexions, 15 air squats",
     "AMRAP 20': 5 pull-ups, 10 push-ups, 15 air squats",
+    20,
   ),
   bm(
     "diane",
@@ -486,6 +501,107 @@ export const BENCHMARKS: readonly BenchmarkEntry[] = [
     "21-15-9 cleans (61/43 kg) and ring dips",
   ),
   bm(
+    "amanda",
+    "girls",
+    "time",
+    "Amanda",
+    "9-7-5 muscle-ups y squat snatches (61/43 kg)",
+    "9-7-5 muscle-ups i squat snatches (61/43 kg)",
+    "9-7-5 muscle-ups and squat snatches (61/43 kg)",
+  ),
+  bm(
+    "angie",
+    "girls",
+    "time",
+    "Angie",
+    "100 pull-ups, 100 push-ups, 100 sit-ups y 100 air squats, en ese orden",
+    "100 pull-ups, 100 flexions, 100 sit-ups i 100 air squats, en aquest ordre",
+    "100 pull-ups, 100 push-ups, 100 sit-ups and 100 air squats, in that order",
+  ),
+  bm(
+    "barbara",
+    "girls",
+    "time",
+    "Barbara",
+    "5 rondas: 20 pull-ups, 30 push-ups, 40 sit-ups, 50 air squats; 3' de descanso entre rondas",
+    "5 rondes: 20 pull-ups, 30 flexions, 40 sit-ups, 50 air squats; 3' de descans entre rondes",
+    "5 rounds: 20 pull-ups, 30 push-ups, 40 sit-ups, 50 air squats; 3' rest between rounds",
+  ),
+  bm(
+    "candy",
+    "girls",
+    "time",
+    "Candy",
+    "5 rondas: 20 pull-ups, 40 push-ups, 60 air squats",
+    "5 rondes: 20 pull-ups, 40 flexions, 60 air squats",
+    "5 rounds: 20 pull-ups, 40 push-ups, 60 air squats",
+  ),
+  bm(
+    "eva",
+    "girls",
+    "time",
+    "Eva",
+    "5 rondas: 800 m carrera, 30 KB swings (32/24 kg), 30 pull-ups",
+    "5 rondes: 800 m cursa, 30 KB swings (32/24 kg), 30 pull-ups",
+    "5 rounds: 800 m run, 30 KB swings (32/24 kg), 30 pull-ups",
+  ),
+  bm(
+    "kelly",
+    "girls",
+    "time",
+    "Kelly",
+    "5 rondas: 400 m carrera, 30 box jumps (61/51 cm), 30 wall balls (9/6 kg)",
+    "5 rondes: 400 m cursa, 30 box jumps (61/51 cm), 30 wall balls (9/6 kg)",
+    "5 rounds: 400 m run, 30 box jumps (61/51 cm), 30 wall balls (9/6 kg)",
+  ),
+  bm(
+    "linda",
+    "girls",
+    "time",
+    "Linda",
+    "10-9-8-7-6-5-4-3-2-1: peso muerto (1,5 × peso corporal), press banca (peso corporal) y clean (0,75 × peso corporal)",
+    "10-9-8-7-6-5-4-3-2-1: pes mort (1,5 × pes corporal), press banca (pes corporal) i clean (0,75 × pes corporal)",
+    "10-9-8-7-6-5-4-3-2-1: deadlift (1.5 × bodyweight), bench press (bodyweight) and clean (0.75 × bodyweight)",
+  ),
+  bm(
+    "lynne",
+    "girls",
+    "reps",
+    "Lynne",
+    "5 rondas: máximas repeticiones de press banca con tu peso corporal y de pull-ups. Cuenta el total",
+    "5 rondes: màximes repeticions de press banca amb el teu pes corporal i de pull-ups. Compta el total",
+    "5 rounds: max-rep bench press (bodyweight) and max-rep pull-ups. Score: total reps",
+  ),
+  bm(
+    "mary",
+    "girls",
+    "rounds_reps",
+    "Mary",
+    "AMRAP 20': 5 handstand push-ups, 10 pistols alternos, 15 pull-ups",
+    "AMRAP 20': 5 handstand push-ups, 10 pistols alternes, 15 pull-ups",
+    "AMRAP 20': 5 handstand push-ups, 10 alternating pistols, 15 pull-ups",
+    20,
+  ),
+  bm(
+    "nancy",
+    "girls",
+    "time",
+    "Nancy",
+    "5 rondas: 400 m carrera, 15 overhead squats (43/30 kg)",
+    "5 rondes: 400 m cursa, 15 overhead squats (43/30 kg)",
+    "5 rounds: 400 m run, 15 overhead squats (43/30 kg)",
+  ),
+  bm(
+    "nicole",
+    "girls",
+    "reps",
+    "Nicole",
+    "AMRAP 20': 400 m carrera y máximas pull-ups. Cuentan las pull-ups",
+    "AMRAP 20': 400 m cursa i màximes pull-ups. Compten les pull-ups",
+    "AMRAP 20': 400 m run, then max pull-ups. Score: total pull-ups",
+    20,
+  ),
+  bm(
     "murph",
     "heroes",
     "time",
@@ -502,6 +618,147 @@ export const BENCHMARKS: readonly BenchmarkEntry[] = [
     "5 rondas: 12 peso muerto, 9 hang power cleans, 6 push jerks (70/47 kg)",
     "5 rondes: 12 pes mort, 9 hang power cleans, 6 push jerks (70/47 kg)",
     "5 rounds: 12 deadlifts, 9 hang power cleans, 6 push jerks (70/47 kg)",
+  ),
+  bm(
+    "jt",
+    "heroes",
+    "time",
+    "JT",
+    "21-15-9 handstand push-ups, ring dips y push-ups",
+    "21-15-9 handstand push-ups, ring dips i flexions",
+    "21-15-9 handstand push-ups, ring dips and push-ups",
+  ),
+  bm(
+    "michael",
+    "heroes",
+    "time",
+    "Michael",
+    "3 rondas: 800 m carrera, 50 back extensions, 50 sit-ups",
+    "3 rondes: 800 m cursa, 50 back extensions, 50 sit-ups",
+    "3 rounds: 800 m run, 50 back extensions, 50 sit-ups",
+  ),
+  bm(
+    "badger",
+    "heroes",
+    "time",
+    "Badger",
+    "3 rondas: 30 squat cleans (43/30 kg), 30 pull-ups, 800 m carrera",
+    "3 rondes: 30 squat cleans (43/30 kg), 30 pull-ups, 800 m cursa",
+    "3 rounds: 30 squat cleans (43/30 kg), 30 pull-ups, 800 m run",
+  ),
+  bm(
+    "nate",
+    "heroes",
+    "rounds_reps",
+    "Nate",
+    "AMRAP 20': 2 muscle-ups, 4 handstand push-ups, 8 KB swings (32/24 kg)",
+    "AMRAP 20': 2 muscle-ups, 4 handstand push-ups, 8 KB swings (32/24 kg)",
+    "AMRAP 20': 2 muscle-ups, 4 handstand push-ups, 8 KB swings (32/24 kg)",
+    20,
+  ),
+  bm(
+    "randy",
+    "heroes",
+    "time",
+    "Randy",
+    "75 power snatches (34/25 kg) por tiempo",
+    "75 power snatches (34/25 kg) per temps",
+    "75 power snatches (34/25 kg) for time",
+  ),
+  bm(
+    "ryan",
+    "heroes",
+    "time",
+    "Ryan",
+    "5 rondas: 7 muscle-ups, 21 burpees tocando una marca 30 cm por encima del alcance",
+    "5 rondes: 7 muscle-ups, 21 burpees tocant una marca 30 cm per sobre de l'abast",
+    "5 rounds: 7 muscle-ups, 21 burpees to a target 30 cm above reach",
+  ),
+  bm(
+    "josh",
+    "heroes",
+    "time",
+    "Josh",
+    "21 overhead squats (43/30 kg), 42 pull-ups, 15 OHS, 30 pull-ups, 9 OHS, 18 pull-ups",
+    "21 overhead squats (43/30 kg), 42 pull-ups, 15 OHS, 30 pull-ups, 9 OHS, 18 pull-ups",
+    "21 overhead squats (43/30 kg), 42 pull-ups, 15 OHS, 30 pull-ups, 9 OHS, 18 pull-ups",
+  ),
+  bm(
+    "kalsu",
+    "heroes",
+    "time",
+    "Kalsu",
+    "100 thrusters (61/43 kg) por tiempo, con 5 burpees al empezar cada minuto",
+    "100 thrusters (61/43 kg) per temps, amb 5 burpees en començar cada minut",
+    "100 thrusters (61/43 kg) for time, with 5 burpees at the top of every minute",
+  ),
+  bm(
+    "open_12_1",
+    "open",
+    "reps",
+    "Open 12.1",
+    "AMRAP 7': burpees tocando una marca 15 cm por encima del alcance",
+    "AMRAP 7': burpees tocant una marca 15 cm per sobre de l'abast",
+    "AMRAP 7': burpees to a target 15 cm above reach",
+    7,
+  ),
+  bm(
+    "open_14_1",
+    "open",
+    "rounds_reps",
+    "Open 14.1",
+    "AMRAP 10': 30 double unders, 15 power snatches (34/25 kg)",
+    "AMRAP 10': 30 double unders, 15 power snatches (34/25 kg)",
+    "AMRAP 10': 30 double unders, 15 power snatches (34/25 kg)",
+    10,
+  ),
+  bm(
+    "open_15_5",
+    "open",
+    "time",
+    "Open 15.5",
+    "27-21-15-9 calorías de remo y thrusters (43/30 kg)",
+    "27-21-15-9 calories de rem i thrusters (43/30 kg)",
+    "27-21-15-9 calorie row and thrusters (43/30 kg)",
+  ),
+  bm(
+    "open_16_5",
+    "open",
+    "time",
+    "Open 16.5",
+    "21-18-15-12-9-6-3 thrusters (43/30 kg) y bar-facing burpees",
+    "21-18-15-12-9-6-3 thrusters (43/30 kg) i bar-facing burpees",
+    "21-18-15-12-9-6-3 thrusters (43/30 kg) and bar-facing burpees",
+  ),
+  bm(
+    "open_17_1",
+    "open",
+    "time",
+    "Open 17.1",
+    "10-20-30-40-50 dumbbell snatches (22,5/15 kg) con 15 burpee box jump overs (61/51 cm) después de cada serie. Cap 20'",
+    "10-20-30-40-50 dumbbell snatches (22,5/15 kg) amb 15 burpee box jump overs (61/51 cm) després de cada sèrie. Cap 20'",
+    "10-20-30-40-50 dumbbell snatches (22.5/15 kg) with 15 burpee box jump-overs (61/51 cm) after each set. Cap 20'",
+    20,
+  ),
+  bm(
+    "open_20_1",
+    "open",
+    "time",
+    "Open 20.1",
+    "10 rondas: 8 ground to overheads (43/29 kg), 10 bar-facing burpees. Cap 15'",
+    "10 rondes: 8 ground to overheads (43/29 kg), 10 bar-facing burpees. Cap 15'",
+    "10 rounds: 8 ground-to-overheads (43/29 kg), 10 bar-facing burpees. Cap 15'",
+    15,
+  ),
+  bm(
+    "open_24_1",
+    "open",
+    "time",
+    "Open 24.1",
+    "21-15-9: dumbbell snatches (22,5/15 kg) con un brazo, lateral burpees sobre la mancuerna, snatches con el otro brazo y lateral burpees. Cap 15'",
+    "21-15-9: dumbbell snatches (22,5/15 kg) amb un braç, lateral burpees per sobre de la manuella, snatches amb l'altre braç i lateral burpees. Cap 15'",
+    "21-15-9: dumbbell snatches (22.5/15 kg) arm 1, lateral burpees over the dumbbell, snatches arm 2, lateral burpees. Cap 15'",
+    15,
   ),
   bm(
     "row_2k",
@@ -529,6 +786,33 @@ export const BENCHMARKS: readonly BenchmarkEntry[] = [
     "8 × (1 km carrera + estación): ski, sled push, sled pull, burpee broad jumps, remo, farmers carry, sandbag lunges, wall balls",
     "8 × (1 km cursa + estació): ski, sled push, sled pull, burpee broad jumps, rem, farmers carry, sandbag lunges, wall balls",
     "8 × (1 km run + station): ski, sled push, sled pull, burpee broad jumps, row, farmers carry, sandbag lunges, wall balls",
+  ),
+  bm(
+    "row_500",
+    "hybrid",
+    "time",
+    "500m Row",
+    "500 m de remo por tiempo",
+    "500 m de rem per temps",
+    "500 m row for time",
+  ),
+  bm(
+    "ski_1k",
+    "hybrid",
+    "time",
+    "1K Ski",
+    "1000 m de SkiErg por tiempo",
+    "1000 m de SkiErg per temps",
+    "1000 m SkiErg for time",
+  ),
+  bm(
+    "run_1k",
+    "hybrid",
+    "time",
+    "1K Run",
+    "1 km de carrera por tiempo",
+    "1 km de cursa per temps",
+    "1 km run for time",
   ),
 ];
 export const BENCHMARK_CODES = BENCHMARKS.map((b) => b.code);

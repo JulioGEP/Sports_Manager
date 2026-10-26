@@ -1,4 +1,4 @@
--- Planificación del box demo (ADR 0052). Sobre el box de la ADR 0049:
+-- Planificación del box demo (ADR 0053). Sobre el box de la ADR 0049:
 --   - Material de la sala con cantidades, pesos y un remo en reparación hasta dentro de tres días.
 --   - "Ilimitada" incluye Clase+ y una tarifa nueva, "Clase+", para venderla como complemento.
 --   - Un plan terminado, "Base de fuerza · primavera", con marcas de antes y de después para que

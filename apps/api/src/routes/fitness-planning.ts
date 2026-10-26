@@ -75,7 +75,7 @@ import { addPlanningAiRoutes } from "./fitness-planning-ai.ts";
 import { addPlanningReviewRoutes } from "./fitness-planning-review.ts";
 
 /**
- * Planificación del box (ADR 0052): el material de la sala, los ajustes de la programación, lo que
+ * Planificación del box (ADR 0053): el material de la sala, los ajustes de la programación, lo que
  * el box ya sabe para planificar, el plan con sus bloques y semanas, la semana con su validación,
  * logística, equilibrio y cobertura, y los borradores que el plan escribe solo. Planifica quien
  * programa la disciplina (toda la programación, o la de sus clases); el material lo cuida cualquiera

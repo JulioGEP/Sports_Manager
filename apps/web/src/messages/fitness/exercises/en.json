@@ -16,6 +16,26 @@
   "noMatch": "No exercises match those filters.",
   "clearFilters": "Clear filters",
   "loadError": "Couldn't load the exercises.",
+  "tabs": {
+    "label": "Library",
+    "exercises": "Exercises",
+    "workouts": "Workouts"
+  },
+  "workouts": {
+    "description": "The classic benchmarks: the Girls, the Heroes, the Open and hybrid tests. Repeat them to measure progress.",
+    "searchPlaceholder": "Name or movement",
+    "filters": "Filter by family",
+    "count": "{count, plural, one {# workout} other {# workouts}}",
+    "noMatch": "No workouts match those filters.",
+    "program": "Program",
+    "programLabel": "Program {name}",
+    "format": {
+      "time": "For time",
+      "timeCap": "For time · {minutes} min cap",
+      "amrap": "AMRAP {minutes} min",
+      "repsIn": "Reps in {minutes} min"
+    }
+  },
   "categories": {
     "weightlifting": "Weightlifting",
     "strength": "Strength",

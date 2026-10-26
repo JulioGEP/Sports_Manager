@@ -2,7 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { expectLegibleButtons, login, shot } from "./helpers";
 
 /**
- * La planificación del box (ADR 0052) en el box de demostración, que llega con "Camino al Open" en
+ * La planificación del box (ADR 0053) en el box de demostración, que llega con "Camino al Open" en
  * su semana 5 y un plan terminado para calibrar: la dueña ve el plan, el mapa del ciclo, la semana
  * con su validación, la revisión del domingo, la salud, el material y el asistente de un plan nuevo
  * hasta el resumen (sin crearlo); el coach escribe un WOD desde la semana; la atleta ve el plan en
@@ -24,7 +24,7 @@ test.describe("planificación del box", () => {
     await page.goto(`${BOX}/planning`);
     await expect(page.getByRole("heading", { level: 1, name: "Planificación" })).toBeVisible();
     await expect(page.getByRole("heading", { name: /Camino al Open/ })).toBeVisible();
-    await expect(page.getByText(/semana 5 de 16/)).toBeVisible();
+    await expect(page.getByText(/semana 5 de \d+/)).toBeVisible();
     await capture(page, "300-box-planificacion", project);
     await expectLegibleButtons(page);
 
@@ -123,7 +123,7 @@ test.describe("planificación del box", () => {
     await login(page, "atleta@demo.test", PASSWORD, BOX);
     await page.goto(`${BOX}/wod`);
     await expect(page.getByRole("heading", { level: 1, name: "WOD" })).toBeVisible();
-    await expect(page.getByText(/Camino al Open · semana 5 de 16/).first()).toBeVisible();
+    await expect(page.getByText(/Camino al Open · semana 5 de \d+/).first()).toBeVisible();
     await expect(page.getByText("tu versión").first()).toBeVisible();
     await capture(page, "315-box-atleta-wod-plan", project);
 

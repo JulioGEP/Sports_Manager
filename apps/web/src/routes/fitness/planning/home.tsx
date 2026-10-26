@@ -40,7 +40,7 @@ const STATUS_KIND = {
 } as const;
 
 /**
- * Planificación del box (ADR 0052): el plan activo de cada disciplina con su punto del ciclo, los
+ * Planificación del box (ADR 0053): el plan activo de cada disciplina con su punto del ciclo, los
  * borradores y los terminados. Sin plan, cómo se empieza: una plantilla o lo que proponga la IA.
  */
 export function PlanningHomePage() {

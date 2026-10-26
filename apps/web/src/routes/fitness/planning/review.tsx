@@ -28,7 +28,7 @@ const VERDICT_KIND = {
 } as const;
 
 /**
- * La revisión del domingo (ADR 0052): lo previsto frente a lo que pasó, día a día; lo que ha
+ * La revisión del domingo (ADR 0053): lo previsto frente a lo que pasó, día a día; lo que ha
  * aprendido el box; y los ajustes para la semana siguiente, cada uno con su antes y su después.
  * Se aceptan o se descartan de uno en uno: aceptar cambia el WOD de la semana que viene.
  */

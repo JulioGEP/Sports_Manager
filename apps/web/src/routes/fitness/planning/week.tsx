@@ -42,7 +42,7 @@ import {
 } from "@/ui";
 
 /**
- * Una semana del plan (ADR 0052): cada día con su papel, su intención y el levantamiento que manda
+ * Una semana del plan (ADR 0053): cada día con su papel, su intención y el levantamiento que manda
  * la progresión; su WOD con lo que dice el validador y cómo cabe en la sala. Al lado, el equilibrio
  * de la semana frente al del bloque, la cobertura de quien viene 2 o 3 días y los límites.
  */

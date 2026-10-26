@@ -47,7 +47,7 @@ export interface WorkoutBlockRecord {
   scaled: string | null;
   rx: string | null;
   rxPlus: string | null;
-  /** Planificación (ADR 0052). */
+  /** Planificación (ADR 0053). */
   capacity: Capacity | null;
   plannedMinutes: number | null;
   exerciseIds: string[];
@@ -68,7 +68,7 @@ export interface WorkoutRecord {
   blocks: WorkoutBlockRecord[];
   createdBy: string | null;
   updatedAt: Date;
-  /** Planificación (ADR 0052): el plan al que sirve, su semana, papel, intención y porqué. */
+  /** Planificación (ADR 0053): el plan al que sirve, su semana, papel, intención y porqué. */
   plan: {
     id: string;
     name: string;

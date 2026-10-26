@@ -83,7 +83,7 @@ export const aiGenerations = pgTable(
       .notNull()
       .references(() => sections.id, { onDelete: "cascade" }),
     teamId: uuid("team_id").references(() => teams.id, { onDelete: "cascade" }),
-    /** El plan del que se pide algo (ADR 0052): una semana o un cambio del copiloto. */
+    /** El plan del que se pide algo (ADR 0053): una semana o un cambio del copiloto. */
     planId: uuid("plan_id").references(() => boxPlans.id, { onDelete: "set null" }),
     requestedBy: uuid("requested_by").references(() => users.id, { onDelete: "set null" }),
     /** Lunes de la semana del club en que se pidió: la cuota cuenta por semana. */

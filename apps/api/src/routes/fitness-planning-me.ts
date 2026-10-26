@@ -39,7 +39,7 @@ import { athleteLevels, mainPlanOf } from "./planning-athlete.ts";
 import { clubToday } from "./planning-common.ts";
 
 /**
- * La planificación vista por el atleta (ADR 0052): en qué punto del ciclo está, sus marcas de
+ * La planificación vista por el atleta (ADR 0053): en qué punto del ciclo está, sus marcas de
  * partida y lo que puede esperar con su frecuencia, su constancia, lo que le falta esta semana y su
  * nivel en cada capacidad (que puede fijar él). Y el resumen del ciclo para compartir.
  */

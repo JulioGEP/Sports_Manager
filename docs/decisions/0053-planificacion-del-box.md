@@ -1,4 +1,4 @@
-# 0052. Planificación del box: un plan con objetivo, bloques y semanas, y la IA que lo diseña, lo escribe y lo ajusta
+# 0053. Planificación del box: un plan con objetivo, bloques y semanas, y la IA que lo diseña, lo escribe y lo ajusta
 
 Estado: aceptada. Fecha: 2026-10-26. Construye la propuesta `docs/propuesta-planificacion-del-box.md` entera, en una fase y sin módulos de pago. Amplía la 0049 (clubs de fitness, propuesta de WOD con IA), la 0050 (programación rehecha) y la 0044 (generación con IA en segundo plano).
 

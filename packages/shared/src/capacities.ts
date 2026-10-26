@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 /**
- * Vocabulario básico de la planificación del box (ADR 0052) que comparten el WOD y el plan: las
+ * Vocabulario básico de la planificación del box (ADR 0053) que comparten el WOD y el plan: las
  * capacidades que se entrenan, los dominios de tiempo, el papel de cada día y las pistas de volumen.
  * Va aparte para que el WOD (`fitness.ts`) y el plan (`planning.ts`) lo usen sin depender uno del otro.
  */

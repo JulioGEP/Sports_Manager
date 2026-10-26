@@ -31,7 +31,7 @@ import {
 } from "./planning.ts";
 
 /**
- * La IA de la planificación del box (ADR 0052), con el mismo registro, trabajo en segundo plano y
+ * La IA de la planificación del box (ADR 0053), con el mismo registro, trabajo en segundo plano y
  * modelo que la propuesta de WOD (ADR 0049). Tres papeles:
  *
  * - **Arquitecto**: de una frase del coach ("base de fuerza hasta Semana Santa") a un plan: plantilla,

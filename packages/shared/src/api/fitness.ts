@@ -203,7 +203,7 @@ export const WorkoutBlockViewSchema = z.object({
   scaled: z.string().nullable(),
   rx: z.string().nullable(),
   rxPlus: z.string().nullable(),
-  /** Planificación (ADR 0052): capacidad, minutos previstos, pista y ejercicios enlazados. */
+  /** Planificación (ADR 0053): capacidad, minutos previstos, pista y ejercicios enlazados. */
   capacity: z.enum(CAPACITIES).nullable(),
   plannedMinutes: z.number().int().nullable(),
   track: z.enum(WORKOUT_TRACKS),
@@ -236,7 +236,7 @@ export const WorkoutViewSchema = z.object({
   blocks: z.array(WorkoutBlockViewSchema),
   createdBy: z.string().nullable(),
   updatedAt: z.string(),
-  /** El plan al que sirve (ADR 0052): semana, bloque y papel del día. */
+  /** El plan al que sirve (ADR 0053): semana, bloque y papel del día. */
   plan: z
     .object({
       id: z.string(),
@@ -271,7 +271,7 @@ export const WorkoutsResponseSchema = z.object({
 export type WorkoutsResponse = z.infer<typeof WorkoutsResponseSchema>;
 export const WorkoutResponseSchema = z.object({ workout: WorkoutViewSchema });
 /** Los WODs publicados de un día para el atleta, con sus kilos y sus resultados. */
-/** Nivel de un atleta en una capacidad: el suyo si lo ha fijado, o el sugerido (ADR 0052). */
+/** Nivel de un atleta en una capacidad: el suyo si lo ha fijado, o el sugerido (ADR 0053). */
 export const AthleteLevelSchema = z.object({
   capacity: z.enum(LEVEL_CAPACITIES),
   level: z.enum(WORKOUT_LEVELS),

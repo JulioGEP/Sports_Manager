@@ -99,7 +99,7 @@ export interface NewWodGeneration {
   context: AiWodContext;
 }
 
-/** Una generación de la planificación (ADR 0052): el plan, una semana o un cambio del copiloto. */
+/** Una generación de la planificación (ADR 0053): el plan, una semana o un cambio del copiloto. */
 export interface AiPlanRecord {
   id: string;
   kind: AiPlanKind;
@@ -296,7 +296,7 @@ export function aiRepo(db: () => Database) {
     return rows[0]?.total ?? 0;
   }
 
-  /** Las de la planificación cuentan aparte (ADR 0052). */
+  /** Las de la planificación cuentan aparte (ADR 0053). */
   async function planUsedIn(
     organizationId: string,
     weekStart: string,
@@ -560,7 +560,7 @@ export function aiRepo(db: () => Database) {
       });
     },
 
-    // --- Planificación (ADR 0052) ---
+    // --- Planificación (ADR 0053) ---
 
     async planUsedThisWeek(scope: OrgScope, weekStart: string): Promise<number> {
       await failStale(scope.organizationId);

@@ -27,7 +27,7 @@ import {
 import { createSeeder } from "../data/testing/seed.ts";
 
 /**
- * Planificación del box (ADR 0052) contra una base real y un modelo falso: el material, el plan con
+ * Planificación del box (ADR 0053) contra una base real y un modelo falso: el material, el plan con
  * su estructura y su proyección, la semana con su validación, los borradores sin IA, la IA del plan
  * (arquitecto, semana y copiloto) que nunca publica sola, la revisión, la salud y lo que ve el
  * atleta. Un coach sin clases en la disciplina no planifica y otro club no ve nada.

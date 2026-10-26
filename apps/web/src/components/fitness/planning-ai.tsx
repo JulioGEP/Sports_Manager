@@ -90,7 +90,7 @@ function useApply() {
 }
 
 /**
- * El copiloto (ADR 0052): se le pide un cambio en palabras ("el jueves cerramos") y responde con
+ * El copiloto (ADR 0053): se le pide un cambio en palabras ("el jueves cerramos") y responde con
  * cambios concretos, día a día y con su porqué. Se aceptan todos, algunos o ninguno: nunca cambia
  * nada por su cuenta.
  */

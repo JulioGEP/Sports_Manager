@@ -9,7 +9,7 @@ import { useT } from "@/lib/intl";
 import { CAPACITY_COLOR, usePlanNames } from "./planning-ui";
 
 /**
- * Lo que se puede esperar de un plan (ADR 0052): una banda por capacidad y un rango por test,
+ * Lo que se puede esperar de un plan (ADR 0053): una banda por capacidad y un rango por test,
  * siempre orientativo y siempre con la frecuencia a la que se refiere. Con la marca de partida del
  * box, el rango sale también en kilos, segundos o repeticiones.
  */

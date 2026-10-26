@@ -17,7 +17,7 @@ import {
 import { addDays } from "./training-load.ts";
 
 /**
- * Borradores de una semana del plan sin IA (ADR 0052): lo que el plan sabe escribir solo. Cada día
+ * Borradores de una semana del plan sin IA (ADR 0053): lo que el plan sabe escribir solo. Cada día
  * con clase sale con su papel, su intención, el levantamiento del día con la progresión exacta del
  * bloque, el motor largo con sus minutos, el hueco del WOD con lo que tiene que ser y la vuelta a la
  * calma. El coach (o el copiloto) escribe el resto. Nunca pisa un día que ya tiene WOD.

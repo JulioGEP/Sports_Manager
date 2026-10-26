@@ -11,7 +11,7 @@ import { Alert, Card, PageHeader } from "@/ui";
 const DOMAIN_COLOR = { short: "#C2304A", medium: "#C46A12", long: "#0B7F70", very_long: "#2457D6" };
 
 /**
- * La salud de la programación (ADR 0052): si el plan se cumple, si la gente mejora y viene más, el
+ * La salud de la programación (ADR 0053): si el plan se cumple, si la gente mejora y viene más, el
  * equilibrio real frente al del plan, las duraciones, qué patrones se repiten semana a semana, los
  * límites y lo que ha costado la IA. Una pantalla para el head coach y el dueño.
  */

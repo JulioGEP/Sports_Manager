@@ -100,7 +100,7 @@ const weeksUntil = (startsOn: string, eventDate: string) =>
   ) + 1;
 
 /**
- * Crear un plan (ADR 0052) en seis pasos: el objetivo (una plantilla o lo que proponga la IA), el
+ * Crear un plan (ADR 0053) en seis pasos: el objetivo (una plantilla o lo que proponga la IA), el
  * calendario, el reparto de los 100 puntos, los tests, lo que ya sabe el box y el resumen. A la
  * derecha, todo el rato, lo que se puede esperar: se mueve al tocar cualquier cosa.
  */

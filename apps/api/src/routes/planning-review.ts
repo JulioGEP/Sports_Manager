@@ -30,7 +30,7 @@ import {
 } from "./planning-common.ts";
 
 /**
- * La revisión del domingo de la planificación del box (ADR 0052): lo previsto frente a lo que pasó
+ * La revisión del domingo de la planificación del box (ADR 0053): lo previsto frente a lo que pasó
  * en una semana del plan, lo que ha aprendido el box y los ajustes para la siguiente, que el coach
  * acepta o descarta uno a uno. Aceptar escribe el cambio en el WOD de la semana que viene.
  */

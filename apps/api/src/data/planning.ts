@@ -22,7 +22,7 @@ import { isUniqueViolation } from "./db.ts";
 import type { OrgScope } from "./scope.ts";
 
 /**
- * Planificación del box (ADR 0052): el material de la sala, los ajustes de la programación, los
+ * Planificación del box (ADR 0053): el material de la sala, los ajustes de la programación, los
  * planes con su estructura, lo que se decide en la revisión del domingo y el nivel que cada atleta
  * fija. Y las consultas que alimentan el plan: horario de la disciplina, quién viene y cómo, el
  * reparto de niveles, los resultados de una semana y las marcas de los tests. Todo bajo el ámbito

@@ -8,7 +8,7 @@ import { useMyCycleSummary } from "@/lib/planning";
 import { Alert, Button, PageHeader, useToast } from "@/ui";
 
 /**
- * Tu ciclo en cifras (ADR 0052): una tarjeta para guardar o compartir al acabar (o a mitad) de un
+ * Tu ciclo en cifras (ADR 0053): una tarjeta para guardar o compartir al acabar (o a mitad) de un
  * plan: sesiones, marcas personales y cada test de la partida a la última marca.
  */
 export function CycleSummaryPage() {

@@ -14,7 +14,7 @@ import {
 import { addDays, daysBetween, weekStartOf } from "./training-load.ts";
 
 /**
- * Lo que la planificación mide y comprueba (ADR 0052): qué se puede esperar del plan, si las
+ * Lo que la planificación mide y comprueba (ADR 0053): qué se puede esperar del plan, si las
  * combinaciones de días habituales del box tocan lo que toca, si una sesión cabe en la sala, cómo
  * fue la semana frente a lo previsto, la salud de la programación y el nivel que se sugiere a cada
  * atleta. Reglas puras y explicables: cada cifra dice de dónde sale.

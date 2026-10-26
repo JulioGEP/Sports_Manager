@@ -22,7 +22,7 @@ import type { Locale } from "./locales.ts";
 
 /**
  * Qué se pidió a la IA: las sesiones de un equipo, el WOD de un día o, en la planificación del box
- * (ADR 0052), el plan, una semana del plan o un cambio del copiloto.
+ * (ADR 0053), el plan, una semana del plan o un cambio del copiloto.
  */
 export const AI_GENERATION_KINDS = [
   "training",
