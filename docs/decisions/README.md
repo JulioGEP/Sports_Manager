@@ -62,5 +62,6 @@ Las decisiones no se editan una vez aceptadas. Si cambian, se escribe una nueva 
 | 0046 | Rol de deportista: el adulto con cuenta entra a su propia ficha | Aceptada |
 | 0047 | Mejoras de la plataforma: la administración del club sugiere y vota, y una hoja de ruta común | Aceptada; la pantalla del club pasa a Ajustes en 0048 |
 | 0048 | Mejoras de la plataforma dentro de Ajustes, en una pestaña | Aceptada |
-| 0049 | Clubs de fitness: un modelo de club y una segunda interfaz sobre la misma base | Aceptada; revisada en 0050 |
+| 0049 | Clubs de fitness: un modelo de club y una segunda interfaz sobre la misma base | Aceptada; revisada en 0050 y 0051 |
 | 0050 | Revisión del box: sin restos de club deportivo, ejercicios propios y programación rehecha | Aceptada |
+| 0051 | Clases del box en calendario: la semana en rejilla horaria y el color según lo que puedes hacer | Aceptada |

@@ -45,16 +45,16 @@
   },
   "classes": {
     "title": "Classes",
-    "description": "Les classes del box per dia, amb les reserves, l'espera i el check-in.",
+    "description": "La setmana del box: cada classe a la seva hora, amb les reserves, l'espera i el check-in.",
     "setup": "Editar l'horari",
-    "days": "Dia",
     "scope": "Quines classes veure",
     "mine": "Les meves classes",
-    "all": "Totes",
+    "all": "Tot el box",
     "summary": "{classes, plural, one {# classe} other {# classes}} · {booked, plural, one {# reserva} other {# reserves}}",
-    "empty": "No hi ha classes aquest dia.",
-    "emptyMine": "Aquest dia no fas cap classe.",
-    "seeAll": "Veure-les totes"
+    "empty": "No hi ha classes aquesta setmana.",
+    "emptyMine": "Aquesta setmana no fas cap classe.",
+    "seeAll": "Veure-les totes",
+    "occupancy": "{percent} % d'ocupació"
   },
   "class": {
     "notFound": "Aquesta classe no existeix o no és de les teves classes.",

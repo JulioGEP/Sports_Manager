@@ -45,16 +45,16 @@
   },
   "classes": {
     "title": "Clases",
-    "description": "Las clases del box por día, con sus reservas, la espera y el check-in.",
+    "description": "La semana del box: cada clase en su hora, con sus reservas, la espera y el check-in.",
     "setup": "Editar el horario",
-    "days": "Día",
     "scope": "Qué clases ver",
     "mine": "Mis clases",
-    "all": "Todas",
+    "all": "Todo el box",
     "summary": "{classes, plural, one {# clase} other {# clases}} · {booked, plural, one {# reserva} other {# reservas}}",
-    "empty": "No hay clases este día.",
-    "emptyMine": "Este día no das ninguna clase.",
-    "seeAll": "Ver todas"
+    "empty": "No hay clases esta semana.",
+    "emptyMine": "Esta semana no das ninguna clase.",
+    "seeAll": "Ver todas",
+    "occupancy": "{percent} % de ocupación"
   },
   "class": {
     "notFound": "Esa clase no existe o no es de tus clases.",

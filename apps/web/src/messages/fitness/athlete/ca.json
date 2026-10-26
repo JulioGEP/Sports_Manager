@@ -55,14 +55,17 @@
   },
   "classes": {
     "title": "Reservar",
-    "description": "Les classes dels propers dies. Pots reservar amb {days, plural, one {# dia} other {# dies}} d'antelació.",
+    "description": "La setmana del box, classe a classe. Pots reservar amb {days, plural, one {# dia} other {# dies}} d'antelació.",
     "noPlanTitle": "Sense tarifa activa",
     "noPlanAction": "Veure la meva tarifa",
     "noPlanBody": "Per reservar necessites una tarifa. Parla amb el box.",
-    "days": "Dies",
-    "emptyTitle": "No hi ha classes aquest dia",
-    "emptyHint": "Prova amb un altre dia.",
-    "policy": "Cancel·la gratis fins a {hours, plural, one {# hora} other {# hores}} abans. Si s'allibera una plaça, entra el primer de l'espera."
+    "emptyTitle": "No hi ha classes aquesta setmana",
+    "emptyHint": "Prova amb la setmana que ve.",
+    "policy": "Cancel·la gratis fins a {hours, plural, one {# hora} other {# hores}} abans. Si s'allibera una plaça, entra el primer de l'espera.",
+    "mineThisWeek": "{count, plural, =0 {Encara no tens reserves aquesta setmana} one {Tens # reserva aquesta setmana} other {Tens # reserves aquesta setmana}}",
+    "seeClass": "Veure la classe",
+    "discipline": "Disciplina",
+    "wodReady": "Publicat"
   },
   "class": {
     "missing": "Classe",

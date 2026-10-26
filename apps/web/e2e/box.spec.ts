@@ -30,10 +30,20 @@ test.describe("box de demostración", () => {
     await shot(page, "240-box-atleta-inicio", info.project.name);
     await expectLegibleButtons(page);
 
+    // Reservar es un calendario (ADR 0051): la semana en escritorio, el día en el móvil.
     await open(page, "/classes", "Reservar");
+    await expect(page.locator("li[data-class-id]").first()).toBeVisible();
     await shot(page, "241-box-atleta-reservar", info.project.name);
     await expectLegibleButtons(page);
-    await page.locator("li[data-class-id] a").first().click();
+    // Tocar una clase abre su panel con la reserva; la ficha completa, desde ahí. Mejor una con
+    // plazas libres (según la hora a la que corre la prueba puede que no quede ninguna).
+    const bookable = page.locator("li[data-class-id] button", { hasText: /libres/ });
+    const anyClass = page.locator("li[data-class-id] button");
+    await ((await bookable.count()) > 0 ? bookable : anyClass).first().click();
+    const panel = page.getByRole("dialog");
+    await expect(panel).toBeVisible();
+    await shot(page, "241b-box-atleta-reservar-panel", info.project.name);
+    await panel.getByRole("link", { name: "Ver la clase" }).click();
     await expect(page.getByRole("heading", { level: 1 }).first()).toBeVisible();
     await shot(page, "242-box-atleta-clase", info.project.name);
 
@@ -84,6 +94,7 @@ test.describe("box de demostración", () => {
     await expectLegibleButtons(page);
 
     await open(page, "/classes", "Clases");
+    await expect(page.locator("li[data-class-id]").first()).toBeVisible();
     await shot(page, "256-box-coach-clases", info.project.name);
     await page.locator("li[data-class-id] a").first().click();
     await expect(page.getByRole("heading", { level: 1 }).first()).toBeVisible();
@@ -117,6 +128,20 @@ test.describe("box de demostración", () => {
     await expect(page.getByRole("heading", { level: 1, name: /Marta/ })).toBeVisible();
     await shot(page, "265-box-duena-inicio", info.project.name);
     await expectLegibleButtons(page);
+
+    // La dueña ve todo el box en el calendario; tocar un día lo abre en la vista de día.
+    await open(page, "/classes", "Clases");
+    await expect(page.locator("li[data-class-id]").first()).toBeVisible();
+    await shot(page, "265b-box-duena-clases", info.project.name);
+    await expectLegibleButtons(page);
+    if (info.project.name === "escritorio") {
+      await page
+        .getByRole("button", { name: /^Ver el / })
+        .first()
+        .click();
+      await expect(page.getByRole("tab", { selected: true })).toBeVisible();
+      await shot(page, "265c-box-duena-clases-dia", info.project.name);
+    }
 
     await open(page, "/class-types", "Horario");
     await expect(page.getByText("Open Box").first()).toBeVisible();
