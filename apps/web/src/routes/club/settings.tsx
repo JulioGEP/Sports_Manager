@@ -23,7 +23,7 @@ import {
 } from "@sportsmanager/shared";
 import { brandTokens } from "@sportsmanager/shared/design";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { useIntl } from "react-intl";
 import { useSearchParams } from "react-router";
 import { useAccountingStatus } from "@/components/accounting";
@@ -33,7 +33,9 @@ import { useDates } from "@/lib/dates";
 import { useT } from "@/lib/intl";
 import { AccountingSection } from "./settings-accounting";
 import { DevelopersTab } from "./settings-developers";
+import { SettingsGroup } from "./settings-group";
 import { IdentityTab } from "./settings-identity";
+import { ImprovementsTab } from "./settings-improvements";
 import {
   Alert,
   Button,
@@ -56,10 +58,18 @@ import {
 } from "@/ui";
 
 /**
- * Seis pestañas, una por función (ADR 0045). La que absorbe a otra conserva su clave: así los
- * enlaces de siempre (`?tab=seasons&new=1`, `?tab=payments`) siguen abriendo lo mismo.
+ * Una pestaña por función (ADR 0045; Mejoras, ADR 0048). La que absorbe a otra conserva su clave:
+ * así los enlaces de siempre (`?tab=seasons&new=1`, `?tab=payments`) siguen abriendo lo mismo.
  */
-const TABS = ["general", "identity", "seasons", "payments", "developers", "activity"] as const;
+const TABS = [
+  "general",
+  "identity",
+  "seasons",
+  "payments",
+  "developers",
+  "activity",
+  "improvements",
+] as const;
 type Tab = (typeof TABS)[number];
 
 /**
@@ -77,7 +87,8 @@ const TAB_ALIASES: Record<string, { tab: Tab; section?: string }> = {
 /**
  * Ajustes del club (Bloque 5; Bloque 14-18; ADR 0045), por función: General (la puesta en marcha
  * mientras falte algo y los datos del club), Identidad (ADR 0043), Temporadas y socios, Cobros y
- * contabilidad (ADR 0042), Web del club (ADR 0041) y Actividad.
+ * contabilidad (ADR 0042), Web del club (ADR 0041), Actividad y Mejoras de la plataforma
+ * (ADR 0047 y 0048).
  */
 export function SettingsPage() {
   const t = useT("settings");
@@ -111,6 +122,10 @@ export function SettingsPage() {
     ...(permissions.includes("org.activity.read")
       ? [{ key: "activity" as const, label: t("tabs.activity") }]
       : []),
+    // Mejoras de la plataforma (ADR 0048): solo la administración habla con la plataforma.
+    ...(permissions.includes("org.suggestions")
+      ? [{ key: "improvements" as const, label: t("tabs.improvements") }]
+      : []),
   ];
 
   return (
@@ -143,25 +158,8 @@ export function SettingsPage() {
       {tab === "payments" ? <PaymentsTab section={alias?.section} /> : null}
       {tab === "developers" ? <DevelopersTab /> : null}
       {tab === "activity" ? <ActivityTab /> : null}
+      {tab === "improvements" ? <ImprovementsTab /> : null}
     </div>
-  );
-}
-
-/** Un bloque de una pestaña que junta varias tarjetas de lo mismo, con su nombre encima. */
-function SettingsGroup({
-  id,
-  title,
-  children,
-}: {
-  id?: string;
-  title: string;
-  children: ReactNode;
-}) {
-  return (
-    <section id={id} aria-label={title} className="flex scroll-mt-20 flex-col gap-3">
-      <h2 className="text-label font-medium uppercase tracking-wide text-muted">{title}</h2>
-      {children}
-    </section>
   );
 }
 

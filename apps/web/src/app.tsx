@@ -34,7 +34,6 @@ import { MatchStatsPage } from "@/routes/club/match-stats";
 import { PlayerPage } from "@/routes/club/player";
 import { PlayerPerformancePage } from "@/routes/club/player-performance";
 import { PlayersPage } from "@/routes/club/players";
-import { RoadmapPage } from "@/routes/club/roadmap";
 import { SectionPage } from "@/routes/club/section";
 import { SectionMatchConfigPage } from "@/routes/club/section-match-config";
 import { SectionMethodologyPage } from "@/routes/club/section-methodology";
@@ -74,6 +73,18 @@ function LegacyRedirect({ to }: { to: string }) {
 function ClubRedirect({ to }: { to: string }) {
   const { club } = useParams();
   return <Navigate to={`/${club}${to}${window.location.search}`} replace />;
+}
+
+/** `/roadmap` (ADR 0047) pasa a la pestaña Mejoras de Ajustes (ADR 0048), con lo que abría. */
+function RoadmapRedirect() {
+  const { club } = useParams();
+  const old = new URLSearchParams(window.location.search);
+  const next = new URLSearchParams({ tab: "improvements" });
+  for (const key of ["item", "mine", "new"]) {
+    const value = old.get(key);
+    if (value) next.set(key, value);
+  }
+  return <Navigate to={`/${club}/settings?${next}`} replace />;
 }
 
 /**
@@ -159,8 +170,8 @@ export const router = createBrowserRouter([
       { path: "sections/:id/methodology", element: <SectionMethodologyPage /> },
       { path: "me", element: <AthletePage /> },
       { path: "me/training", element: <AthleteTrainingPage /> },
-      // Mejoras de la plataforma (ADR 0047): la administración del club sugiere, vota y ve la hoja de ruta.
-      { path: "roadmap", element: <RoadmapPage /> },
+      // Mejoras de la plataforma: vivían en `/roadmap` (ADR 0047); ahora son una pestaña de Ajustes (ADR 0048).
+      { path: "roadmap", element: <RoadmapRedirect /> },
     ],
   },
   { path: "*", element: <Navigate to="/" replace /> },

@@ -21,6 +21,7 @@ import { Link, useSearchParams } from "react-router";
 import { SuggestionStatusChip, textareaClass, useEtaLabel } from "@/components/suggestions";
 import { apiFetch, errorKey } from "@/lib/api";
 import { clubPaths, useReadyClub } from "@/lib/club";
+import { SettingsGroup } from "./settings-group";
 import { useT } from "@/lib/intl";
 import {
   Alert,
@@ -32,34 +33,31 @@ import {
   Field,
   Icon,
   Input,
-  PageHeader,
   Select,
   Sheet,
   StatusChip,
-  Tabs,
   useToast,
   type RowAction,
 } from "@/ui";
 
-type Tab = "roadmap" | "mine";
-
 /**
- * Mejoras de la plataforma (ADR 0047), para la administración del club: la hoja de ruta (lo que
- * se está haciendo, lo que viene en orden y con fecha aproximada, lo que está en estudio para
- * votar y lo último que ha salido), las sugerencias del club con su estado y la respuesta de la
- * plataforma, y el formulario para sugerir otra. Lo que se abre va en la dirección (`?item=`,
- * `?mine=`, `?new=1`): la paleta de mandos y los enlaces llegan directos.
+ * Mejoras de la plataforma (ADR 0047), dentro de Ajustes (ADR 0048), para la administración del
+ * club: arriba las sugerencias del club con su estado y la respuesta de la plataforma, y el botón
+ * para sugerir otra; debajo, la hoja de ruta (lo que viene en orden y con fecha aproximada, lo que
+ * está en estudio para votar y lo último que ha salido). Lo que se abre va en la dirección
+ * (`?item=`, `?mine=`, `?new=1`): la paleta de mandos y los enlaces llegan directos.
  */
-export function RoadmapPage() {
+export function ImprovementsTab() {
   const t = useT("roadmap");
   const errors = useT("errors");
   const { org, slug } = useReadyClub();
   const [params, setParams] = useSearchParams();
   const allowed = org.actor.permissions.includes("org.suggestions");
-  const tab: Tab = params.get("tab") === "mine" ? "mine" : "roadmap";
   const itemId = params.get("item");
   const mineId = params.get("mine");
   const creating = params.get("new") === "1";
+  const hrefOf = (key: "item" | "mine", id: string) =>
+    `${clubPaths(slug).settings}?tab=improvements&${key}=${id}`;
 
   const roadmap = useQuery({
     queryKey: ["org", slug, "roadmap"],
@@ -72,11 +70,9 @@ export function RoadmapPage() {
     enabled: allowed,
   });
 
-  /** Cambia la dirección sin perder la pestaña: abrir y cerrar paneles no apila historial al cerrar. */
-  function go(next: { tab?: Tab; item?: string | null; mine?: string | null; new?: boolean }) {
-    const sp = new URLSearchParams();
-    const nextTab = next.tab ?? tab;
-    if (nextTab === "mine") sp.set("tab", "mine");
+  /** Abre o cierra un panel sin salir de la pestaña; cerrar no apila historial. */
+  function go(next: { item?: string; mine?: string; new?: boolean }) {
+    const sp = new URLSearchParams({ tab: "improvements" });
     if (next.item) sp.set("item", next.item);
     if (next.mine) sp.set("mine", next.mine);
     if (next.new) sp.set("new", "1");
@@ -92,53 +88,30 @@ export function RoadmapPage() {
   const openMine = mineId ? (suggestions.find((s) => s.id === mineId) ?? null) : null;
 
   return (
-    <div className="flex flex-col gap-5">
-      <PageHeader
-        title={t("title")}
-        description={t("description")}
-        actions={
-          <Button action="add" onClick={() => go({ new: true })}>
-            {t("suggest")}
-          </Button>
-        }
-      />
-      <Tabs<Tab>
-        label={t("title")}
-        selected={tab}
-        onChange={(key) => go({ tab: key })}
-        items={[
-          { key: "roadmap", label: t("tabs.roadmap") },
-          { key: "mine", label: t("tabs.mine"), count: mine.data ? suggestions.length : undefined },
-        ]}
-      />
-      {roadmap.isError ? <Alert kind="error">{errors(errorKey(roadmap.error))}</Alert> : null}
+    <div className="flex flex-col gap-6">
       {mine.isError ? <Alert kind="error">{errors(errorKey(mine.error))}</Alert> : null}
-      {tab === "roadmap" ? (
-        <RoadmapTab
+      <MineCard
+        suggestions={suggestions}
+        loading={mine.isPending}
+        hrefOf={(id) => hrefOf("mine", id)}
+        onCreate={() => go({ new: true })}
+      />
+      <SettingsGroup title={t("roadmapGroup")}>
+        {roadmap.isError ? <Alert kind="error">{errors(errorKey(roadmap.error))}</Alert> : null}
+        <RoadmapCards
           items={items}
           loading={roadmap.isPending}
-          hrefOf={(id) => `${clubPaths(slug).roadmap}?item=${id}`}
+          hrefOf={(id) => hrefOf("item", id)}
         />
-      ) : (
-        <MineTab
-          suggestions={suggestions}
-          loading={mine.isPending}
-          hrefOf={(id) => `${clubPaths(slug).roadmap}?tab=mine&mine=${id}`}
-          onCreate={() => go({ new: true })}
-        />
-      )}
+      </SettingsGroup>
       <RoadmapItemSheet item={openItem} onClose={() => go({})} />
       <MineSheet
         suggestion={openMine}
         onClose={() => go({})}
-        onOpenItem={(id) => go({ tab: "roadmap", item: id })}
+        onOpenItem={(id) => go({ item: id })}
       />
       {creating ? (
-        <SuggestSheet
-          items={items}
-          onClose={() => go({})}
-          onSent={(id) => go({ tab: "mine", mine: id })}
-        />
+        <SuggestSheet items={items} onClose={() => go({})} onSent={(id) => go({ mine: id })} />
       ) : null}
     </div>
   );
@@ -179,7 +152,7 @@ function useAreaLabel() {
   return (area: SuggestionArea) => areas(area);
 }
 
-function RoadmapTab({
+function RoadmapCards({
   items,
   loading,
   hrefOf,
@@ -415,7 +388,8 @@ function RoadmapItemSheet({ item, onClose }: { item: RoadmapItem | null; onClose
   );
 }
 
-function MineTab({
+/** Lo que ha pedido el club, con el botón para pedir otra en la cabecera. */
+function MineCard({
   suggestions,
   loading,
   hrefOf,
@@ -434,24 +408,27 @@ function MineTab({
   const sent = (s: ClubSuggestion) =>
     intl.formatDate(new Date(s.createdAt), { dateStyle: "medium" });
 
-  if (loading) return <p className="text-body text-muted">{c("loading")}</p>;
   return (
-    <Card padded={false}>
+    <Card
+      title={t("mine.title")}
+      description={t("mine.description")}
+      actions={
+        <Button action="add" size="sm" onClick={onCreate}>
+          {t("suggest")}
+        </Button>
+      }
+      padded={false}
+    >
       <DataList<ClubSuggestion>
-        caption={t("tabs.mine")}
+        caption={t("mine.title")}
         rows={suggestions}
         getKey={(s) => s.id}
         href={(s) => hrefOf(s.id)}
         empty={
           <EmptyState
             icon={<Icon.Lightbulb weight="duotone" />}
-            title={t("mine.empty")}
-            description={t("mine.emptyHint")}
-            action={
-              <Button action="add" onClick={onCreate}>
-                {t("suggest")}
-              </Button>
-            }
+            title={loading ? c("loading") : t("mine.empty")}
+            description={loading ? undefined : t("mine.emptyHint")}
           />
         }
         columns={[

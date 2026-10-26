@@ -48,8 +48,7 @@
     "athlete": "Mi bienestar",
     "store": "Tienda",
     "myProfile": "Mi ficha",
-    "athleteTraining": "Mi plan",
-    "roadmap": "Mejoras"
+    "athleteTraining": "Mi plan"
   },
   "auth": {
     "login": {
@@ -474,7 +473,8 @@
       "seasons": "Temporadas y socios",
       "payments": "Cobros y contabilidad",
       "developers": "Web del club",
-      "activity": "Actividad"
+      "activity": "Actividad",
+      "improvements": "Mejoras"
     },
     "general": {
       "title": "Datos del club",
@@ -3517,6 +3517,7 @@
       "newProduct": "Nuevo producto de la tienda",
       "counterSale": "Venta en el mostrador",
       "developers": "Catálogo público para la web",
+      "roadmap": "Hoja de ruta de la plataforma",
       "suggest": "Sugerir una mejora"
     },
     "keys": {
@@ -5421,14 +5422,9 @@
     "other": "Otra cosa"
   },
   "roadmap": {
-    "title": "Mejoras de la plataforma",
-    "description": "Propón mejoras, vota las que están en estudio y mira qué viene y cuándo.",
+    "roadmapGroup": "Hoja de ruta de la plataforma",
     "suggest": "Sugerir una mejora",
     "onlyAdmins": "Solo la administración del club puede sugerir mejoras y ver la hoja de ruta.",
-    "tabs": {
-      "roadmap": "Hoja de ruta",
-      "mine": "Sugerencias del club"
-    },
     "coming": {
       "title": "Lo que viene",
       "description": "En este orden. Las fechas son aproximadas y pueden moverse.",
@@ -5483,6 +5479,8 @@
       "released": "Disponible: ya la puedes usar."
     },
     "mine": {
+      "title": "Sugerencias del club",
+      "description": "Lo que tu club ha pedido a la plataforma y en qué ha quedado. Solo lo ve la administración del club.",
       "empty": "Tu club aún no ha sugerido nada",
       "emptyHint": "Cuenta qué os falta. Aquí verás en qué queda cada sugerencia.",
       "seeInRoadmap": "Ver en la hoja de ruta",

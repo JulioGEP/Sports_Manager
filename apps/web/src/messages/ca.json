@@ -48,8 +48,7 @@
     "athlete": "El meu benestar",
     "store": "Botiga",
     "myProfile": "La meva fitxa",
-    "athleteTraining": "El meu pla",
-    "roadmap": "Millores"
+    "athleteTraining": "El meu pla"
   },
   "auth": {
     "login": {
@@ -474,7 +473,8 @@
       "seasons": "Temporades i socis",
       "payments": "Cobraments i comptabilitat",
       "developers": "Web del club",
-      "activity": "Activitat"
+      "activity": "Activitat",
+      "improvements": "Millores"
     },
     "general": {
       "title": "Dades del club",
@@ -3517,6 +3517,7 @@
       "newProduct": "Nou producte de la botiga",
       "counterSale": "Venda al taulell",
       "developers": "Catàleg públic per al web",
+      "roadmap": "Full de ruta de la plataforma",
       "suggest": "Suggerir una millora"
     },
     "keys": {
@@ -5421,14 +5422,9 @@
     "other": "Una altra cosa"
   },
   "roadmap": {
-    "title": "Millores de la plataforma",
-    "description": "Proposa millores, vota les que estan en estudi i mira què ve i quan.",
+    "roadmapGroup": "Full de ruta de la plataforma",
     "suggest": "Suggerir una millora",
     "onlyAdmins": "Només l'administració del club pot suggerir millores i veure el full de ruta.",
-    "tabs": {
-      "roadmap": "Full de ruta",
-      "mine": "Suggeriments del club"
-    },
     "coming": {
       "title": "El que ve",
       "description": "En aquest ordre. Les dates són aproximades i es poden moure.",
@@ -5483,6 +5479,8 @@
       "released": "Disponible: ja la pots fer servir."
     },
     "mine": {
+      "title": "Suggeriments del club",
+      "description": "El que el teu club ha demanat a la plataforma i com ha acabat. Només ho veu l'administració del club.",
       "empty": "El teu club encara no ha suggerit res",
       "emptyHint": "Explica què us falta. Aquí veuràs com acaba cada suggeriment.",
       "seeInRoadmap": "Veure-la al full de ruta",
