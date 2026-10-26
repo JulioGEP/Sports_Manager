@@ -1,25 +1,28 @@
 import {
+  ACTIVITY_SPORT_CODES,
   BookingPolicySchema,
   ClassTypeCreateSchema,
   ClassTypeResponseSchema,
   ClassTypeUpdateSchema,
+  SectionResponseSchema,
+  SportCatalogResponseSchema,
   TeamScheduleSetSchema,
   WEEKDAYS,
   type BookingPolicy,
   type ClassType,
   type ClassTypesResponse,
 } from "@sportsmanager/shared";
+import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState, type FormEvent } from "react";
 import { useSearchParams } from "react-router";
 import { CheckField, useBookingPolicy, useWeekdayName } from "@/components/fitness/owner-ui";
 import { apiFetch, errorKey } from "@/lib/api";
-import { clubPaths, useReadyClub } from "@/lib/club";
+import { useReadyClub } from "@/lib/club";
 import { useClassTypes, useInvalidateFitness } from "@/lib/fitness";
-import { useT } from "@/lib/intl";
+import { useLocale, useT } from "@/lib/intl";
 import {
   Alert,
   Button,
-  ButtonLink,
   Card,
   ConfirmDialog,
   EmptyState,
@@ -65,11 +68,18 @@ export function ClassTypesPage() {
 function TypesTab() {
   const t = useT("fitness.owner.classTypes");
   const weekday = useWeekdayName();
-  const { slug, org } = useReadyClub();
-  const paths = clubPaths(slug);
+  const { org } = useReadyClub();
   const canWrite = org.actor.permissions.includes("org.structure.write");
   const query = useClassTypes();
   const [creating, setCreating] = useState(false);
+  const [discipline, setDiscipline] = useState<{ id: string; name: string } | "new" | null>(null);
+  const [params, setParams] = useSearchParams();
+  // `?new=1` (desde la paleta de mandos) abre el alta de un tipo de clase.
+  useEffect(() => {
+    if (params.get("new") !== "1") return;
+    setCreating(true);
+    setParams({}, { replace: true });
+  }, [params, setParams]);
   const [editing, setEditing] = useState<ClassType | null>(null);
   const [scheduling, setScheduling] = useState<ClassType | null>(null);
   const [archiving, setArchiving] = useState<ClassType | null>(null);
@@ -98,16 +108,23 @@ function TypesTab() {
   if (!data) return <div className="h-40 animate-pulse rounded-card bg-raised" />;
   if (data.sections.length === 0)
     return (
-      <EmptyState
-        icon={<Icon.SquaresFour weight="duotone" />}
-        title={t("noSections")}
-        description={t("noSectionsHint")}
-        action={
-          <ButtonLink to={paths.sections} action="open">
-            {t("openSections")}
-          </ButtonLink>
-        }
-      />
+      <>
+        <EmptyState
+          icon={<Icon.SquaresFour weight="duotone" />}
+          title={t("noSections")}
+          description={t("disciplines.emptyHint")}
+          action={
+            canWrite ? (
+              <Button action="add" onClick={() => setDiscipline("new")}>
+                {t("disciplines.new")}
+              </Button>
+            ) : undefined
+          }
+        />
+        {discipline ? (
+          <DisciplineSheet discipline={discipline} onClose={() => setDiscipline(null)} />
+        ) : null}
+      </>
     );
 
   const active = data.classTypes.filter((c) => c.status === "active");
@@ -118,6 +135,40 @@ function TypesTab() {
 
   return (
     <div className="flex flex-col gap-6">
+      <Card
+        title={t("disciplines.title")}
+        description={t("disciplines.hint")}
+        actions={
+          canWrite ? (
+            <Button variant="secondary" size="sm" action="add" onClick={() => setDiscipline("new")}>
+              {t("disciplines.new")}
+            </Button>
+          ) : undefined
+        }
+      >
+        <ul className="flex flex-wrap gap-2">
+          {data.sections.map((section) => (
+            <li key={section.id}>
+              {canWrite ? (
+                <button
+                  type="button"
+                  onClick={() => setDiscipline(section)}
+                  className="inline-flex min-h-10 items-center gap-2 rounded-chip bg-raised px-3 text-body text-ink hover:bg-club-soft"
+                  aria-label={t("disciplines.renameLabel", { name: section.name })}
+                >
+                  {section.name}
+                  <Icon.PencilSimple size={16} aria-hidden="true" />
+                </button>
+              ) : (
+                <StatusChip kind="neutral">{section.name}</StatusChip>
+              )}
+            </li>
+          ))}
+        </ul>
+      </Card>
+      {discipline ? (
+        <DisciplineSheet discipline={discipline} onClose={() => setDiscipline(null)} />
+      ) : null}
       {canWrite ? (
         <div className="flex justify-end">
           <Button action="add" onClick={() => setCreating(true)}>
@@ -782,5 +833,116 @@ function PolicyTab() {
         <Alert kind="info">{t("readOnly")}</Alert>
       )}
     </form>
+  );
+}
+
+/** Deportes que encajan en un box: los de actividad (CrossFit, fitness, yoga, pilates) y "otro". */
+const BOX_SPORTS = [...ACTIVITY_SPORT_CODES, "athletics", "gymnastics", "other"] as const;
+
+/**
+ * Una disciplina del box (ADR 0050): en un club deportivo es una sección; aquí basta con su nombre
+ * y lo que se entrena. Se crea y se renombra desde el horario, sin pasar por "Secciones".
+ */
+function DisciplineSheet({
+  discipline,
+  onClose,
+}: {
+  discipline: { id: string; name: string } | "new";
+  onClose: () => void;
+}) {
+  const t = useT("fitness.owner.classTypes.disciplines");
+  const c = useT("fitness.common");
+  const errors = useT("errors");
+  const toast = useToast();
+  const invalidate = useInvalidateFitness();
+  const { slug } = useReadyClub();
+  const { locale } = useLocale();
+  const isNew = discipline === "new";
+  const [name, setName] = useState(isNew ? "" : discipline.name);
+  const [sportCode, setSportCode] = useState("crossfit");
+  const [busy, setBusy] = useState(false);
+  const sports = useQuery({
+    queryKey: ["org", slug, "sports"],
+    queryFn: () => apiFetch("/api/org/sports", { schema: SportCatalogResponseSchema }),
+    enabled: isNew,
+  });
+  const options = (sports.data?.sports ?? []).filter((s) =>
+    (BOX_SPORTS as readonly string[]).includes(s.code),
+  );
+
+  async function submit(e: FormEvent) {
+    e.preventDefault();
+    if (!name.trim()) return;
+    setBusy(true);
+    try {
+      if (isNew) {
+        await apiFetch("/api/org/sections", {
+          method: "POST",
+          body: { name: name.trim(), sportCode, kind: "activity" },
+          schema: SectionResponseSchema,
+        });
+        toast("success", t("created", { name: name.trim() }));
+      } else {
+        await apiFetch(`/api/org/sections/${discipline.id}`, {
+          method: "PATCH",
+          body: { name: name.trim() },
+          schema: SectionResponseSchema,
+        });
+        toast("success", t("renamed", { name: name.trim() }));
+      }
+      void invalidate();
+      onClose();
+    } catch (err) {
+      toast("error", errors(errorKey(err)));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Sheet
+      open
+      onClose={onClose}
+      closeLabel={c("close")}
+      title={isNew ? t("sheetNew") : t("sheetRename")}
+      description={isNew ? t("sheetNewHint") : undefined}
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose}>
+            {c("cancel")}
+          </Button>
+          <Button action="save" type="submit" form="discipline-form" loading={busy}>
+            {c("save")}
+          </Button>
+        </>
+      }
+    >
+      <form id="discipline-form" className="flex flex-col gap-4" onSubmit={(e) => void submit(e)}>
+        <Field label={t("name")} hint={t("nameHint")}>
+          {(id) => (
+            <Input
+              id={id}
+              required
+              maxLength={80}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          )}
+        </Field>
+        {isNew ? (
+          <Field label={t("sport")} hint={t("sportHint")}>
+            {(id) => (
+              <Select id={id} value={sportCode} onChange={(e) => setSportCode(e.target.value)}>
+                {options.map((sport) => (
+                  <option key={sport.code} value={sport.code}>
+                    {sport.name[locale]}
+                  </option>
+                ))}
+              </Select>
+            )}
+          </Field>
+        ) : null}
+      </form>
+    </Sheet>
   );
 }

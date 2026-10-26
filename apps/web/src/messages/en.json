@@ -3570,7 +3570,13 @@
       "counterSale": "Counter sale",
       "developers": "Public catalog for the website",
       "roadmap": "Platform roadmap",
-      "suggest": "Suggest an improvement"
+      "suggest": "Suggest an improvement",
+      "newAthlete": "New athlete",
+      "newClassType": "New class type",
+      "newWorkout": "Program a WOD",
+      "exercises": "Exercises",
+      "newPlan": "New plan or pack",
+      "newLead": "New lead"
     },
     "keys": {
       "move": "move",

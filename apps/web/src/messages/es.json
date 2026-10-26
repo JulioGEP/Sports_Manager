@@ -3570,7 +3570,13 @@
       "counterSale": "Venta en el mostrador",
       "developers": "Catálogo público para la web",
       "roadmap": "Hoja de ruta de la plataforma",
-      "suggest": "Sugerir una mejora"
+      "suggest": "Sugerir una mejora",
+      "newAthlete": "Nuevo atleta",
+      "newClassType": "Nuevo tipo de clase",
+      "newWorkout": "Programar un WOD",
+      "exercises": "Ejercicios",
+      "newPlan": "Nueva tarifa o bono",
+      "newLead": "Nuevo lead"
     },
     "keys": {
       "move": "moverse",

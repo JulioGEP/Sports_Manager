@@ -73,8 +73,6 @@
     "archived": "{name} arxivat.",
     "loadError": "No s'ha pogut carregar l'horari. Torna-ho a provar.",
     "noSections": "Encara no hi ha disciplines",
-    "noSectionsHint": "Crea primer les disciplines del box (CrossFit, HYROX, halterofília…); després, els seus tipus de classe.",
-    "openSections": "Anar a disciplines",
     "new": "Nou tipus de classe",
     "empty": "Sense tipus de classe",
     "emptyHint": "Un tipus de classe és el que es reserva: WOD, Open Box, Halterofília… amb el seu aforament i el seu horari.",
@@ -124,7 +122,23 @@
     "archivedGroup": "Arxivats",
     "archivedHint": "No surten per reservar ni generen classes. Recupera'n un per tornar-lo a fer servir.",
     "restore": "Recuperar",
-    "restored": "{name} torna a l'horari."
+    "restored": "{name} torna a l'horari.",
+    "disciplines": {
+      "title": "Disciplines",
+      "hint": "El que s'entrena al box. Cada tipus de classe va en una disciplina i cada WOD es programa per disciplina.",
+      "new": "Nova disciplina",
+      "emptyHint": "Comença per la disciplina (CrossFit, HYROX, halterofília…) i després crea'n els tipus de classe.",
+      "renameLabel": "Canviar el nom de {name}",
+      "sheetNew": "Nova disciplina",
+      "sheetNewHint": "Per exemple, CrossFit, HYROX, Halterofília o Ioga.",
+      "sheetRename": "Canviar el nom de la disciplina",
+      "name": "Nom",
+      "nameHint": "Així surt a l'horari, a la programació i al WOD.",
+      "sport": "Què s'entrena",
+      "sportHint": "Ajuda la proposta de WOD amb IA a entendre la disciplina.",
+      "created": "{name} creada. Ara crea'n els tipus de classe.",
+      "renamed": "Ara es diu {name}."
+    }
   },
   "policy": {
     "loadError": "No s'ha pogut carregar la política de reserves.",
@@ -461,5 +475,29 @@
     "leaderboard": "Classificació · {block}",
     "noResults": "Encara no hi ha resultats.",
     "hidden": "{count, plural, one {# atleta prefereix no sortir-hi.} other {# atletes prefereixen no sortir-hi.}}"
+  },
+  "newAthlete": {
+    "action": "Nou atleta",
+    "title": "Nou atleta",
+    "description": "Les seves dades, la tarifa amb què comença i l'accés a l'app per reservar.",
+    "firstName": "Nom",
+    "lastName": "Cognoms",
+    "email": "Email",
+    "emailHint": "Amb email li arriba la invitació a l'app.",
+    "phone": "Telèfon",
+    "birthDate": "Data de naixement",
+    "birthDateHint": "Opcional. Amb un menor, el box parla amb la seva família.",
+    "startsOn": "Comença el",
+    "plan": "Tarifa",
+    "planHint": "Li pots donar ara o més tard des de Tarifes.",
+    "noPlan": "Sense tarifa de moment",
+    "chargeNow": "Crear ja el primer càrrec",
+    "invite": "Enviar-li l'accés a l'app",
+    "submit": "Donar d'alta",
+    "invalid": "Revisa el nom, els cognoms i l'email.",
+    "created": "{name} ja és atleta del box.",
+    "createdWithPending": "{name} ja és atleta del box, però falta alguna cosa: {pending}",
+    "pendingPlan": "La tarifa no s'ha pogut donar: dona-la des de Tarifes.",
+    "pendingInvite": "La invitació no ha sortit: envia-la des de la seva fitxa."
   }
 }

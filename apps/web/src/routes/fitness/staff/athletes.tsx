@@ -1,5 +1,7 @@
 import { addDays, type FitnessAthleteRow } from "@sportsmanager/shared";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router";
+import { NewAthleteSheet } from "@/components/fitness/new-athlete-sheet";
 import { Figure, RestrictionChip, searchable } from "@/components/fitness/staff-ui";
 import { clubPaths, useReadyClub } from "@/lib/club";
 import { useAthletes, useClassTime } from "@/lib/fitness";
@@ -8,6 +10,7 @@ import { useDates } from "@/lib/dates";
 import {
   Alert,
   Avatar,
+  Button,
   DataList,
   EmptyState,
   Icon,
@@ -28,6 +31,7 @@ const INACTIVE_DAYS = 14;
  */
 export function AthletesPage() {
   const t = useT("fitness.staff.athletes");
+  const n = useT("fitness.owner.newAthlete");
   const sub = useT("fitness.common.subscriptionStatus");
   const { slug } = useReadyClub();
   const paths = clubPaths(slug);
@@ -36,6 +40,16 @@ export function AthletesPage() {
   const athletes = useAthletes();
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
+  const { org } = useReadyClub();
+  const canCreate = org.actor.permissions.includes("org.players.write");
+  const [creating, setCreating] = useState(false);
+  const [params, setParams] = useSearchParams();
+  // `?new=1` (desde la paleta de mandos) abre el alta.
+  useEffect(() => {
+    if (params.get("new") !== "1") return;
+    if (canCreate) setCreating(true);
+    setParams({}, { replace: true });
+  }, [params, setParams, canCreate]);
   const limit = addDays(time.today, -INACTIVE_DAYS);
   const inactive = (a: FitnessAthleteRow) => !a.lastVisit || a.lastVisit < limit;
   const noPlan = (a: FitnessAthleteRow) =>
@@ -68,7 +82,18 @@ export function AthletesPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader title={t("title")} description={t("description")} />
+      <PageHeader
+        title={t("title")}
+        description={t("description")}
+        actions={
+          canCreate ? (
+            <Button action="add" onClick={() => setCreating(true)}>
+              {n("action")}
+            </Button>
+          ) : undefined
+        }
+      />
+      {creating ? <NewAthleteSheet onClose={() => setCreating(false)} /> : null}
 
       {athletes.data ? (
         <div className="grid grid-cols-3 gap-3">

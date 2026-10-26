@@ -3570,7 +3570,13 @@
       "counterSale": "Venda al taulell",
       "developers": "Catàleg públic per al web",
       "roadmap": "Full de ruta de la plataforma",
-      "suggest": "Suggerir una millora"
+      "suggest": "Suggerir una millora",
+      "newAthlete": "Nou atleta",
+      "newClassType": "Nou tipus de classe",
+      "newWorkout": "Programar un WOD",
+      "exercises": "Exercicis",
+      "newPlan": "Nova tarifa o bo",
+      "newLead": "Nou lead"
     },
     "keys": {
       "move": "moure's",

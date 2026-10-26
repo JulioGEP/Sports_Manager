@@ -73,8 +73,6 @@
     "archived": "{name} archived.",
     "loadError": "Couldn't load the schedule. Try again.",
     "noSections": "No disciplines yet",
-    "noSectionsHint": "First create the box's disciplines (CrossFit, HYROX, weightlifting…), then their class types.",
-    "openSections": "Go to disciplines",
     "new": "New class type",
     "empty": "No class types",
     "emptyHint": "A class type is what athletes book: WOD, Open Box, Weightlifting… with its cap and schedule.",
@@ -124,7 +122,23 @@
     "archivedGroup": "Archived",
     "archivedHint": "They can't be booked and don't generate classes. Restore one to use it again.",
     "restore": "Restore",
-    "restored": "{name} is back on the schedule."
+    "restored": "{name} is back on the schedule.",
+    "disciplines": {
+      "title": "Disciplines",
+      "hint": "What's trained at the box. Each class type belongs to a discipline and each WOD is programmed per discipline.",
+      "new": "New discipline",
+      "emptyHint": "Start with the discipline (CrossFit, HYROX, weightlifting…) and then create its class types.",
+      "renameLabel": "Rename {name}",
+      "sheetNew": "New discipline",
+      "sheetNewHint": "For example, CrossFit, HYROX, Weightlifting or Yoga.",
+      "sheetRename": "Rename the discipline",
+      "name": "Name",
+      "nameHint": "This is how it shows in the schedule, programming and the WOD.",
+      "sport": "What's trained",
+      "sportHint": "Helps the AI WOD proposal understand the discipline.",
+      "created": "{name} created. Now create its class types.",
+      "renamed": "It's now called {name}."
+    }
   },
   "policy": {
     "loadError": "Couldn't load the booking policy.",
@@ -461,5 +475,29 @@
     "leaderboard": "Leaderboard · {block}",
     "noResults": "No results yet.",
     "hidden": "{count, plural, one {# athlete prefers not to appear.} other {# athletes prefer not to appear.}}"
+  },
+  "newAthlete": {
+    "action": "New athlete",
+    "title": "New athlete",
+    "description": "Their details, the plan they start with and app access to book.",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "email": "Email",
+    "emailHint": "With an email they get the app invitation.",
+    "phone": "Phone",
+    "birthDate": "Date of birth",
+    "birthDateHint": "Optional. For a minor, the box talks to their family.",
+    "startsOn": "Starts on",
+    "plan": "Plan",
+    "planHint": "You can give it now or later from Plans.",
+    "noPlan": "No plan for now",
+    "chargeNow": "Create the first charge now",
+    "invite": "Send them app access",
+    "submit": "Add athlete",
+    "invalid": "Check the first name, last name and email.",
+    "created": "{name} is now an athlete at the box.",
+    "createdWithPending": "{name} is now an athlete at the box, but something's missing: {pending}",
+    "pendingPlan": "The plan couldn't be assigned: assign it from Plans.",
+    "pendingInvite": "The invitation wasn't sent: send it from their profile."
   }
 }
