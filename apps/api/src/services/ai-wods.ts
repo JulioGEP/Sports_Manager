@@ -49,7 +49,7 @@ export interface WodContextInput {
 export async function buildWodContext(input: WodContextInput): Promise<AiWodContext> {
   const { data, scope, request } = input;
   const date = request.onDate;
-  const [workouts, equipment, athletes] = await Promise.all([
+  const [workouts, equipment, athletes, exercises] = await Promise.all([
     data.workouts.list(
       scope,
       addDays(date, -AI_WOD_DAYS_BEFORE),
@@ -62,6 +62,7 @@ export async function buildWodContext(input: WodContextInput): Promise<AiWodCont
     request.focus?.trim()
       ? data.fitness.athletes(scope, input.timezone, new Date())
       : Promise.resolve([]),
+    data.exercises.names(scope, [input.section.id]),
   ]);
   const people = athletes.map((a) => ({
     ref: "[atleta]",
@@ -97,6 +98,7 @@ export async function buildWodContext(input: WodContextInput): Promise<AiWodCont
     upcoming: published.filter((w) => w.onDate > date).map(toContext),
     equipment: equipment.map((e) => ({ name: e.name, quantity: e.quantity })),
     ...aiWodCatalogs(input.locale),
+    exercises,
   };
 }
 

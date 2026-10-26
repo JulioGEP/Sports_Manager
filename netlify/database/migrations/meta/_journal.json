@@ -162,6 +162,13 @@
       "when": 1793033662844,
       "tag": "20261026165422_clubs_de_fitness",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1793038373628,
+      "tag": "20261026181253_exercises",
+      "breakpoints": true
     }
   ]
 }

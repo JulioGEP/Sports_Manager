@@ -64,12 +64,11 @@ import {
 } from "@/routes/fitness";
 import { AnnouncementsPage } from "@/routes/fitness/athlete/announcements";
 import { LeaderboardPage } from "@/routes/fitness/athlete/leaderboard";
-import { LibraryPage } from "@/routes/fitness/athlete/library";
 import { MyPlanPage } from "@/routes/fitness/athlete/plan";
 import { ProgressPage } from "@/routes/fitness/athlete/progress";
 import { TimerPage } from "@/routes/fitness/athlete/timer";
 import { WodPage } from "@/routes/fitness/athlete/wod";
-import { ExercisesPage } from "@/routes/fitness/exercises";
+import { ExercisesPage, LibraryRedirect } from "@/routes/fitness/exercises";
 import { ClassTypesPage } from "@/routes/fitness/owner/class-types";
 import { LeadsPage } from "@/routes/fitness/owner/leads";
 import { MetricsPage } from "@/routes/fitness/owner/metrics";
@@ -426,7 +425,7 @@ export const router = createBrowserRouter([
       { path: "messages/:id", element: <MessageThreadPage /> },
       { path: "announcements", element: <AnnouncementsPage /> },
       { path: "timer", element: <TimerPage /> },
-      { path: "library", element: <LibraryPage /> },
+      { path: "library", element: <LibraryRedirect /> },
       { path: "exercises", element: <ExercisesPage /> },
       { path: "programming", element: <ProgrammingPage /> },
       { path: "programming/new", element: <WorkoutEditorPage /> },

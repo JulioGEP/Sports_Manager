@@ -18,6 +18,7 @@ import { attendanceRepo, eventsRepo, facilitiesRepo, schedulesRepo } from "./eve
 import { feesRepo } from "./fees.ts";
 import { bookingsRepo } from "./bookings.ts";
 import { communityRepo } from "./community.ts";
+import { exercisesRepo } from "./exercises.ts";
 import { fitnessInsightsRepo } from "./fitness-insights.ts";
 import { workoutsRepo } from "./workouts.ts";
 import { createNetlifyStoreImageStore, storeRepo } from "./store.ts";
@@ -122,6 +123,7 @@ export type {
 export { workoutVisible } from "./workouts.ts";
 export type { AnnouncementRecord, LeadRecord, MessageRecord } from "./community.ts";
 export type { AthleteRowRecord } from "./fitness-insights.ts";
+export type { ExerciseRecord } from "./exercises.ts";
 export type {
   AccountingConnectionPatch,
   AccountingConnectionRow,
@@ -307,6 +309,8 @@ export function createDataLayer(options: DataLayerOptions) {
     workouts: workoutsRepo(db),
     community: communityRepo(db),
     fitness: fitnessInsightsRepo(db),
+    /** Biblioteca de ejercicios del box (ADR 0050). */
+    exercises: exercisesRepo(db),
     logos: logosRepo(
       db,
       options.logoStore ??

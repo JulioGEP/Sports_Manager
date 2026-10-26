@@ -168,5 +168,9 @@ export const AUDIT_ACTIONS = [
   "lead.created",
   "lead.updated",
   "lead.converted",
+  "exercise.created",
+  "exercise.updated",
+  "exercise.archived",
+  "exercise.restored",
 ] as const;
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];

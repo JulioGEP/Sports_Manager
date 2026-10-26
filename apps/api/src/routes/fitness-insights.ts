@@ -485,12 +485,27 @@ export function createFitnessInsightRoutes(config: ApiConfig, data: DataLayer) {
       path: "/api/org/fitness/library",
       tags: ["Fitness"],
       summary:
-        "Librería de movimientos del club: las tareas de la biblioteca del club y de sus disciplinas, con su vídeo",
+        "Librería del box en su forma de antes: los ejercicios activos de la biblioteca (ADR 0050). La web usa ya `/api/org/exercises`",
       security: [{ sessionCookie: [] }],
       middleware: [requirePermission("org.settings.read")],
       responses: { 200: json("Librería", LibraryResponseSchema), ...errors },
     }),
-    async (c) => c.json({ items: await data.fitness.library(orgOf(c).scope) }, 200),
+    async (c) => {
+      const exercises = await data.exercises.list(orgOf(c).scope);
+      return c.json(
+        {
+          items: exercises.map((e) => ({
+            id: e.id,
+            name: e.name,
+            description: e.description,
+            coachingPoints: e.coachingPoints,
+            videoUrl: e.videoUrl,
+            section: e.section?.name ?? null,
+          })),
+        },
+        200,
+      );
+    },
   );
 
   return app;

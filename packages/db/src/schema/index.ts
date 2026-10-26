@@ -24,3 +24,4 @@ export * from "./training.ts";
 export * from "./training-ai.ts";
 export * from "./suggestions.ts";
 export * from "./fitness.ts";
+export * from "./exercises.ts";

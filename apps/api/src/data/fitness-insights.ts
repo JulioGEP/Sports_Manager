@@ -376,28 +376,5 @@ export function fitnessInsightsRepo(db: () => Database) {
         )
         .orderBy(asc(schema.sections.name));
     },
-
-    /** Movimientos de la biblioteca del club con explicación o vídeo, para el atleta. */
-    async library(scope: OrgScope) {
-      return db()
-        .select({
-          id: schema.drills.id,
-          name: schema.drills.name,
-          description: schema.drills.description,
-          coachingPoints: schema.drills.coachingPoints,
-          videoUrl: schema.drills.videoUrl,
-          section: schema.sections.name,
-        })
-        .from(schema.drills)
-        .leftJoin(schema.sections, eq(schema.sections.id, schema.drills.sectionId))
-        .where(
-          and(
-            eq(schema.drills.organizationId, scope.organizationId),
-            eq(schema.drills.status, "active"),
-            inArray(schema.drills.scope, ["club", "section"]),
-          ),
-        )
-        .orderBy(asc(schema.drills.name));
-    },
   };
 }

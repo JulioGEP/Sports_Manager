@@ -27,6 +27,7 @@ import { createPublicStoreRoutes } from "./routes/public-store.ts";
 import { createStoreRoutes } from "./routes/store.ts";
 import { createSuggestionRoutes } from "./routes/suggestions.ts";
 import { createFitnessAiRoutes } from "./routes/fitness-ai.ts";
+import { createFitnessExerciseRoutes } from "./routes/fitness-exercises.ts";
 import { createFitnessClassRoutes } from "./routes/fitness-classes.ts";
 import { createFitnessCommunityRoutes } from "./routes/fitness-community.ts";
 import { createFitnessInsightRoutes } from "./routes/fitness-insights.ts";
@@ -108,6 +109,7 @@ export function createApp(options: AppOptions = {}) {
   app.route("/", createFitnessCommunityRoutes(config, data));
   app.route("/", createFitnessInsightRoutes(config, data));
   app.route("/", createFitnessAiRoutes(config, data));
+  app.route("/", createFitnessExerciseRoutes(config, data));
   // La web del box: su horario y la clase de prueba, con la clave publicable del club.
   app.route("/", createPublicClassRoutes(config, data));
   // Mejoras de la plataforma (ADR 0047): lo que la administración del club sugiere y vota.

@@ -2,6 +2,7 @@ import { NetlifyDB } from "@netlify/database-dev";
 import {
   type ClassDetailResponse,
   type ClassesResponse,
+  type ExercisesResponse,
   type FitnessHomeResponse,
   type FitnessMetricsResponse,
   type LeaderboardResponse,
@@ -160,6 +161,22 @@ describe("box de demostración", () => {
       ),
     );
     expect(board.entries.length).toBeGreaterThan(0);
+  });
+
+  it("la biblioteca de ejercicios del box está llena y enlazada al catálogo", async () => {
+    const library = await json<ExercisesResponse>(
+      await request("GET", "/api/org/exercises", cookies.get("atleta@demo.test")),
+    );
+    expect(library.canWrite).toBe(false);
+    expect(library.exercises.length).toBeGreaterThanOrEqual(30);
+    const squat = library.exercises.find((e) => e.name === "Back squat");
+    expect(squat).toMatchObject({ category: "strength", movementCode: "back_squat" });
+    expect(squat?.coachingPoints).toBeTruthy();
+    expect(library.exercises.find((e) => e.name === "Sled push")?.section?.name).toBe("HYROX");
+    const coach = await json<ExercisesResponse>(
+      await request("GET", "/api/org/exercises", cookies.get("coach@demo.test")),
+    );
+    expect(coach.canWrite).toBe(true);
   });
 
   it("la dueña ve sus cifras y sus avisos", async () => {
