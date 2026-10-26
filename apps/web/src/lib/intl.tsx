@@ -10,6 +10,9 @@ import esFitnessAthlete from "@/messages/fitness/athlete/es.json";
 import caFitnessCommon from "@/messages/fitness/common/ca.json";
 import enFitnessCommon from "@/messages/fitness/common/en.json";
 import esFitnessCommon from "@/messages/fitness/common/es.json";
+import caFitnessExercises from "@/messages/fitness/exercises/ca.json";
+import enFitnessExercises from "@/messages/fitness/exercises/en.json";
+import esFitnessExercises from "@/messages/fitness/exercises/es.json";
 import caLexicon from "@/messages/fitness/lexicon/ca.json";
 import enLexicon from "@/messages/fitness/lexicon/en.json";
 import esLexicon from "@/messages/fitness/lexicon/es.json";
@@ -47,18 +50,21 @@ const fitness = {
     athlete: esFitnessAthlete,
     staff: esFitnessStaff,
     owner: esFitnessOwner,
+    exercises: esFitnessExercises,
   },
   ca: {
     common: caFitnessCommon,
     athlete: caFitnessAthlete,
     staff: caFitnessStaff,
     owner: caFitnessOwner,
+    exercises: caFitnessExercises,
   },
   en: {
     common: enFitnessCommon,
     athlete: enFitnessAthlete,
     staff: enFitnessStaff,
     owner: enFitnessOwner,
+    exercises: enFitnessExercises,
   },
 };
 

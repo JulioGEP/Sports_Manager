@@ -10,7 +10,7 @@
     "announcements": "Announcements",
     "ranking": "Leaderboard",
     "timer": "Timer",
-    "library": "Movements",
+    "library": "Exercises",
     "programming": "Programming",
     "athletes": "Athletes",
     "plans": "Plans",
@@ -28,7 +28,8 @@
     "groupBox": "The box",
     "groupCommunity": "Community",
     "groupBusiness": "Business",
-    "groupManagement": "Management"
+    "groupManagement": "Management",
+    "groupAccount": "My account"
   },
   "roles": {
     "athlete": "Athlete",

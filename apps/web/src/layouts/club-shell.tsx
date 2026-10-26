@@ -252,39 +252,46 @@ function ClubFrame({ children }: { children: ReactNode }) {
               : []),
           ],
         },
-        {
-          key: "community",
-          label: fx("groupCommunity"),
-          links: [
-            ...(athleteView ? [link(paths.myPlan, fx("myPlan"), Icon.Ticket)] : []),
-            ...(athleteView || has("org.community.write")
-              ? [link(paths.messages, fx("messages"), Icon.Envelope)]
-              : []),
-            link(paths.announcements, fx("announcements"), Icon.Info),
-            link(paths.ranking, fx("ranking"), Icon.Trophy),
-            link(paths.timer, fx("timer"), Icon.Timer),
-            athleteView || !has("org.training.read")
-              ? link(paths.library, fx("library"), Icon.Target)
-              : link(paths.drills, fx("library"), Icon.Target),
-            ...(staffView ? [link(paths.tv, fx("tv"), Icon.CornersOut)] : []),
-          ],
-        },
+        // El negocio, solo para quien lo lleva: tarifas y cobros primero, captación y cifras.
         {
           key: "business",
           label: fx("groupBusiness"),
           links: [
             ...(has("org.fees.read") ? [link(paths.plans, fx("plans"), Icon.Ticket)] : []),
+            ...(has("org.fees.read") ? [link(paths.fees, fx("payments"), Icon.Coins)] : []),
             ...(has("org.club_members.read")
               ? [link(paths.leads, fx("leads"), Icon.UserPlus)]
               : []),
             ...(has("org.fees.read") ? [link(paths.metrics, fx("metrics"), Icon.Pulse)] : []),
-            has("org.fees.read")
-              ? link(paths.fees, fx("payments"), Icon.Coins)
-              : link(paths.fees, fx("myPayments"), Icon.Coins),
-            ...(has("org.store.read") || actor?.canShop
-              ? [link(paths.store, fx("store"), Icon.Storefront)]
-              : []),
+            ...(has("org.store.read") ? [link(paths.store, fx("store"), Icon.Storefront)] : []),
           ],
+        },
+        // El día a día del box: comunidad y herramientas de clase.
+        {
+          key: "box",
+          label: fx("groupBox"),
+          links: [
+            ...(athleteView || has("org.community.write")
+              ? [link(paths.messages, fx("messages"), Icon.Envelope)]
+              : []),
+            link(paths.announcements, fx("announcements"), Icon.Info),
+            link(paths.ranking, fx("ranking"), Icon.Trophy),
+            link(paths.exercises, fx("library"), Icon.Target),
+            link(paths.timer, fx("timer"), Icon.Timer),
+            ...(staffView ? [link(paths.tv, fx("tv"), Icon.CornersOut)] : []),
+          ],
+        },
+        // Lo del atleta: su tarifa, lo que paga y la tienda.
+        {
+          key: "account",
+          label: fx("groupAccount"),
+          links: athleteView
+            ? [
+                link(paths.myPlan, fx("myPlan"), Icon.Ticket),
+                link(paths.fees, fx("myPayments"), Icon.Coins),
+                ...(actor?.canShop ? [link(paths.store, fx("store"), Icon.Storefront)] : []),
+              ]
+            : [],
         },
         {
           key: "management",

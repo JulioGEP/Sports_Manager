@@ -10,7 +10,7 @@
     "announcements": "Anuncios",
     "ranking": "Ranking",
     "timer": "Timer",
-    "library": "Movimientos",
+    "library": "Ejercicios",
     "programming": "Programación",
     "athletes": "Atletas",
     "plans": "Tarifas",
@@ -28,7 +28,8 @@
     "groupBox": "El box",
     "groupCommunity": "Comunidad",
     "groupBusiness": "Negocio",
-    "groupManagement": "Gestión"
+    "groupManagement": "Gestión",
+    "groupAccount": "Mi cuenta"
   },
   "roles": {
     "athlete": "Atleta",
