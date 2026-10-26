@@ -46,7 +46,9 @@
     "viewAs": "View the club as…",
     "training": "Training",
     "athlete": "My wellbeing",
-    "store": "Shop"
+    "store": "Shop",
+    "myProfile": "My profile",
+    "athleteTraining": "My plan"
   },
   "auth": {
     "login": {
@@ -97,7 +99,8 @@
       "confirm": "Repeat the password",
       "mismatch": "The passwords do not match.",
       "tooShort": "The password must have at least {min} characters.",
-      "familyOf": "As family of {player}."
+      "familyOf": "As family of {player}.",
+      "athleteOf": "To sign in to your athlete profile: {player}."
     },
     "product": {
       "tagline": "Sports club management"
@@ -119,7 +122,8 @@
       "next": "Next: {title}, {when}",
       "newPlayer": "New athlete",
       "family": "My family",
-      "agenda": "See agenda"
+      "agenda": "See agenda",
+      "profile": "My profile"
     },
     "onboarding": {
       "title": "Give the club its look",
@@ -279,6 +283,42 @@
       "restricted": "You see your part of the club: {sections, plural, =0 {no sections} one {# section} other {# sections}}, {teams, plural, =0 {no teams} one {# team} other {# teams}} and {players, plural, =0 {no individual athletes} one {# individual athlete} other {# individual athletes}}.",
       "emptyTitle": "Nothing assigned to you yet",
       "emptyBody": "Ask a club admin to assign you a section, a team or athletes. Until then the club looks empty."
+    },
+    "profile": {
+      "title": "Your profile",
+      "description": "Your team or group, your goal, your challenges and your tests.",
+      "open": "See my profile"
+    },
+    "athlete": {
+      "availability": {
+        "available": "Available",
+        "limited": "You train with restrictions today",
+        "rehab": "You are in rehab",
+        "out": "You are currently out",
+        "hint": "Your coaching staff set this. Your plan shows which tasks clash with it.",
+        "open": "See my plan"
+      },
+      "today": {
+        "eyebrow": "Today",
+        "title": "Your day",
+        "wellnessDone": "Today's wellbeing answered",
+        "wellnessPending": "How are you feeling today?",
+        "wellnessScore": "Your score: {score} out of 25.",
+        "wellnessHint": "Five questions, two minutes. It helps adjust your load.",
+        "review": "Review",
+        "answer": "Answer",
+        "rpeDone": "No effort ratings pending",
+        "rpePending": "{count, plural, one {# session waiting for your effort rating} other {# sessions waiting for your effort rating}}",
+        "rpeHint": "From 0 to 10, about 30 minutes after finishing."
+      },
+      "next": {
+        "eyebrow": "Your next session",
+        "title": "No sessions coming up",
+        "open": "See my plan",
+        "unplanned": "The coaching staff has not published the plan yet.",
+        "summary": "{tasks, plural, one {# task} other {# tasks}} · {minutes}",
+        "empty": "You have no sessions in the next few days."
+      }
     }
   },
   "members": {
@@ -310,7 +350,8 @@
         "org_admin": "Manages members, invitations and settings.",
         "coach": "Sees only their teams: roster, athletes, agenda and the facilities they use.",
         "guardian": "Family: in Phase 1 they will see their children's information.",
-        "staff": "Club staff with a position: director, coordinator, delegate, physio, fitness, psychologist or scout."
+        "staff": "Club staff with a position: director, coordinator, delegate, physio, fitness, psychologist or scout.",
+        "athlete": "Athlete with their own account: sees their profile and plan. Access is given from their profile."
       },
       "position": "Position",
       "positionSaved": "Position saved: {position}.",
@@ -329,7 +370,8 @@
         "org_admin": "Manages members, invitations and settings.",
         "coach": "A coach of the club.",
         "guardian": "A player's parent or guardian.",
-        "staff": "Club staff who do not coach: they join with a position."
+        "staff": "Club staff who do not coach: they join with a position.",
+        "athlete": "Athletes are invited from their profile."
       },
       "language": "Email language",
       "submit": "Send invitation",
@@ -1107,7 +1149,8 @@
     "org_admin": "Club admin",
     "coach": "Coach",
     "guardian": "Guardian",
-    "staff": "Club staff"
+    "staff": "Club staff",
+    "athlete": "Athlete"
   },
   "locales": {
     "label": "Language",
@@ -1193,6 +1236,8 @@
       "updated": "Player edited",
       "guardian_linked": "Family linked",
       "guardian_unlinked": "Family unlinked",
+      "athlete_linked": "Athlete given access to their profile",
+      "athlete_unlinked": "Athlete access removed",
       "photo_updated": "Player photo changed",
       "photo_removed": "Player photo removed",
       "objective_updated": "Individual objective saved",
@@ -1798,7 +1843,40 @@
         "empty": "No other staff available."
       }
     },
-    "performance": "Performance"
+    "performance": "Performance",
+    "athleteAccess": {
+      "title": "Athlete access",
+      "description": "With their own account they see their profile, their calendar and their training plan, and answer their wellbeing.",
+      "give": "Give access",
+      "active": "Signs in with their account",
+      "remove": "Remove access",
+      "invited": "Invitation sent · expires on {date}",
+      "empty": "Does not sign in with their own account yet",
+      "emptyHint": "For adult athletes, as in athletics, CrossFit or the senior team. Minors are better reached through their family.",
+      "confirmRemoveTitle": "Remove access for {name}?",
+      "confirmRemoveBody": "They will no longer sign in to their profile and will lose the athlete role. Their profile and history stay at the club."
+    },
+    "athleteSheet": {
+      "title": "Give access to {name}",
+      "description": "The athlete signs in with their own account to what is theirs.",
+      "how": "How",
+      "modes": {
+        "invite": "Invite by email",
+        "link": "Use a club member's account"
+      },
+      "email": "Athlete's email",
+      "language": "Email language",
+      "member": "Member",
+      "empty": "There are no members to link.",
+      "what": "They will see their profile, their team or group, their calendar, their matches, their challenges, their training plan, their wellbeing, their fees and the shop. Nothing about other athletes.",
+      "submitInvite": "Send invitation",
+      "submitLink": "Give access",
+      "sent": "Invitation sent to {email}.",
+      "failed": "Invitation created for {email}, but the email was not sent. Copy the link.",
+      "linked": "{member} now signs in to {name}'s profile.",
+      "alreadyMember": "That person is already a club member: choose \"Use a club member's account\".",
+      "taken": "This profile already has an account, or that account belongs to someone else at the club."
+    }
   },
   "family": {
     "title": "My family",
@@ -1812,14 +1890,16 @@
     "noCoaches": "No staff assigned",
     "number": "Number {number}",
     "inactive": "Inactive record",
-    "openProfile": "View record"
+    "openProfile": "View record",
+    "self": "Your own profile"
   },
   "relationships": {
     "mother": "Mother",
     "father": "Father",
     "guardian": "Guardian",
     "grandparent": "Grandparent",
-    "other": "Other"
+    "other": "Other",
+    "self": "The athlete themselves"
   },
   "voices": {
     "cercana": "Warm",
@@ -1872,6 +1952,13 @@
       "description": "Six areas of work. You see it when the club shares it with you.",
       "notShared": "The club has not shared the development plan yet.",
       "notSharedHint": "When it does, you will see it here with its six areas."
+    },
+    "self": {
+      "back": "Home",
+      "subtitle": "Your profile at the club: what the club shares with you.",
+      "training": "My plan",
+      "wellness": "My wellbeing",
+      "team": "Your team or group this season and who coaches you."
     }
   },
   "challenges": {
@@ -5180,5 +5267,46 @@
     "saveNewDrills": "Save the new tasks in the team's library",
     "apply": "Apply to the sessions",
     "applied": "{count, plural, one {Proposal applied to # session. It stays as a draft for you to review.} other {Proposal applied to # sessions. They stay as drafts for you to review.}}"
+  },
+  "athleteTraining": {
+    "title": "My plan",
+    "description": "Your sessions and classes for these days, with the plan your coaching staff has published. Only what is for you.",
+    "wellness": "My wellbeing",
+    "noPlayer": {
+      "title": "Your account has no athlete profile",
+      "description": "Ask the club to give you access from your profile."
+    },
+    "empty": {
+      "title": "No sessions these days",
+      "description": "When your team or group has sessions in the calendar, you will see them here with their plan."
+    },
+    "groups": {
+      "today": "Today",
+      "upcoming": "Next few days",
+      "past": "Last few days"
+    },
+    "availability": {
+      "available": "Available",
+      "limited": "You train with restrictions today",
+      "rehab": "You are in rehab",
+      "out": "You are currently out",
+      "hint": "The marked tasks clash with it: talk to your coach before doing them.",
+      "expectedReturn": "Expected return: {date}."
+    },
+    "status": {
+      "unplanned": "No plan published",
+      "planned": "Plan published",
+      "done": "Done",
+      "cancelled": "Cancelled",
+      "class": "Class"
+    },
+    "targetRpe": "Planned effort {rpe}/10",
+    "rpeGiven": "Your effort: {rpe}/10.",
+    "giveRpe": "Rate my effort",
+    "objective": "Goal",
+    "unplanned": "The coaching staff has not published the plan for this session yet.",
+    "noItems": "This session has no tasks for you.",
+    "conflict": "Check first",
+    "keys": "Key points"
   }
 }

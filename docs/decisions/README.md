@@ -58,3 +58,4 @@ Las decisiones no se editan una vez aceptadas. Si cambian, se escribe una nueva 
 | 0042 | Pasarela de pago con Stripe Connect y contabilidad conectada con Holded | Aceptada |
 | 0043 | Identidad del club: escudo, colores, estilo y voz en una pestaña, y la voz en toda la app | Aceptada |
 | 0044 | Propuesta de sesión con IA: un perfil de coach por tipo de sección, encima de las reglas | Aceptada |
+| 0045 | Rol de deportista: el adulto con cuenta entra a su propia ficha | Aceptada |

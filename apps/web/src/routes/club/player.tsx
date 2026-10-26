@@ -4,7 +4,7 @@ import {
   DEVELOPMENT_PLAN_STATUSES,
   DOMINANT_FEET,
   EligibleMembersResponseSchema,
-  GUARDIAN_RELATIONSHIPS,
+  FAMILY_RELATIONSHIPS,
   InvitationSentResponseSchema,
   LOCALES,
   PLAYER_HEIGHT_MAX_CM,
@@ -24,8 +24,8 @@ import {
   type DominantFoot,
   type PersonGender,
   PERSON_GENDERS,
+  type FamilyRelationship,
   type Guardian,
-  type GuardianRelationship,
   type Locale,
   type PlayerDetailResponse,
   type PlayerEvent,
@@ -68,7 +68,7 @@ type Objective = NonNullable<PlayerDetailResponse["objective"]>;
 type Plan = NonNullable<PlayerDetailResponse["developmentPlan"]>;
 type Indicator = PlayerDetailResponse["indicators"][number];
 type SheetName =
-  "edit" | "invite" | "link" | "objective" | "indicators" | "plan" | "note" | "staff";
+  "edit" | "invite" | "link" | "objective" | "indicators" | "plan" | "note" | "staff" | "athlete";
 
 const inviteKind: Record<Pending["state"], StatusKind> = {
   pending: "info",
@@ -192,8 +192,15 @@ export function PlayerPage() {
       </div>
     );
   }
-  const { player, teams, guardians, pendingInvitations, objective, indicators, developmentPlan } =
-    detail.data;
+  const { player, teams, objective, indicators, developmentPlan } = detail.data;
+  // La cuenta del propio deportista (ADR 0045) va aparte de la familia.
+  const athleteAccount = detail.data.guardians.find((g) => g.relationship === "self") ?? null;
+  const athleteInvite =
+    detail.data.pendingInvitations.find((i) => i.relationship === "self") ?? null;
+  const guardians = detail.data.guardians.filter((g) => g.relationship !== "self");
+  const pendingInvitations = detail.data.pendingInvitations.filter(
+    (i) => i.relationship !== "self",
+  );
   const timeline = detail.data.timeline;
   /** Personal asignado (Bloque 19): quien atiende al deportista sin llevar su equipo. */
   const assignedStaff = detail.data.staff;
@@ -311,7 +318,12 @@ export function PlayerPage() {
   if (!player.birthDate) pending.push({ key: "birthDate", ...editAction });
   if (player.heightCm === null || player.dominantFoot === null)
     pending.push({ key: "sportsData", ...editAction });
-  if (guardians.length === 0 && !pendingInvitations.some((i) => i.state === "pending"))
+  // El adulto que entra con su cuenta (ADR 0045) no necesita a su familia para tener acceso.
+  if (
+    guardians.length === 0 &&
+    !athleteAccount &&
+    !detail.data.pendingInvitations.some((i) => i.state === "pending")
+  )
     pending.push({ key: "family", to: `#${FAMILY_ANCHOR}`, external: true });
   if (!current) pending.push({ key: "team", to: paths.teams });
   if (!objective) pending.push({ key: "objective", ...assessAction("objective") });
@@ -898,7 +910,7 @@ export function PlayerPage() {
               ) : null
             }
           >
-            {lastLink ? (
+            {lastLink && lastLink.email !== athleteInvite?.email ? (
               <div className="px-5 pb-4">
                 <CopyLink
                   url={lastLink.url}
@@ -955,6 +967,82 @@ export function PlayerPage() {
             )}
           </Card>
         </div>
+
+        {/* El propio deportista con su cuenta (ADR 0045): su ficha, su plan y su bienestar. */}
+        <Card
+          title={t("athleteAccess.title")}
+          description={t("athleteAccess.description")}
+          padded={false}
+          actions={
+            canWrite && !athleteAccount && athleteInvite?.state !== "pending" ? (
+              <Button
+                action="add"
+                variant="secondary"
+                size="sm"
+                onClick={() => setSheet("athlete")}
+              >
+                {t("athleteAccess.give")}
+              </Button>
+            ) : null
+          }
+        >
+          {athleteAccount ? (
+            <div className="flex min-h-16 flex-wrap items-center gap-3 px-5 pb-4">
+              <Avatar name={athleteAccount.name} />
+              <span className="flex min-w-0 flex-1 flex-col">
+                <span className="truncate font-medium text-ink">{athleteAccount.name}</span>
+                <span className="truncate text-secondary text-muted">{athleteAccount.email}</span>
+              </span>
+              <StatusChip kind="success">{t("athleteAccess.active")}</StatusChip>
+              {canWrite ? (
+                <Button
+                  iconOnly
+                  action="unlink"
+                  variant="tertiary"
+                  size="sm"
+                  onClick={() => setUnlinking(athleteAccount)}
+                >
+                  {t("athleteAccess.remove")}
+                </Button>
+              ) : null}
+            </div>
+          ) : athleteInvite ? (
+            <div className="flex flex-col">
+              {lastLink && lastLink.email === athleteInvite.email ? (
+                <div className="px-5 pb-4">
+                  <CopyLink
+                    url={lastLink.url}
+                    hint={t("inviteSheet.linkHint", { email: lastLink.email })}
+                    copyLabel={c("copy")}
+                    copiedLabel={c("copied")}
+                  />
+                </div>
+              ) : null}
+              <div className="flex min-h-16 flex-wrap items-center gap-3 px-5 pb-4">
+                <span className="grid size-10 shrink-0 place-items-center rounded-full bg-raised text-muted">
+                  <Icon.Envelope size={20} aria-hidden="true" />
+                </span>
+                <span className="flex min-w-0 flex-1 flex-col">
+                  <span className="truncate font-medium text-ink">{athleteInvite.email}</span>
+                  <span className="truncate text-secondary text-muted">
+                    {t("athleteAccess.invited", {
+                      date: dates.day(athleteInvite.expiresAt.slice(0, 10)),
+                    })}
+                  </span>
+                </span>
+                <StatusChip kind={inviteKind[athleteInvite.state]}>
+                  {states(athleteInvite.state)}
+                </StatusChip>
+              </div>
+            </div>
+          ) : (
+            <EmptyState
+              icon={<Icon.UserCircle weight="duotone" />}
+              title={t("athleteAccess.empty")}
+              description={t("athleteAccess.emptyHint")}
+            />
+          )}
+        </Card>
 
         <Card
           title={t("staff.title")}
@@ -1088,6 +1176,20 @@ export function PlayerPage() {
           onLinked={() => void reload()}
         />
       ) : null}
+      {sheet === "athlete" ? (
+        <AthleteAccessSheet
+          playerId={id}
+          playerName={name}
+          playerEmail={player.email}
+          canInvite={canInvite}
+          defaultLocale={org.organization.view === "full" ? org.organization.defaultLocale : "es"}
+          onClose={() => setSheet(null)}
+          onDone={(email, url) => {
+            if (email && url) setLastLink({ email, url });
+            void reload();
+          }}
+        />
+      ) : null}
       {sheet === "staff" ? (
         <AssignStaffSheet
           playerId={id}
@@ -1099,9 +1201,17 @@ export function PlayerPage() {
       ) : null}
       <ConfirmDialog
         open={unlinking !== null}
-        title={t("confirmUnlinkTitle", { name: unlinking?.name ?? "" })}
-        body={t("confirmUnlinkBody")}
-        confirmLabel={t("unlink")}
+        title={
+          unlinking?.relationship === "self"
+            ? t("athleteAccess.confirmRemoveTitle", { name: unlinking.name })
+            : t("confirmUnlinkTitle", { name: unlinking?.name ?? "" })
+        }
+        body={
+          unlinking?.relationship === "self"
+            ? t("athleteAccess.confirmRemoveBody")
+            : t("confirmUnlinkBody")
+        }
+        confirmLabel={unlinking?.relationship === "self" ? t("athleteAccess.remove") : t("unlink")}
         confirmAction="unlink"
         cancelLabel={c("cancel")}
         onConfirm={() => unlinking && void unlink(unlinking)}
@@ -1845,7 +1955,7 @@ function InviteFamilySheet({
   const errors = useT("errors");
   const toast = useToast();
   const [email, setEmail] = useState("");
-  const [relationship, setRelationship] = useState<GuardianRelationship>("mother");
+  const [relationship, setRelationship] = useState<FamilyRelationship>("mother");
   const [locale, setLocale] = useState<Locale>(defaultLocale);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -1918,9 +2028,9 @@ function InviteFamilySheet({
               <Select
                 id={id}
                 value={relationship}
-                onChange={(e) => setRelationship(e.target.value as GuardianRelationship)}
+                onChange={(e) => setRelationship(e.target.value as FamilyRelationship)}
               >
-                {GUARDIAN_RELATIONSHIPS.map((r) => (
+                {FAMILY_RELATIONSHIPS.map((r) => (
                   <option key={r} value={r}>
                     {rel(r)}
                   </option>
@@ -1966,7 +2076,7 @@ function LinkMemberSheet({
   const toast = useToast();
   const { slug } = useReadyClub();
   const [userId, setUserId] = useState("");
-  const [relationship, setRelationship] = useState<GuardianRelationship>("mother");
+  const [relationship, setRelationship] = useState<FamilyRelationship>("mother");
   const [busy, setBusy] = useState(false);
   const members = useQuery({
     queryKey: ["org", slug, "player", playerId, "eligible-guardians"],
@@ -2047,9 +2157,9 @@ function LinkMemberSheet({
             <Select
               id={id}
               value={relationship}
-              onChange={(e) => setRelationship(e.target.value as GuardianRelationship)}
+              onChange={(e) => setRelationship(e.target.value as FamilyRelationship)}
             >
-              {GUARDIAN_RELATIONSHIPS.map((r) => (
+              {FAMILY_RELATIONSHIPS.map((r) => (
                 <option key={r} value={r}>
                   {rel(r)}
                 </option>
@@ -2057,6 +2167,190 @@ function LinkMemberSheet({
             </Select>
           )}
         </Field>
+      </form>
+    </Sheet>
+  );
+}
+
+/**
+ * Dar acceso al propio deportista (ADR 0045): por email, con una invitación con el rol de
+ * deportista, o con la cuenta de alguien que ya es miembro del club (una madre que también entrena).
+ */
+function AthleteAccessSheet({
+  playerId,
+  playerName,
+  playerEmail,
+  canInvite,
+  defaultLocale,
+  onClose,
+  onDone,
+}: {
+  playerId: string;
+  playerName: string;
+  playerEmail: string | null;
+  canInvite: boolean;
+  defaultLocale: Locale;
+  onClose: () => void;
+  onDone: (email: string | null, url: string | null) => void;
+}) {
+  const t = useT("player.athleteSheet");
+  const locales = useT("locales");
+  const c = useT("common");
+  const errors = useT("errors");
+  const toast = useToast();
+  const { slug } = useReadyClub();
+  const [mode, setMode] = useState<"invite" | "link">(canInvite ? "invite" : "link");
+  const [email, setEmail] = useState(playerEmail ?? "");
+  const [locale, setLocale] = useState<Locale>(defaultLocale);
+  const [userId, setUserId] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const members = useQuery({
+    queryKey: ["org", slug, "player", playerId, "eligible-guardians"],
+    queryFn: () =>
+      apiFetch(`/api/org/players/${playerId}/eligible-guardians`, {
+        schema: EligibleMembersResponseSchema,
+      }),
+    enabled: mode === "link",
+  });
+  const candidates = members.data?.members ?? [];
+  const selected = candidates.find((m) => m.userId === userId) ?? candidates[0] ?? null;
+
+  async function submit(e: FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setBusy(true);
+    try {
+      if (mode === "invite") {
+        const sent = await apiFetch(`/api/org/players/${playerId}/athlete/invite`, {
+          method: "POST",
+          body: { email, locale },
+          schema: InvitationSentResponseSchema,
+        });
+        toast(
+          "success",
+          t(sent.emailStatus === "failed" ? "failed" : "sent", { email: sent.invitation.email }),
+        );
+        onClose();
+        onDone(sent.invitation.email, sent.acceptUrl);
+      } else {
+        if (!selected) return;
+        await apiFetch(`/api/org/players/${playerId}/athlete`, {
+          method: "POST",
+          body: { userId: selected.userId },
+          schema: PlayerDetailResponseSchema,
+        });
+        toast("success", t("linked", { member: selected.name, name: playerName }));
+        onClose();
+        onDone(null, null);
+      }
+    } catch (err) {
+      setError(
+        err instanceof ApiClientError && err.status === 409
+          ? /miembro/.test(err.message)
+            ? t("alreadyMember")
+            : t("taken")
+          : errors(errorKey(err)),
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Sheet
+      open
+      onClose={onClose}
+      closeLabel={c("close")}
+      title={t("title", { name: playerName })}
+      description={t("description")}
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose}>
+            {c("cancel")}
+          </Button>
+          <Button
+            action={mode === "invite" ? "send" : "link"}
+            type="submit"
+            form="athlete-access-form"
+            loading={busy}
+            disabled={mode === "link" && !selected}
+          >
+            {mode === "invite" ? t("submitInvite") : t("submitLink")}
+          </Button>
+        </>
+      }
+    >
+      <form
+        id="athlete-access-form"
+        className="flex flex-col gap-4"
+        onSubmit={(e) => void submit(e)}
+      >
+        {canInvite ? (
+          <Field label={t("how")}>
+            {(id) => (
+              <Select
+                id={id}
+                value={mode}
+                onChange={(e) => setMode(e.target.value as "invite" | "link")}
+              >
+                <option value="invite">{t("modes.invite")}</option>
+                <option value="link">{t("modes.link")}</option>
+              </Select>
+            )}
+          </Field>
+        ) : null}
+        {mode === "invite" ? (
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label={t("email")}>
+              {(id) => (
+                <Input
+                  id={id}
+                  type="email"
+                  required
+                  autoComplete="off"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              )}
+            </Field>
+            <Field label={t("language")}>
+              {(id) => (
+                <Select
+                  id={id}
+                  value={locale}
+                  onChange={(e) => setLocale(e.target.value as Locale)}
+                >
+                  {LOCALES.map((code) => (
+                    <option key={code} value={code}>
+                      {locales(code)}
+                    </option>
+                  ))}
+                </Select>
+              )}
+            </Field>
+          </div>
+        ) : members.data && candidates.length === 0 ? (
+          <Alert kind="info">{t("empty")}</Alert>
+        ) : (
+          <Field label={t("member")}>
+            {(id) => (
+              <Select
+                id={id}
+                value={selected?.userId ?? ""}
+                onChange={(e) => setUserId(e.target.value)}
+              >
+                {candidates.map((m) => (
+                  <option key={m.userId} value={m.userId}>
+                    {m.name} · {m.email}
+                  </option>
+                ))}
+              </Select>
+            )}
+          </Field>
+        )}
+        <p className="text-secondary text-muted">{t("what")}</p>
+        {error ? <Alert kind="error">{error}</Alert> : null}
       </form>
     </Sheet>
   );

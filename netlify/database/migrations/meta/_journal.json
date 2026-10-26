@@ -141,6 +141,13 @@
       "when": 1792797323883,
       "tag": "20261023231523_ai_training_drafts",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1793011987400,
+      "tag": "20261026105307_athlete_role",
+      "breakpoints": true
     }
   ]
 }

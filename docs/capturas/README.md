@@ -2,7 +2,7 @@
 
 Capturas que generan las pruebas de interfaz (`pnpm test:ui`) contra la API real con base embebida, con el front de Vite + React + Tailwind sobre el design system del producto (`packages/design`, ADR 0027). Escritorio a 1280x800; móvil, Pixel 7. La fuente viva es el artefacto `capturas-interfaz` de CI; esta carpeta es la foto de la revisión del club completo (ADR 0031), con el design system 1.3: todo botón lleva el icono de su acción (rueda dentada para editar, cubo de basura rojo para eliminar, más para añadir); la fila es el objeto (se abre tocándola, con acciones como iconos silenciosos sin borde); la paleta de mandos ⌘K encuentra personas, equipos, pantallas y acciones; y la plantilla de un equipo se ve como un tablero por posición: secciones por deporte, socios, agenda e instalaciones, cuotas y "ver como", sobre lo que ya había de los bloques 11 a 13 (ADR 0028, 0029 y 0030), más el alcance por cargo y la gestión de acceso por rol del Bloque 19 (ADR 0033): el cuerpo técnico, la dirección y la fisio ven solo su parte del club, y "Personal" gana la pestaña "Acceso", y el partido en directo del Bloque 20 (ADR 0034): configuración del motor por sección, consola en la banda a pantalla completa y en tres zonas con el banquillo arrastrable (ADR 0037), estadísticas e histórico, y el entrenamiento de los bloques 21 a 26 (ADR 0039): semana del equipo con "A tener en cuenta", sesión por bloques con su cierre y modo pista, biblioteca con pizarra, carga, enfermería, salud y "Mi bienestar".
 
-Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negocio en `/admin`. Cuentas de demostración, todas con contraseña `123456`: `admin@demo.test` (administra el club demo; en este entorno también la plataforma), `entrenador@demo.test` (entrenadora del Alevín A), `familia@demo.test` (madre de dos jugadores y socia), `director@demo.test` (dirección deportiva), `fisio@demo.test` (fisioterapia), `senior@demo.test` (entrenador del Sénior A), `preparador@demo.test` (preparación física), `jugador@demo.test` (deportista adulto del Sénior A con cuenta propia), `natacion@demo.test` (coordinación de natación) y `basquet@demo.test`, `basquetfem@demo.test` y `yoga@demo.test` (cuerpo técnico). El club demo llega con la temporada 2026-27, cuatro secciones (fútbol sala, baloncesto, natación y yoga) con categorías, doce equipos y grupos, 95 deportistas, socios con tres tipos, cuatro instalaciones con horario, la agenda generada desde los horarios, partidos, planes de cuota con cargos y pagos, un reto activo, dos partidos jugados del Alevín A con su registro completo y el Sénior A con cuatro partidos, sesiones planificadas, cuatro semanas de carga y bienestar, biblioteca de tareas, un jugador limitado y otro en readaptación.
+Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negocio en `/admin`. Cuentas de demostración, todas con contraseña `123456`: `admin@demo.test` (administra el club demo; en este entorno también la plataforma), `entrenador@demo.test` (entrenadora del Alevín A), `familia@demo.test` (madre de dos jugadores y socia), `director@demo.test` (dirección deportiva), `fisio@demo.test` (fisioterapia), `senior@demo.test` (entrenador del Sénior A), `preparador@demo.test` (preparación física), `jugador@demo.test` (deportista del Sénior A con cuenta propia, rol de deportista), `deportista@demo.test` (deportista de yoga con cuenta propia), `natacion@demo.test` (coordinación de natación) y `basquet@demo.test`, `basquetfem@demo.test` y `yoga@demo.test` (cuerpo técnico). El club demo llega con la temporada 2026-27, cuatro secciones (fútbol sala, baloncesto, natación y yoga) con categorías, doce equipos y grupos, 95 deportistas, socios con tres tipos, cuatro instalaciones con horario, la agenda generada desde los horarios, partidos, planes de cuota con cargos y pagos, un reto activo, dos partidos jugados del Alevín A con su registro completo y el Sénior A con cuatro partidos, sesiones planificadas, cuatro semanas de carga y bienestar, biblioteca de tareas, un jugador limitado y otro en readaptación.
 
 ## Acceso
 
@@ -556,6 +556,32 @@ Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negoci
 
 ![Tienda del deportista adulto](escritorio-121-tienda-deportista.png)
 
+## Deportista con cuenta propia (ADR 0045)
+
+### Inicio del deportista: lo suyo de hoy y su próxima sesión
+
+![Inicio del deportista](escritorio-130-deportista-inicio.png)
+
+### Mi ficha, en primera persona
+
+![Mi ficha](escritorio-131-deportista-ficha.png)
+
+### Mi plan: sus entrenamientos con el plan publicado, solo lo que le toca
+
+![Mi plan](escritorio-132-deportista-entrenamientos.png)
+
+### Una deportista de yoga: sus clases, sin anunciar un plan que no se hace
+
+![Mi plan de una actividad](escritorio-133-deportista-actividad.png)
+
+### La administración le da acceso desde su ficha
+
+![Acceso del deportista](escritorio-134-ficha-acceso-deportista.png)
+
+### Ver el club como un deportista
+
+![Ver como deportista](escritorio-135-ver-como-deportista.png)
+
 ## Móvil
 
 Las mismas pantallas en un móvil, con la forma envolvente del design system: cabecera con el escudo, barra de pestañas flotante abajo con cuatro destinos y "Más", listas en filas cápsula y hojas que ocupan todo el ancho.
@@ -739,6 +765,12 @@ Las mismas pantallas en un móvil, con la forma envolvente del design system: ca
 ![Sesión (móvil)](movil-202-entrenamiento-sesion.png)
 
 ![Mi bienestar (móvil)](movil-213-entrenamiento-mi-bienestar.png)
+
+### Deportista (móvil): inicio y su plan
+
+![Inicio del deportista (móvil)](movil-130-deportista-inicio.png)
+
+![Mi plan (móvil)](movil-132-deportista-entrenamientos.png)
 
 ### Pizarra animada (móvil): grabar con el dedo
 

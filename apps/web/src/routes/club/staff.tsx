@@ -110,11 +110,14 @@ export function StaffPage() {
   const roleLabel = (m: Member, r: RoleCode) =>
     r === "staff" && m.position ? positions(m.position) : roles(r);
 
-  /** Solo el personal: quien tiene únicamente el rol de familia no trabaja en el club. */
+  /**
+   * Solo el personal: quien solo es familia o deportista (ADR 0045) no trabaja en el club; está
+   * en la ficha de su deportista.
+   */
   const staffOnly = useMemo(
     () =>
-      (members.data?.members ?? []).filter(
-        (m) => !(m.roles.length === 1 && m.roles[0] === "guardian"),
+      (members.data?.members ?? []).filter((m) =>
+        m.roles.some((r) => r !== "guardian" && r !== "athlete"),
       ),
     [members.data],
   );
@@ -550,7 +553,8 @@ function InviteSheet({
                 value={roleCode}
                 onChange={(e) => setRoleCode(e.target.value as RoleCode)}
               >
-                {ROLE_CODES.map((code) => (
+                {/* El deportista entra desde su ficha, no desde aquí (ADR 0045). */}
+                {ROLE_CODES.filter((code) => code !== "athlete").map((code) => (
                   <option key={code} value={code}>
                     {roles(code)}
                   </option>
@@ -718,7 +722,8 @@ function RolesSheet({
       }
     >
       <ul className="flex flex-col gap-2">
-        {ROLE_CODES.map((role) => {
+        {/* El rol de deportista llega con su ficha: aquí solo se puede quitar. */}
+        {ROLE_CODES.filter((role) => role !== "athlete" || current.includes(role)).map((role) => {
           const has = current.includes(role);
           return (
             <li

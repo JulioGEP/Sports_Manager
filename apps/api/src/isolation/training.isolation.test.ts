@@ -2,6 +2,7 @@ import { NetlifyDB } from "@netlify/database-dev";
 import {
   ACCESS_AREAS,
   addDays,
+  type AthletePlanResponse,
   type AthleteResponse,
   type DrillResponse,
   type DrillsResponse,
@@ -140,7 +141,7 @@ describe("entrenamiento, carga y salud", () => {
     await seeder.membership(clubA.id, fitnessA.id, "staff", "fitness");
     await seeder.membership(clubA.id, physioA.id, "staff", "physio");
     await seeder.membership(clubA.id, guardianA.id, "guardian");
-    await seeder.membership(clubA.id, athleteA.id, "guardian");
+    await seeder.membership(clubA.id, athleteA.id, "athlete");
     await seeder.membership(clubB.id, adminB.id, "org_admin");
     for (const u of [adminA, coachA, coachOtherA, fitnessA, physioA, guardianA, athleteA])
       cookies.set(u.email, await signIn(u.email, A));
@@ -192,7 +193,7 @@ describe("entrenamiento, carga y salud", () => {
     await seeder.teamStaff(clubA.id, team1, physioA.id, "physio");
     await seeder.teamStaff(clubA.id, team2, coachOtherA.id, "head_coach");
     await seeder.guardian(clubA.id, players[0]!, guardianA.id);
-    await seeder.guardian(clubA.id, players[5]!, athleteA.id, "other");
+    await seeder.guardian(clubA.id, players[5]!, athleteA.id, "self");
   });
 
   afterAll(async () => {
@@ -943,6 +944,86 @@ describe("entrenamiento, carga y salud", () => {
     expect(
       infirmary.soreness.some((s) => s.playerId === players[5] && s.sorenessArea === "Gemelo"),
     ).toBe(true);
+  });
+
+  it("el deportista ve su plan publicado: lo suyo, sin borradores, notas ni readaptación ajena", async () => {
+    const draft = await json<SessionDetailResponse>(
+      await request("POST", `/api/org/teams/${team1}/sessions`, A, {
+        cookie: as(coachA),
+        body: { date: addDays(today, 4), startsAt: "20:00", minutes: 75, objective: "Secreto" },
+      }),
+      201,
+    );
+    expect(draft.session.status).toBe("draft");
+
+    const plan = await json<AthletePlanResponse>(
+      await request("GET", "/api/org/me/athlete/plan", A, { cookie: as(athleteA) }),
+      200,
+    );
+    expect(plan.player?.id).toBe(players[5]);
+    expect(plan.availability).toBeNull();
+    const planned = await json<SessionDetailResponse>(
+      await request("GET", `/api/org/sessions/${sessionId}`, A, { cookie: as(coachA) }),
+      200,
+    );
+    const tomorrow = plan.sessions.find((x) => x.eventId === planned.session.eventId)!;
+    expect(tomorrow.status).toBe("planned");
+    expect(tomorrow.objective).toBe("Salida de presión");
+    // La readaptación es de otro jugador: no le toca.
+    expect(tomorrow.blocks.map((b) => b.block)).toEqual(["warmup", "main"]);
+    expect(tomorrow.blocks.flatMap((b) => b.items.map((i) => i.title))).toEqual([
+      "Preventivo de aductores e isquios",
+      "Rondo 4x4+2 comodines",
+      "Finalización del Sénior A",
+    ]);
+    expect(tomorrow.minutes).toBe(12 + 15 + 15);
+    expect(JSON.stringify(tomorrow)).not.toContain('"notes"');
+    expect(JSON.stringify(tomorrow)).not.toContain('"rating"');
+    // El borrador sale como entrenamiento sin plan publicado.
+    const pending = plan.sessions.find((x) => x.eventId === draft.session.eventId)!;
+    expect(pending).toMatchObject({ status: "unplanned", objective: null, blocks: [] });
+
+    // Con una restricción, ve qué tareas chocan con ella; la nota del fisio no le llega.
+    await json(
+      await request("PUT", `/api/org/players/${players[5]}/availability`, A, {
+        cookie: as(physioA),
+        body: { status: "limited", restrictions: ["contact"], note: "Solo para el cuerpo técnico" },
+      }),
+      200,
+    );
+    const limited = await json<AthletePlanResponse>(
+      await request("GET", "/api/org/me/athlete/plan", A, { cookie: as(athleteA) }),
+      200,
+    );
+    expect(limited.availability).toMatchObject({ status: "limited", restrictions: ["contact"] });
+    expect(JSON.stringify(limited)).not.toContain("Solo para el cuerpo técnico");
+    const rondo = limited.sessions
+      .find((x) => x.eventId === planned.session.eventId)!
+      .blocks.flatMap((b) => b.items)
+      .find((i) => i.title.startsWith("Rondo"))!;
+    expect(rondo.conflicts).toEqual(["contact"]);
+    await json(
+      await request("PUT", `/api/org/players/${players[5]}/availability`, A, {
+        cookie: as(physioA),
+        body: { status: "available" },
+      }),
+      200,
+    );
+
+    // Quien no tiene ficha propia no tiene plan; el del club B no llega al del A.
+    const family = await json<AthletePlanResponse>(
+      await request("GET", "/api/org/me/athlete/plan", A, { cookie: as(guardianA) }),
+      200,
+    );
+    expect(family).toMatchObject({ player: null, sessions: [] });
+    expect(
+      status(await request("GET", "/api/org/me/athlete/plan", A, { cookie: as(adminB) })),
+    ).not.toBe(200);
+    expect(
+      status(
+        await request("DELETE", `/api/org/sessions/${draft.session.id}`, A, { cookie: as(coachA) }),
+      ),
+    ).toBe(204);
   });
 
   it("tests físicos: los registra el cuerpo técnico; la familia ve solo la evolución de los suyos", async () => {

@@ -33,6 +33,7 @@ describe("ámbito y áreas de acceso (Bloque 19)", () => {
     for (const profile of ACCESS_PROFILES) expect(PROFILE_SCOPE[profile]).toBeDefined();
     expect(CONFIGURABLE_PROFILES).not.toContain("org_admin");
     expect(CONFIGURABLE_PROFILES).not.toContain("guardian");
+    expect(CONFIGURABLE_PROFILES).not.toContain("athlete");
   });
 
   it("el perfil es el cargo cuando hay cargo, y el rol si no", () => {
@@ -160,6 +161,8 @@ describe("ámbito y áreas de acceso (Bloque 19)", () => {
     expect(overridableAreas(["coach"])).toEqual(ACCESS_AREAS);
     expect(overridableAreas(["org_admin", "coach"])).toEqual(ADMIN_EXCEPTION_AREAS);
     expect(overridableAreas(["guardian"])).toEqual([]);
+    expect(canHaveOverrides(["athlete"])).toBe(false);
+    expect(overridableAreas(["athlete"])).toEqual([]);
   });
 
   it("a la administración solo se le abre Salud por excepción, y nada más le cambia", () => {
