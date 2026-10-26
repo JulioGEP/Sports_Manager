@@ -713,6 +713,22 @@
         "discard": "Descartar",
         "saved": "Identitat desada. Ja la veu tot el club.",
         "discarded": "Canvis descartats."
+      },
+      "boxLooks": {
+        "title": "Looks de box",
+        "description": "Un punt de partida complet per a un club de fitness: colors, lletra, botons, icones, fons, navegació i veu. Després ajusta el que vulguis.",
+        "names": {
+          "industrial": "Industrial",
+          "hybrid": "Híbrid",
+          "night": "Nocturn",
+          "studio": "Estudi"
+        },
+        "hints": {
+          "industrial": "Negre i groc, rectes, veu de vestidor.",
+          "hybrid": "Taronja i negre, trama i ratlles.",
+          "night": "Fosc amb verd llima, degradat.",
+          "studio": "Clar i serè, veu professional."
+        }
       }
     },
     "logo": {
@@ -1022,7 +1038,8 @@
         "status": "Estat",
         "members": "Membres",
         "pending": "Pendents",
-        "created": "Alta"
+        "created": "Alta",
+        "model": "Tipus"
       }
     },
     "createDrawer": {
@@ -1036,7 +1053,8 @@
       "sport": "Esport",
       "submit": "Crear club",
       "created": "{name} creat.",
-      "brandNote": "La marca i el logo els configura el club des de la seva configuració."
+      "brandNote": "La marca i el logo els configura el club des de la seva configuració.",
+      "model": "Tipus de club"
     },
     "club": {
       "eyebrow": "Clubs",
@@ -1073,7 +1091,10 @@
         "sent": "Invitació enviada a {email}."
       },
       "confirmSuspendTitle": "Suspendre {name}?",
-      "confirmArchiveTitle": "Arxivar {name}?"
+      "confirmArchiveTitle": "Arxivar {name}?",
+      "model": "Tipus de club",
+      "modelHint": "Canvia la manera de veure el club: navegació, inici i vocabulari. Les dades no canvien.",
+      "modelSaved": "{name} es veu ara com a {model}."
     },
     "audit": {
       "title": "Activitat",
@@ -1210,6 +1231,12 @@
         "responseHint": "Només la veu {club}.",
         "invalid": "Escriu un títol d'almenys 3 lletres i tria la part de l'aplicació."
       }
+    },
+    "clubModels": {
+      "sports": "Club esportiu",
+      "fitness": "Club de fitness",
+      "sportsHint": "Seccions, equips, partits i famílies. Per a clubs de futbol, bàsquet, natació…",
+      "fitnessHint": "Classes amb reserva, WOD, marques i tarifes. Per a boxes de CrossFit, HYROX i gimnasos."
     }
   },
   "apiStatus": {
@@ -5124,7 +5151,10 @@
       },
       "invalid": "Revisa les dades: nom, preu i opcions (sense noms repetits).",
       "invalidStock": "L'estoc és un nombre enter, o buit si no hi ha límit.",
-      "noOptions": "Afegeix almenys una opció."
+      "noOptions": "Afegeix almenys una opció.",
+      "memberPrice": "Preu per a socis (opcional)",
+      "memberPriceHint": "El paguen els socis i els atletes amb tarifa activa. Buit: el mateix preu per a tothom.",
+      "memberPriceTooHigh": "El preu per a socis no pot ser més alt que el preu normal."
     }
   },
   "shop": {
@@ -5201,7 +5231,8 @@
     "empty": "Ara mateix no hi ha res a la venda.",
     "emptyHint": "Quan el club posi alguna cosa a la venda, la veuràs aquí.",
     "soldOut": "Esgotat",
-    "until": "Fins al {date}"
+    "until": "Fins al {date}",
+    "memberPrice": "Socis: {price}"
   },
   "storeOrder": {
     "back": "Botiga",

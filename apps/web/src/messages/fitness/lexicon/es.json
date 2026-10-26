@@ -1,0 +1,17 @@
+{
+  "players.title": "Atletas",
+  "players.description": "Quien entrena en el box: ficha, tarifa, contacto y estado.",
+  "sections.title": "Disciplinas",
+  "sections.description": "Las disciplinas del box (CrossFit, HYROX, halterofilia…) con sus tipos de clase.",
+  "agenda.title": "Calendario",
+  "agenda.description": "Clases, eventos y competiciones del box.",
+  "facilities.title": "Salas",
+  "facilities.description": "Las salas y zonas del box, con sus horas y lo que las ocupa.",
+  "fees.title": "Cobros",
+  "fees.description": "Tarifas, cargos y cobros del box.",
+  "drills.title": "Movimientos",
+  "drills.description": "Los movimientos y ejercicios del box, con su explicación y su vídeo.",
+  "store.description": "Lo que el box vende a sus atletas: ropa, material, suplementos y extras. Se cobra como un cargo más.",
+  "shop.title": "Tienda del box",
+  "shop.description": "Ropa, material y extras del box. Se paga como un cargo más."
+}

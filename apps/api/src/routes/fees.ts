@@ -22,6 +22,7 @@ import {
   StripeOnboardingResponseSchema,
   stripeAccountCanCharge,
   type FeeCharge,
+  type Locale,
   type PaymentProvider,
   type StripeAccountStatus,
 } from "@sportsmanager/shared";
@@ -31,6 +32,7 @@ import type { FeeChargeRecord } from "../data/fees.ts";
 import { localDate, type DataLayer, type OrganizationRow, type OrgScope } from "../data/index.ts";
 import { requireActor, requirePermission } from "../http/actor.ts";
 import { afterResponse } from "../http/background.ts";
+import { monthLabel } from "./fitness-plans.ts";
 import type { AppEnv } from "../http/context.ts";
 import { badRequest, conflict, forbidden, notFound } from "../http/errors.ts";
 import { requireSession } from "../http/session.ts";
@@ -265,6 +267,10 @@ export function createFeeRoutes(
       if (result.outcome === "unknown_member_type")
         throw badRequest("Ese tipo de socio no es de este club.");
       if (result.outcome === "unknown_section") throw badRequest("Esa sección no es de este club.");
+      if (result.outcome === "invalid_entitlement")
+        throw badRequest(
+          "La tarifa necesita sus sesiones, y los tipos de clase tienen que ser del club.",
+        );
       await audit(c, tenant, "fee_plan.created", result.plan.name, {
         amountCents: body.amountCents,
       });
@@ -299,6 +305,10 @@ export function createFeeRoutes(
       if (result.outcome === "unknown_member_type")
         throw badRequest("Ese tipo de socio no es de este club.");
       if (result.outcome === "unknown_section") throw badRequest("Esa sección no es de este club.");
+      if (result.outcome === "invalid_entitlement")
+        throw badRequest(
+          "La tarifa necesita sus sesiones, y los tipos de clase tienen que ser del club.",
+        );
       await audit(c, tenant, "fee_plan.updated", result.plan.name, body);
       return c.json({ plan: result.plan }, 200);
     },
@@ -774,6 +784,210 @@ export function createFeeRoutes(
     },
   );
 
+  // --- Domiciliar una tarifa (ADR 0049): el atleta la pasa a Stripe con tarjeta o SEPA ---
+  app.openapi(
+    createRoute({
+      method: "post",
+      path: "/api/org/fees/subscriptions/{id}/checkout",
+      tags: ["Cuotas"],
+      summary:
+        "Crea la sesión de Stripe Checkout en modo suscripción para domiciliar una tarifa recurrente propia. Solo si el club cobra por Stripe",
+      security: [{ sessionCookie: [] }],
+      request: {
+        params: idParam,
+        body: {
+          content: { "application/json": { schema: CheckoutSessionRequestSchema } },
+          required: false,
+        },
+      },
+      responses: {
+        200: json("Sesión de domiciliación", CheckoutSessionResponseSchema),
+        409: error(
+          "El club no cobra por Stripe, o la tarifa no es recurrente o ya está domiciliada",
+        ),
+        ...errors,
+      },
+    }),
+    async (c) => {
+      const tenant = scopeOf(c);
+      const { id } = c.req.valid("param");
+      const body = c.req.valid("json") ?? {};
+      const user = c.get("sessionUser");
+      const actor = c.get("actor");
+      if (actor.kind !== "member") throw forbidden();
+      const subscription = await data.bookings.subscriptions.byId(tenant.scope, id);
+      if (!subscription) throw notFound("Esa tarifa no existe.");
+      const self = await data.load.athleteOf(tenant.scope, actor.userId);
+      if (self?.id !== subscription.playerId) throw forbidden("Esa tarifa no es tuya.");
+      if (subscription.status !== "active") throw conflict("Solo se domicilia una tarifa activa.");
+      if (subscription.billing === "stripe" && subscription.stripeStatus === "active")
+        throw conflict("Esa tarifa ya está domiciliada.");
+      const interval =
+        subscription.plan.period === "monthly"
+          ? { interval: "month" as const, intervalCount: 1 }
+          : subscription.plan.period === "quarterly"
+            ? { interval: "month" as const, intervalCount: 3 }
+            : subscription.plan.period === "yearly"
+              ? { interval: "year" as const, intervalCount: 1 }
+              : null;
+      if (!interval) throw conflict("Esa tarifa no es recurrente: se paga una vez.");
+      if (!stripe || tenant.organization.paymentsProvider !== "stripe")
+        throw conflict("El club no cobra por Stripe.");
+      const base = organizationUrl(
+        tenant.organization.slug,
+        config,
+        c.req.header("host"),
+        c.env?.context?.deploy?.context,
+      );
+      const returnPath = body.returnPath ?? "/fees";
+      const joiner = returnPath.includes("?") ? "&" : "?";
+      try {
+        const session = await stripe.createSubscriptionCheckout({
+          subscriptionId: subscription.id,
+          organizationId: tenant.organization.id,
+          organization: { stripeAccountId: tenant.organization.stripeAccountId },
+          plan: {
+            name: subscription.plan.name,
+            amountCents: subscription.plan.amountCents,
+            ...interval,
+          },
+          successUrl: `${base}${returnPath}${joiner}subscription=success`,
+          cancelUrl: `${base}${returnPath}${joiner}subscription=cancel`,
+          customerEmail: user.email,
+        });
+        return c.json({ url: session.url }, 200);
+      } catch (err) {
+        if (err instanceof PaymentsProviderError) throw conflict(err.message);
+        throw err;
+      }
+    },
+  );
+
+  /**
+   * Eventos de una tarifa domiciliada (ADR 0049): el alta (Checkout en modo suscripción), cada
+   * factura cobrada (un cargo del periodo con su pago), las fallidas y la baja. Siempre desde la
+   * cuenta del club de la tarifa. Devuelve si ha registrado un pago, o nulo si el evento no es suyo.
+   */
+  async function subscriptionEvent(
+    c: Context<AppEnv>,
+    event: { type: string; account: string | null; data: { object: Record<string, unknown> } },
+  ): Promise<boolean | null> {
+    const object = event.data.object;
+    const str = (v: unknown) => (typeof v === "string" ? v : null);
+    const fromClub = async (scope: OrgScope) => {
+      if (!event.account) return true;
+      const club = await data.organizations.byScope(scope);
+      return Boolean(club && club.stripeAccountId === event.account);
+    };
+    if (event.type === "checkout.session.completed" && object["mode"] === "subscription") {
+      const metadata = (object["metadata"] ?? {}) as Record<string, unknown>;
+      const subscriptionId = str(metadata["subscription_id"]) ?? str(object["client_reference_id"]);
+      const organizationId = str(metadata["organization_id"]);
+      const stripeSubscription = str(object["subscription"]);
+      if (!subscriptionId || !organizationId || !stripeSubscription) return false;
+      const found = await data.bookings.subscriptions.byIdInOrganization(
+        organizationId,
+        subscriptionId,
+      );
+      if (!found || !(await fromClub(found.scope))) return false;
+      await data.bookings.subscriptions.setStripe(found.scope, subscriptionId, {
+        stripeSubscriptionId: stripeSubscription,
+        stripeStatus: "active",
+        billing: "stripe",
+      });
+      await data.audit.record({
+        actorUserId: null,
+        organizationId: found.scope.organizationId,
+        action: "subscription.subscribed",
+        target: found.subscription.playerName,
+        details: { plan: found.subscription.plan.name },
+      });
+      return false;
+    }
+    const subscriptionRef = event.type.startsWith("customer.subscription.")
+      ? str(object["id"])
+      : str(object["subscription"]);
+    if (
+      !subscriptionRef ||
+      !(
+        event.type === "invoice.paid" ||
+        event.type === "invoice.payment_failed" ||
+        event.type === "customer.subscription.updated" ||
+        event.type === "customer.subscription.deleted"
+      )
+    )
+      return null;
+    const found = await data.bookings.subscriptions.byStripeSubscription(subscriptionRef);
+    if (!found || !(await fromClub(found.scope))) return false;
+    const { scope, subscription } = found;
+    if (event.type === "invoice.payment_failed") {
+      await data.bookings.subscriptions.setStripe(scope, subscription.id, {
+        stripeStatus: "past_due",
+      });
+      return false;
+    }
+    if (event.type === "customer.subscription.updated") {
+      await data.bookings.subscriptions.setStripe(scope, subscription.id, {
+        stripeStatus: str(object["status"]),
+      });
+      return false;
+    }
+    if (event.type === "customer.subscription.deleted") {
+      await data.bookings.subscriptions.setStripe(scope, subscription.id, {
+        stripeStatus: "canceled",
+      });
+      await data.bookings.subscriptions.update(scope, subscription.id, { status: "cancelled" });
+      return false;
+    }
+    // invoice.paid: el cargo del periodo de la factura y su pago, una sola vez.
+    const invoiceId = str(object["id"]);
+    const amount = typeof object["amount_paid"] === "number" ? object["amount_paid"] : 0;
+    if (!invoiceId || amount <= 0) return false;
+    const periodStart =
+      typeof object["period_start"] === "number"
+        ? object["period_start"]
+        : Math.floor(Date.now() / 1000);
+    const club = await data.organizations.byScope(scope);
+    const month = new Date(periodStart * 1000).toISOString().slice(0, 7);
+    const label = monthLabel(month, (club?.defaultLocale ?? "es") as Locale);
+    const created = await data.fees.charges.generateFor(
+      scope,
+      [
+        {
+          personId: subscription.personId,
+          feePlanId: subscription.plan.id,
+          concept: `${subscription.plan.name} · ${label}`,
+          amountCents: amount,
+        },
+      ],
+      label,
+      new Date(periodStart * 1000).toISOString().slice(0, 10),
+      null,
+    );
+    const chargeId =
+      created.created[0] ??
+      (await data.fees.charges.findFor(scope, subscription.personId, subscription.plan.id, label));
+    if (!chargeId) return false;
+    const outcome = await data.fees.payments.recordFromProvider(scope, chargeId, {
+      amountCents: amount,
+      providerRef: invoiceId,
+      paidOn: new Date().toISOString().slice(0, 10),
+      paymentIntentId: str(object["payment_intent"]),
+    });
+    await data.bookings.subscriptions.setStripe(scope, subscription.id, { stripeStatus: "active" });
+    if (outcome === "recorded") {
+      await data.audit.record({
+        actorUserId: null,
+        organizationId: scope.organizationId,
+        action: "payment.recorded",
+        target: chargeId,
+        details: { amountCents: amount, method: "stripe", providerRef: invoiceId },
+      });
+      await toAccounting(c, scope, chargeId);
+    }
+    return outcome === "recorded";
+  }
+
   // --- Webhook de Stripe: sin sesión ni club. La firma autentica; el cargo dice el club ---
   app.openapi(
     createRoute({
@@ -806,6 +1020,10 @@ export function createFeeRoutes(
         }
         return c.json({ received: true as const, recorded: false }, 200);
       }
+
+      const fromSubscription = await subscriptionEvent(c, event);
+      if (fromSubscription !== null)
+        return c.json({ received: true as const, recorded: fromSubscription }, 200);
 
       if (!PAID_EVENTS.has(event.type))
         return c.json({ received: true as const, recorded: false }, 200);

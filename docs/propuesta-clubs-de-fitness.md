@@ -1,6 +1,6 @@
 # Propuesta: dos interfaces sobre una base. Clubs deportivos y clubs de fitness
 
-Estado: propuesta, sin construir. Fecha: 26 de octubre de 2026. Punto de partida: ADR 0048. Referencia: 18 capturas de la app del atleta de AimHarder (octubre de 2026). Maqueta navegable de las dos interfaces, una al lado de la otra: atleta, coach y dueño (https://claude.ai/artifact/TFJi66qrZZZ1TbhMF7ux3C, privada hasta que se comparta).
+Estado: aprobada y construida entera, sin fases, en la ADR 0049 (las seis decisiones de la sección final, aceptadas tal cual). Fecha: 26 de octubre de 2026. Punto de partida: ADR 0048. Referencia: 18 capturas de la app del atleta de AimHarder (octubre de 2026). Maqueta navegable de las dos interfaces, una al lado de la otra: atleta, coach y dueño (https://claude.ai/artifact/TFJi66qrZZZ1TbhMF7ux3C, privada hasta que se comparta).
 
 Resumen:
 

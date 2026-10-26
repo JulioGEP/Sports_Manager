@@ -1,4 +1,4 @@
-# Capturas de la interfaz (Bloques 14 a 26, pizarra animada, tienda, pasarela y contabilidad, identidad del club, mejoras de la plataforma)
+# Capturas de la interfaz (Bloques 14 a 26, pizarra animada, tienda, pasarela y contabilidad, identidad del club, mejoras de la plataforma, clubs de fitness)
 
 Capturas que generan las pruebas de interfaz (`pnpm test:ui`) contra la API real con base embebida, con el front de Vite + React + Tailwind sobre el design system del producto (`packages/design`, ADR 0027). Escritorio a 1280x800; móvil, Pixel 7. La fuente viva es el artefacto `capturas-interfaz` de CI; esta carpeta es la foto de la revisión del club completo (ADR 0031), con el design system 1.3: todo botón lleva el icono de su acción (rueda dentada para editar, cubo de basura rojo para eliminar, más para añadir); la fila es el objeto (se abre tocándola, con acciones como iconos silenciosos sin borde); la paleta de mandos ⌘K encuentra personas, equipos, pantallas y acciones; y la plantilla de un equipo se ve como un tablero por posición: secciones por deporte, socios, agenda e instalaciones, cuotas y "ver como", sobre lo que ya había de los bloques 11 a 13 (ADR 0028, 0029 y 0030), más el alcance por cargo y la gestión de acceso por rol del Bloque 19 (ADR 0033): el cuerpo técnico, la dirección y la fisio ven solo su parte del club, y "Personal" gana la pestaña "Acceso", y el partido en directo del Bloque 20 (ADR 0034): configuración del motor por sección, consola en la banda a pantalla completa y en tres zonas con el banquillo arrastrable (ADR 0037), estadísticas e histórico, y el entrenamiento de los bloques 21 a 26 (ADR 0039): semana del equipo con "A tener en cuenta", sesión por bloques con su cierre y modo pista, biblioteca con pizarra, carga, enfermería, salud y "Mi bienestar".
 
@@ -618,6 +618,118 @@ Solo la administración del club, en la pestaña Mejoras de Ajustes (`/demo/sett
 
 ![Ver como deportista](escritorio-135-ver-como-deportista.png)
 
+## Clubs de fitness (ADR 0049): el box de demostración (`/demo-box`)
+
+Cuentas, con contraseña `123456`: `atleta@demo.test` (Laia Ferrer, atleta con tarifa ilimitada), `coach@demo.test` (Álex Romero, coach) y `box@demo.test` (Marta Vidal, dueña); `admin@demo.test` también administra el box.
+
+### Inicio de la atleta: su próxima clase, el WOD de hoy con sus kilos, racha, último PR, tarifa y el box
+
+![Inicio de la atleta: su próxima clase, el WOD de hoy con sus kilos, racha, último PR, tarifa y el box](escritorio-240-box-atleta-inicio.png)
+
+### Reservar: la tira de días, las clases con coach, sala y plazas, y su botón
+
+![Reservar: la tira de días, las clases con coach, sala y plazas, y su botón](escritorio-241-box-atleta-reservar.png)
+
+### La clase: ventanas de reserva y cancelación, quién viene y el WOD
+
+![La clase: ventanas de reserva y cancelación, quién viene y el WOD](escritorio-242-box-atleta-clase.png)
+
+### El WOD del día con sus kilos según su 1RM y su resultado
+
+![El WOD del día con sus kilos según su 1RM y su resultado](escritorio-243-box-atleta-wod.png)
+
+### Clasificación de un bloque por nivel
+
+![Clasificación de un bloque por nivel](escritorio-244-box-atleta-clasificacion.png)
+
+### Progreso: calendario, marcas con su tabla de porcentajes, benchmarks, medidas y privacidad
+
+![Progreso: calendario, marcas con su tabla de porcentajes, benchmarks, medidas y privacidad](escritorio-245-box-atleta-progreso.png)
+
+### Mi tarifa: uso, domiciliar y reservas
+
+![Mi tarifa: uso, domiciliar y reservas](escritorio-246-box-atleta-tarifa.png)
+
+### Mensajes con el box
+
+![Mensajes con el box](escritorio-247-box-atleta-mensajes.png)
+
+### Anuncios del box
+
+![Anuncios del box](escritorio-248-box-atleta-anuncios.png)
+
+### Timer: por tiempo, AMRAP, EMOM y Tabata
+
+![Timer: por tiempo, AMRAP, EMOM y Tabata](escritorio-249-box-atleta-timer.png)
+
+### Ranking del mes por constancia
+
+![Ranking del mes por constancia](escritorio-250-box-atleta-ranking.png)
+
+### Inicio del coach: sus clases de hoy y el WOD
+
+![Inicio del coach: sus clases de hoy y el WOD](escritorio-255-box-coach-inicio.png)
+
+### Clases del coach
+
+![Clases del coach](escritorio-256-box-coach-clases.png)
+
+### La clase del coach: check-in, brief con las cargas y el WOD con la clasificación de la clase
+
+![La clase del coach: check-in, brief con las cargas y el WOD con la clasificación de la clase](escritorio-257-box-coach-clase.png)
+
+### Programación de la semana por disciplina
+
+![Programación de la semana por disciplina](escritorio-258-box-coach-programacion.png)
+
+### Editor del WOD, con la propuesta con IA
+
+![Editor del WOD, con la propuesta con IA](escritorio-259-box-coach-editor.png)
+
+### Atletas del box con tarifa, última visita y restricciones
+
+![Atletas del box con tarifa, última visita y restricciones](escritorio-260-box-coach-atletas.png)
+
+### Ficha de un atleta para el box
+
+![Ficha de un atleta para el box](escritorio-261-box-coach-ficha.png)
+
+### Mensajes del box con sus atletas
+
+![Mensajes del box con sus atletas](escritorio-262-box-coach-mensajes.png)
+
+### Inicio de la dueña: lo que pide atención, cifras, clases de hoy y programación de la semana
+
+![Inicio de la dueña: lo que pide atención, cifras, clases de hoy y programación de la semana](escritorio-265-box-duena-inicio.png)
+
+### Horario: tipos de clase con sus franjas, coach, sala y aforo
+
+![Horario: tipos de clase con sus franjas, coach, sala y aforo](escritorio-266-box-duena-horario.png)
+
+### Tarifas y bonos con su derecho de uso
+
+![Tarifas y bonos con su derecho de uso](escritorio-267-box-duena-tarifas.png)
+
+### Leads y clases de prueba
+
+![Leads y clases de prueba](escritorio-268-box-duena-leads.png)
+
+### Métricas: ocupación por franja y semana, recurrente y conversión
+
+![Métricas: ocupación por franja y semana, recurrente y conversión](escritorio-269-box-duena-metricas.png)
+
+### Identidad: looks de box
+
+![Identidad: looks de box](escritorio-270-box-duena-identidad.png)
+
+### Pantalla del box para la tele
+
+![Pantalla del box para la tele](escritorio-271-box-pantalla.png)
+
+### Plataforma: el tipo de cada club
+
+![Plataforma: el tipo de cada club](escritorio-272-plataforma-tipo-de-club.png)
+
 ## Móvil
 
 Las mismas pantallas en un móvil, con la forma envolvente del design system: cabecera con el escudo, barra de pestañas flotante abajo con cuatro destinos y "Más", listas en filas cápsula y hojas que ocupan todo el ancho.
@@ -825,3 +937,23 @@ Las mismas pantallas en un móvil, con la forma envolvente del design system: ca
 ![Hoja de ruta (móvil)](movil-140-mejoras-hoja-de-ruta.png)
 
 ![Respuesta de la plataforma (móvil)](movil-147-mejoras-respuesta.png)
+
+### Clubs de fitness (móvil): la atleta, el coach y la dueña
+
+![Inicio de la atleta: su próxima clase, el WOD de hoy con sus kilos, racha, último PR, tarifa y el box (móvil)](movil-240-box-atleta-inicio.png)
+
+![Reservar: la tira de días, las clases con coach, sala y plazas, y su botón (móvil)](movil-241-box-atleta-reservar.png)
+
+![El WOD del día con sus kilos según su 1RM y su resultado (móvil)](movil-243-box-atleta-wod.png)
+
+![Progreso: calendario, marcas con su tabla de porcentajes, benchmarks, medidas y privacidad (móvil)](movil-245-box-atleta-progreso.png)
+
+![Timer: por tiempo, AMRAP, EMOM y Tabata (móvil)](movil-249-box-atleta-timer.png)
+
+![La clase del coach: check-in, brief con las cargas y el WOD con la clasificación de la clase (móvil)](movil-257-box-coach-clase.png)
+
+![Programación de la semana por disciplina (móvil)](movil-258-box-coach-programacion.png)
+
+![Inicio de la dueña: lo que pide atención, cifras, clases de hoy y programación de la semana (móvil)](movil-265-box-duena-inicio.png)
+
+![Tarifas y bonos con su derecho de uso (móvil)](movil-267-box-duena-tarifas.png)

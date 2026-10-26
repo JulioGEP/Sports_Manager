@@ -3,6 +3,7 @@ import type { ORGANIZATION_STATUSES } from "@sportsmanager/shared";
 import {
   normalizeMotto,
   ROLE_CODES,
+  type ClubModel,
   type LocalizedText,
   type OrganizationCreate,
   type OrganizationStatus as SharedOrganizationStatus,
@@ -78,6 +79,7 @@ export function organizationsRepo(db: () => Database) {
             defaultSportId: sportId,
             brandPrimaryColor: input.brandPrimaryColor,
             brandSecondaryColor: input.brandSecondaryColor,
+            clubModel: input.clubModel ?? "sports",
           })
           .returning();
         const organization = rows[0]!;
@@ -163,6 +165,8 @@ export function organizationsRepo(db: () => Database) {
         stripeAccountId?: string | null | undefined;
         /** Lo que Stripe dice de la cuenta conectada (ADR 0042). */
         stripeAccountStatus?: StripeAccountStatus | null | undefined;
+        /** Solo la plataforma (ADR 0049). */
+        clubModel?: ClubModel | undefined;
       },
     ): Promise<OrganizationRow> {
       const values: Partial<typeof schema.organizations.$inferInsert> = {};
@@ -173,6 +177,7 @@ export function organizationsRepo(db: () => Database) {
       if (patch.stripeAccountStatus !== undefined)
         values.stripeAccountStatus = patch.stripeAccountStatus;
       if (patch.status !== undefined) values.status = patch.status;
+      if (patch.clubModel !== undefined) values.clubModel = patch.clubModel;
       if (patch.defaultLocale !== undefined) values.defaultLocale = patch.defaultLocale;
       if (patch.brandPrimaryColor !== undefined) values.brandPrimaryColor = patch.brandPrimaryColor;
       if (patch.brandSecondaryColor !== undefined)

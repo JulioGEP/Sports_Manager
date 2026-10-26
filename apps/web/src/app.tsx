@@ -56,6 +56,25 @@ import { TeamTrainingHistoryPage } from "@/routes/club/team-training-history";
 import { TeamTrainingSeasonPage } from "@/routes/club/team-training-season";
 import { TrainingHubPage } from "@/routes/club/training-hub";
 import { ClubsPage } from "@/routes/clubs";
+import { FitnessClassesRoute, FitnessClassRoute, FitnessMessagesRoute } from "@/routes/fitness";
+import { AnnouncementsPage } from "@/routes/fitness/athlete/announcements";
+import { LeaderboardPage } from "@/routes/fitness/athlete/leaderboard";
+import { LibraryPage } from "@/routes/fitness/athlete/library";
+import { MyPlanPage } from "@/routes/fitness/athlete/plan";
+import { ProgressPage } from "@/routes/fitness/athlete/progress";
+import { TimerPage } from "@/routes/fitness/athlete/timer";
+import { WodPage } from "@/routes/fitness/athlete/wod";
+import { ClassTypesPage } from "@/routes/fitness/owner/class-types";
+import { LeadsPage } from "@/routes/fitness/owner/leads";
+import { MetricsPage } from "@/routes/fitness/owner/metrics";
+import { PlansPage } from "@/routes/fitness/owner/plans";
+import { RankingPage } from "@/routes/fitness/owner/ranking";
+import { BoxTvPage } from "@/routes/fitness/owner/tv";
+import { AthleteFilePage } from "@/routes/fitness/staff/athlete-file";
+import { AthletesPage } from "@/routes/fitness/staff/athletes";
+import { MessageThreadPage } from "@/routes/fitness/staff/messages";
+import { ProgrammingPage } from "@/routes/fitness/staff/programming";
+import { WorkoutEditorPage } from "@/routes/fitness/staff/workout-editor";
 import { Landing } from "@/routes/landing";
 import { ToastProvider } from "@/ui";
 
@@ -170,6 +189,32 @@ export const router = createBrowserRouter([
       { path: "sections/:id/methodology", element: <SectionMethodologyPage /> },
       { path: "me", element: <AthletePage /> },
       { path: "me/training", element: <AthleteTrainingPage /> },
+      // Clubs de fitness (ADR 0049): reservar y la clase, el WOD y su clasificación, el progreso, la
+      // tarifa, la comunidad (mensajes, anuncios, ranking), el timer y los movimientos; la
+      // programación y los atletas del coach; el horario, las tarifas, los leads, las métricas y
+      // la pantalla del box del dueño.
+      { path: "classes", element: <FitnessClassesRoute /> },
+      { path: "classes/:id", element: <FitnessClassRoute /> },
+      { path: "wod", element: <WodPage /> },
+      { path: "leaderboard/:blockId", element: <LeaderboardPage /> },
+      { path: "progress", element: <ProgressPage /> },
+      { path: "my-plan", element: <MyPlanPage /> },
+      { path: "messages", element: <FitnessMessagesRoute /> },
+      { path: "messages/:id", element: <MessageThreadPage /> },
+      { path: "announcements", element: <AnnouncementsPage /> },
+      { path: "timer", element: <TimerPage /> },
+      { path: "library", element: <LibraryPage /> },
+      { path: "programming", element: <ProgrammingPage /> },
+      { path: "programming/new", element: <WorkoutEditorPage /> },
+      { path: "programming/:id", element: <WorkoutEditorPage /> },
+      { path: "athletes", element: <AthletesPage /> },
+      { path: "athletes/:id", element: <AthleteFilePage /> },
+      { path: "class-types", element: <ClassTypesPage /> },
+      { path: "plans", element: <PlansPage /> },
+      { path: "leads", element: <LeadsPage /> },
+      { path: "metrics", element: <MetricsPage /> },
+      { path: "ranking", element: <RankingPage /> },
+      { path: "tv", element: <BoxTvPage /> },
       // Mejoras de la plataforma: vivían en `/roadmap` (ADR 0047); ahora son una pestaña de Ajustes (ADR 0048).
       { path: "roadmap", element: <RoadmapRedirect /> },
     ],

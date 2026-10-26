@@ -713,6 +713,22 @@
         "discard": "Descartar",
         "saved": "Identidad guardada. Ya la ve todo el club.",
         "discarded": "Cambios descartados."
+      },
+      "boxLooks": {
+        "title": "Looks de box",
+        "description": "Un punto de partida completo para un club de fitness: colores, letra, botones, iconos, fondo, navegación y voz. Luego ajusta lo que quieras.",
+        "names": {
+          "industrial": "Industrial",
+          "hybrid": "Híbrido",
+          "night": "Nocturno",
+          "studio": "Estudio"
+        },
+        "hints": {
+          "industrial": "Negro y amarillo, rectas, voz de vestuario.",
+          "hybrid": "Naranja y negro, trama y rayas.",
+          "night": "Oscuro con verde lima, degradado.",
+          "studio": "Claro y sereno, voz profesional."
+        }
       }
     },
     "logo": {
@@ -1022,7 +1038,8 @@
         "status": "Estado",
         "members": "Miembros",
         "pending": "Pendientes",
-        "created": "Alta"
+        "created": "Alta",
+        "model": "Tipo"
       }
     },
     "createDrawer": {
@@ -1036,7 +1053,8 @@
       "sport": "Deporte",
       "submit": "Crear club",
       "created": "{name} creado.",
-      "brandNote": "La marca y el logo los configura el club desde sus ajustes."
+      "brandNote": "La marca y el logo los configura el club desde sus ajustes.",
+      "model": "Tipo de club"
     },
     "club": {
       "eyebrow": "Clubes",
@@ -1073,7 +1091,10 @@
         "sent": "Invitación enviada a {email}."
       },
       "confirmSuspendTitle": "¿Suspender {name}?",
-      "confirmArchiveTitle": "¿Archivar {name}?"
+      "confirmArchiveTitle": "¿Archivar {name}?",
+      "model": "Tipo de club",
+      "modelHint": "Cambia la forma de ver el club: navegación, inicio y vocabulario. Los datos no cambian.",
+      "modelSaved": "{name} se ve ahora como {model}."
     },
     "audit": {
       "title": "Actividad",
@@ -1210,6 +1231,12 @@
         "responseHint": "Solo la ve {club}.",
         "invalid": "Escribe un título de al menos 3 letras y elige la parte de la aplicación."
       }
+    },
+    "clubModels": {
+      "sports": "Club deportivo",
+      "fitness": "Club de fitness",
+      "sportsHint": "Secciones, equipos, partidos y familias. Para clubs de fútbol, baloncesto, natación…",
+      "fitnessHint": "Clases con reserva, WOD, marcas y tarifas. Para boxes de CrossFit, HYROX y gimnasios."
     }
   },
   "apiStatus": {
@@ -5124,7 +5151,10 @@
       },
       "invalid": "Revisa los datos: nombre, precio y opciones (sin nombres repetidos).",
       "invalidStock": "El stock es un número entero, o vacío si no hay límite.",
-      "noOptions": "Añade al menos una opción."
+      "noOptions": "Añade al menos una opción.",
+      "memberPrice": "Precio para socios (opcional)",
+      "memberPriceHint": "Lo pagan los socios y los atletas con tarifa activa. Vacío: el mismo precio para todos.",
+      "memberPriceTooHigh": "El precio para socios no puede ser mayor que el precio normal."
     }
   },
   "shop": {
@@ -5201,7 +5231,8 @@
     "empty": "Ahora mismo no hay nada a la venta.",
     "emptyHint": "Cuando el club ponga algo a la venta, lo verás aquí.",
     "soldOut": "Agotado",
-    "until": "Hasta el {date}"
+    "until": "Hasta el {date}",
+    "memberPrice": "Socios: {price}"
   },
   "storeOrder": {
     "back": "Tienda",

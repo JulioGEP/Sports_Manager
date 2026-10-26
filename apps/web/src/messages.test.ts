@@ -147,3 +147,58 @@ describe("voz del club en la web", () => {
           expect(/\p{Extended_Pictographic}/u.test(text), text).toBe(false);
   });
 });
+
+/**
+ * Clubs de fitness (ADR 0049): sus pantallas tienen diccionario propio por partes y un léxico que
+ * reescribe palabras de las pantallas compartidas (deportistas → atletas, secciones → disciplinas).
+ */
+const FITNESS_PARTS = ["common", "athlete", "staff", "owner"] as const;
+const fitnessFiles = import.meta.glob<Nested>("./messages/fitness/*/*.json", {
+  eager: true,
+  import: "default",
+});
+const fitnessOf = (part: string, locale: string): Nested =>
+  fitnessFiles[`./messages/fitness/${part}/${locale}.json`] ?? {};
+
+describe("diccionarios de los clubs de fitness", () => {
+  it("cada parte tiene las mismas claves en los tres idiomas y es ICU válido", () => {
+    for (const part of FITNESS_PARTS) {
+      const base = keys(fitnessOf(part, "es")).sort();
+      expect(keys(fitnessOf(part, "ca")).sort(), `${part}/ca`).toEqual(base);
+      expect(keys(fitnessOf(part, "en")).sort(), `${part}/en`).toEqual(base);
+      for (const locale of ["es", "ca", "en"] as const) {
+        const messages = Object.fromEntries(flatten(fitnessOf(part, locale)));
+        const errors: string[] = [];
+        const intl = createIntl(
+          { locale, messages, onError: (err) => errors.push(`${part}/${locale}: ${err.message}`) },
+          createIntlCache(),
+        );
+        for (const [id, text] of Object.entries(messages)) {
+          const values: Record<string, number> = {};
+          for (const m of text.matchAll(/\{\s*(\w+)/g)) if (m[1]) values[m[1]] = 1;
+          intl.formatMessage({ id }, values);
+          expect(/\p{Extended_Pictographic}/u.test(text), text).toBe(false);
+        }
+        expect(errors).toEqual([]);
+      }
+    }
+  });
+
+  it("el léxico reescribe textos que existen, con los mismos argumentos", () => {
+    const base = {
+      es: Object.fromEntries(flatten(es)),
+      ca: Object.fromEntries(flatten(ca)),
+      en: Object.fromEntries(flatten(en)),
+    };
+    const lexicon = (locale: string) =>
+      (fitnessFiles[`./messages/fitness/lexicon/${locale}.json`] ?? {}) as Record<string, string>;
+    const ids = Object.keys(lexicon("es")).sort();
+    for (const locale of ["es", "ca", "en"] as const) {
+      expect(Object.keys(lexicon(locale)).sort(), locale).toEqual(ids);
+      for (const [id, text] of Object.entries(lexicon(locale))) {
+        expect(base[locale][id], `${locale}: ${id} no existe`).toBeDefined();
+        expect(argumentsOf(text), `${locale}: ${id}`).toEqual(argumentsOf(base[locale][id]!));
+      }
+    }
+  });
+});

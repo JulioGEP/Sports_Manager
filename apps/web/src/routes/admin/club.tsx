@@ -1,4 +1,5 @@
 import {
+  CLUB_MODELS,
   InvitationSentResponseSchema,
   LOCALES,
   AI_MAX_WEEKLY_QUOTA,
@@ -6,6 +7,7 @@ import {
   PlatformAiResponseSchema,
   PlatformOrganizationDetailSchema,
   PlatformOrganizationResponseSchema,
+  type ClubModel,
   type InvitationSentResponse,
   type Locale,
   type PlatformAdminsResponse,
@@ -30,6 +32,7 @@ import {
   Icon,
   Input,
   PageHeader,
+  Segmented,
   Select,
   Sheet,
   StatusChip,
@@ -45,6 +48,7 @@ export function PlatformClubPage() {
   const c = useT("common");
   const statuses = useT("status");
   const locales = useT("locales");
+  const models = useT("platform.clubModels");
   const states = useT("invitationState");
   const errors = useT("errors");
   const { locale } = useLocale();
@@ -68,6 +72,27 @@ export function PlatformClubPage() {
     retry: false,
   });
   const reload = () => client.invalidateQueries({ queryKey: ["platform"] });
+
+  async function setModel(clubModel: ClubModel) {
+    setBusy(true);
+    try {
+      const res = await apiFetch(base, {
+        method: "PATCH",
+        body: { clubModel },
+        schema: PlatformOrganizationResponseSchema,
+        club: null,
+      });
+      toast(
+        "success",
+        t("modelSaved", { name: res.organization.name, model: models(clubModel).toLowerCase() }),
+      );
+      await reload();
+    } catch (err) {
+      toast("error", errors(errorKey(err)));
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function setStatus(status: "active" | "suspended" | "archived") {
     setConfirming(null);
@@ -164,6 +189,7 @@ export function PlatformClubPage() {
               { term: t("subdomain"), detail: <span className="font-mono">/{org.slug}</span> },
               { term: t("locale"), detail: locales(org.defaultLocale) },
               { term: t("sport"), detail: org.sport.name[locale] },
+              { term: t("model"), detail: models(org.clubModel) },
               { term: t("created"), detail: date(org.createdAt) },
               {
                 term: t("members"),
@@ -175,6 +201,19 @@ export function PlatformClubPage() {
               },
             ]}
           />
+          <div className="mt-5 flex flex-col gap-2 border-t border-line pt-4">
+            <Segmented
+              label={t("model")}
+              value={org.clubModel}
+              onChange={(m) => {
+                if (m !== org.clubModel && !busy) void setModel(m);
+              }}
+              options={CLUB_MODELS.map((m) => ({ key: m, label: models(m) }))}
+            />
+            <p className="text-secondary text-muted">
+              {models(`${org.clubModel}Hint`)} {t("modelHint")}
+            </p>
+          </div>
         </Card>
         <Card
           title={t("admins")}

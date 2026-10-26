@@ -675,6 +675,10 @@ function ProductSheet({
   const [name, setName] = useState(initial?.name ?? "");
   const [category, setCategory] = useState<StoreProductCategory>(initial?.category ?? "apparel");
   const [price, setPrice] = useState(initial ? centsToAmount(initial.priceCents) : "");
+  /** Precio para socios o atletas con tarifa activa (ADR 0049): vacío, el mismo para todos. */
+  const [memberPrice, setMemberPrice] = useState(
+    initial?.memberPriceCents != null ? centsToAmount(initial.memberPriceCents) : "",
+  );
   const [description, setDescription] = useState(initial?.description ?? "");
   const [status, setStatus] = useState<StoreProduct["status"]>(initial?.status ?? "draft");
   const [visibility, setVisibility] = useState<StoreProductVisibility>(
@@ -739,6 +743,16 @@ function ProductSheet({
     e.preventDefault();
     setError(null);
     const priceCents = Math.round(Number(price.replace(",", ".")) * 100);
+    const memberPriceCents = memberPrice.trim()
+      ? Math.round(Number(memberPrice.replace(",", ".")) * 100)
+      : null;
+    if (
+      memberPriceCents !== null &&
+      (!Number.isFinite(memberPriceCents) || memberPriceCents > priceCents)
+    ) {
+      setError(t("memberPriceTooHigh"));
+      return;
+    }
     const variants = withOptions
       ? rows
           .filter((r) => r.label.trim() || r.id)
@@ -766,6 +780,7 @@ function ProductSheet({
       name,
       category,
       priceCents,
+      memberPriceCents,
       description: description.trim() || null,
       status,
       visibility,
@@ -951,6 +966,16 @@ function ProductSheet({
             )}
           </Field>
         </div>
+        <Field label={t("memberPrice")} hint={t("memberPriceHint")}>
+          {(id) => (
+            <Input
+              id={id}
+              inputMode="decimal"
+              value={memberPrice}
+              onChange={(e) => setMemberPrice(e.target.value)}
+            />
+          )}
+        </Field>
         <Field label={t("descriptionField")}>
           {(id) => (
             <textarea

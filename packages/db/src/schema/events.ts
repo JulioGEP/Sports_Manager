@@ -96,6 +96,9 @@ export const events = pgTable(
     notes: text("notes"),
     /** Agrupa las filas generadas por una repetición semanal o por el horario del equipo. */
     seriesId: uuid("series_id"),
+    /** Clase abierta (ADR 0049): su aforo (nulo: el del tipo de clase) y quién la da. */
+    capacity: integer("capacity"),
+    coachUserId: uuid("coach_user_id").references(() => users.id, { onDelete: "set null" }),
     createdBy: uuid("created_by").references(() => users.id, { onDelete: "set null" }),
     ...timestamps,
   },
@@ -107,6 +110,8 @@ export const events = pgTable(
     check("events_kind_check", inList(t.kind, EVENT_KINDS)),
     check("events_home_away_check", sql`${t.homeAway} is null or ${inList(t.homeAway, HOME_AWAY)}`),
     check("events_range_check", sql`${t.endsAt} > ${t.startsAt}`),
+    check("events_capacity_check", sql`${t.capacity} is null or ${t.capacity} >= 1`),
+    index("events_coach_user_id_idx").on(t.coachUserId),
   ],
 );
 
@@ -125,6 +130,9 @@ export const teamSchedules = pgTable(
     startsAt: text("starts_at").notNull(),
     endsAt: text("ends_at").notNull(),
     facilityId: uuid("facility_id").references(() => facilities.id, { onDelete: "set null" }),
+    /** Clase abierta (ADR 0049): quién la da y su aforo si no es el del tipo de clase. */
+    coachUserId: uuid("coach_user_id").references(() => users.id, { onDelete: "set null" }),
+    capacity: integer("capacity"),
     ...timestamps,
   },
   (t) => [
@@ -132,6 +140,7 @@ export const teamSchedules = pgTable(
     index("team_schedules_organization_id_idx").on(t.organizationId),
     check("team_schedules_weekday_check", sql`${t.weekday} between 1 and 7`),
     check("team_schedules_range_check", sql`${t.endsAt} > ${t.startsAt}`),
+    check("team_schedules_capacity_check", sql`${t.capacity} is null or ${t.capacity} >= 1`),
   ],
 );
 

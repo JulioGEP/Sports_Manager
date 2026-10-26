@@ -81,6 +81,7 @@ export function productDto(product: StoreProductRecord): StoreProduct {
     description: product.description,
     category: product.category,
     priceCents: product.priceCents,
+    memberPriceCents: product.memberPriceCents,
     imageUrl: storeImageUrlFor(product.imageBlobKey, product.id),
     status: product.status,
     visibility: product.visibility,
@@ -626,6 +627,7 @@ export function createStoreRoutes(
             description: product.description,
             category: product.category,
             priceCents: product.priceCents,
+            memberPriceCents: product.memberPriceCents,
             imageUrl: storeImageUrlFor(product.imageBlobKey, product.id),
             availableUntil: product.availableUntil,
             variants: product.variants.map((v) => ({
@@ -637,12 +639,15 @@ export function createStoreRoutes(
             })),
             beneficiaryIds,
           })),
-          beneficiaries: beneficiaries.map(({ personId, firstName, lastName, kind }) => ({
-            personId,
-            firstName,
-            lastName,
-            kind,
-          })),
+          beneficiaries: beneficiaries.map(
+            ({ personId, firstName, lastName, kind, memberPrice }) => ({
+              personId,
+              firstName,
+              lastName,
+              kind,
+              memberPrice,
+            }),
+          ),
           provider: providerOf(tenant.organization),
         },
         200,

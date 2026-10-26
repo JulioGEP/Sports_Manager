@@ -100,11 +100,87 @@ const PALETTES = [
   { key: "blueWhite", primary: "#1d4ed8", secondary: "#ffffff" },
 ] as const;
 
+/**
+ * Looks de partida para un box (ADR 0049): colores, letra, botones, iconos, fondo, portada,
+ * navegación, esquinas y voz de una vez, para que un club de fitness no parezca un club de fútbol.
+ * Luego se ajusta cada cosa a mano.
+ */
+const BOX_LOOKS: { key: string; identity: Omit<Identity, "motto"> }[] = [
+  {
+    key: "industrial",
+    identity: {
+      brandPrimaryColor: "#0b0d12",
+      brandSecondaryColor: "#f2c200",
+      voice: "vestuario",
+      style: {
+        typography: "deportiva",
+        buttons: "recta",
+        icons: "gruesa",
+        background: "neutro",
+        hero: "banda",
+        nav: "oscuro",
+        corners: "rectas",
+      },
+    },
+  },
+  {
+    key: "hybrid",
+    identity: {
+      brandPrimaryColor: "#f26a1b",
+      brandSecondaryColor: "#0b0d12",
+      voice: "cercana",
+      style: {
+        typography: "deportiva",
+        buttons: "relieve",
+        icons: "duotono",
+        background: "trama",
+        hero: "rayas",
+        nav: "club",
+        corners: "sistema",
+      },
+    },
+  },
+  {
+    key: "night",
+    identity: {
+      brandPrimaryColor: "#111827",
+      brandSecondaryColor: "#84cc16",
+      voice: "vestuario",
+      style: {
+        typography: "geometrica",
+        buttons: "pildora",
+        icons: "linea",
+        background: "degradado",
+        hero: "degradado",
+        nav: "oscuro",
+        corners: "redondeadas",
+      },
+    },
+  },
+  {
+    key: "studio",
+    identity: {
+      brandPrimaryColor: "#0f766e",
+      brandSecondaryColor: "#f5f5f4",
+      voice: "profesional",
+      style: {
+        typography: "geometrica",
+        buttons: "pildora",
+        icons: "fina",
+        background: "liso",
+        hero: "degradado",
+        nav: "claro",
+        corners: "redondeadas",
+      },
+    },
+  },
+];
+
 export function IdentityTab() {
   const t = useT("settings.identity");
   const errors = useT("errors");
   const toast = useToast();
-  const { branding, setDraft, refresh } = useReadyClub();
+  const { branding, look, setDraft, refresh } = useReadyClub();
   const saved = useMemo(() => identityOf(branding), [branding]);
   const [form, setForm] = useState<Identity>(saved);
   const [busy, setBusy] = useState(false);
@@ -188,6 +264,41 @@ export function IdentityTab() {
 
       <div className="flex min-w-0 flex-col gap-6">
         <LogoCard />
+
+        {look.clubModel === "fitness" ? (
+          <Card title={t("boxLooks.title")} description={t("boxLooks.description")}>
+            <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+              {BOX_LOOKS.map((l) => {
+                const current = sameIdentity(form, { ...l.identity, motto: form.motto });
+                return (
+                  <button
+                    key={l.key}
+                    type="button"
+                    aria-pressed={current}
+                    onClick={() => setForm((f) => ({ ...f, ...l.identity }))}
+                    className={`flex min-h-16 items-center gap-3 rounded-field border px-3 py-2 text-left transition-colors ${
+                      current
+                        ? "border-club bg-club-soft text-club-soft-text"
+                        : "border-control bg-surface text-ink hover:bg-page"
+                    }`}
+                  >
+                    <Swatch
+                      primary={l.identity.brandPrimaryColor}
+                      secondary={l.identity.brandSecondaryColor}
+                    />
+                    <span className="flex min-w-0 flex-1 flex-col">
+                      <span className="font-medium">{t(`boxLooks.names.${l.key}`)}</span>
+                      <span className="text-label text-muted">{t(`boxLooks.hints.${l.key}`)}</span>
+                    </span>
+                    {current ? (
+                      <Icon.CheckCircle size={18} weight="fill" aria-hidden="true" />
+                    ) : null}
+                  </button>
+                );
+              })}
+            </div>
+          </Card>
+        ) : null}
 
         <Card title={t("colors.title")} description={t("colors.description")}>
           <div className="flex flex-col gap-5">

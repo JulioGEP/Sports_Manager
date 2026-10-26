@@ -11,6 +11,7 @@ import type {
   PaymentCreate,
   PaymentMethod,
 } from "@sportsmanager/shared";
+import { entitlementNeedsSessions, type PlanEntitlement } from "@sportsmanager/shared";
 import { and, asc, desc, eq, inArray, lt, or, sql } from "drizzle-orm";
 import { isUniqueViolation } from "./db.ts";
 import { mintOrgScope, type OrgScope } from "./scope.ts";
@@ -42,6 +43,12 @@ export interface FeePlanRecord {
   description: string | null;
   status: FeePlanStatus;
   appliesTo: number;
+  /** Derecho de uso (ADR 0049). */
+  entitlement: PlanEntitlement;
+  sessions: number | null;
+  validityDays: number | null;
+  classTeamIds: string[] | null;
+  activeAthletes: number;
 }
 
 export interface PaymentRecord {
@@ -187,7 +194,76 @@ export function feesRepo(db: () => Database) {
       description: plan.description,
       status: plan.status as FeePlanStatus,
       appliesTo: (await appliesTo(scope, plan)).length,
+      entitlement: plan.entitlement as PlanEntitlement,
+      sessions: plan.sessions,
+      validityDays: plan.validityDays,
+      classTeamIds: plan.classTeamIds ?? null,
+      activeAthletes: await activeSubscriptions(scope, plan.id),
     };
+  }
+
+  /** Atletas con la tarifa activa o en pausa (ADR 0049). */
+  async function activeSubscriptions(scope: OrgScope, planId: string): Promise<number> {
+    const rows = await db()
+      .select({ n: sql<number>`count(*)` })
+      .from(schema.subscriptions)
+      .where(
+        and(
+          eq(schema.subscriptions.organizationId, scope.organizationId),
+          eq(schema.subscriptions.feePlanId, planId),
+          inArray(schema.subscriptions.status, ["active", "paused"]),
+        ),
+      );
+    return Number(rows[0]?.n ?? 0);
+  }
+
+  /**
+   * El derecho de uso que se guarda: sesiones solo donde cuentan, caducidad solo en un bono y los
+   * tipos de clase solo si son del club. Nulo si no cuadra.
+   */
+  async function entitlementValues(
+    scope: OrgScope,
+    input: {
+      entitlement?: PlanEntitlement | undefined;
+      sessions?: number | null | undefined;
+      validityDays?: number | null | undefined;
+      classTeamIds?: string[] | null | undefined;
+    },
+    current: {
+      entitlement: PlanEntitlement;
+      sessions: number | null;
+      validityDays: number | null;
+    } | null,
+  ): Promise<Partial<typeof schema.feePlans.$inferInsert> | null> {
+    const values: Partial<typeof schema.feePlans.$inferInsert> = {};
+    const entitlement = input.entitlement ?? current?.entitlement ?? "none";
+    const sessions = input.sessions !== undefined ? input.sessions : (current?.sessions ?? null);
+    if (entitlementNeedsSessions(entitlement) && !sessions) return null;
+    if (input.entitlement !== undefined) values.entitlement = input.entitlement;
+    if (input.entitlement !== undefined || input.sessions !== undefined)
+      values.sessions = entitlementNeedsSessions(entitlement) ? sessions : null;
+    if (input.entitlement !== undefined || input.validityDays !== undefined) {
+      const validity =
+        input.validityDays !== undefined ? input.validityDays : (current?.validityDays ?? null);
+      values.validityDays = entitlement === "pack" ? validity : null;
+    }
+    if (input.classTeamIds !== undefined) {
+      const ids = [...new Set(input.classTeamIds ?? [])];
+      if (ids.length > 0) {
+        const known = await db()
+          .select({ id: schema.teams.id })
+          .from(schema.teams)
+          .where(
+            and(
+              eq(schema.teams.organizationId, scope.organizationId),
+              inArray(schema.teams.id, ids),
+            ),
+          );
+        if (known.length !== ids.length) return null;
+      }
+      values.classTeamIds = ids.length > 0 ? ids : null;
+    }
+    return values;
   }
 
   async function planById(scope: OrgScope, id: string): Promise<FeePlanRecord | null> {
@@ -500,11 +576,14 @@ export function feesRepo(db: () => Database) {
         | { outcome: "created"; plan: FeePlanRecord }
         | { outcome: "unknown_member_type" }
         | { outcome: "unknown_section" }
+        | { outcome: "invalid_entitlement" }
       > {
         if (input.memberTypeId && !(await memberTypeOf(scope, input.memberTypeId)))
           return { outcome: "unknown_member_type" };
         if (input.sectionId && !(await sectionOf(scope, input.sectionId)))
           return { outcome: "unknown_section" };
+        const entitlement = await entitlementValues(scope, input, null);
+        if (!entitlement) return { outcome: "invalid_entitlement" };
         const rows = await db()
           .insert(schema.feePlans)
           .values({
@@ -515,6 +594,7 @@ export function feesRepo(db: () => Database) {
             memberTypeId: input.memberTypeId ?? null,
             sectionId: input.sectionId ?? null,
             description: input.description ?? null,
+            ...entitlement,
           })
           .returning({ id: schema.feePlans.id });
         const plan = await planById(scope, rows[0]!.id);
@@ -530,6 +610,7 @@ export function feesRepo(db: () => Database) {
         | { outcome: "not_found" }
         | { outcome: "unknown_member_type" }
         | { outcome: "unknown_section" }
+        | { outcome: "invalid_entitlement" }
       > {
         if (patch.memberTypeId && !(await memberTypeOf(scope, patch.memberTypeId)))
           return { outcome: "unknown_member_type" };
@@ -543,6 +624,11 @@ export function feesRepo(db: () => Database) {
         if (patch.sectionId !== undefined) values.sectionId = patch.sectionId;
         if (patch.description !== undefined) values.description = patch.description;
         if (patch.status !== undefined) values.status = patch.status;
+        const current = await planById(scope, id);
+        if (!current) return { outcome: "not_found" };
+        const entitlement = await entitlementValues(scope, patch, current);
+        if (!entitlement) return { outcome: "invalid_entitlement" };
+        Object.assign(values, entitlement);
         if (Object.keys(values).length > 0) {
           const updated = await db()
             .update(schema.feePlans)
@@ -697,6 +783,75 @@ export function feesRepo(db: () => Database) {
             );
         }
         return { outcome: "generated", created: fresh.length, skipped: done.size };
+      },
+
+      /** El cargo de una persona, un plan y un periodo, si existe (domiciliaciones, ADR 0049). */
+      async findFor(
+        scope: OrgScope,
+        personId: string,
+        feePlanId: string,
+        periodLabel: string,
+      ): Promise<string | null> {
+        const rows = await db()
+          .select({ id: schema.feeCharges.id })
+          .from(schema.feeCharges)
+          .where(
+            and(
+              eq(schema.feeCharges.organizationId, scope.organizationId),
+              eq(schema.feeCharges.personId, personId),
+              eq(schema.feeCharges.feePlanId, feePlanId),
+              eq(schema.feeCharges.periodLabel, periodLabel),
+            ),
+          )
+          .limit(1);
+        return rows[0]?.id ?? null;
+      },
+
+      /**
+       * Cargos de un periodo para tarifas contratadas (ADR 0049): uno por persona y plan, saltando
+       * los que ya existen con ese periodo. Devuelve los creados, para la contabilidad.
+       */
+      async generateFor(
+        scope: OrgScope,
+        items: { personId: string; feePlanId: string; concept: string; amountCents: number }[],
+        periodLabel: string,
+        dueOn: string,
+        createdBy: string | null,
+      ): Promise<{ created: string[]; skipped: number }> {
+        if (items.length === 0) return { created: [], skipped: 0 };
+        const existing = await db()
+          .select({ personId: schema.feeCharges.personId, feePlanId: schema.feeCharges.feePlanId })
+          .from(schema.feeCharges)
+          .where(
+            and(
+              eq(schema.feeCharges.organizationId, scope.organizationId),
+              eq(schema.feeCharges.periodLabel, periodLabel),
+              inArray(
+                schema.feeCharges.personId,
+                items.map((i) => i.personId),
+              ),
+            ),
+          );
+        const done = new Set(existing.map((e) => `${e.personId}|${e.feePlanId}`));
+        const fresh = items.filter((i) => !done.has(`${i.personId}|${i.feePlanId}`));
+        if (fresh.length === 0) return { created: [], skipped: items.length };
+        const rows = await db()
+          .insert(schema.feeCharges)
+          .values(
+            fresh.map((i) => ({
+              organizationId: scope.organizationId,
+              personId: i.personId,
+              feePlanId: i.feePlanId,
+              concept: i.concept,
+              periodLabel,
+              amountCents: i.amountCents,
+              dueOn,
+              status: dueOn < todayIso() ? "overdue" : "pending",
+              createdBy,
+            })),
+          )
+          .returning({ id: schema.feeCharges.id });
+        return { created: rows.map((r) => r.id), skipped: items.length - fresh.length };
       },
 
       async update(

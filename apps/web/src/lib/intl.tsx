@@ -1,9 +1,24 @@
-import type { ClubVoice, Locale } from "@sportsmanager/shared";
+import type { ClubModel, ClubVoice, Locale } from "@sportsmanager/shared";
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
 import { IntlProvider, ReactIntlErrorCode, useIntl } from "react-intl";
 import ca from "@/messages/ca.json";
 import en from "@/messages/en.json";
 import es from "@/messages/es.json";
+import caFitnessAthlete from "@/messages/fitness/athlete/ca.json";
+import enFitnessAthlete from "@/messages/fitness/athlete/en.json";
+import esFitnessAthlete from "@/messages/fitness/athlete/es.json";
+import caFitnessCommon from "@/messages/fitness/common/ca.json";
+import enFitnessCommon from "@/messages/fitness/common/en.json";
+import esFitnessCommon from "@/messages/fitness/common/es.json";
+import caLexicon from "@/messages/fitness/lexicon/ca.json";
+import enLexicon from "@/messages/fitness/lexicon/en.json";
+import esLexicon from "@/messages/fitness/lexicon/es.json";
+import caFitnessOwner from "@/messages/fitness/owner/ca.json";
+import enFitnessOwner from "@/messages/fitness/owner/en.json";
+import esFitnessOwner from "@/messages/fitness/owner/es.json";
+import caFitnessStaff from "@/messages/fitness/staff/ca.json";
+import enFitnessStaff from "@/messages/fitness/staff/en.json";
+import esFitnessStaff from "@/messages/fitness/staff/es.json";
 import caVoices from "@/messages/voices/ca.json";
 import enVoices from "@/messages/voices/en.json";
 import esVoices from "@/messages/voices/es.json";
@@ -22,10 +37,45 @@ function flatten(input: Nested, prefix = ""): Record<string, string> {
   return out;
 }
 
+/**
+ * Las pantallas de los clubs de fitness (ADR 0049) tienen su propio diccionario en
+ * `messages/fitness/<parte>/<idioma>.json`, bajo `fitness.<parte>.*`.
+ */
+const fitness = {
+  es: {
+    common: esFitnessCommon,
+    athlete: esFitnessAthlete,
+    staff: esFitnessStaff,
+    owner: esFitnessOwner,
+  },
+  ca: {
+    common: caFitnessCommon,
+    athlete: caFitnessAthlete,
+    staff: caFitnessStaff,
+    owner: caFitnessOwner,
+  },
+  en: {
+    common: enFitnessCommon,
+    athlete: enFitnessAthlete,
+    staff: enFitnessStaff,
+    owner: enFitnessOwner,
+  },
+};
+
 const catalogs: Record<Locale, Record<string, string>> = {
-  es: flatten(es),
-  ca: flatten(ca),
-  en: flatten(en),
+  es: flatten({ ...es, fitness: fitness.es }),
+  ca: flatten({ ...ca, fitness: fitness.ca }),
+  en: flatten({ ...en, fitness: fitness.en }),
+};
+
+/**
+ * Léxico de los clubs de fitness (ADR 0049): las pantallas que comparten con los clubs deportivos
+ * hablan de atletas, disciplinas, salas y cobros. Va encima de todo, también de la voz del club.
+ */
+const lexicons: Record<Locale, Record<string, string>> = {
+  es: esLexicon,
+  ca: caLexicon,
+  en: enLexicon,
 };
 
 /**
@@ -37,10 +87,16 @@ const catalogs: Record<Locale, Record<string, string>> = {
 type VoiceLayers = Partial<Record<Exclude<ClubVoice, "cercana">, Record<string, string>>>;
 const voiceLayers: Record<Locale, VoiceLayers> = { es: esVoices, ca: caVoices, en: enVoices };
 
-/** El diccionario de un idioma con la voz del club encima. */
-export function voiceCatalog(locale: Locale, voice: ClubVoice): Record<string, string> {
+/** El diccionario de un idioma con la voz del club encima y, en un club de fitness, su léxico. */
+export function voiceCatalog(
+  locale: Locale,
+  voice: ClubVoice,
+  model: ClubModel = "sports",
+): Record<string, string> {
   const layer = voice === "cercana" ? undefined : voiceLayers[locale][voice];
-  return layer ? { ...catalogs[locale], ...layer } : catalogs[locale];
+  const lexicon = model === "fitness" ? lexicons[locale] : undefined;
+  if (!layer && !lexicon) return catalogs[locale];
+  return { ...catalogs[locale], ...layer, ...lexicon };
 }
 
 interface LocaleState {
@@ -92,10 +148,18 @@ export function useT(namespace?: string): Translate {
   );
 }
 
-/** Todo lo que cuelga de aquí habla con la voz del club (ADR 0043). */
-export function VoiceProvider({ voice, children }: { voice: ClubVoice; children: ReactNode }) {
+/** Todo lo que cuelga de aquí habla con la voz del club (ADR 0043) y con su léxico (ADR 0049). */
+export function VoiceProvider({
+  voice,
+  model = "sports",
+  children,
+}: {
+  voice: ClubVoice;
+  model?: ClubModel | undefined;
+  children: ReactNode;
+}) {
   const { locale } = useLocale();
-  const messages = useMemo(() => voiceCatalog(locale, voice), [locale, voice]);
+  const messages = useMemo(() => voiceCatalog(locale, voice, model), [locale, voice, model]);
   // Siempre el mismo árbol, también en `cercana`: cambiar de voz en la vista previa de los ajustes
   // no puede desmontar la pantalla (y perder lo que se está editando).
   return (

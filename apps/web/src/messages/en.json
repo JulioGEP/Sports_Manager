@@ -713,6 +713,22 @@
         "discard": "Discard",
         "saved": "Identity saved. The whole club sees it now.",
         "discarded": "Changes discarded."
+      },
+      "boxLooks": {
+        "title": "Box looks",
+        "description": "A complete starting point for a fitness club: colours, type, buttons, icons, background, navigation and voice. Then tweak whatever you like.",
+        "names": {
+          "industrial": "Industrial",
+          "hybrid": "Hybrid",
+          "night": "Night",
+          "studio": "Studio"
+        },
+        "hints": {
+          "industrial": "Black and yellow, square edges, locker-room voice.",
+          "hybrid": "Orange and black, texture and stripes.",
+          "night": "Dark with lime green, gradient.",
+          "studio": "Light and calm, professional voice."
+        }
       }
     },
     "logo": {
@@ -1022,7 +1038,8 @@
         "status": "Status",
         "members": "Members",
         "pending": "Pending",
-        "created": "Created"
+        "created": "Created",
+        "model": "Type"
       }
     },
     "createDrawer": {
@@ -1036,7 +1053,8 @@
       "sport": "Sport",
       "submit": "Create club",
       "created": "{name} created.",
-      "brandNote": "The club sets up its brand and logo from its own settings."
+      "brandNote": "The club sets up its brand and logo from its own settings.",
+      "model": "Club type"
     },
     "club": {
       "eyebrow": "Clubs",
@@ -1073,7 +1091,10 @@
         "sent": "Invitation sent to {email}."
       },
       "confirmSuspendTitle": "Suspend {name}?",
-      "confirmArchiveTitle": "Archive {name}?"
+      "confirmArchiveTitle": "Archive {name}?",
+      "model": "Club type",
+      "modelHint": "Changes how the club looks: navigation, home and vocabulary. The data stays the same.",
+      "modelSaved": "{name} now looks like a {model}."
     },
     "audit": {
       "title": "Activity",
@@ -1210,6 +1231,12 @@
         "responseHint": "Only {club} can see it.",
         "invalid": "Write a title of at least 3 letters and choose the part of the app."
       }
+    },
+    "clubModels": {
+      "sports": "Sports club",
+      "fitness": "Fitness club",
+      "sportsHint": "Sections, teams, matches and families. For football, basketball, swimming clubs…",
+      "fitnessHint": "Bookable classes, WODs, PRs and plans. For CrossFit and HYROX boxes and gyms."
     }
   },
   "apiStatus": {
@@ -5124,7 +5151,10 @@
       },
       "invalid": "Check the details: name, price and options (no repeated names).",
       "invalidStock": "Stock is a whole number, or empty if there is no limit.",
-      "noOptions": "Add at least one option."
+      "noOptions": "Add at least one option.",
+      "memberPrice": "Member price (optional)",
+      "memberPriceHint": "Paid by members and athletes with an active plan. Empty: same price for everyone.",
+      "memberPriceTooHigh": "The member price can't be higher than the regular price."
     }
   },
   "shop": {
@@ -5201,7 +5231,8 @@
     "empty": "Nothing is on sale right now.",
     "emptyHint": "When the club puts something on sale, you will see it here.",
     "soldOut": "Sold out",
-    "until": "Until {date}"
+    "until": "Until {date}",
+    "memberPrice": "Members: {price}"
   },
   "storeOrder": {
     "back": "Shop",

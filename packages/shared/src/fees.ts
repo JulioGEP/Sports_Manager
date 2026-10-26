@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { PlanEntitlementFieldsSchema } from "./fitness.ts";
 import { DateOnlySchema } from "./structure.ts";
 
 /**
@@ -16,25 +17,29 @@ export type FeePlanStatus = (typeof FEE_PLAN_STATUSES)[number];
 const ShortName = z.string().trim().min(1).max(60);
 const Cents = z.number().int().min(0).max(100_000_000);
 
-export const FeePlanCreateSchema = z.object({
-  name: ShortName,
-  amountCents: Cents,
-  period: FeePeriodSchema,
-  /** A quién va: a un tipo de socio, a una sección (deportistas), o a todos si no se indica. */
-  memberTypeId: z.string().uuid().nullable().optional(),
-  sectionId: z.string().uuid().nullable().optional(),
-  description: z.string().trim().max(400).nullable().optional(),
-});
+export const FeePlanCreateSchema = z
+  .object({
+    name: ShortName,
+    amountCents: Cents,
+    period: FeePeriodSchema,
+    /** A quién va: a un tipo de socio, a una sección (deportistas), o a todos si no se indica. */
+    memberTypeId: z.string().uuid().nullable().optional(),
+    sectionId: z.string().uuid().nullable().optional(),
+    description: z.string().trim().max(400).nullable().optional(),
+  })
+  .merge(PlanEntitlementFieldsSchema);
 export type FeePlanCreate = z.infer<typeof FeePlanCreateSchema>;
-export const FeePlanUpdateSchema = z.object({
-  name: ShortName.optional(),
-  amountCents: Cents.optional(),
-  period: FeePeriodSchema.optional(),
-  memberTypeId: z.string().uuid().nullable().optional(),
-  sectionId: z.string().uuid().nullable().optional(),
-  description: z.string().trim().max(400).nullable().optional(),
-  status: z.enum(FEE_PLAN_STATUSES).optional(),
-});
+export const FeePlanUpdateSchema = z
+  .object({
+    name: ShortName.optional(),
+    amountCents: Cents.optional(),
+    period: FeePeriodSchema.optional(),
+    memberTypeId: z.string().uuid().nullable().optional(),
+    sectionId: z.string().uuid().nullable().optional(),
+    description: z.string().trim().max(400).nullable().optional(),
+    status: z.enum(FEE_PLAN_STATUSES).optional(),
+  })
+  .merge(PlanEntitlementFieldsSchema);
 export type FeePlanUpdate = z.infer<typeof FeePlanUpdateSchema>;
 
 /** Un cargo nace pendiente; vencido se deduce de la fecha, pero se guarda para poder listarlo. */

@@ -33,6 +33,7 @@ describe("roles y permisos", () => {
       "org.challenges.manage",
       "org.challenges.read",
       "org.challenges.review_own",
+      "org.community.write",
       "org.events.read",
       "org.events.write_own",
       "org.facilities.read",

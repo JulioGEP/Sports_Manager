@@ -4,6 +4,12 @@ import { LocaleSchema } from "./locales.ts";
 import { ClubVoiceSchema } from "./structure.ts";
 import { OrganizationSlugSchema } from "./tenancy.ts";
 
+/** Qué experiencia tiene el club: la de un club deportivo o la de un club de fitness. */
+export const CLUB_MODELS = ["sports", "fitness"] as const;
+export type ClubModel = (typeof CLUB_MODELS)[number];
+export const ClubModelSchema = z.enum(CLUB_MODELS);
+export const DEFAULT_CLUB_MODEL: ClubModel = "sports";
+
 export const ORGANIZATION_STATUSES = ["active", "suspended", "archived"] as const;
 export type OrganizationStatus = (typeof ORGANIZATION_STATUSES)[number];
 
@@ -25,6 +31,8 @@ export const OrganizationCreateSchema = z.object({
   defaultSportCode: z.string().trim().min(1),
   brandPrimaryColor: BrandColorSchema,
   brandSecondaryColor: BrandColorSchema,
+  /** Club deportivo o club de fitness (ADR 0049). Por defecto, deportivo. */
+  clubModel: ClubModelSchema.optional(),
 });
 export type OrganizationCreate = z.infer<typeof OrganizationCreateSchema>;
 
@@ -42,6 +50,8 @@ export const OrganizationBrandingSchema = z.object({
   style: ClubStyleSchema,
   /** Lema del club, o nulo si no tiene. */
   motto: z.string().nullable(),
+  /** Club deportivo o de fitness (ADR 0049): decide vocabulario, navegación e inicio. */
+  clubModel: ClubModelSchema,
 });
 export type OrganizationBranding = z.infer<typeof OrganizationBrandingSchema>;
 

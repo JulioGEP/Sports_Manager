@@ -1,0 +1,17 @@
+{
+  "players.title": "Atletes",
+  "players.description": "Qui entrena al box: fitxa, tarifa, contacte i estat.",
+  "sections.title": "Disciplines",
+  "sections.description": "Les disciplines del box (CrossFit, HYROX, halterofília…) amb els seus tipus de classe.",
+  "agenda.title": "Calendari",
+  "agenda.description": "Classes, esdeveniments i competicions del box.",
+  "facilities.title": "Sales",
+  "facilities.description": "Les sales i zones del box, amb els horaris i el que les ocupa.",
+  "fees.title": "Cobraments",
+  "fees.description": "Tarifes, càrrecs i cobraments del box.",
+  "drills.title": "Moviments",
+  "drills.description": "Els moviments i exercicis del box, amb l'explicació i el vídeo.",
+  "store.description": "El que el box ven als seus atletes: roba, material, suplements i extres. Es cobra com un càrrec més.",
+  "shop.title": "Botiga del box",
+  "shop.description": "Roba, material i extres del box. Es paga com un càrrec més."
+}

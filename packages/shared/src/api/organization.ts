@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { LocaleSchema, LocalizedTextSchema } from "../locales.ts";
-import { ORGANIZATION_STATUSES } from "../organizations.ts";
+import { ClubModelSchema, ORGANIZATION_STATUSES } from "../organizations.ts";
 import { PAYMENT_PROVIDERS } from "../fees.ts";
 import { AccessAreaSchema, AccessScopeSummarySchema } from "../access.ts";
 import { PERMISSIONS, ROLE_CODES, RoleCodeSchema, StaffPositionSchema } from "../roles.ts";
@@ -65,6 +65,8 @@ export const OrganizationFullSchema = z.object({
   timezone: z.string(),
   /** Cómo cobra el club (Bloque 18). */
   paymentsProvider: z.enum(PAYMENT_PROVIDERS),
+  /** Club deportivo o de fitness (ADR 0049). */
+  clubModel: ClubModelSchema,
   createdAt: z.string(),
 });
 

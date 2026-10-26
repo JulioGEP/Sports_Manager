@@ -31,6 +31,8 @@ export const StoreProductSchema = z.object({
   description: z.string().nullable(),
   category: z.enum(STORE_PRODUCT_CATEGORIES),
   priceCents: z.number().int(),
+  /** Precio para atletas con tarifa y socios (ADR 0049). */
+  memberPriceCents: z.number().int().nullable(),
   imageUrl: z.string().nullable(),
   status: z.enum(STORE_PRODUCT_STATUSES),
   visibility: z.enum(STORE_PRODUCT_VISIBILITIES),
@@ -130,6 +132,8 @@ export const StoreCatalogProductSchema = z.object({
   description: z.string().nullable(),
   category: z.enum(STORE_PRODUCT_CATEGORIES),
   priceCents: z.number().int(),
+  /** Lo que paga quien tiene tarifa activa o es socio (ADR 0049). */
+  memberPriceCents: z.number().int().nullable(),
   imageUrl: z.string().nullable(),
   availableUntil: z.string().nullable(),
   variants: z.array(StoreCatalogVariantSchema),
@@ -144,6 +148,8 @@ export const StoreBeneficiarySchema = z.object({
   lastName: z.string(),
   /** `self`: el propio deportista adulto; `ward`: un menor del que es familia. */
   kind: z.enum(["self", "ward"]),
+  /** Paga el precio para socios (ADR 0049). */
+  memberPrice: z.boolean(),
 });
 export type StoreBeneficiary = z.infer<typeof StoreBeneficiarySchema>;
 

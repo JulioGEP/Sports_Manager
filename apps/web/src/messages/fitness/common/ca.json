@@ -1,0 +1,134 @@
+{
+  "nav": {
+    "today": "Avui",
+    "book": "Reservar",
+    "classes": "Classes",
+    "wod": "WOD",
+    "progress": "Progrés",
+    "myPlan": "La meva tarifa",
+    "messages": "Missatges",
+    "announcements": "Avisos",
+    "ranking": "Rànquing",
+    "timer": "Timer",
+    "library": "Moviments",
+    "programming": "Programació",
+    "athletes": "Atletes",
+    "plans": "Tarifes",
+    "leads": "Leads",
+    "metrics": "Mètriques",
+    "tv": "Pantalla del box",
+    "classTypes": "Horari",
+    "payments": "Cobraments",
+    "myPayments": "Els meus pagaments",
+    "store": "Botiga",
+    "staff": "Equip",
+    "rooms": "Sales",
+    "settings": "Configuració",
+    "family": "La meva família",
+    "groupBox": "El box",
+    "groupCommunity": "Comunitat",
+    "groupBusiness": "Negoci",
+    "groupManagement": "Gestió"
+  },
+  "roles": {
+    "athlete": "Atleta",
+    "coach": "Coach",
+    "owner": "Propietari"
+  },
+  "bookingStatus": {
+    "booked": "Reservada",
+    "waitlist": "En espera",
+    "cancelled": "Cancel·lada",
+    "late_cancel": "Cancel·lació tardana",
+    "no_show": "No presentat",
+    "attended": "Hi va anar"
+  },
+  "block": {
+    "not_open_yet": "Encara no es pot reservar",
+    "closed": "Reserva tancada",
+    "already_booked": "Ja la tens",
+    "full": "Completa",
+    "no_plan": "Necessites una tarifa",
+    "plan_paused": "La teva tarifa està en pausa",
+    "plan_expired": "La teva tarifa no val aquell dia",
+    "not_covered": "La teva tarifa no la inclou",
+    "no_sessions_left": "Sense sessions a la teva tarifa",
+    "daily_limit": "Límit de classes del dia"
+  },
+  "action": {
+    "book": "Reservar",
+    "waitlist": "Apuntar-me a l'espera",
+    "cancel": "Cancel·lar la reserva",
+    "leaveWaitlist": "Sortir de l'espera",
+    "booked": "Reservada. Ens veiem al box!",
+    "waitlisted": "Ets a l'espera, lloc {position}.",
+    "cancelled": "Reserva cancel·lada.",
+    "lateCancelled": "Cancel·lada fora de termini: compta com a sessió.",
+    "promoted": "La plaça ha passat al primer de l'espera."
+  },
+  "spots": {
+    "left": "{count, plural, one {# plaça lliure} other {# places lliures}}",
+    "full": "Completa",
+    "open": "Sense aforament",
+    "of": "{booked}/{capacity}",
+    "waitlist": "{count, plural, one {# en espera} other {# en espera}}"
+  },
+  "levels": {
+    "scaled": "Scaled",
+    "rx": "RX",
+    "rx_plus": "RX+"
+  },
+  "scoreTypes": {
+    "time": "Per temps",
+    "rounds_reps": "Rondes i reps",
+    "load": "Quilos",
+    "reps": "Repeticions",
+    "distance": "Distància",
+    "calories": "Calories",
+    "none": "Sense marcador"
+  },
+  "blockKinds": {
+    "warmup": "Escalfament",
+    "strength": "Força",
+    "skill": "Tècnica",
+    "wod": "WOD",
+    "accessory": "Accessoris",
+    "cooldown": "Tornada a la calma"
+  },
+  "workoutStatus": {
+    "draft": "Esborrany",
+    "published": "Publicat"
+  },
+  "entitlements": {
+    "none": "Sense classes",
+    "unlimited": "Il·limitada",
+    "per_week": "{count, plural, one {# classe per setmana} other {# classes per setmana}}",
+    "per_month": "{count, plural, one {# classe al mes} other {# classes al mes}}",
+    "pack": "{count, plural, one {Bo d'una sessió} other {Bo de # sessions}}"
+  },
+  "subscriptionStatus": {
+    "active": "Activa",
+    "paused": "En pausa",
+    "cancelled": "De baixa",
+    "expired": "Caducada"
+  },
+  "usage": {
+    "unlimited": "Classes il·limitades",
+    "remaining": "{remaining, plural, one {Et queda # sessió} other {Et queden # sessions}} de {limit}",
+    "until": "Fins al {date}"
+  },
+  "streak": "{count, plural, one {# setmana seguida} other {# setmanes seguides}}",
+  "classesThisMonth": "{count, plural, one {# classe aquest mes} other {# classes aquest mes}}",
+  "coachOf": "Amb {name}",
+  "noCoach": "Sense coach assignat",
+  "loading": "Carregant…",
+  "retry": "Torna-ho a provar",
+  "save": "Desar",
+  "cancel": "Cancel·lar",
+  "close": "Tancar",
+  "saved": "Desat.",
+  "today": "Avui",
+  "tomorrow": "Demà",
+  "kg": "{value} kg",
+  "percentOf": "{percent} % del teu 1RM"
+}

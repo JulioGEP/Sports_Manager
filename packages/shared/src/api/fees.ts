@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { PLAN_ENTITLEMENTS } from "../fitness.ts";
 import {
   FEE_CHARGE_STATUSES,
   FEE_PERIODS,
@@ -22,6 +23,13 @@ export const FeePlanSchema = z.object({
   status: z.enum(FEE_PLAN_STATUSES),
   /** Personas a las que aplica hoy (socios activos del tipo, deportistas de la sección o todos). */
   appliesTo: z.number().int().nonnegative(),
+  /** Derecho de uso (ADR 0049): qué clases da la tarifa. */
+  entitlement: z.enum(PLAN_ENTITLEMENTS),
+  sessions: z.number().int().nullable(),
+  validityDays: z.number().int().nullable(),
+  classTeamIds: z.array(z.string()).nullable(),
+  /** Atletas con esta tarifa activa. */
+  activeAthletes: z.number().int().nonnegative(),
 });
 export type FeePlan = z.infer<typeof FeePlanSchema>;
 export const FeePlansResponseSchema = z.object({ plans: z.array(FeePlanSchema) });

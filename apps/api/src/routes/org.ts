@@ -37,6 +37,7 @@ import {
   type AccessRule,
   type AccessScope,
   type Actor as ActorDto,
+  type ClubModel,
   type ClubStyle,
   type ClubVoice,
   type ConfigurableProfile,
@@ -101,6 +102,7 @@ export function brandingDto(org: OrganizationRow) {
     voice: org.voice as ClubVoice,
     style: styleDto(org),
     motto: org.motto,
+    clubModel: org.clubModel as ClubModel,
   };
 }
 
@@ -162,6 +164,7 @@ export function createOrgRoutes(config: ApiConfig, data: DataLayer) {
       motto: org.motto,
       timezone: org.timezone,
       paymentsProvider: org.paymentsProvider as PaymentProvider,
+      clubModel: org.clubModel as ClubModel,
       createdAt: org.createdAt.toISOString(),
     };
   }
