@@ -545,7 +545,7 @@ export function createOrgRoutes(config: ApiConfig, data: DataLayer) {
       if (tenant.kind !== "organization") throw notFound();
       const { userId } = c.req.valid("param");
       const { roleCode, position } = c.req.valid("json");
-      // El deportista entra a su ficha (ADR 0045): el rol llega con ella, desde la ficha.
+      // El deportista entra a su ficha (ADR 0046): el rol llega con ella, desde la ficha.
       if (roleCode === "athlete")
         throw badRequest("Al deportista se le da acceso desde su ficha de deportista.");
       const result = await data.memberships.assignRole(

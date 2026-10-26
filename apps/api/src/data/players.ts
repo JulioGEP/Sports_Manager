@@ -1070,7 +1070,7 @@ export function playersRepo(db: () => Database) {
     },
 
     /**
-     * El deportista entra con su cuenta (ADR 0045): la cuenta pasa a ser la de su persona
+     * El deportista entra con su cuenta (ADR 0046): la cuenta pasa a ser la de su persona
      * (`people.user_id`) y queda vinculada a su ficha con la relación `self`, que es lo que le
      * abre lo suyo como a una familia. Una ficha solo tiene una cuenta y una cuenta solo es de una
      * persona del club.

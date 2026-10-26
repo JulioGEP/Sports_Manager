@@ -687,7 +687,7 @@ export const AthleteRpeSchema = z.object({ rpe: z.number().int().min(0).max(10) 
 export type AthleteRpe = z.infer<typeof AthleteRpeSchema>;
 
 /**
- * Lo que entrena el deportista (ADR 0045): los entrenamientos de sus equipos o grupos de los
+ * Lo que entrena el deportista (ADR 0046): los entrenamientos de sus equipos o grupos de los
  * últimos días y de la semana que viene, con el plan que el cuerpo técnico ha publicado (nunca un
  * borrador). Solo las tareas que le tocan: las de todo el grupo y las que le asignan a él, sin
  * notas ni valoraciones del cuerpo técnico. Su disponibilidad va sin diagnóstico ni nota.

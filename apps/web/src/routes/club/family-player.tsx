@@ -108,7 +108,7 @@ export function FamilyPlayerPage() {
     );
   }
   const { player, teams, objective, developmentPlan, timeline, challenges } = detail.data;
-  /** Su propia ficha (ADR 0045): el deportista con cuenta, no una familia. */
+  /** Su propia ficha (ADR 0046): el deportista con cuenta, no una familia. */
   const self = player.relationship === "self";
   const name = playerDisplayName(player);
   const age = dates.age(player.birthDate);

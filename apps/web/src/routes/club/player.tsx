@@ -193,7 +193,7 @@ export function PlayerPage() {
     );
   }
   const { player, teams, objective, indicators, developmentPlan } = detail.data;
-  // La cuenta del propio deportista (ADR 0045) va aparte de la familia.
+  // La cuenta del propio deportista (ADR 0046) va aparte de la familia.
   const athleteAccount = detail.data.guardians.find((g) => g.relationship === "self") ?? null;
   const athleteInvite =
     detail.data.pendingInvitations.find((i) => i.relationship === "self") ?? null;
@@ -318,7 +318,7 @@ export function PlayerPage() {
   if (!player.birthDate) pending.push({ key: "birthDate", ...editAction });
   if (player.heightCm === null || player.dominantFoot === null)
     pending.push({ key: "sportsData", ...editAction });
-  // El adulto que entra con su cuenta (ADR 0045) no necesita a su familia para tener acceso.
+  // El adulto que entra con su cuenta (ADR 0046) no necesita a su familia para tener acceso.
   if (
     guardians.length === 0 &&
     !athleteAccount &&
@@ -968,7 +968,7 @@ export function PlayerPage() {
           </Card>
         </div>
 
-        {/* El propio deportista con su cuenta (ADR 0045): su ficha, su plan y su bienestar. */}
+        {/* El propio deportista con su cuenta (ADR 0046): su ficha, su plan y su bienestar. */}
         <Card
           title={t("athleteAccess.title")}
           description={t("athleteAccess.description")}
@@ -2173,7 +2173,7 @@ function LinkMemberSheet({
 }
 
 /**
- * Dar acceso al propio deportista (ADR 0045): por email, con una invitación con el rol de
+ * Dar acceso al propio deportista (ADR 0046): por email, con una invitación con el rol de
  * deportista, o con la cuenta de alguien que ya es miembro del club (una madre que también entrena).
  */
 function AthleteAccessSheet({

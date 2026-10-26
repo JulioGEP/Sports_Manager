@@ -238,7 +238,7 @@ export type PlayerUpdate = z.infer<typeof PlayerUpdateSchema>;
 
 /**
  * Relación de una cuenta con un jugador, tal como la recogía el prototipo (docs/dominio.md 1.4).
- * `self` (ADR 0045) es la cuenta del propio deportista: solo la pone el alta del deportista,
+ * `self` (ADR 0046) es la cuenta del propio deportista: solo la pone el alta del deportista,
  * nunca el formulario de familia (`FAMILY_RELATIONSHIPS`).
  */
 export const GUARDIAN_RELATIONSHIPS = [
@@ -279,7 +279,7 @@ export const GuardianLinkSchema = z.object({
 export type GuardianLink = z.infer<typeof GuardianLinkSchema>;
 
 /**
- * Dar acceso al propio deportista (ADR 0045): por email, con una invitación con el rol
+ * Dar acceso al propio deportista (ADR 0046): por email, con una invitación con el rol
  * `athlete`, o vinculando a un miembro que ya tiene cuenta. Al aceptar, la cuenta es la de su
  * ficha (`people.user_id`) y queda vinculada a ella con la relación `self`.
  */

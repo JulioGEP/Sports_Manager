@@ -8,7 +8,7 @@ import { z } from "zod";
  * `staff` (Bloque 13, ADR 0030) es el personal del club que no entrena: lleva un cargo
  * descriptivo (`STAFF_POSITIONS`) que añade permisos sobre los del rol.
  *
- * `athlete` (ADR 0045) es el deportista con cuenta propia: el adulto que corre, hace CrossFit o
+ * `athlete` (ADR 0046) es el deportista con cuenta propia: el adulto que corre, hace CrossFit o
  * juega en el sénior. Ve lo suyo como la familia ve lo de sus menores, sobre su propia ficha.
  */
 export const ROLE_CODES = ["org_admin", "staff", "coach", "guardian", "athlete"] as const;
@@ -54,7 +54,7 @@ export const PERMISSIONS = [
   "org.players.assess_own",
   /**
    * Lo propio: los deportistas a los que la cuenta está vinculada y sus equipos. Para la familia,
-   * sus menores; para el deportista con cuenta (ADR 0045), su propia ficha (vínculo `self`).
+   * sus menores; para el deportista con cuenta (ADR 0046), su propia ficha (vínculo `self`).
    */
   "org.family.read",
   /** Lo que se cambia de lo propio: la foto y los registros del reto. */
@@ -197,7 +197,7 @@ export const ROLE_PERMISSIONS: Record<RoleCode, readonly Permission[]> = {
   ],
   guardian: ["org.settings.read", "org.family.read", "org.family.write"],
   /**
-   * El deportista con cuenta (ADR 0045): lo mismo que una familia, sobre sí mismo. Su bienestar,
+   * El deportista con cuenta (ADR 0046): lo mismo que una familia, sobre sí mismo. Su bienestar,
    * su RPE y su plan de entrenamiento cuelgan de su ficha (`people.user_id`), no de un permiso.
    */
   athlete: ["org.settings.read", "org.family.read", "org.family.write"],

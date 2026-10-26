@@ -106,7 +106,7 @@ describe("roles y permisos", () => {
     expect(coach.has("org.structure.write")).toBe(false);
   });
 
-  it("el deportista con cuenta ve lo suyo y nada del club (ADR 0045)", () => {
+  it("el deportista con cuenta ve lo suyo y nada del club (ADR 0046)", () => {
     // Lo mismo que una familia: su ficha y sus equipos, sin listas de deportistas ni personal.
     expect([...permissionsForRoles(["athlete"])].sort()).toEqual(
       [...ROLE_PERMISSIONS.guardian].sort(),

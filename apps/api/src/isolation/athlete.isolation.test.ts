@@ -14,7 +14,7 @@ import { createDataLayer, createMemoryBlobStore, type DataLayer } from "../data/
 import { createSeeder } from "../data/testing/seed.ts";
 
 /**
- * Rol de deportista (ADR 0045) contra una base real: el adulto de una sección de CrossFit entra a
+ * Rol de deportista (ADR 0046) contra una base real: el adulto de una sección de CrossFit entra a
  * su propia ficha por invitación o vinculando su cuenta, ve lo suyo como una familia (su ficha,
  * su agenda y su plan) y nada del club; se le quita el acceso desde su ficha. Con una familia que
  * además entrena y un segundo club para el aislamiento. Si uno falla, la PR no se mezcla.

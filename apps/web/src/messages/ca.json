@@ -465,18 +465,15 @@
   },
   "settings": {
     "title": "Configuració del club",
-    "description": "Nom, idioma i zona horària; la identitat del club (escut, colors, lletra, veu); temporades, tipus de soci, cobraments i comptabilitat. El que canviïs aquí ho veu tot el club.",
+    "description": "Les dades i la identitat del club, les seves temporades i tipus de soci, com cobra i la seva web. El que canviïs aquí ho veu tot el club.",
     "forbidden": "No pots editar la configuració d'aquest club.",
     "tabs": {
       "general": "General",
       "identity": "Identitat",
-      "seasons": "Temporades",
-      "memberTypes": "Tipus de soci",
-      "payments": "Cobraments",
-      "setup": "Posada en marxa",
-      "activity": "Activitat",
-      "developers": "Desenvolupadors",
-      "accounting": "Comptabilitat"
+      "seasons": "Temporades i socis",
+      "payments": "Cobraments i comptabilitat",
+      "developers": "Web del club",
+      "activity": "Activitat"
     },
     "general": {
       "title": "Dades del club",
@@ -842,7 +839,11 @@
       },
       "manualToggle": "Tinc compte: escriure'n l'id",
       "returned": "Has tornat de Stripe. Estat del compte actualitzat.",
-      "conflictNotReady": "El compte de Stripe del club encara no pot cobrar: acaba l'alta a Stripe."
+      "conflictNotReady": "El compte de Stripe del club encara no pot cobrar: acaba l'alta a Stripe.",
+      "groups": {
+        "gateway": "Passarel·la de pagament",
+        "accounting": "Comptabilitat"
+      }
     },
     "setup": {
       "title": "Posada en marxa",

@@ -1023,7 +1023,7 @@ export function createLoadRoutes(config: ApiConfig, data: DataLayer) {
   );
 
   /**
-   * Lo que entrena el deportista (ADR 0045): entrenamientos y clases de sus equipos o grupos desde
+   * Lo que entrena el deportista (ADR 0046): entrenamientos y clases de sus equipos o grupos desde
    * hace una semana hasta dentro de otra, con el plan publicado (nunca un borrador). De cada
    * sesión, las tareas de todo el grupo y las que le asignan a él; la readaptación, solo si es
    * suya. Nada de notas ni valoraciones del cuerpo técnico, ni datos de nadie más.

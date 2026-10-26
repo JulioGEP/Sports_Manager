@@ -357,7 +357,7 @@ export function createInvitationRoutes(config: ApiConfig, data: DataLayer) {
 
       /**
        * Invitación de familia (Bloque 11): la cuenta queda vinculada al jugador al aceptar. La del
-       * propio deportista (ADR 0045) pasa además a ser la cuenta de su ficha.
+       * propio deportista (ADR 0046) pasa además a ser la cuenta de su ficha.
        */
       const linkFamily = async (userId: string) => {
         if (!invitation.player || !invitation.relationship) return;

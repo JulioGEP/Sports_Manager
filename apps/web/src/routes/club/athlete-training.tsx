@@ -43,7 +43,7 @@ export function useAthletePlan(enabled = true) {
 }
 
 /**
- * Lo que entrena el deportista con cuenta propia (ADR 0045): sus entrenamientos y clases de estos
+ * Lo que entrena el deportista con cuenta propia (ADR 0046): sus entrenamientos y clases de estos
  * días con el plan que ha publicado el cuerpo técnico. Solo lo suyo: las tareas del grupo y las que
  * le asignan, con el aviso cuando una choca con su restricción de hoy. Pensado para mirarlo en el
  * móvil antes de salir de casa.

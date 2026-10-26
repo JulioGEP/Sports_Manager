@@ -694,7 +694,7 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
       );
       const ok = await data.players.unlinkGuardian(tenant.scope, id, userId);
       if (!ok || !link) throw notFound("Esa persona no está vinculada a este jugador.");
-      // El propio deportista (ADR 0045): pierde su ficha y, con ella, el rol de deportista.
+      // El propio deportista (ADR 0046): pierde su ficha y, con ella, el rol de deportista.
       if (link.relationship === "self") {
         await data.players.unlinkAthleteAccount(tenant.scope, id, userId);
         const roles = await data.memberships.rolesFor(tenant.scope, userId);
@@ -788,7 +788,7 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
     },
   );
 
-  // --- El propio deportista con su cuenta (ADR 0045) ---
+  // --- El propio deportista con su cuenta (ADR 0046) ---
 
   /** Una ficha solo tiene una cuenta: si ya la tiene, no se invita ni se vincula a otra. */
   const athleteConflict = (outcome: "player_taken" | "account_taken" | "unknown_player") =>

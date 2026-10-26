@@ -9,7 +9,7 @@ import { Alert, ButtonLink, Card, EmptyState, Icon, StatusChip } from "@/ui";
 import { useAthletePlan } from "./athlete-training";
 
 /**
- * El inicio del deportista con cuenta propia (ADR 0045): lo que tiene que hacer hoy (su bienestar
+ * El inicio del deportista con cuenta propia (ADR 0046): lo que tiene que hacer hoy (su bienestar
  * y el esfuerzo de lo que ya entrenó) y su próxima sesión con el plan. Lo de cada día, sin buscar.
  */
 export function AthleteHomePanel() {

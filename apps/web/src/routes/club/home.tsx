@@ -75,7 +75,7 @@ export function ClubHome() {
   const canEvents = has("org.events.read");
   const canSettings = has("org.settings.write");
   const support = org.organization.view === "support";
-  /** El deportista con cuenta (ADR 0045): su ficha en lugar de "familia" si no tiene a nadie a su cargo. */
+  /** El deportista con cuenta (ADR 0046): su ficha en lugar de "familia" si no tiene a nadie a su cargo. */
   const athletePlayerId = org.actor.kind === "member" ? (org.actor.athletePlayerId ?? null) : null;
   const athleteOnly =
     org.actor.kind === "member" &&
@@ -200,7 +200,7 @@ export function ClubHome() {
         teams: data.teams,
       })
     : roleLine;
-  // Sin agenda del club, el deportista ve su próxima sesión (ADR 0045).
+  // Sin agenda del club, el deportista ve su próxima sesión (ADR 0046).
   const nextOwn =
     athletePlan.data?.sessions.find(
       (x) => Date.parse(x.startsAt) > Date.now() && x.status !== "cancelled",
@@ -263,12 +263,7 @@ export function ClubHome() {
           kind="info"
           title={t("onboarding.title")}
           actions={
-            <ButtonLink
-              action="open"
-              to={`${paths.settings}?tab=setup`}
-              variant="secondary"
-              size="sm"
-            >
+            <ButtonLink action="open" to={paths.settings} variant="secondary" size="sm">
               {t("onboarding.action")}
             </ButtonLink>
           }
@@ -551,7 +546,7 @@ export function ClubHome() {
 
       {panel ? <StaffPanel kind={panel} /> : null}
 
-      {/* El deportista con cuenta: su día y su próxima sesión (ADR 0045) */}
+      {/* El deportista con cuenta: su día y su próxima sesión (ADR 0046) */}
       {athletePlayerId ? <AthleteHomePanel /> : null}
 
       {/* Familia: los suyos; el deportista, su ficha */}

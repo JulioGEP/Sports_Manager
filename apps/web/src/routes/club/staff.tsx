@@ -111,7 +111,7 @@ export function StaffPage() {
     r === "staff" && m.position ? positions(m.position) : roles(r);
 
   /**
-   * Solo el personal: quien solo es familia o deportista (ADR 0045) no trabaja en el club; está
+   * Solo el personal: quien solo es familia o deportista (ADR 0046) no trabaja en el club; está
    * en la ficha de su deportista.
    */
   const staffOnly = useMemo(
@@ -553,7 +553,7 @@ function InviteSheet({
                 value={roleCode}
                 onChange={(e) => setRoleCode(e.target.value as RoleCode)}
               >
-                {/* El deportista entra desde su ficha, no desde aquí (ADR 0045). */}
+                {/* El deportista entra desde su ficha, no desde aquí (ADR 0046). */}
                 {ROLE_CODES.filter((code) => code !== "athlete").map((code) => (
                   <option key={code} value={code}>
                     {roles(code)}

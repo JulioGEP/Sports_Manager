@@ -1,4 +1,4 @@
-# 0045. Rol de deportista: el adulto con cuenta entra a su propia ficha
+# 0046. Rol de deportista: el adulto con cuenta entra a su propia ficha
 
 Estado: aceptada. Fecha: 2026-10-26. Amplía la 0028 (familias), la 0033 (alcance por rol) y la 0039 (deportista adulto con cuenta).
 
@@ -34,7 +34,7 @@ En atletismo, CrossFit, yoga, natación máster o un sénior, la persona que ent
 
 ## Consecuencias
 
-- Migraciones `20261026105307_athlete_role` (los checks de relación y de perfil de acceso admiten `self` y `athlete`) y `20261026105308_seed_athlete_role` (el rol como dato, la conversión de lo que había y una deportista de yoga en el demo).
+- Migraciones `20261026105307_athlete_role` (los checks de relación y de perfil de acceso admiten `self` y `athlete`) y `20261026105308_seed_athlete_role` (el rol como dato, la conversión de lo que había y una deportista de yoga en el demo). El comentario de la semilla cita la ADR 0045: el número cambió a 0046 al mezclar `main` y la migración ya estaba aplicada en la preview, así que no se toca (docs/deploy.md).
 - Club demo: `jugador@demo.test` (Miguel Lozano, Sénior A) pasa a deportista y entra `deportista@demo.test` (Carme Segura, Yoga suave lunes).
 - Suite de aislamiento propia (`athlete.isolation.test.ts`): invitación y aceptación, lo que ve y lo que no, vincular a una familia que también entrena, una cuenta por ficha, quitar el acceso y el club B sin llegar al A. La de entrenamiento comprueba el plan: sin borradores, sin readaptación ajena, sin notas y con los choques de su restricción.
 - **Pendiente: las clases de una actividad no se planifican.** La sesión planificada cuelga solo de los entrenamientos (`kind = training`); las clases de yoga o CrossFit son `activity`. El deportista las ve como "Clase", sin plan. Para que un box publique el WOD del día hay que dejar planificar también las actividades (sesión, semana y propuesta con IA). Es el siguiente paso con más valor para estos deportes.

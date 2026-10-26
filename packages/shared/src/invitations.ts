@@ -35,7 +35,7 @@ export const InvitationCreateSchema = z
     message: "Solo el cuerpo técnico se une a un equipo.",
     path: ["teamId"],
   })
-  // El deportista entra a su ficha (ADR 0045): se invita desde ella, no desde "Personal".
+  // El deportista entra a su ficha (ADR 0046): se invita desde ella, no desde "Personal".
   .refine((v) => v.roleCode !== "athlete", {
     message: "Al deportista se le da acceso desde su ficha.",
     path: ["roleCode"],

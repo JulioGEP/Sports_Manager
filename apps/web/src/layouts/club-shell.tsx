@@ -105,7 +105,7 @@ function ClubFrame({ children }: { children: ReactNode }) {
   const has = (p: string) => permissions.includes(p as (typeof permissions)[number]);
   const actor =
     state.kind === "ready" && state.org.actor.kind === "member" ? state.org.actor : null;
-  /** Su propia ficha de deportista (ADR 0039 y 0045): su plan, su bienestar y su RPE. */
+  /** Su propia ficha de deportista (ADR 0039 y 0046): su plan, su bienestar y su RPE. */
   const athletePlayerId = actor?.athletePlayerId ?? null;
   /** El deportista sin nadie a su cargo no tiene "familia": tiene su ficha. */
   const athleteOnly =
@@ -156,7 +156,7 @@ function ClubFrame({ children }: { children: ReactNode }) {
       key: "activity",
       label: t("groupActivity"),
       links: [
-        // El deportista con cuenta (ADR 0045): lo que entrena y cómo llega, lo primero del día.
+        // El deportista con cuenta (ADR 0046): lo que entrena y cómo llega, lo primero del día.
         athletePlayerId
           ? {
               to: paths.athleteTraining,

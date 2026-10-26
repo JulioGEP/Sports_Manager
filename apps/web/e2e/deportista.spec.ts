@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { CLUB, expectLegibleButtons, login, shot, signOut } from "./helpers";
 
 /**
- * Rol de deportista (ADR 0045) sobre la semilla del club demo: Miguel Lozano (Sénior A) y Carme
+ * Rol de deportista (ADR 0046) sobre la semilla del club demo: Miguel Lozano (Sénior A) y Carme
  * Segura (Yoga suave lunes) entran con su cuenta a lo suyo (inicio, ficha, entrenamientos y
  * bienestar) sin ver nada del club; la administración da acceso a un deportista desde su ficha y
  * mira el club con sus ojos.

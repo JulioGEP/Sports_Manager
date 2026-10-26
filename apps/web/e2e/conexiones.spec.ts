@@ -29,6 +29,14 @@ test.describe("pasarela de pago y contabilidad", () => {
     await expect(page.getByRole("link", { name: "Conectar Holded" })).toBeVisible();
     await shot(page, "123-cuotas-pasarela-y-contabilidad", info.project.name);
     await expectLegibleButtons(page);
+
+    // El enlace abre Cobros y contabilidad (ADR 0045) y baja hasta el bloque de Holded.
+    await page.getByRole("link", { name: "Conectar Holded" }).click();
+    await expect(page.getByRole("tab", { name: "Cobros y contabilidad" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+    await expect(page.getByRole("heading", { name: "Conectar Holded" })).toBeInViewport();
   });
 
   test("ajustes: la cuenta de Stripe del club y conectar Holded", async ({ page }, info) => {
@@ -40,7 +48,11 @@ test.describe("pasarela de pago y contabilidad", () => {
     await shot(page, "124-ajustes-cuenta-de-stripe", info.project.name);
     await expectLegibleButtons(page);
 
-    await page.getByRole("tab", { name: "Contabilidad" }).click();
+    // La contabilidad vive en la misma pestaña, debajo de la pasarela.
+    await expect(page.getByRole("tab", { name: "Cobros y contabilidad" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
     await expect(page.getByRole("heading", { name: "Conectar Holded" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Cómo conseguir la clave" })).toBeVisible();
     // Sin clave no se conecta; con una corta, tampoco.
