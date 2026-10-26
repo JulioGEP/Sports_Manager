@@ -348,19 +348,5 @@
     "finish": "Done",
     "reset": "Reset",
     "finalTime": "Your time: {time}"
-  },
-  "library": {
-    "title": "Movements",
-    "description": "Technique for every movement, explained by the box.",
-    "search": "Search",
-    "searchPlaceholder": "Snatch, double unders…",
-    "discipline": "Discipline",
-    "all": "All",
-    "emptyTitle": "The box hasn't added movements yet",
-    "noMatch": "Nothing matches that search",
-    "emptyHint": "Once the box adds them, you'll see them here with their video.",
-    "videoOf": "Video: {name}",
-    "keyPoints": "Key points",
-    "watch": "Watch video"
   }
 }

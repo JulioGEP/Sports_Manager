@@ -348,19 +348,5 @@
     "finish": "Terminé",
     "reset": "Reiniciar",
     "finalTime": "Tu tiempo: {time}"
-  },
-  "library": {
-    "title": "Movimientos",
-    "description": "La técnica de cada movimiento, explicada por el box.",
-    "search": "Buscar",
-    "searchPlaceholder": "Snatch, double unders…",
-    "discipline": "Disciplina",
-    "all": "Todas",
-    "emptyTitle": "El box aún no ha subido movimientos",
-    "noMatch": "Nada con esa búsqueda",
-    "emptyHint": "Cuando el box los añada, los verás aquí con su vídeo.",
-    "videoOf": "Vídeo: {name}",
-    "keyPoints": "Puntos clave",
-    "watch": "Ver vídeo"
   }
 }
