@@ -55,9 +55,11 @@ export function FamilyPage() {
                   </Link>
                 </span>
               }
-              description={`${t("relationship", { relationship: rel(p.relationship).toLowerCase() })}${
-                age === null ? "" : ` · ${tt("age", { age })}`
-              }`}
+              description={`${
+                p.relationship === "self"
+                  ? t("self")
+                  : t("relationship", { relationship: rel(p.relationship).toLowerCase() })
+              }${age === null ? "" : ` · ${tt("age", { age })}`}`}
               actions={
                 <>
                   {p.status === "inactive" ? (

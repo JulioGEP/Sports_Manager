@@ -685,3 +685,66 @@ export type AthleteResponse = z.infer<typeof AthleteResponseSchema>;
 
 export const AthleteRpeSchema = z.object({ rpe: z.number().int().min(0).max(10) });
 export type AthleteRpe = z.infer<typeof AthleteRpeSchema>;
+
+/**
+ * Lo que entrena el deportista (ADR 0046): los entrenamientos de sus equipos o grupos de los
+ * últimos días y de la semana que viene, con el plan que el cuerpo técnico ha publicado (nunca un
+ * borrador). Solo las tareas que le tocan: las de todo el grupo y las que le asignan a él, sin
+ * notas ni valoraciones del cuerpo técnico. Su disponibilidad va sin diagnóstico ni nota.
+ */
+export const AthletePlanItemSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  minutes: z.number().int(),
+  sets: z.number().int().nullable(),
+  reps: z.number().int().nullable(),
+  restSec: z.number().int().nullable(),
+  targetRpe: z.number().int().nullable(),
+  groupLabel: z.string().nullable(),
+  description: z.string().nullable(),
+  coachingPoints: z.string().nullable(),
+  diagram: DrillDiagramSchema.nullable(),
+  /** Pide algo que su restricción de hoy no permite: que lo hable con quien entrena. */
+  conflicts: z.array(z.enum(RESTRICTION_TAGS)),
+});
+export type AthletePlanItem = z.infer<typeof AthletePlanItemSchema>;
+
+export const AthletePlanSessionSchema = z.object({
+  eventId: z.string(),
+  title: z.string(),
+  startsAt: z.string(),
+  endsAt: z.string(),
+  team: Ref,
+  /** Deporte de la sección: los bloques se llaman como en ese deporte (ADR 0044). */
+  sportCode: z.string(),
+  facility: Ref.nullable(),
+  location: z.string().nullable(),
+  /** Entrenamiento de un equipo o clase de una actividad (yoga, CrossFit), que no se planifica. */
+  kind: z.enum(["training", "activity"]),
+  /** `unplanned`: el entrenamiento está en la agenda pero no tiene plan publicado. */
+  status: z.enum(["unplanned", "planned", "done", "cancelled"]),
+  objective: z.string().nullable(),
+  targetRpe: z.number().int().nullable(),
+  minutes: z.number().int(),
+  blocks: z.array(
+    z.object({ block: z.enum(SESSION_BLOCKS), items: z.array(AthletePlanItemSchema) }),
+  ),
+  /** Su RPE de esa sesión, si ya lo ha dado. */
+  rpe: z.number().int().nullable(),
+});
+export type AthletePlanSession = z.infer<typeof AthletePlanSessionSchema>;
+
+export const AthletePlanResponseSchema = z.object({
+  today: z.string(),
+  player: z.object({ id: z.string(), name: z.string() }).nullable(),
+  availability: z
+    .object({
+      status: z.enum(AVAILABILITY_STATUSES),
+      restrictions: z.array(z.enum(RESTRICTION_TAGS)),
+      maxMinutes: z.number().int().nullable(),
+      expectedReturnOn: z.string().nullable(),
+    })
+    .nullable(),
+  sessions: z.array(AthletePlanSessionSchema),
+});
+export type AthletePlanResponse = z.infer<typeof AthletePlanResponseSchema>;

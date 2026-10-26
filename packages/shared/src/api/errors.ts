@@ -14,7 +14,7 @@ export const API_ERROR_CODES = [
   "quota_exceeded",
   /** La IA no está configurada o el club no la tiene. */
   "ai_unavailable",
-  /** El club ha enviado ya las sugerencias de mejora que caben en 24 horas (ADR 0046). */
+  /** El club ha enviado ya las sugerencias de mejora que caben en 24 horas (ADR 0047). */
   "suggestion_limit",
   "internal",
 ] as const;

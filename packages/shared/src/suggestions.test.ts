@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { PlatformSuggestionUpdateSchema, SuggestionCreateSchema } from "./api/suggestions.ts";
-import { permissionsForMemberships, permissionsForRoles, STAFF_POSITIONS } from "./roles.ts";
+import {
+  permissionsForMemberships,
+  permissionsForRoles,
+  ROLE_CODES,
+  STAFF_POSITIONS,
+} from "./roles.ts";
 import {
   isOrderedSuggestion,
   isPublicSuggestion,
@@ -16,10 +21,11 @@ import {
   type SuggestionStatus,
 } from "./suggestions.ts";
 
-describe("mejoras de la plataforma (ADR 0046)", () => {
+describe("mejoras de la plataforma (ADR 0047)", () => {
   it("solo la administración del club sugiere, vota y ve la hoja de ruta", () => {
     expect(permissionsForRoles(["org_admin"]).has("org.suggestions")).toBe(true);
-    for (const role of ["coach", "guardian", "staff"] as const)
+    // Ningún otro rol, tampoco los que se añadan después.
+    for (const role of ROLE_CODES.filter((r) => r !== "org_admin"))
       expect(permissionsForRoles([role]).has("org.suggestions"), role).toBe(false);
     for (const position of STAFF_POSITIONS)
       expect(

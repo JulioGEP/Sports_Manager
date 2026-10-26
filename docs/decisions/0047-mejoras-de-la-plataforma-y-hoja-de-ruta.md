@@ -1,4 +1,4 @@
-# 0046. Mejoras de la plataforma: la administración del club sugiere y vota, y una hoja de ruta común
+# 0047. Mejoras de la plataforma: la administración del club sugiere y vota, y una hoja de ruta común
 
 Estado: aceptada. Fecha: 2026-10-26.
 

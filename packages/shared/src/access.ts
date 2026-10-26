@@ -57,6 +57,8 @@ export const PROFILE_SCOPE: Record<AccessProfile, AccessScopeKind> = {
   org_admin: "club",
   staff: "club",
   guardian: "club",
+  // El deportista llega a lo suyo por el vínculo con su ficha, como la familia: no ve el club.
+  athlete: "club",
   coach: "teams",
   director: "sections",
   coordinator: "sections",
@@ -317,7 +319,8 @@ export function canHaveOverrides(roles: readonly string[]): boolean {
 
 /**
  * Áreas en las que una persona admite excepciones: todas para el personal y el cuerpo técnico;
- * para la administración, solo las que no tiene por defecto (Salud); para la familia, ninguna.
+ * para la administración, solo las que no tiene por defecto (Salud); para la familia y el
+ * deportista, ninguna.
  */
 export function overridableAreas(roles: readonly string[]): readonly AccessArea[] {
   if (roles.includes("org_admin")) return ADMIN_EXCEPTION_AREAS;

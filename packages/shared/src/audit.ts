@@ -40,6 +40,8 @@ export const AUDIT_ACTIONS = [
   "player.updated",
   "player.guardian_linked",
   "player.guardian_unlinked",
+  "player.athlete_linked",
+  "player.athlete_unlinked",
   "player.photo_updated",
   "player.photo_removed",
   "player.objective_updated",

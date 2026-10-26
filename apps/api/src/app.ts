@@ -94,7 +94,7 @@ export function createApp(options: AppOptions = {}) {
   app.route("/", createTrainingAiRoutes(config, data));
   app.route("/", createLoadRoutes(config, data));
   app.route("/", createPlayerHealthRoutes(config, data));
-  // Mejoras de la plataforma (ADR 0046): lo que la administración del club sugiere y vota.
+  // Mejoras de la plataforma (ADR 0047): lo que la administración del club sugiere y vota.
   app.route("/", createSuggestionRoutes(config, data));
   app.route("/", createPlatformRoutes(config, data));
   app.route("/", createPlatformSetupRoutes(config, data));

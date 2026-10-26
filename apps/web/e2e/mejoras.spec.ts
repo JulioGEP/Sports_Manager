@@ -2,7 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { CLUB, expectLegibleButtons, login, shot } from "./helpers";
 
 /**
- * Mejoras de la plataforma (ADR 0046) con el club demo, cuya administración (`admin@demo.test`)
+ * Mejoras de la plataforma (ADR 0047) con el club demo, cuya administración (`admin@demo.test`)
  * también administra la plataforma en estas pruebas. La plataforma tiene una hoja de ruta; el club
  * la ve, vota, sugiere dos mejoras (una que ya estaba, con el aviso de parecidas, y otra nueva);
  * la plataforma une la repetida, planifica la nueva con fecha aproximada, contesta y la ordena; y
@@ -124,7 +124,7 @@ test.describe("mejoras de la plataforma", () => {
     await expect(page.getByText(quarter(1).label).first()).toBeVisible();
     await expect(page.getByRole("heading", { name: "En estudio" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Ya disponible" })).toBeVisible();
-    await shot(page, "130-mejoras-hoja-de-ruta", info.project.name);
+    await shot(page, "140-mejoras-hoja-de-ruta", info.project.name);
     await expectLegibleButtons(page);
 
     // Votar desde el detalle.
@@ -135,7 +135,7 @@ test.describe("mejoras de la plataforma", () => {
     await expect(page.getByText(`Voto guardado para «${p.vote}».`)).toBeVisible();
     await expect(detail.getByRole("button", { name: "Quitar mi voto" })).toBeVisible();
     await expect(detail.getByText("Tu club la ha votado")).toBeVisible();
-    await shot(page, "131-mejoras-detalle", info.project.name);
+    await shot(page, "141-mejoras-detalle", info.project.name);
     await detail.getByRole("button", { name: "Cerrar" }).first().click();
 
     // Sugerir una que ya está: el formulario avisa de la parecida.
@@ -148,7 +148,7 @@ test.describe("mejoras de la plataforma", () => {
     await form
       .getByLabel("Para qué lo necesitas")
       .fill("El seguro nos pide cada trimestre la lista de socios con su DNI y su cuota.");
-    await shot(page, "132-mejoras-sugerir", info.project.name);
+    await shot(page, "142-mejoras-sugerir", info.project.name);
     await expectLegibleButtons(page);
     await form.getByRole("button", { name: "Enviar sugerencia" }).click();
     await expect(page.getByText("Sugerencia enviada. Aquí verás en qué queda.")).toBeVisible();
@@ -179,7 +179,7 @@ test.describe("mejoras de la plataforma", () => {
       "true",
     );
     await expect(page.getByText(p.fresh).first()).toBeVisible();
-    await shot(page, "133-mejoras-sugerencias-del-club", info.project.name);
+    await shot(page, "143-mejoras-sugerencias-del-club", info.project.name);
 
     // --- La plataforma: revisar ---
     await page.goto("/admin/suggestions");
@@ -190,7 +190,7 @@ test.describe("mejoras de la plataforma", () => {
     );
     await expect(page.getByText(p.duplicate).first()).toBeVisible();
     await expect(page.getByText(/Club de demostración/).first()).toBeVisible();
-    await shot(page, "134-negocio-mejoras-por-revisar", info.project.name);
+    await shot(page, "144-negocio-mejoras-por-revisar", info.project.name);
     await expectLegibleButtons(page);
 
     // La repetida se une a la que ya estaba: sus votos pasan allí.
@@ -216,7 +216,7 @@ test.describe("mejoras de la plataforma", () => {
     await review
       .getByLabel("Respuesta al club")
       .fill("Buena idea. La planificamos para después de los pagos con Bizum.");
-    await shot(page, "135-negocio-mejoras-revisar", info.project.name);
+    await shot(page, "145-negocio-mejoras-revisar", info.project.name);
     await expectLegibleButtons(page);
     await review.getByRole("button", { name: "Guardar" }).click();
     await expect(page.getByText("Sugerencia guardada: planificada.")).toBeVisible();
@@ -242,7 +242,7 @@ test.describe("mejoras de la plataforma", () => {
     await expect
       .poll(async () => (await titles()).filter(Boolean))
       .toEqual([...before.slice(0, -2), p.freshPublic, before.at(-2)]);
-    await shot(page, "136-negocio-mejoras-hoja-de-ruta", info.project.name);
+    await shot(page, "146-negocio-mejoras-hoja-de-ruta", info.project.name);
 
     // --- El club: en qué ha quedado cada una ---
     await page.goto(`${CLUB}/roadmap?tab=mine`);
@@ -263,7 +263,7 @@ test.describe("mejoras de la plataforma", () => {
     ).toBeVisible();
     await expect(mine.getByText(p.freshPublic)).toBeVisible();
     await expect(mine.getByText(quarter(2).label)).toBeVisible();
-    await shot(page, "137-mejoras-respuesta", info.project.name);
+    await shot(page, "147-mejoras-respuesta", info.project.name);
     await expectLegibleButtons(page);
     await mine.getByRole("button", { name: "Ver en la hoja de ruta" }).click();
     await expect(page.getByRole("dialog").getByText("Pedida por tu club")).toBeVisible();

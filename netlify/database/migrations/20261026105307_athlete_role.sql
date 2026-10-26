@@ -1,0 +1,6 @@
+ALTER TABLE "invitations" DROP CONSTRAINT "invitations_relationship_check";--> statement-breakpoint
+ALTER TABLE "player_guardians" DROP CONSTRAINT "player_guardians_relationship_check";--> statement-breakpoint
+ALTER TABLE "access_rules" DROP CONSTRAINT "access_rules_profile_check";--> statement-breakpoint
+ALTER TABLE "invitations" ADD CONSTRAINT "invitations_relationship_check" CHECK ("invitations"."relationship" is null or "invitations"."relationship" in ('mother', 'father', 'guardian', 'grandparent', 'other', 'self'));--> statement-breakpoint
+ALTER TABLE "player_guardians" ADD CONSTRAINT "player_guardians_relationship_check" CHECK ("player_guardians"."relationship" in ('mother', 'father', 'guardian', 'grandparent', 'other', 'self'));--> statement-breakpoint
+ALTER TABLE "access_rules" ADD CONSTRAINT "access_rules_profile_check" CHECK ("access_rules"."profile" is null or "access_rules"."profile" in ('org_admin', 'staff', 'coach', 'guardian', 'athlete', 'director', 'coordinator', 'delegate', 'physio', 'fitness', 'psychologist', 'scout'));

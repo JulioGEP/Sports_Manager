@@ -9,7 +9,7 @@ import {
   SuggestionEtaSchema,
 } from "../suggestions.ts";
 
-/** Contratos de las mejoras de la plataforma (ADR 0046). */
+/** Contratos de las mejoras de la plataforma (ADR 0047). */
 
 const Title = z.string().trim().min(3).max(SUGGESTION_TITLE_MAX);
 

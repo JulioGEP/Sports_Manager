@@ -44,7 +44,7 @@ import {
 type Tab = "roadmap" | "mine";
 
 /**
- * Mejoras de la plataforma (ADR 0046), para la administración del club: la hoja de ruta (lo que
+ * Mejoras de la plataforma (ADR 0047), para la administración del club: la hoja de ruta (lo que
  * se está haciendo, lo que viene en orden y con fecha aproximada, lo que está en estudio para
  * votar y lo último que ha salido), las sugerencias del club con su estado y la respuesta de la
  * plataforma, y el formulario para sugerir otra. Lo que se abre va en la dirección (`?item=`,

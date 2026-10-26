@@ -1069,6 +1069,89 @@ export function playersRepo(db: () => Database) {
       return rows.length > 0;
     },
 
+    /**
+     * El deportista entra con su cuenta (ADR 0046): la cuenta pasa a ser la de su persona
+     * (`people.user_id`) y queda vinculada a su ficha con la relación `self`, que es lo que le
+     * abre lo suyo como a una familia. Una ficha solo tiene una cuenta y una cuenta solo es de una
+     * persona del club.
+     */
+    async linkAthlete(
+      scope: OrgScope,
+      playerId: string,
+      userId: string,
+    ): Promise<"linked" | "unknown_player" | "player_taken" | "account_taken"> {
+      const rows = await db()
+        .select({ personId: schema.people.id, userId: schema.people.userId })
+        .from(schema.players)
+        .innerJoin(schema.people, eq(schema.people.id, schema.players.personId))
+        .where(
+          and(
+            eq(schema.players.organizationId, scope.organizationId),
+            eq(schema.players.id, playerId),
+          ),
+        )
+        .limit(1);
+      const row = rows[0];
+      if (!row) return "unknown_player";
+      if (row.userId && row.userId !== userId) return "player_taken";
+      if (!row.userId) {
+        try {
+          const updated = await db()
+            .update(schema.people)
+            .set({ userId })
+            .where(
+              and(
+                eq(schema.people.organizationId, scope.organizationId),
+                eq(schema.people.id, row.personId),
+                isNull(schema.people.userId),
+              ),
+            )
+            .returning({ id: schema.people.id });
+          if (!updated[0]) return "player_taken";
+        } catch (error) {
+          if (isUniqueViolation(error)) return "account_taken";
+          throw error;
+        }
+      }
+      await db()
+        .insert(schema.playerGuardians)
+        .values({
+          organizationId: scope.organizationId,
+          playerId,
+          userId,
+          relationship: "self",
+          guardianPersonId: row.personId,
+        })
+        .onConflictDoUpdate({
+          target: [schema.playerGuardians.playerId, schema.playerGuardians.userId],
+          set: { relationship: "self", guardianPersonId: row.personId },
+        });
+      return "linked";
+    },
+
+    /** Quitar el acceso del deportista: su persona deja de tener esa cuenta. */
+    async unlinkAthleteAccount(scope: OrgScope, playerId: string, userId: string): Promise<void> {
+      const person = db()
+        .select({ id: schema.players.personId })
+        .from(schema.players)
+        .where(
+          and(
+            eq(schema.players.organizationId, scope.organizationId),
+            eq(schema.players.id, playerId),
+          ),
+        );
+      await db()
+        .update(schema.people)
+        .set({ userId: null })
+        .where(
+          and(
+            eq(schema.people.organizationId, scope.organizationId),
+            eq(schema.people.userId, userId),
+            inArray(schema.people.id, person),
+          ),
+        );
+    },
+
     /** Lo que ve una familia: sus jugadores con el equipo de la temporada actual y quién lo entrena. */
     async familyOf(scope: OrgScope, userId: string): Promise<FamilyPlayerRecord[]> {
       const rows = await db()

@@ -28,6 +28,8 @@ import {
   Stat,
   StatusChip,
 } from "@/ui";
+import { AthleteHomePanel } from "./athlete-home";
+import { useAthletePlan } from "./athlete-training";
 import { SectionCard } from "./sections";
 import { StaffPanel, type PanelKind } from "./staff-panel";
 
@@ -73,6 +75,14 @@ export function ClubHome() {
   const canEvents = has("org.events.read");
   const canSettings = has("org.settings.write");
   const support = org.organization.view === "support";
+  /** El deportista con cuenta (ADR 0046): su ficha en lugar de "familia" si no tiene a nadie a su cargo. */
+  const athletePlayerId = org.actor.kind === "member" ? (org.actor.athletePlayerId ?? null) : null;
+  const athleteOnly =
+    org.actor.kind === "member" &&
+    org.actor.roles.includes("athlete") &&
+    !org.actor.roles.includes("guardian") &&
+    athletePlayerId !== null;
+  const ownPage = athleteOnly ? paths.familyPlayer(athletePlayerId) : paths.family;
   const timezone = org.organization.view === "full" ? org.organization.timezone : undefined;
 
   const summary = useQuery({
@@ -85,6 +95,7 @@ export function ClubHome() {
     queryFn: () => apiFetch("/api/org/family", { schema: FamilyResponseSchema }),
     enabled: canFamily,
   });
+  const athletePlan = useAthletePlan(athletePlayerId !== null);
 
   const firstName = me.user.name.split(" ")[0] ?? me.user.name;
   const data = summary.data;
@@ -189,10 +200,16 @@ export function ClubHome() {
         teams: data.teams,
       })
     : roleLine;
-  const subtitle = data?.nextEvent
+  // Sin agenda del club, el deportista ve su próxima sesión (ADR 0046).
+  const nextOwn =
+    athletePlan.data?.sessions.find(
+      (x) => Date.parse(x.startsAt) > Date.now() && x.status !== "cancelled",
+    ) ?? null;
+  const nextEvent = data?.nextEvent ?? nextOwn;
+  const subtitle = nextEvent
     ? t("hero.next", {
-        when: `${dayOf(data.nextEvent.startsAt)} ${hour(data.nextEvent.startsAt)}`,
-        title: data.nextEvent.title,
+        when: `${dayOf(nextEvent.startsAt)} ${hour(nextEvent.startsAt)}`,
+        title: nextEvent.title,
       })
     : t("greeting", { name: firstName });
 
@@ -212,8 +229,8 @@ export function ClubHome() {
                 {t("hero.newPlayer")}
               </ClubHeroButton>
             ) : canFamily ? (
-              <ClubHeroButton action="open" onClick={() => void navigate(paths.family)}>
-                {t("hero.family")}
+              <ClubHeroButton action="open" onClick={() => void navigate(ownPage)}>
+                {athleteOnly ? t("hero.profile") : t("hero.family")}
               </ClubHeroButton>
             ) : null}
             {canEvents || canFamily ? (
@@ -529,14 +546,17 @@ export function ClubHome() {
 
       {panel ? <StaffPanel kind={panel} /> : null}
 
-      {/* Familia: los suyos */}
+      {/* El deportista con cuenta: su día y su próxima sesión (ADR 0046) */}
+      {athletePlayerId ? <AthleteHomePanel /> : null}
+
+      {/* Familia: los suyos; el deportista, su ficha */}
       {canFamily ? (
         <Card
-          title={t("family.title")}
-          description={t("family.description")}
+          title={athleteOnly ? t("profile.title") : t("family.title")}
+          description={athleteOnly ? t("profile.description") : t("family.description")}
           actions={
-            <ButtonLink action="open" to={paths.family} variant="secondary" size="sm">
-              {t("family.open")}
+            <ButtonLink action="open" to={ownPage} variant="secondary" size="sm">
+              {athleteOnly ? t("profile.open") : t("family.open")}
             </ButtonLink>
           }
         >

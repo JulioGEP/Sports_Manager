@@ -58,7 +58,7 @@ const tabOf = (s: PlatformSuggestion): Tab =>
 const publicTitleOf = (s: PlatformSuggestion) => s.publicTitle ?? s.title;
 
 /**
- * Mejoras y hoja de ruta (ADR 0046), en el panel del negocio: lo que piden los clubes por revisar,
+ * Mejoras y hoja de ruta (ADR 0047), en el panel del negocio: lo que piden los clubes por revisar,
  * la hoja de ruta con su orden, lo que ya ha salido y lo cerrado. Revisar es publicar (en estudio,
  * planificada con fecha aproximada, en desarrollo, disponible), descartar o unir a otra, reescribir
  * la versión pública y contestar al club. El panel se abre por la dirección (`?review=`, `?new=1`).

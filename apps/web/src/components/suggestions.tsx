@@ -5,7 +5,7 @@ import { useT } from "@/lib/intl";
 import { StatusChip, type StatusKind } from "@/ui";
 
 /**
- * Piezas comunes de las mejoras de la plataforma (ADR 0046): la pantalla del club y la bandeja de
+ * Piezas comunes de las mejoras de la plataforma (ADR 0047): la pantalla del club y la bandeja de
  * la plataforma enseñan los estados y las fechas aproximadas igual.
  */
 

@@ -1,6 +1,6 @@
 {
-  "id": "e514affa-0051-4f9a-920d-7ec69c60571d",
-  "prevId": "37b0d1c8-9368-46bf-94f8-0d7da4821715",
+  "id": "fa37d39e-9996-42b6-a6e2-9af58fb1d364",
+  "prevId": "52296aaa-8759-4c47-a3d5-3cba416cb04b",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -1303,7 +1303,7 @@
         },
         "invitations_relationship_check": {
           "name": "invitations_relationship_check",
-          "value": "\"invitations\".\"relationship\" is null or \"invitations\".\"relationship\" in ('mother', 'father', 'guardian', 'grandparent', 'other')"
+          "value": "\"invitations\".\"relationship\" is null or \"invitations\".\"relationship\" in ('mother', 'father', 'guardian', 'grandparent', 'other', 'self')"
         },
         "invitations_position_check": {
           "name": "invitations_position_check",
@@ -2656,7 +2656,7 @@
       "checkConstraints": {
         "player_guardians_relationship_check": {
           "name": "player_guardians_relationship_check",
-          "value": "\"player_guardians\".\"relationship\" in ('mother', 'father', 'guardian', 'grandparent', 'other')"
+          "value": "\"player_guardians\".\"relationship\" in ('mother', 'father', 'guardian', 'grandparent', 'other', 'self')"
         }
       },
       "isRLSEnabled": false
@@ -8772,7 +8772,7 @@
         },
         "access_rules_profile_check": {
           "name": "access_rules_profile_check",
-          "value": "\"access_rules\".\"profile\" is null or \"access_rules\".\"profile\" in ('org_admin', 'staff', 'coach', 'guardian', 'director', 'coordinator', 'delegate', 'physio', 'fitness', 'psychologist', 'scout')"
+          "value": "\"access_rules\".\"profile\" is null or \"access_rules\".\"profile\" in ('org_admin', 'staff', 'coach', 'guardian', 'athlete', 'director', 'coordinator', 'delegate', 'physio', 'fitness', 'psychologist', 'scout')"
         },
         "access_rules_subject_check": {
           "name": "access_rules_subject_check",

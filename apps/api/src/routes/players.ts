@@ -1,6 +1,8 @@
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 import {
   ApiErrorSchema,
+  AthleteInviteSchema,
+  AthleteLinkSchema,
   DevelopmentPlanUpdateSchema,
   EligibleMembersResponseSchema,
   FamilyPlayerDetailResponseSchema,
@@ -658,6 +660,8 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
       const player = await playerOr404(c, tenant, id);
       const roles = await data.memberships.rolesFor(tenant.scope, userId);
       if (roles.length === 0) throw badRequest("Esa persona no es miembro del club.");
+      if (player.userId === userId)
+        throw conflict("Es el propio deportista: dale acceso como deportista, no como familia.");
       if (!roles.includes("guardian")) {
         await data.memberships.assignRole(tenant.scope, userId, "guardian");
       }
@@ -685,10 +689,25 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
       const tenant = scopeOf(c);
       const { id, userId } = c.req.valid("param");
       const player = await playerOr404(c, tenant, id);
+      const link = (await data.players.guardiansOf(tenant.scope, id)).find(
+        (g) => g.userId === userId,
+      );
       const ok = await data.players.unlinkGuardian(tenant.scope, id, userId);
-      if (!ok) throw notFound("Esa persona no está vinculada a este jugador.");
-      await audit(c, tenant, "player.guardian_unlinked", playerDisplayName(player), { userId });
-      return c.json(await detail(c, tenant, player), 200);
+      if (!ok || !link) throw notFound("Esa persona no está vinculada a este jugador.");
+      // El propio deportista (ADR 0046): pierde su ficha y, con ella, el rol de deportista.
+      if (link.relationship === "self") {
+        await data.players.unlinkAthleteAccount(tenant.scope, id, userId);
+        const roles = await data.memberships.rolesFor(tenant.scope, userId);
+        if (roles.includes("athlete"))
+          await data.memberships.removeRole(tenant.scope, userId, "athlete");
+        await audit(c, tenant, "player.athlete_unlinked", playerDisplayName(player), { userId });
+      } else {
+        await audit(c, tenant, "player.guardian_unlinked", playerDisplayName(player), { userId });
+      }
+      return c.json(
+        await detail(c, tenant, (await data.players.byId(tenant.scope, id)) ?? player),
+        200,
+      );
     },
   );
 
@@ -764,6 +783,129 @@ export function createPlayerRoutes(config: ApiConfig, data: DataLayer) {
         locale,
         player: playerDisplayName(player),
         relationship: body.relationship,
+      });
+      return c.json(sent, 201);
+    },
+  );
+
+  // --- El propio deportista con su cuenta (ADR 0046) ---
+
+  /** Una ficha solo tiene una cuenta: si ya la tiene, no se invita ni se vincula a otra. */
+  const athleteConflict = (outcome: "player_taken" | "account_taken" | "unknown_player") =>
+    outcome === "unknown_player"
+      ? notFound("Ese jugador no existe.")
+      : outcome === "player_taken"
+        ? conflict("Este deportista ya entra con su propia cuenta.")
+        : conflict("Esa cuenta ya es la de otra persona del club.");
+
+  app.openapi(
+    createRoute({
+      method: "post",
+      path: "/api/org/players/{id}/athlete",
+      tags: ["Jugadores"],
+      summary:
+        "Da acceso al deportista con la cuenta de un miembro del club: la cuenta pasa a ser la de su ficha y gana el rol de deportista",
+      security: [{ sessionCookie: [] }],
+      middleware: [write],
+      request: {
+        params: idParam,
+        body: { content: { "application/json": { schema: AthleteLinkSchema } }, required: true },
+      },
+      responses: {
+        200: json("Jugador", PlayerDetailResponseSchema),
+        400: error("No es miembro del club"),
+        409: error("La ficha ya tiene cuenta o la cuenta es de otra persona"),
+        ...errors,
+      },
+    }),
+    async (c) => {
+      const tenant = scopeOf(c);
+      const { id } = c.req.valid("param");
+      const { userId } = c.req.valid("json");
+      const player = await playerOr404(c, tenant, id);
+      const roles = await data.memberships.rolesFor(tenant.scope, userId);
+      if (roles.length === 0) throw badRequest("Esa persona no es miembro del club.");
+      const outcome = await data.players.linkAthlete(tenant.scope, id, userId);
+      if (outcome !== "linked") throw athleteConflict(outcome);
+      if (!roles.includes("athlete"))
+        await data.memberships.assignRole(tenant.scope, userId, "athlete");
+      await audit(c, tenant, "player.athlete_linked", playerDisplayName(player), { userId });
+      return c.json(await detail(c, tenant, (await data.players.byId(tenant.scope, id))!), 200);
+    },
+  );
+
+  app.openapi(
+    createRoute({
+      method: "post",
+      path: "/api/org/players/{id}/athlete/invite",
+      tags: ["Jugadores"],
+      summary:
+        "Invita al propio deportista por email con el rol de deportista; al aceptar, entra a su ficha",
+      security: [{ sessionCookie: [] }],
+      middleware: [write, requirePermission("org.members.invite")],
+      request: {
+        params: idParam,
+        body: { content: { "application/json": { schema: AthleteInviteSchema } }, required: true },
+      },
+      responses: {
+        201: json("Invitación creada", InvitationSentResponseSchema),
+        409: error("Ya tiene cuenta, ya es miembro o ya hay una invitación pendiente"),
+        ...errors,
+      },
+    }),
+    async (c) => {
+      const tenant = scopeOf(c);
+      const user = c.get("sessionUser");
+      const { id } = c.req.valid("param");
+      const body = c.req.valid("json");
+      const player = await playerOr404(c, tenant, id);
+      if (player.userId) throw athleteConflict("player_taken");
+      const locale = body.locale ?? (tenant.organization.defaultLocale as Locale);
+
+      // Quien ya tiene cuenta y es miembro se vincula directamente, sin email.
+      const existing = await data.users.findByEmail(body.email);
+      if (existing) {
+        const roles = await data.memberships.rolesFor(tenant.scope, existing.id);
+        if (roles.length > 0) {
+          throw conflict(
+            "Esa persona ya es miembro del club: dale acceso desde la lista de miembros, sin invitación.",
+          );
+        }
+      }
+
+      let result;
+      try {
+        result = await data.invitations.create(tenant.scope, {
+          email: body.email,
+          roleCode: "athlete",
+          locale,
+          invitedBy: user.id,
+          ttlDays: config.invitationTtlDays,
+          playerId: player.id,
+          relationship: "self",
+        });
+      } catch (err) {
+        if (isUniqueViolation(err)) result = { outcome: "pending_exists" as const };
+        else throw err;
+      }
+      if (result.outcome === "pending_exists")
+        throw conflict("Ya hay una invitación pendiente para ese email. Reenvíala o revócala.");
+
+      const sent = await sendInvitationEmail(config, data, {
+        organization: tenant.organization,
+        issued: result,
+        inviterName: user.name,
+        origin: organizationUrl(
+          tenant.organization.slug,
+          config,
+          c.req.header("host"),
+          c.env?.context?.deploy?.context,
+        ),
+      });
+      await audit(c, tenant, "invitation.created", body.email, {
+        roleCode: "athlete",
+        locale,
+        player: playerDisplayName(player),
       });
       return c.json(sent, 201);
     },

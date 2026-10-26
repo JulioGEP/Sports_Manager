@@ -2,7 +2,7 @@
 
 Capturas que generan las pruebas de interfaz (`pnpm test:ui`) contra la API real con base embebida, con el front de Vite + React + Tailwind sobre el design system del producto (`packages/design`, ADR 0027). Escritorio a 1280x800; móvil, Pixel 7. La fuente viva es el artefacto `capturas-interfaz` de CI; esta carpeta es la foto de la revisión del club completo (ADR 0031), con el design system 1.3: todo botón lleva el icono de su acción (rueda dentada para editar, cubo de basura rojo para eliminar, más para añadir); la fila es el objeto (se abre tocándola, con acciones como iconos silenciosos sin borde); la paleta de mandos ⌘K encuentra personas, equipos, pantallas y acciones; y la plantilla de un equipo se ve como un tablero por posición: secciones por deporte, socios, agenda e instalaciones, cuotas y "ver como", sobre lo que ya había de los bloques 11 a 13 (ADR 0028, 0029 y 0030), más el alcance por cargo y la gestión de acceso por rol del Bloque 19 (ADR 0033): el cuerpo técnico, la dirección y la fisio ven solo su parte del club, y "Personal" gana la pestaña "Acceso", y el partido en directo del Bloque 20 (ADR 0034): configuración del motor por sección, consola en la banda a pantalla completa y en tres zonas con el banquillo arrastrable (ADR 0037), estadísticas e histórico, y el entrenamiento de los bloques 21 a 26 (ADR 0039): semana del equipo con "A tener en cuenta", sesión por bloques con su cierre y modo pista, biblioteca con pizarra, carga, enfermería, salud y "Mi bienestar".
 
-Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negocio en `/admin`. Cuentas de demostración, todas con contraseña `123456`: `admin@demo.test` (administra el club demo; en este entorno también la plataforma), `entrenador@demo.test` (entrenadora del Alevín A), `familia@demo.test` (madre de dos jugadores y socia), `director@demo.test` (dirección deportiva), `fisio@demo.test` (fisioterapia), `senior@demo.test` (entrenador del Sénior A), `preparador@demo.test` (preparación física), `jugador@demo.test` (deportista adulto del Sénior A con cuenta propia), `natacion@demo.test` (coordinación de natación) y `basquet@demo.test`, `basquetfem@demo.test` y `yoga@demo.test` (cuerpo técnico). El club demo llega con la temporada 2026-27, cuatro secciones (fútbol sala, baloncesto, natación y yoga) con categorías, doce equipos y grupos, 95 deportistas, socios con tres tipos, cuatro instalaciones con horario, la agenda generada desde los horarios, partidos, planes de cuota con cargos y pagos, un reto activo, dos partidos jugados del Alevín A con su registro completo y el Sénior A con cuatro partidos, sesiones planificadas, cuatro semanas de carga y bienestar, biblioteca de tareas, un jugador limitado y otro en readaptación.
+Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negocio en `/admin`. Cuentas de demostración, todas con contraseña `123456`: `admin@demo.test` (administra el club demo; en este entorno también la plataforma), `entrenador@demo.test` (entrenadora del Alevín A), `familia@demo.test` (madre de dos jugadores y socia), `director@demo.test` (dirección deportiva), `fisio@demo.test` (fisioterapia), `senior@demo.test` (entrenador del Sénior A), `preparador@demo.test` (preparación física), `jugador@demo.test` (deportista del Sénior A con cuenta propia, rol de deportista), `deportista@demo.test` (deportista de yoga con cuenta propia), `natacion@demo.test` (coordinación de natación) y `basquet@demo.test`, `basquetfem@demo.test` y `yoga@demo.test` (cuerpo técnico). El club demo llega con la temporada 2026-27, cuatro secciones (fútbol sala, baloncesto, natación y yoga) con categorías, doce equipos y grupos, 95 deportistas, socios con tres tipos, cuatro instalaciones con horario, la agenda generada desde los horarios, partidos, planes de cuota con cargos y pagos, un reto activo, dos partidos jugados del Alevín A con su registro completo y el Sénior A con cuatro partidos, sesiones planificadas, cuatro semanas de carga y bienestar, biblioteca de tareas, un jugador limitado y otro en readaptación.
 
 ## Acceso
 
@@ -400,41 +400,41 @@ Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negoci
 
 ![Panel del negocio: sistema](escritorio-57-negocio-sistema.png)
 
-## Mejoras de la plataforma (ADR 0046)
+## Mejoras de la plataforma (ADR 0047)
 
 Solo la administración del club. Lo que un club envía lo ven ese club y la plataforma; lo publicado lo ven todos los clubes, sin saber quién lo pidió.
 
 ### Hoja de ruta del club: lo que viene en orden y con fecha aproximada, lo que está en estudio para votar y lo último disponible
 
-![Hoja de ruta del club](escritorio-130-mejoras-hoja-de-ruta.png)
+![Hoja de ruta del club](escritorio-140-mejoras-hoja-de-ruta.png)
 
 ### Detalle de una mejora: estado, fecha aproximada, votos y el voto del club
 
-![Detalle de una mejora](escritorio-131-mejoras-detalle.png)
+![Detalle de una mejora](escritorio-141-mejoras-detalle.png)
 
 ### Sugerir una mejora: el formulario avisa de las parecidas que ya están en la hoja de ruta para votarlas
 
-![Sugerir una mejora](escritorio-132-mejoras-sugerir.png)
+![Sugerir una mejora](escritorio-142-mejoras-sugerir.png)
 
 ### Sugerencias del club con su estado
 
-![Sugerencias del club](escritorio-133-mejoras-sugerencias-del-club.png)
+![Sugerencias del club](escritorio-143-mejoras-sugerencias-del-club.png)
 
 ### Negocio: la bandeja de lo que piden los clubes, por revisar
 
-![Mejoras por revisar](escritorio-134-negocio-mejoras-por-revisar.png)
+![Mejoras por revisar](escritorio-144-negocio-mejoras-por-revisar.png)
 
 ### Negocio: revisar una sugerencia (estado, versión pública, fecha aproximada y respuesta al club)
 
-![Revisar una sugerencia](escritorio-135-negocio-mejoras-revisar.png)
+![Revisar una sugerencia](escritorio-145-negocio-mejoras-revisar.png)
 
 ### Negocio: la hoja de ruta con su orden y las flechas para ordenarla
 
-![Hoja de ruta en el negocio](escritorio-136-negocio-mejoras-hoja-de-ruta.png)
+![Hoja de ruta en el negocio](escritorio-146-negocio-mejoras-hoja-de-ruta.png)
 
 ### El club ve en qué ha quedado su sugerencia, con la respuesta de la plataforma
 
-![Respuesta de la plataforma](escritorio-137-mejoras-respuesta.png)
+![Respuesta de la plataforma](escritorio-147-mejoras-respuesta.png)
 
 ## Varios clubes con un único login
 
@@ -591,6 +591,32 @@ Solo la administración del club. Lo que un club envía lo ven ese club y la pla
 ### El deportista adulto compra lo suyo: sin la cena de un equipo que no es el suyo
 
 ![Tienda del deportista adulto](escritorio-121-tienda-deportista.png)
+
+## Deportista con cuenta propia (ADR 0046)
+
+### Inicio del deportista: lo suyo de hoy y su próxima sesión
+
+![Inicio del deportista](escritorio-130-deportista-inicio.png)
+
+### Mi ficha, en primera persona
+
+![Mi ficha](escritorio-131-deportista-ficha.png)
+
+### Mi plan: sus entrenamientos con el plan publicado, solo lo que le toca
+
+![Mi plan](escritorio-132-deportista-entrenamientos.png)
+
+### Una deportista de yoga: sus clases, sin anunciar un plan que no se hace
+
+![Mi plan de una actividad](escritorio-133-deportista-actividad.png)
+
+### La administración le da acceso desde su ficha
+
+![Acceso del deportista](escritorio-134-ficha-acceso-deportista.png)
+
+### Ver el club como un deportista
+
+![Ver como deportista](escritorio-135-ver-como-deportista.png)
 
 ## Móvil
 
@@ -776,6 +802,12 @@ Las mismas pantallas en un móvil, con la forma envolvente del design system: ca
 
 ![Mi bienestar (móvil)](movil-213-entrenamiento-mi-bienestar.png)
 
+### Deportista (móvil): inicio y su plan
+
+![Inicio del deportista (móvil)](movil-130-deportista-inicio.png)
+
+![Mi plan (móvil)](movil-132-deportista-entrenamientos.png)
+
 ### Pizarra animada (móvil): grabar con el dedo
 
 ![Pizarra grabada (móvil)](movil-220-pizarra-grabada.png)
@@ -790,6 +822,6 @@ Las mismas pantallas en un móvil, con la forma envolvente del design system: ca
 
 ### Mejoras de la plataforma (móvil): la hoja de ruta y la respuesta al club
 
-![Hoja de ruta (móvil)](movil-130-mejoras-hoja-de-ruta.png)
+![Hoja de ruta (móvil)](movil-140-mejoras-hoja-de-ruta.png)
 
-![Respuesta de la plataforma (móvil)](movil-137-mejoras-respuesta.png)
+![Respuesta de la plataforma (móvil)](movil-147-mejoras-respuesta.png)

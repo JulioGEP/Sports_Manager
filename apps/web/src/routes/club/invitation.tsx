@@ -138,7 +138,11 @@ export function InvitationPage() {
         {t("summary", { email: inv.email })} <StatusChip kind="club">{roleName}</StatusChip>
       </p>
       {inv.playerName ? (
-        <p className="text-secondary text-muted">{t("familyOf", { player: inv.playerName })}</p>
+        <p className="text-secondary text-muted">
+          {inv.roleCode === "athlete"
+            ? t("athleteOf", { player: inv.playerName })
+            : t("familyOf", { player: inv.playerName })}
+        </p>
       ) : null}
     </div>
   );

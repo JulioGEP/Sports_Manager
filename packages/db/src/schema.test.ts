@@ -886,7 +886,7 @@ describe("esquema del Bloque 2 (Postgres embebido con todas las migraciones)", (
     expect(inv[0]!.invited_by).toBeNull();
   });
 
-  it("mejoras de la plataforma (ADR 0046): lo público lleva título público, fecha por mes o trimestre y un voto por club", async () => {
+  it("mejoras de la plataforma (ADR 0047): lo público lleva título público, fecha por mes o trimestre y un voto por club", async () => {
     const insert =
       "insert into suggestions (organization_id, created_by, title, body, area, status, public_title, eta) values ($1, $2, $3, 'Cuerpo', $4, $5, $6, $7) returning id";
     const { rows } = await client.query<{ id: string }>(insert, [

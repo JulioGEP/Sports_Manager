@@ -17,7 +17,7 @@ import { alias } from "drizzle-orm/pg-core";
 import type { OrgScope } from "./scope.ts";
 
 /**
- * Mejoras de la plataforma (ADR 0046). Dos caras:
+ * Mejoras de la plataforma (ADR 0047). Dos caras:
  * - La del club, siempre con su ámbito: lo que ha enviado él y la hoja de ruta (lo publicado), con
  *   sus votos y si este club la pidió o la votó. Nunca qué otro club pidió o votó qué.
  * - La de la plataforma, sin ámbito: la bandeja entera, para revisar, publicar, ordenar y unir.

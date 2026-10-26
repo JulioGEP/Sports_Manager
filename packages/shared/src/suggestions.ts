@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 /**
- * Mejoras de la plataforma (ADR 0046). La administración de un club sugiere mejoras a la
+ * Mejoras de la plataforma (ADR 0047). La administración de un club sugiere mejoras a la
  * plataforma, sigue el estado de las suyas, vota las que la plataforma ha publicado y ve la hoja de
  * ruta: qué se está haciendo, qué viene, en qué orden y, aproximadamente, cuándo.
  *

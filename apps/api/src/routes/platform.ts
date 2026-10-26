@@ -64,7 +64,7 @@ const slugParam = z.object({ slug: z.string().min(1).max(63) });
 export function createPlatformRoutes(config: ApiConfig, data: DataLayer) {
   const app = new OpenAPIHono<AppEnv>();
   app.use("/api/platform/*", requireSession(data), requirePlatformAdmin(data));
-  // Bandeja de mejoras y hoja de ruta (ADR 0046): detrás de la misma cadena.
+  // Bandeja de mejoras y hoja de ruta (ADR 0047): detrás de la misma cadena.
   app.route("/", createPlatformSuggestionRoutes(data));
 
   function dto(

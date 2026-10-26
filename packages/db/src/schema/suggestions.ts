@@ -21,7 +21,7 @@ import { users } from "./auth.ts";
 import { organizations } from "./organizations.ts";
 
 /**
- * Mejoras de la plataforma (ADR 0046). La única tabla que no es de un club: una mejora publicada la
+ * Mejoras de la plataforma (ADR 0047). La única tabla que no es de un club: una mejora publicada la
  * ven y la votan todos. Lleva el club que la pidió (nulo si la añadió la plataforma o si el club ya
  * no existe), pero la API nunca lo enseña a otro club.
  */

@@ -30,7 +30,7 @@ import { requireSession } from "../http/session.ts";
 import { requireOrganizationHost, resolveTenant } from "../http/tenant.ts";
 
 /**
- * Mejoras de la plataforma (ADR 0046). El club (solo su administración, `org.suggestions`) envía
+ * Mejoras de la plataforma (ADR 0047). El club (solo su administración, `org.suggestions`) envía
  * sugerencias, sigue las suyas, vota lo publicado y ve la hoja de ruta. La plataforma las revisa,
  * las publica, las ordena, les da fecha aproximada, las une y contesta al club.
  */

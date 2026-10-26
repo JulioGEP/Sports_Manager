@@ -259,7 +259,7 @@ export function createDataLayer(options: DataLayerOptions) {
     matches: matchesRepo(db),
     training: trainingRepo(db),
     ai: aiRepo(db),
-    /** Mejoras de la plataforma (ADR 0046): lo único que cruza clubes. */
+    /** Mejoras de la plataforma (ADR 0047): lo único que cruza clubes. */
     suggestions: suggestionsRepo(db),
     /** Nulo sin token del proveedor: la propuesta con IA no se puede pedir. */
     aiModel:

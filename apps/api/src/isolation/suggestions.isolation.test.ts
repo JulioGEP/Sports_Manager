@@ -13,7 +13,7 @@ import { createDataLayer, createMemoryLogoStore, type DataLayer } from "../data/
 import { createSeeder } from "../data/testing/seed.ts";
 
 /**
- * Mejoras de la plataforma (ADR 0046). Lo único que cruza clubes, así que cruza poco:
+ * Mejoras de la plataforma (ADR 0047). Lo único que cruza clubes, así que cruza poco:
  * - Solo la administración de un club sugiere, vota y ve la hoja de ruta.
  * - Lo que un club envía lo ven ese club y la plataforma; nada más hasta que se publica.
  * - Lo publicado lo ven todos, sin saber qué club lo pidió ni qué le contestó la plataforma.
