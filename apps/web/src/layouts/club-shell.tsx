@@ -242,6 +242,9 @@ function ClubFrame({ children }: { children: ReactNode }) {
                   ...(has("org.training.read")
                     ? [link(paths.programming, fx("programming"), Icon.Barbell)]
                     : []),
+                  ...(has("org.training.read")
+                    ? [link(paths.planning, fx("planning"), Icon.Rows)]
+                    : []),
                   ...(has("org.players.read")
                     ? [link(paths.athletes, fx("athletes"), Icon.UsersThree)]
                     : []),
@@ -277,6 +280,9 @@ function ClubFrame({ children }: { children: ReactNode }) {
             link(paths.announcements, fx("announcements"), Icon.Info),
             link(paths.ranking, fx("ranking"), Icon.Trophy),
             link(paths.exercises, fx("library"), Icon.Target),
+            ...(staffView && has("org.training.read")
+              ? [link(paths.equipment, fx("equipment"), Icon.Package)]
+              : []),
             link(paths.timer, fx("timer"), Icon.Timer),
             ...(staffView ? [link(paths.tv, fx("tv"), Icon.CornersOut)] : []),
           ],
@@ -287,6 +293,7 @@ function ClubFrame({ children }: { children: ReactNode }) {
           label: fx("groupAccount"),
           links: athleteView
             ? [
+                link(paths.cycle, fx("cycle"), Icon.FlagCheckered),
                 link(paths.myPlan, fx("myPlan"), Icon.Ticket),
                 link(paths.fees, fx("myPayments"), Icon.Coins),
                 ...(actor?.canShop ? [link(paths.store, fx("store"), Icon.Storefront)] : []),

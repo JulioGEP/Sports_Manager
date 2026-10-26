@@ -1,6 +1,11 @@
 import { schema, type Database } from "@sportsmanager/db";
 import {
   DEFAULT_FITNESS_PREFERENCES,
+  type Capacity,
+  type DayRole,
+  type PlanStructure,
+  type TimeDomain,
+  type WorkoutTrack,
   type BenchmarkResultCreate,
   type BodyMeasurementCreate,
   type FitnessPreferences,
@@ -38,9 +43,17 @@ export interface WorkoutBlockRecord {
   movementCode: string | null;
   percent: number | null;
   rmReps: number | null;
+  foundations: string | null;
   scaled: string | null;
   rx: string | null;
   rxPlus: string | null;
+  /** Planificación (ADR 0052). */
+  capacity: Capacity | null;
+  plannedMinutes: number | null;
+  exerciseIds: string[];
+  /** Los ejercicios enlazados que siguen en la biblioteca, con su nombre. */
+  exercises: { id: string; name: string }[];
+  track: WorkoutTrack;
 }
 
 export interface WorkoutRecord {
@@ -55,6 +68,20 @@ export interface WorkoutRecord {
   blocks: WorkoutBlockRecord[];
   createdBy: string | null;
   updatedAt: Date;
+  /** Planificación (ADR 0052): el plan al que sirve, su semana, papel, intención y porqué. */
+  plan: {
+    id: string;
+    name: string;
+    startsOn: string;
+    weeks: number;
+    structure: PlanStructure;
+  } | null;
+  planWeek: number | null;
+  dayRole: DayRole | null;
+  intentDomain: TimeDomain | null;
+  intentEffort: number | null;
+  intentFeel: string | null;
+  why: string | null;
 }
 
 /** Publicado y con la hora de publicación ya pasada: lo ven los atletas. */
@@ -149,10 +176,15 @@ export function workoutsRepo(db: () => Database) {
         workout: schema.workouts,
         sectionName: schema.sections.name,
         teamName: schema.teams.name,
+        planName: schema.boxPlans.name,
+        planStartsOn: schema.boxPlans.startsOn,
+        planWeeks: schema.boxPlans.weeks,
+        planStructure: schema.boxPlans.structure,
       })
       .from(schema.workouts)
       .innerJoin(schema.sections, eq(schema.sections.id, schema.workouts.sectionId))
-      .leftJoin(schema.teams, eq(schema.teams.id, schema.workouts.teamId));
+      .leftJoin(schema.teams, eq(schema.teams.id, schema.workouts.teamId))
+      .leftJoin(schema.boxPlans, eq(schema.boxPlans.id, schema.workouts.planId));
   type Row = Awaited<ReturnType<ReturnType<typeof base>["execute"]>>[number];
 
   async function blocksFor(scope: OrgScope, ids: string[]) {
@@ -168,6 +200,20 @@ export function workoutsRepo(db: () => Database) {
         ),
       )
       .orderBy(asc(schema.workoutBlocks.sortOrder));
+    const exerciseIds = [...new Set(rows.flatMap((b) => b.exerciseIds ?? []))];
+    const names = new Map<string, string>();
+    if (exerciseIds.length > 0) {
+      const found = await db()
+        .select({ id: schema.exercises.id, name: schema.exercises.name })
+        .from(schema.exercises)
+        .where(
+          and(
+            eq(schema.exercises.organizationId, scope.organizationId),
+            inArray(schema.exercises.id, exerciseIds),
+          ),
+        );
+      for (const e of found) names.set(e.id, e.name);
+    }
     for (const b of rows) {
       const list = map.get(b.workoutId) ?? [];
       list.push({
@@ -181,9 +227,17 @@ export function workoutsRepo(db: () => Database) {
         movementCode: b.movementCode,
         percent: b.percent,
         rmReps: b.rmReps,
+        foundations: b.foundations,
         scaled: b.scaled,
         rx: b.rx,
         rxPlus: b.rxPlus,
+        capacity: b.capacity as Capacity | null,
+        plannedMinutes: b.plannedMinutes,
+        exerciseIds: b.exerciseIds ?? [],
+        exercises: (b.exerciseIds ?? [])
+          .filter((id) => names.has(id))
+          .map((id) => ({ id, name: names.get(id)! })),
+        track: b.track as WorkoutTrack,
       });
       map.set(b.workoutId, list);
     }
@@ -207,6 +261,22 @@ export function workoutsRepo(db: () => Database) {
       blocks: blocks.get(r.workout.id) ?? [],
       createdBy: r.workout.createdBy,
       updatedAt: r.workout.updatedAt,
+      plan:
+        r.workout.planId && r.planName && r.planStructure
+          ? {
+              id: r.workout.planId,
+              name: r.planName,
+              startsOn: r.planStartsOn ?? r.workout.onDate,
+              weeks: r.planWeeks ?? r.planStructure.weeks.length,
+              structure: r.planStructure,
+            }
+          : null,
+      planWeek: r.workout.planWeek,
+      dayRole: r.workout.dayRole as DayRole | null,
+      intentDomain: r.workout.intentDomain as TimeDomain | null,
+      intentEffort: r.workout.intentEffort,
+      intentFeel: r.workout.intentFeel,
+      why: r.workout.why,
     }));
   }
 
@@ -234,9 +304,14 @@ export function workoutsRepo(db: () => Database) {
         movementCode: block.movementCode ?? null,
         percent: block.percent ?? null,
         rmReps: block.rmReps ?? null,
+        foundations: block.foundations?.trim() ? block.foundations.trim() : null,
         scaled: block.scaled?.trim() ? block.scaled.trim() : null,
         rx: block.rx?.trim() ? block.rx.trim() : null,
         rxPlus: block.rxPlus?.trim() ? block.rxPlus.trim() : null,
+        capacity: block.capacity ?? null,
+        plannedMinutes: block.plannedMinutes ?? null,
+        exerciseIds: [...new Set(block.exerciseIds ?? [])],
+        track: block.track ?? "class",
       };
       const current = existing[i];
       if (current) {
@@ -390,6 +465,44 @@ export function workoutsRepo(db: () => Database) {
       const teamId = input.teamId ?? null;
       if (!(await knownSectionAndTeam(scope, input.sectionId, teamId)))
         return { outcome: "unknown_section" };
+      if (input.planId) {
+        const plan = await db()
+          .select({ id: schema.boxPlans.id })
+          .from(schema.boxPlans)
+          .where(
+            and(
+              eq(schema.boxPlans.organizationId, scope.organizationId),
+              eq(schema.boxPlans.id, input.planId),
+              eq(schema.boxPlans.sectionId, input.sectionId),
+            ),
+          )
+          .limit(1);
+        if (!plan[0]) return { outcome: "unknown_section" };
+      }
+      // Solo ejercicios de la biblioteca del club.
+      const wanted = [...new Set(input.blocks.flatMap((b) => b.exerciseIds ?? []))];
+      if (wanted.length > 0) {
+        const known = new Set(
+          (
+            await db()
+              .select({ id: schema.exercises.id })
+              .from(schema.exercises)
+              .where(
+                and(
+                  eq(schema.exercises.organizationId, scope.organizationId),
+                  inArray(schema.exercises.id, wanted),
+                ),
+              )
+          ).map((e) => e.id),
+        );
+        input = {
+          ...input,
+          blocks: input.blocks.map((b) => ({
+            ...b,
+            exerciseIds: (b.exerciseIds ?? []).filter((id) => known.has(id)),
+          })),
+        };
+      }
       const values = {
         sectionId: input.sectionId,
         teamId,
@@ -398,6 +511,13 @@ export function workoutsRepo(db: () => Database) {
         notes: input.notes?.trim() ? input.notes.trim() : null,
         status: input.status,
         publishAt: input.publishAt ? new Date(input.publishAt) : null,
+        planId: input.planId ?? null,
+        planWeek: input.planId ? (input.planWeek ?? null) : null,
+        dayRole: input.dayRole ?? null,
+        intentDomain: input.intentDomain ?? null,
+        intentEffort: input.intentEffort ?? null,
+        intentFeel: input.intentFeel?.trim() ? input.intentFeel.trim() : null,
+        why: input.why?.trim() ? input.why.trim() : null,
       };
       try {
         const result = await db().transaction(async (tx) => {

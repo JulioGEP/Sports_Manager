@@ -80,6 +80,15 @@ import { AthletesPage } from "@/routes/fitness/staff/athletes";
 import { MessageThreadPage } from "@/routes/fitness/staff/messages";
 import { ProgrammingPage } from "@/routes/fitness/staff/programming";
 import { WorkoutEditorPage } from "@/routes/fitness/staff/workout-editor";
+import { MyCyclePage } from "@/routes/fitness/athlete/cycle";
+import { CycleSummaryPage } from "@/routes/fitness/athlete/cycle-summary";
+import { EquipmentPage } from "@/routes/fitness/planning/equipment";
+import { PlanHealthPage } from "@/routes/fitness/planning/health";
+import { PlanningHomePage } from "@/routes/fitness/planning/home";
+import { PlanPage } from "@/routes/fitness/planning/plan";
+import { PlanReviewPage } from "@/routes/fitness/planning/review";
+import { PlanWeekPage } from "@/routes/fitness/planning/week";
+import { PlanWizardPage } from "@/routes/fitness/planning/wizard";
 import { Landing } from "@/routes/landing";
 import { ToastProvider } from "@/ui";
 
@@ -430,6 +439,15 @@ export const router = createBrowserRouter([
       { path: "programming", element: <ProgrammingPage /> },
       { path: "programming/new", element: <WorkoutEditorPage /> },
       { path: "programming/:id", element: <WorkoutEditorPage /> },
+      { path: "planning", element: <PlanningHomePage /> },
+      { path: "planning/new", element: <PlanWizardPage /> },
+      { path: "planning/:id", element: <PlanPage /> },
+      { path: "planning/:id/weeks/:n", element: <PlanWeekPage /> },
+      { path: "planning/:id/review", element: <PlanReviewPage /> },
+      { path: "planning/:id/health", element: <PlanHealthPage /> },
+      { path: "equipment", element: <EquipmentPage /> },
+      { path: "cycle", element: <MyCyclePage /> },
+      { path: "cycle/summary", element: <CycleSummaryPage /> },
       { path: "athletes", element: <AthletesPage /> },
       { path: "athletes/:id", element: <AthleteFilePage /> },
       { path: "class-types", element: <ClassTypesPage /> },

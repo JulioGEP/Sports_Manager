@@ -73,6 +73,12 @@ export function SportsOnly({
   if (model !== "fitness") return <>{children}</>;
   const paths = clubPaths(slug);
   const target = paths[fitness];
-  const to = typeof target === "function" ? (withId && id ? target(id) : paths.home) : target;
+  // Las fichas con id llevan un solo argumento (la semana del plan, dos, no tiene equivalente).
+  const to =
+    typeof target === "function"
+      ? withId && id
+        ? (target as (id: string) => string)(id)
+        : paths.home
+      : target;
   return <Navigate to={to} replace />;
 }

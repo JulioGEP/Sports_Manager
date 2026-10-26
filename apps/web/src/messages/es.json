@@ -1601,6 +1601,28 @@
       "updated": "Ejercicio editado",
       "archived": "Ejercicio archivado",
       "restored": "Ejercicio recuperado"
+    },
+    "equipment": {
+      "created": "Material añadido",
+      "updated": "Material editado",
+      "removed": "Material quitado"
+    },
+    "planning": {
+      "settings_updated": "Ajustes de la programación cambiados"
+    },
+    "plan": {
+      "created": "Plan creado",
+      "updated": "Plan editado",
+      "removed": "Plan borrado",
+      "drafted": "Semana del plan preparada",
+      "adjusted": "Ajuste de la revisión decidido"
+    },
+    "plan_ai": {
+      "requested": "Planificación pedida a la IA",
+      "applied": "Propuesta de la IA aplicada al plan"
+    },
+    "athlete_level": {
+      "updated": "Nivel del atleta cambiado"
     }
   },
   "team": {
@@ -3643,7 +3665,9 @@
       "newWorkout": "Programar un WOD",
       "exercises": "Ejercicios",
       "newPlan": "Nueva tarifa o bono",
-      "newLead": "Nuevo lead"
+      "newLead": "Nuevo lead",
+      "newTrainingPlan": "Nuevo plan de entrenamiento",
+      "equipment": "Material del box"
     },
     "keys": {
       "move": "moverse",

@@ -27,6 +27,7 @@ import {
 import { id, inList, timestamps } from "./_shared.ts";
 import { users } from "./auth.ts";
 import { organizations } from "./organizations.ts";
+import { boxPlans } from "./planning.ts";
 import { sections, teams } from "./structure.ts";
 
 /**
@@ -82,6 +83,8 @@ export const aiGenerations = pgTable(
       .notNull()
       .references(() => sections.id, { onDelete: "cascade" }),
     teamId: uuid("team_id").references(() => teams.id, { onDelete: "cascade" }),
+    /** El plan del que se pide algo (ADR 0052): una semana o un cambio del copiloto. */
+    planId: uuid("plan_id").references(() => boxPlans.id, { onDelete: "set null" }),
     requestedBy: uuid("requested_by").references(() => users.id, { onDelete: "set null" }),
     /** Lunes de la semana del club en que se pidió: la cuota cuenta por semana. */
     weekStart: date("week_start").notNull(),
@@ -90,10 +93,14 @@ export const aiGenerations = pgTable(
     profileCode: text("profile_code").notNull(),
     profileVersion: integer("profile_version").notNull(),
     model: text("model").notNull(),
-    request: jsonb("request").$type<AiDraftRequest | AiWodRequest>().notNull(),
-    context: jsonb("context").$type<AiContext | AiWodContext>().notNull(),
-    output: jsonb("output").$type<AiProposalOutput | AiWodOutput>(),
-    proposal: jsonb("proposal").$type<AiProposalResolved | AiWodProposal>(),
+    request: jsonb("request")
+      .$type<AiDraftRequest | AiWodRequest | Record<string, unknown>>()
+      .notNull(),
+    context: jsonb("context").$type<AiContext | AiWodContext | Record<string, unknown>>().notNull(),
+    output: jsonb("output").$type<AiProposalOutput | AiWodOutput | Record<string, unknown>>(),
+    proposal: jsonb("proposal").$type<
+      AiProposalResolved | AiWodProposal | Record<string, unknown>
+    >(),
     inputTokens: integer("input_tokens").notNull().default(0),
     outputTokens: integer("output_tokens").notNull().default(0),
     cacheReadTokens: integer("cache_read_tokens").notNull().default(0),
@@ -113,6 +120,7 @@ export const aiGenerations = pgTable(
     index("ai_generations_organization_id_idx").on(t.organizationId),
     index("ai_generations_org_week_idx").on(t.organizationId, t.weekStart),
     index("ai_generations_team_id_idx").on(t.teamId),
+    index("ai_generations_plan_id_idx").on(t.planId),
     check("ai_generations_status_check", inList(t.status, AI_GENERATION_STATUSES)),
     check("ai_generations_kind_check", inList(t.kind, AI_GENERATION_KINDS)),
     // Las sesiones son siempre de un equipo; el WOD puede ser de toda la disciplina.

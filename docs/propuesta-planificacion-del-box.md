@@ -1,6 +1,6 @@
 # Propuesta: Planificación del box. De la estrategia al WOD del día
 
-Estado: propuesta, pendiente de las seis decisiones de la sección 12. Fecha: 26 de octubre de 2026. Punto de partida: ADR 0050 (programación rehecha) y ADR 0049 (propuesta de WOD con IA). Referencias: comparativa de GRIT Program 60, 120 y 180 (PDF de GRIT Programming, seis días de programación de muestra); GRIT Programming, 77 Feet Box Planning, ZonaWOD y Fitr Studio Program como modelos de venta de programación. Las webs no se pudieron abrir desde el entorno de trabajo: la propuesta se apoya en el PDF, en la ayuda pública de Fitr sobre programas y pistas, y en la práctica habitual de programación para boxes. Maqueta de las pantallas: https://claude.ai/artifact/UnBGkTKq5ttTRVi7TU2dpu (privada hasta que se comparta).
+Estado: aprobada y construida en una fase, sin módulos de pago (ADR 0052). Fecha: 26 de octubre de 2026. Punto de partida: ADR 0050 (programación rehecha) y ADR 0049 (propuesta de WOD con IA). Referencias: comparativa de GRIT Program 60, 120 y 180 (PDF de GRIT Programming, seis días de programación de muestra); GRIT Programming, 77 Feet Box Planning, ZonaWOD y Fitr Studio Program como modelos de venta de programación. Las webs no se pudieron abrir desde el entorno de trabajo: la propuesta se apoya en el PDF, en la ayuda pública de Fitr sobre programas y pistas, y en la práctica habitual de programación para boxes. Maqueta de las pantallas: https://claude.ai/artifact/UnBGkTKq5ttTRVi7TU2dpu (privada hasta que se comparta).
 
 Resumen:
 

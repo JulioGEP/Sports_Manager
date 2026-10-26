@@ -1,12 +1,15 @@
 import {
   movementByCode,
   type BenchmarkEntry,
+  type Capacity,
+  type DayRole,
   type Locale,
   type RepMax,
   type ScoreType,
   type WorkoutBlockInput,
   type WorkoutBlockKind,
   type WorkoutBlockView,
+  type WorkoutTrack,
   type WorkoutView,
 } from "@sportsmanager/shared";
 
@@ -79,10 +82,26 @@ export interface BlockDraft {
   movementCode: string;
   percent: string;
   rmReps: string;
+  foundations: string;
   scaled: string;
   rx: string;
   rxPlus: string;
+  /** Planificación (ADR 0052): capacidad, minutos previstos, pista y ejercicios enlazados. */
+  capacity: Capacity | "";
+  plannedMinutes: string;
+  track: WorkoutTrack;
+  exerciseIds: string[];
 }
+
+/** La capacidad con la que nace cada tipo de bloque (se cambia en el bloque). */
+export const DEFAULT_CAPACITY: Record<WorkoutBlockKind, Capacity | ""> = {
+  warmup: "mobility",
+  strength: "strength",
+  skill: "gymnastics",
+  wod: "",
+  accessory: "",
+  cooldown: "mobility",
+};
 
 let keySeq = 0;
 export const newKey = () => `b${++keySeq}`;
@@ -128,9 +147,14 @@ export function draftOf(b: WorkoutBlockInput): BlockDraft {
     movementCode: b.movementCode ?? "",
     percent: b.percent ? String(b.percent) : "",
     rmReps: b.rmReps ? String(b.rmReps) : "1",
+    foundations: b.foundations ?? "",
     scaled: b.scaled ?? "",
     rx: b.rx ?? "",
     rxPlus: b.rxPlus ?? "",
+    capacity: b.capacity ?? "",
+    plannedMinutes: b.plannedMinutes ? String(b.plannedMinutes) : "",
+    track: b.track ?? "class",
+    exerciseIds: b.exerciseIds ?? [],
   };
 }
 
@@ -145,9 +169,14 @@ export function emptyBlock(kind: WorkoutBlockKind): BlockDraft {
     movementCode: "",
     percent: "",
     rmReps: "1",
+    foundations: "",
     scaled: "",
     rx: "",
     rxPlus: "",
+    capacity: DEFAULT_CAPACITY[kind],
+    plannedMinutes: "",
+    track: "class",
+    exerciseIds: [],
   };
 }
 
@@ -186,10 +215,21 @@ export function inputOf(b: BlockDraft, kindLabel: string): WorkoutBlockInput {
     movementCode: strength ? orNull(b.movementCode) : null,
     percent: b.format === "percent" && b.percent.trim() ? Number(b.percent) : null,
     rmReps: b.format === "max" ? (Number(b.rmReps || "1") as RepMax) : null,
+    foundations: orNull(b.foundations),
     scaled: orNull(b.scaled),
     rx: orNull(b.rx),
     rxPlus: orNull(b.rxPlus),
+    capacity: b.capacity || null,
+    plannedMinutes: plannedOf(b.plannedMinutes),
+    track: b.track,
+    exerciseIds: b.exerciseIds,
   };
+}
+
+/** Minutos previstos escritos a número entero (1 a 120); nulo si no hay o no valen. */
+export function plannedOf(text: string): number | null {
+  const v = Number(text.trim());
+  return text.trim() && Number.isInteger(v) && v >= 1 && v <= 120 ? v : null;
 }
 
 /** Los formatos que se pueden sacar de un benchmark del catálogo. */
@@ -251,6 +291,11 @@ export function previewOf(input: {
   blocks: BlockDraft[];
   kindLabel: (kind: WorkoutBlockKind) => string;
   locale: Locale;
+  /** El papel y la intención del día, si sirve a un plan. */
+  dayRole?: DayRole | null;
+  intent?: WorkoutView["intent"];
+  why?: string[];
+  exerciseName?: (id: string) => string | null;
 }): WorkoutView {
   return {
     id: input.id,
@@ -264,6 +309,11 @@ export function previewOf(input: {
     visible: false,
     createdBy: null,
     updatedAt: new Date(0).toISOString(),
+    plan: null,
+    dayRole: input.dayRole ?? null,
+    intent: input.intent ?? null,
+    why: input.why ?? [],
+    plusHidden: 0,
     blocks: input.blocks.map((b, i) => {
       const value = inputOf(b, input.kindLabel(b.kind));
       const movement = movementByCode(value.movementCode);
@@ -278,9 +328,17 @@ export function previewOf(input: {
         movement: movement ? { code: movement.code, name: movement.name[input.locale] } : null,
         percent: value.percent ?? null,
         rmReps: value.rmReps ?? null,
+        foundations: value.foundations ?? null,
         scaled: value.scaled ?? null,
         rx: value.rx ?? null,
         rxPlus: value.rxPlus ?? null,
+        capacity: value.capacity ?? null,
+        plannedMinutes: value.plannedMinutes ?? null,
+        track: value.track ?? "class",
+        exercises: (value.exerciseIds ?? []).flatMap((id) => {
+          const name = input.exerciseName?.(id);
+          return name ? [{ id, name }] : [];
+        }),
         mine: null,
         results: 0,
       };

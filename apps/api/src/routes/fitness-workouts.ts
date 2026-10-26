@@ -29,6 +29,8 @@ import {
   WorkoutsResponseSchema,
   WorkoutUpsertSchema,
   WORKOUT_LEVELS,
+  planWeekOf,
+  roleOn,
   type BenchmarkResultView,
   type MovementProgress,
   type PersonalRecord,
@@ -67,6 +69,7 @@ import {
   workoutDto,
   type Ctx,
 } from "./fitness-common.ts";
+import { athleteLevels, mainPlanOf, upcomingRoles } from "./planning-athlete.ts";
 
 const DAY = 86_400_000;
 const addDays = (date: string, days: number) =>
@@ -81,6 +84,23 @@ function rankedOf(
     value: scoreValue(scoreType, r.score) ?? 0,
     completed: r.completed,
     capReps: r.score.reps ?? 0,
+  };
+}
+
+/**
+ * Al copiar un WOD a otro día, sigue en su plan si el día nuevo cae dentro (con la semana y el papel
+ * de ese día); si no, sale del plan. La intención y el porqué viajan con él.
+ */
+function copiedPlanFields(w: WorkoutRecord, onDate: string) {
+  const week = w.plan ? planWeekOf(w.plan.startsOn, w.plan.weeks, onDate) : null;
+  return {
+    planId: w.plan && week ? w.plan.id : null,
+    planWeek: week,
+    dayRole: w.plan && week ? roleOn(w.plan.structure, w.plan.startsOn, onDate) : w.dayRole,
+    intentDomain: w.intentDomain,
+    intentEffort: w.intentEffort,
+    intentFeel: w.intentFeel,
+    why: w.why,
   };
 }
 
@@ -423,10 +443,16 @@ export function createFitnessWorkoutRoutes(config: ApiConfig, data: DataLayer) {
               movementCode: b.movementCode,
               percent: b.percent,
               rmReps: b.rmReps as RepMax | null,
+              foundations: b.foundations,
               scaled: b.scaled,
               rx: b.rx,
               rxPlus: b.rxPlus,
+              capacity: b.capacity,
+              plannedMinutes: b.plannedMinutes,
+              exerciseIds: b.exerciseIds,
+              track: b.track,
             })),
+            ...copiedPlanFields(w, addDays(input.to, daysBetween(input.from, w.onDate))),
           },
           c.get("sessionUser").id,
         );
@@ -515,8 +541,17 @@ export function createFitnessWorkoutRoutes(config: ApiConfig, data: DataLayer) {
     }),
     async (c) => {
       const player = await requireSelfPlayer(data, c);
-      const date = c.req.valid("query").date ?? todayIn(orgOf(c).organization.timezone);
-      return c.json({ date, workouts: await athleteWorkouts(c, player.id, date) }, 200);
+      const tenant = orgOf(c);
+      const today = todayIn(tenant.organization.timezone);
+      const date = c.req.valid("query").date ?? today;
+      const [workouts, levels, plan, plusEntitled] = await Promise.all([
+        athleteWorkouts(c, player.id, date),
+        athleteLevels(data, tenant.scope, player.id, today),
+        mainPlanOf(data, tenant.scope, player.id, tenant.organization.timezone),
+        data.planning.plusEntitled(tenant.scope, player.id, today),
+      ]);
+      const upcoming = await upcomingRoles(data, tenant.scope, plan, today);
+      return c.json({ date, workouts, levels, upcoming, plusEntitled }, 200);
     },
   );
 

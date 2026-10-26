@@ -19,6 +19,9 @@ import esLexicon from "@/messages/fitness/lexicon/es.json";
 import caFitnessOwner from "@/messages/fitness/owner/ca.json";
 import enFitnessOwner from "@/messages/fitness/owner/en.json";
 import esFitnessOwner from "@/messages/fitness/owner/es.json";
+import caFitnessPlanning from "@/messages/fitness/planning/ca.json";
+import enFitnessPlanning from "@/messages/fitness/planning/en.json";
+import esFitnessPlanning from "@/messages/fitness/planning/es.json";
 import caFitnessStaff from "@/messages/fitness/staff/ca.json";
 import enFitnessStaff from "@/messages/fitness/staff/en.json";
 import esFitnessStaff from "@/messages/fitness/staff/es.json";
@@ -51,6 +54,7 @@ const fitness = {
     staff: esFitnessStaff,
     owner: esFitnessOwner,
     exercises: esFitnessExercises,
+    planning: esFitnessPlanning,
   },
   ca: {
     common: caFitnessCommon,
@@ -58,6 +62,7 @@ const fitness = {
     staff: caFitnessStaff,
     owner: caFitnessOwner,
     exercises: caFitnessExercises,
+    planning: caFitnessPlanning,
   },
   en: {
     common: enFitnessCommon,
@@ -65,6 +70,7 @@ const fitness = {
     staff: enFitnessStaff,
     owner: enFitnessOwner,
     exercises: enFitnessExercises,
+    planning: enFitnessPlanning,
   },
 };
 

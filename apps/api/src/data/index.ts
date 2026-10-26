@@ -20,6 +20,7 @@ import { bookingsRepo } from "./bookings.ts";
 import { communityRepo } from "./community.ts";
 import { exercisesRepo } from "./exercises.ts";
 import { fitnessInsightsRepo } from "./fitness-insights.ts";
+import { planningRepo } from "./planning.ts";
 import { workoutsRepo } from "./workouts.ts";
 import { createNetlifyStoreImageStore, storeRepo } from "./store.ts";
 import type { ResendLike } from "./email/resend.ts";
@@ -51,9 +52,11 @@ import { usersRepo } from "./users.ts";
 export type { OrgScope } from "./scope.ts";
 export type {
   AiGenerationRecord,
+  AiPlanRecord,
   AiWodRecord,
   ClaimedGeneration,
   NewGeneration,
+  NewPlanGeneration,
   NewWodGeneration,
   SectionEquipmentRecord,
 } from "./ai.ts";
@@ -124,6 +127,13 @@ export { workoutVisible } from "./workouts.ts";
 export type { AnnouncementRecord, LeadRecord, MessageRecord } from "./community.ts";
 export type { AthleteRowRecord } from "./fitness-insights.ts";
 export type { ExerciseRecord } from "./exercises.ts";
+export type {
+  BlockResultRow,
+  BoxPlanRecord,
+  EquipmentRecord,
+  NewBoxPlan,
+  TestMark,
+} from "./planning.ts";
 export type {
   AccountingConnectionPatch,
   AccountingConnectionRow,
@@ -311,6 +321,8 @@ export function createDataLayer(options: DataLayerOptions) {
     fitness: fitnessInsightsRepo(db),
     /** Biblioteca de ejercicios del box (ADR 0050). */
     exercises: exercisesRepo(db),
+    /** Planificación del box (ADR 0052): material, planes, revisión y niveles. */
+    planning: planningRepo(db),
     logos: logosRepo(
       db,
       options.logoStore ??

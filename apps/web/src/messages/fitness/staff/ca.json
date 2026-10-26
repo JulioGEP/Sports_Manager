@@ -330,10 +330,23 @@
       "levels": "Escalats",
       "levelsFilled": "Escalats (amb nivells)",
       "levelPlaceholder": {
+        "foundations": "Menys volum i variants senzilles",
         "scaled": "Thrusters 30/20 kg, ring rows",
         "rx": "El de la pissarra",
         "rxPlus": "Thrusters 50/35 kg, chest to bar"
-      }
+      },
+      "capacity": "Capacitat",
+      "capacityHint": "El que entrena: dona el color i compta en l'equilibri de la setmana.",
+      "capacityNone": "Sense capacitat",
+      "plannedMinutes": "Minuts",
+      "plannedMinutesHint": "Previstos a la classe.",
+      "exercises": "Exercicis",
+      "exercisesHint": "Enllaçats a la seva fitxa: l'atleta els toca i veu com es fan. El validador mira el seu material.",
+      "addExercise": "Afegir exercici",
+      "removeExercise": "Treure {name}",
+      "unknownExercise": "Exercici arxivat",
+      "plus": "Classe+",
+      "plusHint": "Feina extra per a l'Open Box. Només la veuen els atletes amb Classe+ a la seva tarifa."
     },
     "formats": {
       "for_time": "Per temps",
@@ -398,6 +411,25 @@
       "emptyHint": "La proposta omple l'editor. No es desa res fins que desis.",
       "loadedTitle": "Proposta de la IA carregada",
       "loaded": "Revisa-la i desa: fins aleshores no es desa res."
+    },
+    "intent": {
+      "title": "Intenció del dia",
+      "hint": "El paper del dia a la setmana, quant ha de durar, com s'ha de sentir i per què existeix.",
+      "fromPlan": "{plan} · setmana {week} de {weeks} · {block}",
+      "fromPlanNew": "Del pla · setmana {week}",
+      "role": "Paper del dia",
+      "roleHint": "El seu lloc a la setmana: dona el color del dia.",
+      "noRole": "Sense paper",
+      "domain": "Durada del WOD",
+      "domainHint": "Per mesurar si va sortir com es va planificar.",
+      "noDomain": "Sense definir",
+      "effort": "Esforç objectiu",
+      "effortHint": "D'1 (suau) a 5 (a fons).",
+      "feel": "Com s'ha de sentir",
+      "feelHint": "Una frase per a la pissarra.",
+      "feelPlaceholder": "Sense parar més de 5 segons",
+      "why": "Per què aquest WOD",
+      "whyHint": "Una raó per línia. L'atleta les llegeix al seu WOD."
     }
   },
   "athletes": {

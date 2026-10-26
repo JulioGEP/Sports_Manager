@@ -20,8 +20,17 @@ import type { Locale } from "./locales.ts";
  * disciplina, lo programado alrededor, el material y lo que pide el coach.
  */
 
-/** Qué se pidió a la IA: las sesiones de un equipo o el WOD de un día. */
-export const AI_GENERATION_KINDS = ["training", "wod"] as const;
+/**
+ * Qué se pidió a la IA: las sesiones de un equipo, el WOD de un día o, en la planificación del box
+ * (ADR 0052), el plan, una semana del plan o un cambio del copiloto.
+ */
+export const AI_GENERATION_KINDS = [
+  "training",
+  "wod",
+  "plan_architect",
+  "plan_week",
+  "plan_copilot",
+] as const;
 export type AiGenerationKind = (typeof AI_GENERATION_KINDS)[number];
 
 /** Perfil fijo del WOD: no depende del deporte de la sección como el de las sesiones. */

@@ -17,6 +17,7 @@ import {
   useWorkoutName,
   WorkoutCard,
 } from "@/components/fitness/programming-week";
+import { usePlanNames, WeekRoles } from "@/components/fitness/planning-ui";
 import { useHas, useStaffError } from "@/components/fitness/staff-ui";
 import { mondayOf } from "@/components/fitness/staff-workout";
 import { apiFetch } from "@/lib/api";
@@ -31,6 +32,7 @@ import {
   useWorkouts,
 } from "@/lib/fitness";
 import { useT } from "@/lib/intl";
+import { usePlan, usePlans } from "@/lib/planning";
 import {
   Alert,
   Button,
@@ -292,6 +294,8 @@ export function ProgrammingPage() {
         ) : null}
       </div>
 
+      <PlanStrips monday={monday} sections={shown.map((s) => s.id)} />
+
       {workouts.isError ? <Alert kind="error">{t("loadError")}</Alert> : null}
       {!loading && sections.length === 0 ? (
         <Alert
@@ -411,6 +415,94 @@ export function ProgrammingPage() {
       {sheet?.kind === "copyFrom" ? (
         <CopyFromSheet date={sheet.date} section={sheet.section} onClose={() => setSheet(null)} />
       ) : null}
+    </div>
+  );
+}
+
+/**
+ * El plan de cada disciplina encima de la semana (ADR 0052): en qué semana y bloque está, el papel
+ * de cada día y el enlace a la semana del plan, donde se escribe con su intención y su validación.
+ */
+function PlanStrips({ monday, sections }: { monday: string; sections: string[] }) {
+  const plans = usePlans();
+  const active = (plans.data?.plans ?? []).filter(
+    (p) => p.status === "active" && sections.includes(p.section.id),
+  );
+  if (plans.isPending) return null;
+  return active.length === 0 ? (
+    <NoPlanHint />
+  ) : (
+    <div className="flex flex-col gap-3">
+      {active.map((p) => (
+        <PlanStrip key={p.id} id={p.id} monday={monday} />
+      ))}
+    </div>
+  );
+}
+
+function NoPlanHint() {
+  const t = useT("fitness.planning.strip");
+  const has = useHas();
+  const { slug } = useReadyClub();
+  const paths = clubPaths(slug);
+  if (!has("org.training.write") && !has("org.training.write_own")) return null;
+  return (
+    <Alert
+      kind="info"
+      title={t("noPlanTitle")}
+      actions={
+        <ButtonLink to={paths.planningNew} variant="secondary" size="sm" action="add">
+          {t("create")}
+        </ButtonLink>
+      }
+    >
+      {t("noPlanBody")}
+    </Alert>
+  );
+}
+
+function PlanStrip({ id, monday }: { id: string; monday: string }) {
+  const t = useT("fitness.planning.strip");
+  const names = usePlanNames();
+  const time = useClassTime();
+  const { slug } = useReadyClub();
+  const paths = clubPaths(slug);
+  const plan = usePlan(id).data?.plan;
+  if (!plan) return null;
+  const n =
+    Math.floor(
+      (Date.parse(`${monday}T00:00:00Z`) - Date.parse(`${plan.startsOn}T00:00:00Z`)) /
+        (7 * 86_400_000),
+    ) + 1;
+  const week = n >= 1 && n <= plan.weeks ? plan.structure.weeks[n - 1] : undefined;
+  return (
+    <div className="flex flex-col gap-3 rounded-card bg-surface p-4 shadow-card sm:flex-row sm:items-center precisa:border precisa:border-border">
+      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <span className="text-label uppercase tracking-wide text-muted">{plan.section.name}</span>
+        <span className="truncate font-semibold text-ink">{plan.name}</span>
+        <span className="text-secondary text-muted">
+          {week
+            ? t("position", {
+                n,
+                weeks: plan.weeks,
+                block: names.blockOf(plan.structure, week.block),
+              })
+            : t("outside")}
+        </span>
+      </div>
+      {week ? (
+        <div className="w-full sm:w-72">
+          <WeekRoles roles={week.roles} closed={week.closed} monday={monday} today={time.today} />
+        </div>
+      ) : null}
+      <ButtonLink
+        to={week ? paths.planningWeek(plan.id, n) : paths.planningPlan(plan.id)}
+        variant="secondary"
+        size="sm"
+        action="open"
+      >
+        {week ? t("openWeek") : t("openPlan")}
+      </ButtonLink>
     </div>
   );
 }

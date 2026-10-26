@@ -36,6 +36,12 @@ export const EXERCISE_EQUIPMENT = [
   "sled",
   "sandbag",
   "med_ball",
+  "ghd",
+  "rope",
+  "parallettes",
+  "yoke",
+  "bench",
+  "bands",
   "bodyweight",
   "other",
 ] as const;

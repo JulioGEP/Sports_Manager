@@ -5,13 +5,16 @@
     "classes": "Classes",
     "wod": "WOD",
     "progress": "Progress",
+    "cycle": "My cycle",
     "myPlan": "My plan",
     "messages": "Messages",
     "announcements": "Announcements",
     "ranking": "Leaderboard",
     "timer": "Timer",
     "library": "Exercises",
+    "equipment": "Equipment",
     "programming": "Programming",
+    "planning": "Planning",
     "athletes": "Athletes",
     "plans": "Plans",
     "leads": "Leads",
@@ -75,6 +78,7 @@
     "waitlist": "{count, plural, one {# waiting} other {# waiting}}"
   },
   "levels": {
+    "foundations": "Foundations",
     "scaled": "Scaled",
     "rx": "RX",
     "rx_plus": "RX+"

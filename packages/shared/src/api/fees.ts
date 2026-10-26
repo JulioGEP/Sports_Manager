@@ -28,6 +28,8 @@ export const FeePlanSchema = z.object({
   sessions: z.number().int().nullable(),
   validityDays: z.number().int().nullable(),
   classTeamIds: z.array(z.string()).nullable(),
+  /** Incluye Clase+ (ADR 0052). */
+  includesPlus: z.boolean(),
   /** Atletas con esta tarifa activa. */
   activeAthletes: z.number().int().nonnegative(),
 });

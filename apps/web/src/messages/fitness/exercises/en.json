@@ -40,6 +40,12 @@
     "sled": "Sled",
     "sandbag": "Sandbag",
     "med_ball": "Med ball",
+    "ghd": "GHD",
+    "rope": "Climbing rope",
+    "parallettes": "Parallettes",
+    "yoke": "Yoke",
+    "bench": "Bench",
+    "bands": "Bands",
     "bodyweight": "No equipment",
     "other": "Other"
   },

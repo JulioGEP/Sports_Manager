@@ -1601,6 +1601,28 @@
       "updated": "Exercise edited",
       "archived": "Exercise archived",
       "restored": "Exercise restored"
+    },
+    "equipment": {
+      "created": "Equipment added",
+      "updated": "Equipment edited",
+      "removed": "Equipment removed"
+    },
+    "planning": {
+      "settings_updated": "Programming settings changed"
+    },
+    "plan": {
+      "created": "Plan created",
+      "updated": "Plan edited",
+      "removed": "Plan deleted",
+      "drafted": "Plan week prepared",
+      "adjusted": "Review adjustment decided"
+    },
+    "plan_ai": {
+      "requested": "Planning requested from the AI",
+      "applied": "AI proposal applied to the plan"
+    },
+    "athlete_level": {
+      "updated": "Athlete level changed"
     }
   },
   "team": {
@@ -3643,7 +3665,9 @@
       "newWorkout": "Program a WOD",
       "exercises": "Exercises",
       "newPlan": "New plan or pack",
-      "newLead": "New lead"
+      "newLead": "New lead",
+      "newTrainingPlan": "New training plan",
+      "equipment": "Box equipment"
     },
     "keys": {
       "move": "move",

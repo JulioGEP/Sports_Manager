@@ -17,9 +17,30 @@ export function blockInputOf(b: WorkoutBlockView): WorkoutBlockInput {
     movementCode: b.movement?.code ?? null,
     percent: b.percent,
     rmReps: (b.rmReps as RepMax | null) ?? null,
+    foundations: b.foundations,
     scaled: b.scaled,
     rx: b.rx,
     rxPlus: b.rxPlus,
+    capacity: b.capacity,
+    plannedMinutes: b.plannedMinutes,
+    track: b.track,
+    exerciseIds: b.exercises.map((e) => e.id),
+  };
+}
+
+/**
+ * Lo que un WOD guarda de la planificación (ADR 0052): el plan, la semana, el papel del día, la
+ * intención y el porqué. Va en cada guardado para no perderlo al editar, publicar o mover.
+ */
+export function planFieldsOf(w: WorkoutView) {
+  return {
+    planId: w.plan?.id ?? null,
+    planWeek: w.plan?.week ?? null,
+    dayRole: w.dayRole,
+    intentDomain: w.intent?.domain ?? null,
+    intentEffort: w.intent?.effort ?? null,
+    intentFeel: w.intent?.feel ?? null,
+    why: w.why.length > 0 ? w.why.join("\n") : null,
   };
 }
 

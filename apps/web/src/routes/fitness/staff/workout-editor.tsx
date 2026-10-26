@@ -2,10 +2,15 @@ import {
   addDays,
   AI_FAILURES,
   AiWodGenerationResponseSchema,
+  DAY_ROLE_INFO,
+  DAY_ROLES,
   MOVEMENTS,
+  TIME_DOMAINS,
   WorkoutResponseSchema,
   WorkoutUpsertSchema,
   type AiWodGenerationResponse,
+  type DayRole,
+  type TimeDomain,
   type WorkoutBlockKind,
   type WorkoutView,
 } from "@sportsmanager/shared";
@@ -33,9 +38,11 @@ import {
   withKind,
   type BlockDraft,
 } from "@/components/fitness/programming-model";
+import { useExercises } from "@/components/fitness/exercise-ui";
+import { RoleChip, usePlanNames } from "@/components/fitness/planning-ui";
 import { useWorkoutState } from "@/components/fitness/programming-week";
 import { useStaffError } from "@/components/fitness/staff-ui";
-import { blockInputOf } from "@/components/fitness/staff-workout";
+import { blockInputOf, planFieldsOf } from "@/components/fitness/staff-workout";
 import { useMovementName, WorkoutBlocks } from "@/components/fitness/workout-blocks";
 import { localToIso } from "@/lib/agenda";
 import { ApiClientError, apiFetch } from "@/lib/api";
@@ -77,6 +84,14 @@ interface Draft {
   title: string;
   notes: string;
   blocks: BlockDraft[];
+  /** Planificación (ADR 0052): el plan y la semana, el papel del día, la intención y el porqué. */
+  planId: string | null;
+  planWeek: number | null;
+  dayRole: DayRole | null;
+  intentDomain: TimeDomain | null;
+  intentEffort: number | null;
+  intentFeel: string;
+  why: string;
 }
 
 /** Lo que el servidor tiene guardado de cómo se publica. */
@@ -93,6 +108,24 @@ const fingerprint = (d: Draft) =>
 /** A partir de aquí, el estado va en la barra de abajo; en móvil, arriba junto al día. */
 const WIDE_QUERY = "(min-width: 640px)";
 const orNull = (text: string) => (text.trim() ? text.trim() : null);
+
+/** Un WOD nuevo que se escribe desde la semana del plan: llega con su plan, su semana y su papel. */
+function fromPlanParams(params: URLSearchParams) {
+  const role = params.get("role");
+  const dayRole =
+    role && (DAY_ROLES as readonly string[]).includes(role) ? (role as DayRole) : null;
+  const week = Number(params.get("week"));
+  const info = dayRole ? DAY_ROLE_INFO[dayRole] : null;
+  return {
+    planId: params.get("plan"),
+    planWeek: Number.isInteger(week) && week > 0 ? week : null,
+    dayRole,
+    intentDomain: info?.domain ?? null,
+    intentEffort: info?.effort ?? null,
+    intentFeel: "",
+    why: "",
+  };
+}
 
 /**
  * El WOD de un día (ADR 0050): a la izquierda se escribe, a la derecha se ve como lo verá el
@@ -150,6 +183,17 @@ function Editor({ existing }: { existing: WorkoutView | null }) {
   const classTypes = useClassTypes();
   const movementName = useMovementName();
   const stateOf = useWorkoutState();
+  const planNames = usePlanNames();
+  const intentT = useT("fitness.staff.editor.intent");
+  const library = useExercises(false);
+  const exercises = useMemo(
+    () =>
+      (library.data?.exercises ?? [])
+        .filter((e) => e.status === "active")
+        .map((e) => ({ id: e.id, name: e.name }))
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    [library.data],
+  );
 
   const initial = useMemo<Draft>(
     () =>
@@ -161,6 +205,9 @@ function Editor({ existing }: { existing: WorkoutView | null }) {
             title: existing.title ?? "",
             notes: existing.notes ?? "",
             blocks: existing.blocks.map((b) => draftOf(blockInputOf(b))),
+            ...planFieldsOf(existing),
+            intentFeel: existing.intent?.feel ?? "",
+            why: existing.why.join("\n"),
           }
         : {
             sectionId: params.get("section") ?? "",
@@ -169,6 +216,7 @@ function Editor({ existing }: { existing: WorkoutView | null }) {
             title: "",
             notes: "",
             blocks: params.get("benchmark") ? [emptyBlock("wod")] : [],
+            ...fromPlanParams(params),
           },
     // El borrador nace una vez por WOD: el editor se monta con `key` por id.
     [existing],
@@ -186,6 +234,9 @@ function Editor({ existing }: { existing: WorkoutView | null }) {
   const [view, setView] = useState<"edit" | "preview">("edit");
   const [showNotes, setShowNotes] = useState(Boolean(initial.notes));
   const [showMore, setShowMore] = useState(Boolean(initial.teamId));
+  const [showIntent, setShowIntent] = useState(
+    Boolean(initial.dayRole || initial.planId || initial.intentFeel),
+  );
   const [benchmarkFor, setBenchmarkFor] = useState<string | null>(
     !existing && params.get("benchmark") ? (initial.blocks[0]?.key ?? null) : null,
   );
@@ -293,6 +344,13 @@ function Editor({ existing }: { existing: WorkoutView | null }) {
       status,
       publishAt,
       blocks: draft.blocks.map((b) => inputOf(b, kinds(b.kind))),
+      planId: draft.planId,
+      planWeek: draft.planId ? draft.planWeek : null,
+      dayRole: draft.dayRole,
+      intentDomain: draft.intentDomain,
+      intentEffort: draft.intentEffort,
+      intentFeel: orNull(draft.intentFeel),
+      why: orNull(draft.why),
     };
     const top: Record<string, string> = {};
     const parsed = WorkoutUpsertSchema.safeParse(value);
@@ -507,6 +565,16 @@ function Editor({ existing }: { existing: WorkoutView | null }) {
     blocks: draft.blocks,
     kindLabel: (k) => kinds(k),
     locale,
+    dayRole: draft.dayRole,
+    intent:
+      draft.intentDomain || draft.intentEffort || draft.intentFeel.trim()
+        ? { domain: draft.intentDomain, effort: draft.intentEffort, feel: orNull(draft.intentFeel) }
+        : null,
+    why: draft.why
+      .split("\n")
+      .map((l) => l.trim())
+      .filter(Boolean),
+    exerciseName: (id) => exercises.find((e) => e.id === id)?.name ?? null,
   });
   const dayLabel =
     draft.onDate === time.today
@@ -723,6 +791,130 @@ function Editor({ existing }: { existing: WorkoutView | null }) {
             </div>
           </Card>
 
+          <Card padded={false}>
+            <div className="flex flex-col gap-4 p-4 sm:p-5">
+              <button
+                type="button"
+                aria-expanded={showIntent}
+                onClick={() => setShowIntent((v) => !v)}
+                className="flex items-center justify-between gap-3 text-left"
+              >
+                <span className="flex min-w-0 flex-col gap-0.5">
+                  <span className="text-title3 text-ink">{intentT("title")}</span>
+                  <span className="text-secondary text-muted">
+                    {existing?.plan
+                      ? intentT("fromPlan", {
+                          plan: existing.plan.name,
+                          week: existing.plan.week,
+                          weeks: existing.plan.weeks,
+                          block: existing.plan.blockLabel,
+                        })
+                      : draft.planId
+                        ? intentT("fromPlanNew", { week: draft.planWeek ?? 0 })
+                        : intentT("hint")}
+                  </span>
+                </span>
+                <span className="flex shrink-0 items-center gap-2">
+                  {draft.dayRole ? <RoleChip role={draft.dayRole} /> : null}
+                  <Icon.CaretDown
+                    size={16}
+                    aria-hidden="true"
+                    className={`text-muted transition-transform ${showIntent ? "" : "-rotate-90"}`}
+                  />
+                </span>
+              </button>
+              {showIntent ? (
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field label={intentT("role")} hint={intentT("roleHint")}>
+                    {(id, describedBy) => (
+                      <Select
+                        id={id}
+                        disabled={readOnly}
+                        aria-describedby={describedBy}
+                        value={draft.dayRole ?? ""}
+                        onChange={(e) => {
+                          const role = (e.target.value || null) as DayRole | null;
+                          const info = role ? DAY_ROLE_INFO[role] : null;
+                          setDraft((d) => ({
+                            ...d,
+                            dayRole: role,
+                            intentDomain: d.intentDomain ?? info?.domain ?? null,
+                            intentEffort: d.intentEffort ?? info?.effort ?? null,
+                          }));
+                        }}
+                      >
+                        <option value="">{intentT("noRole")}</option>
+                        {DAY_ROLES.map((r) => (
+                          <option key={r} value={r}>
+                            {planNames.role(r)}
+                          </option>
+                        ))}
+                      </Select>
+                    )}
+                  </Field>
+                  <Field label={intentT("domain")} hint={intentT("domainHint")}>
+                    {(id, describedBy) => (
+                      <Select
+                        id={id}
+                        disabled={readOnly}
+                        aria-describedby={describedBy}
+                        value={draft.intentDomain ?? ""}
+                        onChange={(e) =>
+                          set("intentDomain", (e.target.value || null) as TimeDomain | null)
+                        }
+                      >
+                        <option value="">{intentT("noDomain")}</option>
+                        {TIME_DOMAINS.map((d) => (
+                          <option key={d} value={d}>
+                            {planNames.domain(d)}
+                          </option>
+                        ))}
+                      </Select>
+                    )}
+                  </Field>
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-secondary font-medium text-ink">{intentT("effort")}</span>
+                    <Segmented<string>
+                      label={intentT("effort")}
+                      value={draft.intentEffort ? String(draft.intentEffort) : ""}
+                      onChange={(v) => !readOnly && set("intentEffort", Number(v))}
+                      options={[1, 2, 3, 4, 5].map((n) => ({ key: String(n), label: String(n) }))}
+                    />
+                    <span className="text-label text-muted">{intentT("effortHint")}</span>
+                  </div>
+                  <Field label={intentT("feel")} hint={intentT("feelHint")}>
+                    {(id, describedBy) => (
+                      <Input
+                        id={id}
+                        maxLength={300}
+                        readOnly={readOnly}
+                        aria-describedby={describedBy}
+                        placeholder={intentT("feelPlaceholder")}
+                        value={draft.intentFeel}
+                        onChange={(e) => set("intentFeel", e.target.value)}
+                      />
+                    )}
+                  </Field>
+                  <div className="sm:col-span-2">
+                    <Field label={intentT("why")} hint={intentT("whyHint")}>
+                      {(id, describedBy) => (
+                        <AutoTextarea
+                          id={id}
+                          rows={2}
+                          maxLength={1200}
+                          readOnly={readOnly}
+                          aria-describedby={describedBy}
+                          value={draft.why}
+                          onChange={(e) => set("why", e.target.value)}
+                        />
+                      )}
+                    </Field>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          </Card>
+
           <section className="flex flex-col gap-4" aria-label={t("blocks")}>
             <h2 className="text-title3 text-ink">{t("blocks")}</h2>
             {draft.blocks.length === 0 ? (
@@ -762,6 +954,7 @@ function Editor({ existing }: { existing: WorkoutView | null }) {
                     errors={blockErrors[b.key] ?? {}}
                     readOnly={readOnly}
                     movements={movements}
+                    exercises={exercises}
                     onChange={(patch) => setBlock(b.key, patch)}
                     onKind={(kind) =>
                       setDraft((d) => ({

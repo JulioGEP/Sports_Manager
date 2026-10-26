@@ -2,6 +2,7 @@ import { z } from "@hono/zod-openapi";
 import {
   ApiErrorSchema,
   bestOneRm,
+  blockLabel,
   bookingWindows,
   entitlementUsage,
   formatScore,
@@ -277,10 +278,36 @@ export function workoutDto(
     athlete?: {
       oneRm: Map<string, { kg: number; estimated: boolean }>;
       results: Map<string, ResultRecord>;
+      /** Su tarifa incluye Clase+: si no, esos bloques no se ven (ADR 0052). */
+      plus?: boolean;
     };
   } = {},
 ): WorkoutView {
+  const hidePlus = extra.athlete !== undefined && extra.athlete.plus !== true;
+  const blocks = hidePlus ? w.blocks.filter((b) => b.track !== "plus") : w.blocks;
+  const week = w.plan && w.planWeek ? w.plan.structure.weeks[w.planWeek - 1] : undefined;
   return {
+    plan:
+      w.plan && w.planWeek && week
+        ? {
+            id: w.plan.id,
+            name: w.plan.name,
+            week: w.planWeek,
+            weeks: w.plan.weeks,
+            blockKind: week.kind,
+            blockLabel: blockLabel(w.plan.structure, week.block, locale),
+          }
+        : null,
+    dayRole: w.dayRole,
+    intent:
+      w.intentDomain || w.intentEffort || w.intentFeel
+        ? { domain: w.intentDomain, effort: w.intentEffort, feel: w.intentFeel }
+        : null,
+    why: (w.why ?? "")
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean),
+    plusHidden: w.blocks.length - blocks.length,
     id: w.id,
     onDate: w.onDate,
     section: w.section,
@@ -292,7 +319,7 @@ export function workoutDto(
     visible: workoutVisible(w, now),
     createdBy: w.createdBy,
     updatedAt: w.updatedAt.toISOString(),
-    blocks: w.blocks.map((b, i) => {
+    blocks: blocks.map((b, i) => {
       const movement = movementByCode(b.movementCode);
       let mine: WorkoutView["blocks"][number]["mine"] = null;
       if (extra.athlete) {
@@ -316,9 +343,14 @@ export function workoutDto(
         movement: movement ? { code: movement.code, name: movement.name[locale] } : null,
         percent: b.percent,
         rmReps: b.rmReps,
+        foundations: b.foundations,
         scaled: b.scaled,
         rx: b.rx,
         rxPlus: b.rxPlus,
+        capacity: b.capacity,
+        plannedMinutes: b.plannedMinutes,
+        track: b.track,
+        exercises: b.exercises,
         mine,
         results: extra.counts?.get(b.id) ?? 0,
       };
@@ -335,7 +367,8 @@ export async function athleteWorkoutDto(
   now: Date,
 ): Promise<WorkoutView> {
   const scope = orgOf(c).scope;
-  const [records, results, counts] = await Promise.all([
+  const today = todayIn(orgOf(c).organization.timezone, now);
+  const [records, results, counts, plus] = await Promise.all([
     data.workouts.records.list(scope, [playerId]),
     data.workouts.results.ofPlayer(
       scope,
@@ -346,10 +379,11 @@ export async function athleteWorkoutDto(
       scope,
       w.blocks.map((b) => b.id),
     ),
+    data.planning.plusEntitled(scope, playerId, today),
   ]);
   return workoutDto(w, now, localeOf(c), {
     counts,
-    athlete: { oneRm: oneRmByMovement(records.get(playerId) ?? []), results },
+    athlete: { oneRm: oneRmByMovement(records.get(playerId) ?? []), results, plus },
   });
 }
 

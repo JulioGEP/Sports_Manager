@@ -7,7 +7,7 @@ import {
   type WorkoutLevel,
 } from "@sportsmanager/shared";
 import { useState, type FormEvent } from "react";
-import { useSearchParams } from "react-router";
+import { Link, useSearchParams } from "react-router";
 import {
   draftOf,
   EMPTY_SCORE,
@@ -16,11 +16,13 @@ import {
   type ScoreDraft,
 } from "@/components/fitness/athlete-ui";
 import { DayStrip } from "@/components/fitness/class-row";
-import { WorkoutBlockCard } from "@/components/fitness/workout-blocks";
+import { EffortMeter, RoleChip, usePlanNames } from "@/components/fitness/planning-ui";
+import { myLevelFor, WorkoutBlockCard } from "@/components/fitness/workout-blocks";
 import { apiFetch, errorKey } from "@/lib/api";
 import { clubPaths, useReadyClub } from "@/lib/club";
 import { daysFrom, useClassTime, useInvalidateFitness, useMyWorkouts } from "@/lib/fitness";
 import { useT } from "@/lib/intl";
+import { useLevelName } from "@/lib/planning";
 import {
   Alert,
   Button,
@@ -43,11 +45,14 @@ import {
 export function WodPage() {
   const t = useT("fitness.athlete.wod");
   const errors = useT("errors");
-  const levels = useT("fitness.common.levels");
+  const levelName = useLevelName();
+  const p = useT("fitness.planning.wod");
+  const names = usePlanNames();
   const { slug } = useReadyClub();
   const paths = clubPaths(slug);
   const time = useClassTime();
   const [params, setParams] = useSearchParams();
+  const [whyOpen, setWhyOpen] = useState(false);
   const days = daysFrom(addDays(time.today, -3), 5);
   const requested = params.get("date");
   const date = requested && /^\d{4}-\d{2}-\d{2}$/.test(requested) ? requested : time.today;
@@ -78,6 +83,67 @@ export function WodPage() {
       ) : (
         workouts.data.workouts.map((w) => (
           <section key={w.id} className="flex flex-col gap-4" aria-labelledby={`wod-${w.id}`}>
+            {w.plan || w.dayRole || w.intent ? (
+              <div className="flex flex-col gap-3 rounded-card bg-ink p-4 text-surface">
+                {w.plan ? (
+                  <Link
+                    to={paths.cycle}
+                    className="flex flex-wrap items-center justify-between gap-2 text-surface no-underline"
+                  >
+                    <span className="text-label uppercase tracking-wide opacity-80">
+                      {p("plan", {
+                        plan: w.plan.name,
+                        week: w.plan.week,
+                        weeks: w.plan.weeks,
+                        block: w.plan.blockLabel,
+                      })}
+                    </span>
+                    <Icon.CaretRight size={16} aria-hidden="true" className="opacity-70" />
+                  </Link>
+                ) : null}
+                <div className="flex flex-wrap items-center gap-3">
+                  {w.dayRole ? <RoleChip role={w.dayRole} /> : null}
+                  {w.intent?.domain ? (
+                    <span className="text-secondary opacity-90">
+                      {names.domain(w.intent.domain)}
+                    </span>
+                  ) : null}
+                  {w.intent?.effort ? (
+                    <span className="inline-flex items-center gap-2 rounded-chip bg-surface px-2 py-1 text-ink">
+                      <EffortMeter
+                        value={w.intent.effort}
+                        label={p("effort", { effort: w.intent.effort })}
+                      />
+                    </span>
+                  ) : null}
+                </div>
+                {w.intent?.feel ? <p className="text-body">{w.intent.feel}</p> : null}
+                {w.why.length > 0 ? (
+                  <div className="flex flex-col gap-1.5">
+                    <button
+                      type="button"
+                      aria-expanded={whyOpen}
+                      onClick={() => setWhyOpen((v) => !v)}
+                      className="inline-flex w-fit items-center gap-1.5 text-secondary font-medium opacity-90"
+                    >
+                      <Icon.CaretDown
+                        size={14}
+                        aria-hidden="true"
+                        className={`transition-transform ${whyOpen ? "" : "-rotate-90"}`}
+                      />
+                      {p("why")}
+                    </button>
+                    {whyOpen ? (
+                      <ul className="flex list-disc flex-col gap-1 pl-5 text-secondary opacity-90">
+                        {w.why.map((line) => (
+                          <li key={line}>{line}</li>
+                        ))}
+                      </ul>
+                    ) : null}
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
             <header className="flex flex-col gap-1">
               <span className="text-label uppercase tracking-wide text-muted">
                 {w.section.name}
@@ -96,12 +162,13 @@ export function WodPage() {
                 <WorkoutBlockCard
                   key={block.id}
                   block={block}
+                  mine={myLevelFor(block, workouts.data.levels)}
                   footer={
                     block.scoreType === "none" ? null : (
                       <>
                         {result ? (
                           <StatusChip kind="success">
-                            {`${levels(result.level)} · ${result.display}`}
+                            {`${levelName(result.level)} · ${result.display}`}
                           </StatusChip>
                         ) : null}
                         {future ? null : (
@@ -128,26 +195,64 @@ export function WodPage() {
                 />
               );
             })}
+            {w.plusHidden > 0 ? (
+              <p className="flex items-start gap-2 rounded-card bg-raised p-3 text-secondary text-muted">
+                <Icon.Lightning size={18} aria-hidden="true" className="mt-0.5 shrink-0" />
+                {p("plusHidden", { count: w.plusHidden })}
+              </p>
+            ) : null}
           </section>
         ))
       )}
 
+      {workouts.data && workouts.data.upcoming.some((d) => d.role) ? (
+        <section className="flex flex-col gap-2" aria-labelledby="upcoming-title">
+          <h2 id="upcoming-title" className="text-title3 text-ink">
+            {p("upcoming")}
+          </h2>
+          <ul className="flex flex-col gap-1.5">
+            {workouts.data.upcoming
+              .filter((d) => d.role)
+              .map((d) => (
+                <li key={d.date} className="flex items-center justify-between gap-3 text-secondary">
+                  <span className="text-muted first-letter:uppercase">{time.weekday(d.date)}</span>
+                  <RoleChip role={d.role!} />
+                </li>
+              ))}
+          </ul>
+        </section>
+      ) : null}
+
       {editing ? (
-        <ResultSheet key={editing.id} block={editing} onClose={() => setEditing(null)} />
+        <ResultSheet
+          key={editing.id}
+          block={editing}
+          suggested={myLevelFor(editing, workouts.data?.levels)}
+          onClose={() => setEditing(null)}
+        />
       ) : null}
     </div>
   );
 }
 
-function ResultSheet({ block, onClose }: { block: WorkoutBlockView; onClose: () => void }) {
+function ResultSheet({
+  block,
+  suggested,
+  onClose,
+}: {
+  block: WorkoutBlockView;
+  /** Su nivel en la capacidad del bloque: el de partida al apuntar. */
+  suggested: WorkoutLevel | null;
+  onClose: () => void;
+}) {
   const t = useT("fitness.athlete.result");
   const c = useT("fitness.common");
-  const levels = useT("fitness.common.levels");
+  const levelName = useLevelName();
   const errors = useT("errors");
   const toast = useToast();
   const invalidate = useInvalidateFitness();
   const current = block.mine?.result ?? null;
-  const [level, setLevel] = useState<WorkoutLevel>(current?.level ?? "rx");
+  const [level, setLevel] = useState<WorkoutLevel>(current?.level ?? suggested ?? "rx");
   const [score, setScore] = useState<ScoreDraft>(
     current ? draftOf(current.score, current.completed) : EMPTY_SCORE,
   );
@@ -231,7 +336,7 @@ function ResultSheet({ block, onClose }: { block: WorkoutBlockView; onClose: () 
             label={t("level")}
             value={level}
             onChange={setLevel}
-            options={WORKOUT_LEVELS.map((l) => ({ key: l, label: levels(l) }))}
+            options={WORKOUT_LEVELS.map((l) => ({ key: l, label: levelName(l) }))}
           />
         </div>
         <ScoreFields

@@ -4,7 +4,8 @@ import { useIntl } from "react-intl";
 import { Link, useNavigate } from "react-router";
 import { detailOf, QUIET_KINDS } from "@/components/fitness/programming-model";
 import { useStaffError } from "@/components/fitness/staff-ui";
-import { blockInputOf, copyOf } from "@/components/fitness/staff-workout";
+import { RoleChip } from "@/components/fitness/planning-ui";
+import { blockInputOf, copyOf, planFieldsOf } from "@/components/fitness/staff-workout";
 import { useMovementName } from "@/components/fitness/workout-blocks";
 import { apiFetch } from "@/lib/api";
 import { clubPaths, useReadyClub } from "@/lib/club";
@@ -39,6 +40,7 @@ export function upsertBodyOf(
     status: w.status,
     publishAt: w.publishAt,
     blocks: w.blocks.map(blockInputOf),
+    ...planFieldsOf(w),
     ...patch,
   };
 }
@@ -136,7 +138,8 @@ export function WorkoutCard({
               </Link>
             </h3>
           </div>
-          <span className="relative z-10">
+          <span className="relative z-10 flex flex-wrap items-center gap-2">
+            {workout.dayRole ? <RoleChip role={workout.dayRole} /> : null}
             <StatusChip kind={state.kind}>{state.label}</StatusChip>
           </span>
         </div>

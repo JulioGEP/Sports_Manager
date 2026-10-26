@@ -40,6 +40,12 @@
     "sled": "Trineo",
     "sandbag": "Saco",
     "med_ball": "Balón medicinal",
+    "ghd": "GHD",
+    "rope": "Cuerda de trepa",
+    "parallettes": "Paralelas",
+    "yoke": "Yugo",
+    "bench": "Banco",
+    "bands": "Gomas",
     "bodyweight": "Sin material",
     "other": "Otro"
   },
