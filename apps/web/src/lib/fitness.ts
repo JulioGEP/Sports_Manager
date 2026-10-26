@@ -9,7 +9,6 @@ import {
   FitnessMetricsResponseSchema,
   LeaderboardResponseSchema,
   LeadsResponseSchema,
-  LibraryResponseSchema,
   MessageThreadResponseSchema,
   MessageThreadsResponseSchema,
   MyBookingsResponseSchema,
@@ -235,14 +234,6 @@ export function useMessageThread(playerId: string | undefined) {
     queryFn: () =>
       apiFetch(`/api/org/messages/${playerId}`, { schema: MessageThreadResponseSchema }),
     enabled: Boolean(playerId),
-  });
-}
-
-export function useLibrary() {
-  const { slug } = useReadyClub();
-  return useQuery({
-    queryKey: fitnessKey(slug, "library"),
-    queryFn: () => apiFetch("/api/org/fitness/library", { schema: LibraryResponseSchema }),
   });
 }
 

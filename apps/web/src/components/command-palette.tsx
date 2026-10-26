@@ -14,6 +14,7 @@ import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNod
 import { useNavigate } from "react-router";
 import { apiFetch } from "@/lib/api";
 import { clubPaths, useReadyClub } from "@/lib/club";
+import { useClubModel } from "@/lib/fitness";
 import { useLocale, useT } from "@/lib/intl";
 import { Icon } from "@/ui";
 
@@ -221,6 +222,7 @@ export function CommandPalette({
   const paths = clubPaths(slug);
   const permissions = org.actor.permissions;
   const has = (p: (typeof permissions)[number]) => permissions.includes(p);
+  const fitness = useClubModel() === "fitness";
   const ref = useRef<HTMLDialogElement>(null);
   const input = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
@@ -287,7 +289,23 @@ export function CommandPalette({
 
   const items = useMemo<Item[]>(() => {
     const out: Item[] = [];
-    const actions: { key: string; perm: (typeof permissions)[number]; to: string }[] = [
+    // En un box (ADR 0050), las acciones del box; sin socios, retos, temporadas ni enfermería.
+    const boxActions: { key: string; perm: (typeof permissions)[number]; to: string }[] = [
+      { key: "newAthlete", perm: "org.players.write", to: `${paths.athletes}?new=1` },
+      { key: "newClassType", perm: "org.structure.write", to: `${paths.classTypes}?new=1` },
+      { key: "newWorkout", perm: "org.training.read", to: paths.workoutNew },
+      { key: "exercises", perm: "org.settings.read", to: paths.exercises },
+      { key: "newPlan", perm: "org.fees.write", to: paths.plans },
+      { key: "newLead", perm: "org.club_members.write", to: paths.leads },
+      { key: "newFacility", perm: "org.facilities.write", to: `${paths.facilities}?new=1` },
+      { key: "invite", perm: "org.members.invite", to: `${paths.staff}?invite=1` },
+      { key: "newProduct", perm: "org.store.write", to: `${paths.store}?tab=products&new=1` },
+      { key: "counterSale", perm: "org.store.write", to: `${paths.store}?counter=1` },
+      { key: "developers", perm: "org.settings.write", to: `${paths.settings}?tab=developers` },
+      { key: "roadmap", perm: "org.suggestions", to: `${paths.settings}?tab=improvements` },
+      { key: "suggest", perm: "org.suggestions", to: `${paths.settings}?tab=improvements&new=1` },
+    ];
+    const sportsActions: { key: string; perm: (typeof permissions)[number]; to: string }[] = [
       { key: "newPlayer", perm: "org.players.write", to: `${paths.players}?new=1` },
       { key: "newSection", perm: "org.structure.write", to: `${paths.sections}?new=1` },
       { key: "newClubMember", perm: "org.club_members.write", to: `${paths.clubMembers}?new=1` },
@@ -306,7 +324,7 @@ export function CommandPalette({
       { key: "roadmap", perm: "org.suggestions", to: `${paths.settings}?tab=improvements` },
       { key: "suggest", perm: "org.suggestions", to: `${paths.settings}?tab=improvements&new=1` },
     ];
-    for (const a of actions) {
+    for (const a of fitness ? boxActions : sportsActions) {
       if (has(a.perm))
         out.push({
           id: `action:${a.key}`,
@@ -322,7 +340,7 @@ export function CommandPalette({
         group: "players",
         title: playerDisplayName(p),
         subtitle: p.teams.map((x) => x.teamName).join(", ") || t("noTeam"),
-        to: paths.player(p.id),
+        to: fitness ? paths.athleteFile(p.id) : paths.player(p.id),
       });
     }
     for (const tm of teams.data?.teams ?? []) {
@@ -331,7 +349,7 @@ export function CommandPalette({
         group: "teams",
         title: tm.name,
         subtitle: [tm.section.name, tm.category].filter(Boolean).join(" · "),
-        to: paths.team(tm.id),
+        to: fitness ? paths.classTypes : paths.team(tm.id),
       });
     }
     for (const sec of sections.data?.sections ?? []) {
@@ -340,7 +358,7 @@ export function CommandPalette({
         group: "sections",
         title: sec.name,
         subtitle: sec.sport.name[locale],
-        to: paths.section(sec.id),
+        to: fitness ? paths.classTypes : paths.section(sec.id),
       });
     }
     for (const m of members.data?.members ?? []) {
@@ -392,6 +410,7 @@ export function CommandPalette({
     locale,
     slug,
     permissions,
+    fitness,
   ]);
 
   const tokens = fold(query).split(/\s+/).filter(Boolean);

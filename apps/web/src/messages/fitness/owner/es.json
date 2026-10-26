@@ -73,8 +73,6 @@
     "archived": "{name} archivado.",
     "loadError": "No se ha podido cargar el horario. Inténtalo de nuevo.",
     "noSections": "Aún no hay disciplinas",
-    "noSectionsHint": "Crea primero las disciplinas del box (CrossFit, HYROX, halterofilia…); después, sus tipos de clase.",
-    "openSections": "Ir a disciplinas",
     "new": "Nuevo tipo de clase",
     "empty": "Sin tipos de clase",
     "emptyHint": "Un tipo de clase es lo que se reserva: WOD, Open Box, Halterofilia… con su aforo y su horario.",
@@ -124,7 +122,23 @@
     "archivedGroup": "Archivados",
     "archivedHint": "No salen para reservar ni generan clases. Recupera uno para volver a usarlo.",
     "restore": "Recuperar",
-    "restored": "{name} vuelve al horario."
+    "restored": "{name} vuelve al horario.",
+    "disciplines": {
+      "title": "Disciplinas",
+      "hint": "Lo que se entrena en el box. Cada tipo de clase va en una disciplina y cada WOD se programa por disciplina.",
+      "new": "Nueva disciplina",
+      "emptyHint": "Empieza por la disciplina (CrossFit, HYROX, halterofilia…) y después crea sus tipos de clase.",
+      "renameLabel": "Renombrar {name}",
+      "sheetNew": "Nueva disciplina",
+      "sheetNewHint": "Por ejemplo, CrossFit, HYROX, Halterofilia o Yoga.",
+      "sheetRename": "Renombrar la disciplina",
+      "name": "Nombre",
+      "nameHint": "Así sale en el horario, en la programación y en el WOD.",
+      "sport": "Qué se entrena",
+      "sportHint": "Ayuda a la propuesta de WOD con IA a entender la disciplina.",
+      "created": "{name} creada. Ahora crea sus tipos de clase.",
+      "renamed": "Ahora se llama {name}."
+    }
   },
   "policy": {
     "loadError": "No se ha podido cargar la política de reservas.",
@@ -461,5 +475,29 @@
     "leaderboard": "Clasificación · {block}",
     "noResults": "Aún no hay resultados.",
     "hidden": "{count, plural, one {# atleta prefiere no salir.} other {# atletas prefieren no salir.}}"
+  },
+  "newAthlete": {
+    "action": "Nuevo atleta",
+    "title": "Nuevo atleta",
+    "description": "Sus datos, la tarifa con la que empieza y el acceso a la app para reservar.",
+    "firstName": "Nombre",
+    "lastName": "Apellidos",
+    "email": "Email",
+    "emailHint": "Con email le llega la invitación a la app.",
+    "phone": "Teléfono",
+    "birthDate": "Fecha de nacimiento",
+    "birthDateHint": "Opcional. Con un menor, el box habla con su familia.",
+    "startsOn": "Empieza el",
+    "plan": "Tarifa",
+    "planHint": "Puedes dársela ahora o más tarde desde Tarifas.",
+    "noPlan": "Sin tarifa por ahora",
+    "chargeNow": "Crear ya el primer cargo",
+    "invite": "Enviarle el acceso a la app",
+    "submit": "Dar de alta",
+    "invalid": "Revisa el nombre, los apellidos y el email.",
+    "created": "{name} ya es atleta del box.",
+    "createdWithPending": "{name} ya es atleta del box, pero falta algo: {pending}",
+    "pendingPlan": "La tarifa no se ha podido dar: dásela desde Tarifas.",
+    "pendingInvite": "La invitación no ha salido: mándala desde su ficha."
   }
 }

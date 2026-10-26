@@ -22,6 +22,7 @@ import { useSearchParams } from "react-router";
 import { Link } from "react-router";
 import { apiFetch, errorKey } from "@/lib/api";
 import { clubPaths, useReadyClub } from "@/lib/club";
+import { useClubModel } from "@/lib/fitness";
 import { useT } from "@/lib/intl";
 import { AccessMatrix } from "./staff-access";
 import {
@@ -57,10 +58,20 @@ const stateKind: Record<Invitation["state"], StatusKind> = {
 };
 
 /**
+ * En un box (ADR 0050) el equipo es la administración, los coaches y, si hay, fisioterapia: sin
+ * familias que invitar desde aquí ni cargos de club deportivo (dirección, delegación, scouting).
+ */
+const BOX_POSITIONS: readonly StaffPosition[] = ["physio"];
+function positionsFor(fitness: boolean): readonly StaffPosition[] {
+  return fitness ? BOX_POSITIONS : STAFF_POSITIONS;
+}
+
+/**
  * Personal del club (Bloque 14): quien trabaja en el club con su rol o cargo. Las cuentas de
  * familia no salen aquí: se gestionan desde la ficha de cada deportista.
  */
 export function StaffPage() {
+  const fitness = useClubModel() === "fitness";
   const t = useT("members");
   const c = useT("common");
   const roles = useT("roles");
@@ -289,22 +300,26 @@ export function StaffPage() {
                       <span className="text-muted">{t("noTeams")}</span>
                     ),
                 },
-                {
-                  key: "sections",
-                  header: t("table.sections"),
-                  cell: (m) =>
-                    m.sections.length > 0 ? (
-                      <span className="flex flex-wrap gap-x-2 gap-y-1">
-                        {m.sections.map((section) => (
-                          <Link key={section.sectionId} to={paths.section(section.sectionId)}>
-                            {section.sectionName}
-                          </Link>
-                        ))}
-                      </span>
-                    ) : (
-                      <span className="text-muted">{t("noSections")}</span>
-                    ),
-                },
+                ...(fitness
+                  ? []
+                  : [
+                      {
+                        key: "sections",
+                        header: t("table.sections"),
+                        cell: (m: Member) =>
+                          m.sections.length > 0 ? (
+                            <span className="flex flex-wrap gap-x-2 gap-y-1">
+                              {m.sections.map((section) => (
+                                <Link key={section.sectionId} to={paths.section(section.sectionId)}>
+                                  {section.sectionName}
+                                </Link>
+                              ))}
+                            </span>
+                          ) : (
+                            <span className="text-muted">{t("noSections")}</span>
+                          ),
+                      },
+                    ]),
                 { key: "since", header: t("table.since"), cell: (m) => date(m.memberSince) },
               ]}
               mobileRow={(m) => ({
@@ -477,9 +492,10 @@ function InviteSheet({
   const positions = useT("positions");
   const locales = useT("locales");
   const errors = useT("errors");
+  const fitness = useClubModel() === "fitness";
   const [email, setEmail] = useState("");
   const [roleCode, setRoleCode] = useState<RoleCode>("coach");
-  const [position, setPosition] = useState<StaffPosition>("director");
+  const [position, setPosition] = useState<StaffPosition>(fitness ? "physio" : "director");
   const [teamId, setTeamId] = useState("");
   const [locale, setLocale] = useState<Locale>(defaultLocale);
   const [busy, setBusy] = useState(false);
@@ -554,7 +570,9 @@ function InviteSheet({
                 onChange={(e) => setRoleCode(e.target.value as RoleCode)}
               >
                 {/* El deportista entra desde su ficha, no desde aquí (ADR 0046). */}
-                {ROLE_CODES.filter((code) => code !== "athlete").map((code) => (
+                {ROLE_CODES.filter(
+                  (code) => code !== "athlete" && !(fitness && code === "guardian"),
+                ).map((code) => (
                   <option key={code} value={code}>
                     {roles(code)}
                   </option>
@@ -582,7 +600,7 @@ function InviteSheet({
                 value={position}
                 onChange={(e) => setPosition(e.target.value as StaffPosition)}
               >
-                {STAFF_POSITIONS.map((code) => (
+                {positionsFor(fitness).map((code) => (
                   <option key={code} value={code}>
                     {positions(code)}
                   </option>
@@ -627,6 +645,7 @@ function RolesSheet({
   const errors = useT("errors");
   const toast = useToast();
   const { slug } = useReadyClub();
+  const fitness = useClubModel() === "fitness";
   const [current, setCurrent] = useState<RoleCode[]>(member.roles);
   const [position, setPosition] = useState<StaffPosition>(member.position ?? "director");
   const [busy, setBusy] = useState<RoleCode | null>(null);
@@ -723,7 +742,10 @@ function RolesSheet({
     >
       <ul className="flex flex-col gap-2">
         {/* El rol de deportista llega con su ficha: aquí solo se puede quitar. */}
-        {ROLE_CODES.filter((role) => role !== "athlete" || current.includes(role)).map((role) => {
+        {ROLE_CODES.filter(
+          (role) =>
+            (role !== "athlete" && !(fitness && role === "guardian")) || current.includes(role),
+        ).map((role) => {
           const has = current.includes(role);
           return (
             <li
@@ -747,7 +769,7 @@ function RolesSheet({
                       disabled={busy === "staff"}
                       onChange={(e) => void changePosition(e.target.value as StaffPosition)}
                     >
-                      {STAFF_POSITIONS.map((code) => (
+                      {[...new Set([...positionsFor(fitness), position])].map((code) => (
                         <option key={code} value={code}>
                           {positions(code)}
                         </option>

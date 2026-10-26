@@ -1,6 +1,7 @@
+import type { ReactNode } from "react";
 import { Navigate, useParams } from "react-router";
 import { clubPaths, useReadyClub } from "@/lib/club";
-import { useFitnessRole } from "@/lib/fitness";
+import { useClubModel, useFitnessRole } from "@/lib/fitness";
 import { AthleteClassPage } from "./athlete/class";
 import { AthleteClassesPage } from "./athlete/classes";
 import { AthleteFitnessHome } from "./athlete/home";
@@ -45,4 +46,33 @@ export function FitnessMessagesRoute() {
   if (role === "athlete") return <AthleteMessagesPage />;
   if (role === "guardian") return <Navigate to={clubPaths(slug).home} replace />;
   return <MessagesInboxPage />;
+}
+
+type FitnessPath = keyof ReturnType<typeof clubPaths>;
+
+/**
+ * Una pantalla del club deportivo que en un box tiene su equivalente (ADR 0050): secciones y
+ * equipos son el horario, deportistas y socios son atletas, la agenda son las clases, el
+ * entrenamiento es la programación y la biblioteca de tareas son los ejercicios. En un box, el
+ * enlace de siempre lleva allí; en un club deportivo, la pantalla de siempre.
+ */
+export function SportsOnly({
+  children,
+  fitness,
+  withId = false,
+}: {
+  children: ReactNode;
+  /** Adónde va en un box. */
+  fitness: FitnessPath;
+  /** La ficha equivalente con el mismo id (atleta). */
+  withId?: boolean;
+}) {
+  const model = useClubModel();
+  const { slug } = useReadyClub();
+  const { id } = useParams();
+  if (model !== "fitness") return <>{children}</>;
+  const paths = clubPaths(slug);
+  const target = paths[fitness];
+  const to = typeof target === "function" ? (withId && id ? target(id) : paths.home) : target;
+  return <Navigate to={to} replace />;
 }

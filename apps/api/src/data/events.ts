@@ -1190,6 +1190,11 @@ export function schedulesRepo(db: () => Database) {
       timezone: string,
       now = new Date(),
       createdBy: string | null = null,
+      /**
+       * Solo añadir (ADR 0050): no borra nada y crea lo que falta hasta el fin de temporada. Lo usa
+       * la temporada continua de un box, que no puede deshacer los cambios a mano de una clase.
+       */
+      options: { onlyAdd?: boolean } = {},
     ): Promise<number> {
       const team = await teamOf(scope, teamId);
       if (!team) return 0;
@@ -1204,21 +1209,22 @@ export function schedulesRepo(db: () => Database) {
         .selectDistinct({ eventId: schema.bookings.eventId })
         .from(schema.bookings)
         .where(eq(schema.bookings.organizationId, scope.organizationId));
-      await db()
-        .delete(schema.events)
-        .where(
-          and(
-            eq(schema.events.organizationId, scope.organizationId),
-            eq(schema.events.teamId, teamId),
-            inArray(
-              schema.events.seriesId,
-              slots.map((s) => s.id),
+      if (!options.onlyAdd)
+        await db()
+          .delete(schema.events)
+          .where(
+            and(
+              eq(schema.events.organizationId, scope.organizationId),
+              eq(schema.events.teamId, teamId),
+              inArray(
+                schema.events.seriesId,
+                slots.map((s) => s.id),
+              ),
+              gte(schema.events.startsAt, now),
+              notInArray(schema.events.id, withAttendance),
+              notInArray(schema.events.id, withBookings),
             ),
-            gte(schema.events.startsAt, now),
-            notInArray(schema.events.id, withAttendance),
-            notInArray(schema.events.id, withBookings),
-          ),
-        );
+          );
       const kind: EventKind = team.sectionKind === "activity" ? "activity" : "training";
       const title = team.sectionKind === "activity" ? team.name : `Entrenamiento ${team.name}`;
       const today = localParts(timezone, now);
@@ -1270,7 +1276,7 @@ export function schedulesRepo(db: () => Database) {
       const fresh = values.filter((v) => !taken.has(`${v.seriesId}|${v.startsAt.toISOString()}`));
       if (fresh.length > 0) await db().insert(schema.events).values(fresh);
       // Las que se han quedado (con lista o reservas) toman la sala, el coach y el aforo de su franja.
-      for (const slot of slots) {
+      for (const slot of options.onlyAdd ? [] : slots) {
         await db()
           .update(schema.events)
           .set({

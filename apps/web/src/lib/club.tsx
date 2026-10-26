@@ -326,6 +326,8 @@ export const clubPaths = (slug: string) => ({
   announcements: `/${slug}/announcements`,
   timer: `/${slug}/timer`,
   library: `/${slug}/library`,
+  /** Biblioteca de ejercicios del box: la ven todos, la escriben coach y dueño. */
+  exercises: `/${slug}/exercises`,
   programming: `/${slug}/programming`,
   workoutNew: `/${slug}/programming/new`,
   workoutEdit: (id: string) => `/${slug}/programming/${id}`,

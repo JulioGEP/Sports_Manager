@@ -499,7 +499,10 @@ export function IdentityTab() {
           </Field>
         </Card>
 
-        <VoiceCard value={form.voice} onChange={(v) => set("voice", v)} />
+        {/* En un box (ADR 0050) la voz no cambia nada que se vea: sus frases son de club deportivo. */}
+        {look.clubModel === "fitness" ? null : (
+          <VoiceCard value={form.voice} onChange={(v) => set("voice", v)} />
+        )}
       </div>
 
       {dirty ? (

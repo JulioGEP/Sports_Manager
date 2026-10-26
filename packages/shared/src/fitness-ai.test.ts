@@ -84,6 +84,11 @@ describe("propuesta de WOD con IA", () => {
     expect(bare).toContain("Sin foco concreto");
     expect(bare).toContain("Sin inventario");
     expect(bare).toContain("Para todas las clases de la disciplina");
+    expect(bare).not.toContain("biblioteca del box");
+    // Con biblioteca de ejercicios, el modelo usa sus nombres.
+    const withLibrary = aiWodUserPrompt(context({ exercises: ["Sled push", "Wall ball"] }));
+    expect(withLibrary).toContain("Ejercicios de la biblioteca del box");
+    expect(withLibrary).toContain("- Sled push");
   });
 
   it("el esquema JSON pide todos los campos de cada bloque del editor", () => {

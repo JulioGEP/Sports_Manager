@@ -348,19 +348,5 @@
     "finish": "He acabat",
     "reset": "Reiniciar",
     "finalTime": "El teu temps: {time}"
-  },
-  "library": {
-    "title": "Moviments",
-    "description": "La tècnica de cada moviment, explicada pel box.",
-    "search": "Cercar",
-    "searchPlaceholder": "Snatch, double unders…",
-    "discipline": "Disciplina",
-    "all": "Totes",
-    "emptyTitle": "El box encara no ha pujat moviments",
-    "noMatch": "Res amb aquesta cerca",
-    "emptyHint": "Quan el box els afegeixi, els veuràs aquí amb el vídeo.",
-    "videoOf": "Vídeo: {name}",
-    "keyPoints": "Punts clau",
-    "watch": "Veure el vídeo"
   }
 }

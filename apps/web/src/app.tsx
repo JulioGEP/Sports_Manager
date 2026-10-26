@@ -56,14 +56,19 @@ import { TeamTrainingHistoryPage } from "@/routes/club/team-training-history";
 import { TeamTrainingSeasonPage } from "@/routes/club/team-training-season";
 import { TrainingHubPage } from "@/routes/club/training-hub";
 import { ClubsPage } from "@/routes/clubs";
-import { FitnessClassesRoute, FitnessClassRoute, FitnessMessagesRoute } from "@/routes/fitness";
+import {
+  FitnessClassesRoute,
+  FitnessClassRoute,
+  FitnessMessagesRoute,
+  SportsOnly,
+} from "@/routes/fitness";
 import { AnnouncementsPage } from "@/routes/fitness/athlete/announcements";
 import { LeaderboardPage } from "@/routes/fitness/athlete/leaderboard";
-import { LibraryPage } from "@/routes/fitness/athlete/library";
 import { MyPlanPage } from "@/routes/fitness/athlete/plan";
 import { ProgressPage } from "@/routes/fitness/athlete/progress";
 import { TimerPage } from "@/routes/fitness/athlete/timer";
 import { WodPage } from "@/routes/fitness/athlete/wod";
+import { ExercisesPage, LibraryRedirect } from "@/routes/fitness/exercises";
 import { ClassTypesPage } from "@/routes/fitness/owner/class-types";
 import { LeadsPage } from "@/routes/fitness/owner/leads";
 import { MetricsPage } from "@/routes/fitness/owner/metrics";
@@ -138,24 +143,115 @@ export const router = createBrowserRouter([
     element: <ClubShell />,
     children: [
       { index: true, element: <ClubHome /> },
-      { path: "sections", element: <SectionsPage /> },
-      { path: "sections/:id", element: <SectionPage /> },
-      { path: "sections/:id/match-config", element: <SectionMatchConfigPage /> },
+      {
+        path: "sections",
+        element: (
+          <SportsOnly fitness="classTypes">
+            <SectionsPage />
+          </SportsOnly>
+        ),
+      },
+      {
+        path: "sections/:id",
+        element: (
+          <SportsOnly fitness="classTypes">
+            <SectionPage />
+          </SportsOnly>
+        ),
+      },
+      {
+        path: "sections/:id/match-config",
+        element: (
+          <SportsOnly fitness="classTypes">
+            <SectionMatchConfigPage />
+          </SportsOnly>
+        ),
+      },
       // Las secciones sustituyen a la lista de equipos (Bloque 14); la ficha de equipo sigue aquí.
       { path: "teams", element: <ClubRedirect to="/sections" /> },
-      { path: "teams/:id", element: <TeamPage /> },
+      {
+        path: "teams/:id",
+        element: (
+          <SportsOnly fitness="classTypes">
+            <TeamPage />
+          </SportsOnly>
+        ),
+      },
       // Partido en directo (Bloque 20): partidos del equipo, histórico, consola y estadísticas.
-      { path: "teams/:id/matches", element: <TeamMatchesPage /> },
-      { path: "teams/:id/matches/history", element: <TeamMatchHistoryPage /> },
-      { path: "matches/:id", element: <MatchLivePage /> },
-      { path: "matches/:id/stats", element: <MatchStatsPage /> },
-      { path: "players", element: <PlayersPage /> },
-      { path: "players/:id", element: <PlayerPage /> },
-      { path: "club-members", element: <ClubMembersPage /> },
-      { path: "club-members/:id", element: <ClubMemberPage /> },
+      {
+        path: "teams/:id/matches",
+        element: (
+          <SportsOnly fitness="home">
+            <TeamMatchesPage />
+          </SportsOnly>
+        ),
+      },
+      {
+        path: "teams/:id/matches/history",
+        element: (
+          <SportsOnly fitness="home">
+            <TeamMatchHistoryPage />
+          </SportsOnly>
+        ),
+      },
+      {
+        path: "matches/:id",
+        element: (
+          <SportsOnly fitness="home">
+            <MatchLivePage />
+          </SportsOnly>
+        ),
+      },
+      {
+        path: "matches/:id/stats",
+        element: (
+          <SportsOnly fitness="home">
+            <MatchStatsPage />
+          </SportsOnly>
+        ),
+      },
+      {
+        path: "players",
+        element: (
+          <SportsOnly fitness="athletes">
+            <PlayersPage />
+          </SportsOnly>
+        ),
+      },
+      {
+        path: "players/:id",
+        element: (
+          <SportsOnly fitness="athleteFile" withId>
+            <PlayerPage />
+          </SportsOnly>
+        ),
+      },
+      {
+        path: "club-members",
+        element: (
+          <SportsOnly fitness="athletes">
+            <ClubMembersPage />
+          </SportsOnly>
+        ),
+      },
+      {
+        path: "club-members/:id",
+        element: (
+          <SportsOnly fitness="athletes">
+            <ClubMemberPage />
+          </SportsOnly>
+        ),
+      },
       { path: "staff", element: <StaffPage /> },
       { path: "members", element: <ClubRedirect to="/staff" /> },
-      { path: "agenda", element: <AgendaPage /> },
+      {
+        path: "agenda",
+        element: (
+          <SportsOnly fitness="classes">
+            <AgendaPage />
+          </SportsOnly>
+        ),
+      },
       { path: "facilities", element: <FacilitiesPage /> },
       { path: "facilities/:id", element: <FacilityPage /> },
       { path: "fees", element: <FeesPage /> },
@@ -165,30 +261,156 @@ export const router = createBrowserRouter([
       { path: "family", element: <FamilyPage /> },
       { path: "family/:id", element: <FamilyPlayerPage /> },
       { path: "family/:id/challenges", element: <FamilyPlayerChallengesPage /> },
-      { path: "challenges", element: <ChallengesPage /> },
-      { path: "challenges/:id", element: <ChallengePage /> },
+      {
+        path: "challenges",
+        element: (
+          <SportsOnly fitness="home">
+            <ChallengesPage />
+          </SportsOnly>
+        ),
+      },
+      {
+        path: "challenges/:id",
+        element: (
+          <SportsOnly fitness="home">
+            <ChallengePage />
+          </SportsOnly>
+        ),
+      },
       { path: "settings", element: <SettingsPage /> },
       // Entrenamiento, carga y salud (ADR 0039): portada, semana y temporada de cada equipo,
       // sesión con modo pista e impresión, biblioteca, rendimiento del jugador, enfermería,
       // ajustes y metodología de la sección y el bienestar del deportista adulto.
-      { path: "training", element: <TrainingHubPage /> },
-      { path: "teams/:id/training", element: <TeamTrainingPage /> },
-      { path: "teams/:id/training/season", element: <TeamTrainingSeasonPage /> },
-      { path: "teams/:id/training/history", element: <TeamTrainingHistoryPage /> },
-      { path: "teams/:id/training/load", element: <TeamLoadPage /> },
-      { path: "teams/:id/training/tests", element: <TeamTestsPage /> },
-      { path: "sessions/:id", element: <SessionPage /> },
+      {
+        path: "training",
+        element: (
+          <SportsOnly fitness="programming">
+            <TrainingHubPage />
+          </SportsOnly>
+        ),
+      },
+      {
+        path: "teams/:id/training",
+        element: (
+          <SportsOnly fitness="programming">
+            <TeamTrainingPage />
+          </SportsOnly>
+        ),
+      },
+      {
+        path: "teams/:id/training/season",
+        element: (
+          <SportsOnly fitness="programming">
+            <TeamTrainingSeasonPage />
+          </SportsOnly>
+        ),
+      },
+      {
+        path: "teams/:id/training/history",
+        element: (
+          <SportsOnly fitness="programming">
+            <TeamTrainingHistoryPage />
+          </SportsOnly>
+        ),
+      },
+      {
+        path: "teams/:id/training/load",
+        element: (
+          <SportsOnly fitness="programming">
+            <TeamLoadPage />
+          </SportsOnly>
+        ),
+      },
+      {
+        path: "teams/:id/training/tests",
+        element: (
+          <SportsOnly fitness="programming">
+            <TeamTestsPage />
+          </SportsOnly>
+        ),
+      },
+      {
+        path: "sessions/:id",
+        element: (
+          <SportsOnly fitness="programming">
+            <SessionPage />
+          </SportsOnly>
+        ),
+      },
       { path: "sessions/:id/court", element: <SessionCourtPage /> },
       { path: "sessions/:id/print", element: <SessionPrintPage /> },
-      { path: "drills", element: <DrillsPage /> },
-      { path: "drills/new", element: <DrillPage /> },
-      { path: "drills/:id", element: <DrillPage /> },
-      { path: "players/:id/performance", element: <PlayerPerformancePage /> },
-      { path: "infirmary", element: <InfirmaryPage /> },
-      { path: "sections/:id/training-config", element: <SectionTrainingConfigPage /> },
-      { path: "sections/:id/methodology", element: <SectionMethodologyPage /> },
-      { path: "me", element: <AthletePage /> },
-      { path: "me/training", element: <AthleteTrainingPage /> },
+      {
+        path: "drills",
+        element: (
+          <SportsOnly fitness="exercises">
+            <DrillsPage />
+          </SportsOnly>
+        ),
+      },
+      {
+        path: "drills/new",
+        element: (
+          <SportsOnly fitness="exercises">
+            <DrillPage />
+          </SportsOnly>
+        ),
+      },
+      {
+        path: "drills/:id",
+        element: (
+          <SportsOnly fitness="exercises">
+            <DrillPage />
+          </SportsOnly>
+        ),
+      },
+      {
+        path: "players/:id/performance",
+        element: (
+          <SportsOnly fitness="athleteFile" withId>
+            <PlayerPerformancePage />
+          </SportsOnly>
+        ),
+      },
+      {
+        path: "infirmary",
+        element: (
+          <SportsOnly fitness="athletes">
+            <InfirmaryPage />
+          </SportsOnly>
+        ),
+      },
+      {
+        path: "sections/:id/training-config",
+        element: (
+          <SportsOnly fitness="classTypes">
+            <SectionTrainingConfigPage />
+          </SportsOnly>
+        ),
+      },
+      {
+        path: "sections/:id/methodology",
+        element: (
+          <SportsOnly fitness="classTypes">
+            <SectionMethodologyPage />
+          </SportsOnly>
+        ),
+      },
+      {
+        path: "me",
+        element: (
+          <SportsOnly fitness="progress">
+            <AthletePage />
+          </SportsOnly>
+        ),
+      },
+      {
+        path: "me/training",
+        element: (
+          <SportsOnly fitness="wod">
+            <AthleteTrainingPage />
+          </SportsOnly>
+        ),
+      },
       // Clubs de fitness (ADR 0049): reservar y la clase, el WOD y su clasificación, el progreso, la
       // tarifa, la comunidad (mensajes, anuncios, ranking), el timer y los movimientos; la
       // programación y los atletas del coach; el horario, las tarifas, los leads, las métricas y
@@ -203,7 +425,8 @@ export const router = createBrowserRouter([
       { path: "messages/:id", element: <MessageThreadPage /> },
       { path: "announcements", element: <AnnouncementsPage /> },
       { path: "timer", element: <TimerPage /> },
-      { path: "library", element: <LibraryPage /> },
+      { path: "library", element: <LibraryRedirect /> },
+      { path: "exercises", element: <ExercisesPage /> },
       { path: "programming", element: <ProgrammingPage /> },
       { path: "programming/new", element: <WorkoutEditorPage /> },
       { path: "programming/:id", element: <WorkoutEditorPage /> },

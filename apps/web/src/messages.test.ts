@@ -1,3 +1,4 @@
+import { AUDIT_ACTIONS } from "@sportsmanager/shared";
 import { createIntl, createIntlCache } from "react-intl";
 import { describe, expect, it } from "vitest";
 import ca from "./messages/ca.json";
@@ -152,7 +153,7 @@ describe("voz del club en la web", () => {
  * Clubs de fitness (ADR 0049): sus pantallas tienen diccionario propio por partes y un léxico que
  * reescribe palabras de las pantallas compartidas (deportistas → atletas, secciones → disciplinas).
  */
-const FITNESS_PARTS = ["common", "athlete", "staff", "owner"] as const;
+const FITNESS_PARTS = ["common", "athlete", "staff", "owner", "exercises"] as const;
 const fitnessFiles = import.meta.glob<Nested>("./messages/fitness/*/*.json", {
   eager: true,
   import: "default",
@@ -199,6 +200,21 @@ describe("diccionarios de los clubs de fitness", () => {
         expect(base[locale][id], `${locale}: ${id} no existe`).toBeDefined();
         expect(argumentsOf(text), `${locale}: ${id}`).toEqual(argumentsOf(base[locale][id]!));
       }
+    }
+  });
+});
+
+/** La pestaña Actividad de Ajustes traduce cada acción de la auditoría: ninguna sale en crudo. */
+describe("acciones de la actividad", () => {
+  it("cada acción de la auditoría tiene su texto en los tres idiomas", () => {
+    for (const [locale, dictionary] of [
+      ["es", es],
+      ["ca", ca],
+      ["en", en],
+    ] as const) {
+      const messages = Object.fromEntries(flatten(dictionary));
+      const missing = AUDIT_ACTIONS.filter((action) => !messages[`audit.${action}`]);
+      expect(missing, locale).toEqual([]);
     }
   });
 });

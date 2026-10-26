@@ -63,6 +63,8 @@ export interface AiWodContext {
   equipment: { name: string; quantity: number | null }[];
   movements: { code: string; name: string }[];
   benchmarks: { code: string; name: string; scoreType: ScoreType; description: string }[];
+  /** Ejercicios de la biblioteca del box (ADR 0050). Opcional: las propuestas de antes no lo tienen. */
+  exercises?: string[];
 }
 
 /** Catálogos que el modelo puede citar: movimientos con máxima y benchmarks. */
@@ -183,6 +185,10 @@ export function aiWodUserPrompt(context: AiWodContext): string {
   parts.push(
     `## Benchmarks del box\n${context.benchmarks.map((b) => `- ${b.name} (${b.scoreType}): ${b.description}`).join("\n")}`,
   );
+  if (context.exercises && context.exercises.length > 0)
+    parts.push(
+      `## Ejercicios de la biblioteca del box (los atletas los conocen: úsalos con este nombre)\n${lines(context.exercises)}`,
+    );
   parts.push(
     `## Lo que pide el coach\n${
       context.focus

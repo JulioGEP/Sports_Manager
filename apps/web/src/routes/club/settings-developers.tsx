@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { apiFetch, errorKey } from "@/lib/api";
 import { clubPaths, useReadyClub } from "@/lib/club";
+import { useClubModel } from "@/lib/fitness";
 import { useT } from "@/lib/intl";
 import {
   Alert,
@@ -54,6 +55,114 @@ function curlSnippet(apiBase: string, key: string): string {
 }
 
 /**
+ * Para la web de un box (ADR 0049 y 0050): el horario de los próximos días con las plazas libres y
+ * el formulario de la clase de prueba, que deja un lead con su consentimiento.
+ */
+function boxSnippet(apiBase: string, key: string, labels: Record<string, string>): string {
+  return `<div id="box-classes"></div>
+<form id="box-trial">
+  <input name="firstName" placeholder="${labels["firstName"]}" required>
+  <input name="lastName" placeholder="${labels["lastName"]}" required>
+  <input name="email" type="email" placeholder="${labels["email"]}" required>
+  <select name="eventId"></select>
+  <label><input name="consent" type="checkbox" required> ${labels["consent"]}</label>
+  <button>${labels["send"]}</button>
+</form>
+<script>
+  (async () => {
+    const api = "${apiBase}";
+    const key = "${key}";
+    const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => "&#" + c.charCodeAt(0) + ";");
+    const when = (iso) => new Date(iso).toLocaleString([], { weekday: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+    const { classes } = await (await fetch(api + "/classes?days=7&key=" + key)).json();
+    document.getElementById("box-classes").innerHTML = classes
+      .map((c) => \`<p><strong>\${when(c.startsAt)}</strong> · \${esc(c.classType ?? c.title)}\${c.spotsLeft === null ? "" : " · " + c.spotsLeft}</p>\`)
+      .join("");
+    const form = document.getElementById("box-trial");
+    form.eventId.innerHTML = classes
+      .filter((c) => c.spotsLeft !== 0)
+      .map((c) => \`<option value="\${c.id}">\${when(c.startsAt)} · \${esc(c.classType ?? c.title)}</option>\`)
+      .join("");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(form));
+      await fetch(api + "/trials?key=" + key, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ ...data, consent: true }),
+      });
+      form.replaceWith("${labels["thanks"]}");
+    });
+  })();
+</script>`;
+}
+
+/** El horario y la clase de prueba en la web del box, con la misma clave que el catálogo. */
+function BoxWebCard({ apiBase, publicKey }: { apiBase: string; publicKey: string | null }) {
+  const t = useT("settings.developers.box");
+  const d = useT("settings.developers");
+  const { slug } = useReadyClub();
+  const paths = clubPaths(slug);
+  const [copied, setCopied] = useState(false);
+  const code = publicKey
+    ? boxSnippet(apiBase, publicKey, {
+        firstName: t("form.firstName"),
+        lastName: t("form.lastName"),
+        email: t("form.email"),
+        consent: t("form.consent"),
+        send: t("form.send"),
+        thanks: t("form.thanks"),
+      })
+    : "";
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      setCopied(false);
+    }
+  }
+  return (
+    <Card title={t("title")} description={t("description")}>
+      <div className="flex flex-col gap-4">
+        <ul className="flex flex-col gap-3">
+          <li className="flex flex-col gap-1">
+            <code className="break-all font-mono text-secondary text-ink">
+              GET {apiBase}/classes?days=7
+            </code>
+            <span className="text-label text-muted">{t("endpointClasses")}</span>
+          </li>
+          <li className="flex flex-col gap-1">
+            <code className="break-all font-mono text-secondary text-ink">
+              POST {apiBase}/trials
+            </code>
+            <span className="text-label text-muted">{t("endpointTrials")}</span>
+          </li>
+        </ul>
+        {publicKey ? (
+          <>
+            <pre className="max-h-96 overflow-auto rounded-field bg-raised p-4 font-mono text-label text-ink">
+              <code>{code}</code>
+            </pre>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button size="sm" variant="secondary" action="copy" onClick={() => void copy()}>
+                {copied ? d("copied") : d("copyCode")}
+              </Button>
+              <ButtonLink action="open" to={paths.leads} variant="tertiary" size="sm">
+                {t("leads")}
+              </ButtonLink>
+            </div>
+          </>
+        ) : (
+          <Alert kind="info">{t("needsKey")}</Alert>
+        )}
+      </div>
+    </Card>
+  );
+}
+
+/**
  * Web del club (ADR 0041; antes "Desarrolladores", ADR 0045): la web del club enseña los productos
  * públicos de su tienda con una clave publicable. Se activa, se cambia y se apaga desde aquí; el
  * código para pegar va incluido.
@@ -66,6 +175,7 @@ export function DevelopersTab() {
   const client = useQueryClient();
   const { slug } = useReadyClub();
   const paths = clubPaths(slug);
+  const fitness = useClubModel() === "fitness";
   const [snippet, setSnippet] = useState<Snippet>("html");
   const [confirm, setConfirm] = useState<"rotate" | "disable" | null>(null);
   const [busy, setBusy] = useState(false);
@@ -146,6 +256,7 @@ export function DevelopersTab() {
 
   return (
     <div className="flex flex-col gap-6">
+      {fitness ? <BoxWebCard apiBase={dev.apiBase} publicKey={key} /> : null}
       <div className="grid gap-6 lg:grid-cols-2">
         <Card
           title={t("title")}

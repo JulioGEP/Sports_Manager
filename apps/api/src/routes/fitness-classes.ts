@@ -1,5 +1,6 @@
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 import {
+  addDays,
   BookingCreateSchema,
   BookingPolicySchema,
   BookingPolicyUpdateSchema,
@@ -74,6 +75,8 @@ const rangeQuery = z.object({
  */
 export function createFitnessClassRoutes(config: ApiConfig, data: DataLayer) {
   const app = new OpenAPIHono<AppEnv>();
+  /** Día en que se miró la temporada de cada box (por instancia; mirar de más no hace daño). */
+  const horizonCheckedOn = new Map<string, string>();
   const chain = fitnessChain(config, data);
   for (const path of ["/api/org/booking-policy", "/api/org/class-types", "/api/org/classes"]) {
     app.use(path, ...chain);
@@ -92,6 +95,38 @@ export function createFitnessClassRoutes(config: ApiConfig, data: DataLayer) {
     if (to.getTime() - from.getTime() > 62 * DAY)
       throw badRequest("El rango de clases no puede superar dos meses.");
     return { from, to };
+  }
+
+  /**
+   * Temporada continua de un box (ADR 0050): nadie gestiona temporadas en un club de fitness. Cuando
+   * a la actual le quedan menos de dos meses, se alarga hasta dentro de un año y cada tipo de clase
+   * con horario crea las clases que le faltan, sin tocar las que ya hay. Una vez al día por club.
+   */
+  async function ensureHorizon(c: Ctx) {
+    const tenant = orgOf(c);
+    if (tenant.organization.clubModel !== "fitness") return;
+    const today = todayIn(tenant.organization.timezone);
+    const key = tenant.organization.id;
+    if (horizonCheckedOn.get(key) === today) return;
+    horizonCheckedOn.set(key, today);
+    const season = await data.seasons.current(tenant.scope);
+    if (!season || season.endsOn >= addDays(today, 60)) return;
+    const updated = await data.seasons.update(tenant.scope, season.id, {
+      endsOn: addDays(today, 365),
+    });
+    if (updated.outcome !== "updated") return;
+    const teams = (await data.teams.list(tenant.scope, season.id)).filter(
+      (t) => t.bookingMode === "open" && t.status === "active",
+    );
+    for (const team of teams)
+      await data.schedules.generate(
+        tenant.scope,
+        team.id,
+        tenant.organization.timezone,
+        new Date(),
+        null,
+        { onlyAdd: true },
+      );
   }
 
   /** Una clase que existe y que quien pregunta puede ver (atleta o personal de su ámbito). */
@@ -238,6 +273,7 @@ export function createFitnessClassRoutes(config: ApiConfig, data: DataLayer) {
     }),
     async (c) => {
       const tenant = orgOf(c);
+      await ensureHorizon(c);
       const scope = await staffClassScope(data, c);
       const season = await data.seasons.current(tenant.scope);
       const [classTypes, sections, coaches, facilities, policy] = await Promise.all([
@@ -424,6 +460,7 @@ export function createFitnessClassRoutes(config: ApiConfig, data: DataLayer) {
       const staff = actor.permissions.has("org.events.read");
       const player = actor.permissions.has("org.family.read") ? await selfPlayer(data, c) : null;
       if (!staff && !player) throw forbidden();
+      await ensureHorizon(c);
       const policy = await data.bookings.policy(tenant.scope);
       const filter = { sectionId: query.section, teamId: query.team };
       let classes: ClassRecord[];

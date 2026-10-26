@@ -10,7 +10,7 @@
     "announcements": "Avisos",
     "ranking": "Rànquing",
     "timer": "Timer",
-    "library": "Moviments",
+    "library": "Exercicis",
     "programming": "Programació",
     "athletes": "Atletes",
     "plans": "Tarifes",
@@ -28,7 +28,8 @@
     "groupBox": "El box",
     "groupCommunity": "Comunitat",
     "groupBusiness": "Negoci",
-    "groupManagement": "Gestió"
+    "groupManagement": "Gestió",
+    "groupAccount": "El meu compte"
   },
   "roles": {
     "athlete": "Atleta",
