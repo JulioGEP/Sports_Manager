@@ -236,21 +236,37 @@ export type PlayerUpdate = z.infer<typeof PlayerUpdateSchema>;
 
 // --- Familias ---
 
-/** Relación de una persona con un jugador, tal como la recogía el prototipo (docs/dominio.md 1.4). */
+/**
+ * Relación de una cuenta con un jugador, tal como la recogía el prototipo (docs/dominio.md 1.4).
+ * `self` (ADR 0046) es la cuenta del propio deportista: solo la pone el alta del deportista,
+ * nunca el formulario de familia (`FAMILY_RELATIONSHIPS`).
+ */
 export const GUARDIAN_RELATIONSHIPS = [
   "mother",
   "father",
   "guardian",
   "grandparent",
   "other",
+  "self",
 ] as const;
 export type GuardianRelationship = (typeof GUARDIAN_RELATIONSHIPS)[number];
 export const GuardianRelationshipSchema = z.enum(GUARDIAN_RELATIONSHIPS);
 
+/** Las relaciones que se eligen al vincular o invitar a una familia: todas menos `self`. */
+export const FAMILY_RELATIONSHIPS = [
+  "mother",
+  "father",
+  "guardian",
+  "grandparent",
+  "other",
+] as const satisfies readonly GuardianRelationship[];
+export type FamilyRelationship = (typeof FAMILY_RELATIONSHIPS)[number];
+export const FamilyRelationshipSchema = z.enum(FAMILY_RELATIONSHIPS);
+
 /** Invitar a una familia desde la ficha del jugador: email, relación e idioma del email. */
 export const GuardianInviteSchema = z.object({
   email: EmailSchema,
-  relationship: GuardianRelationshipSchema,
+  relationship: FamilyRelationshipSchema,
   locale: LocaleSchema.optional(),
 });
 export type GuardianInvite = z.infer<typeof GuardianInviteSchema>;
@@ -258,9 +274,23 @@ export type GuardianInvite = z.infer<typeof GuardianInviteSchema>;
 /** Vincular a alguien que ya es miembro del club. */
 export const GuardianLinkSchema = z.object({
   userId: z.string().uuid(),
-  relationship: GuardianRelationshipSchema,
+  relationship: FamilyRelationshipSchema,
 });
 export type GuardianLink = z.infer<typeof GuardianLinkSchema>;
+
+/**
+ * Dar acceso al propio deportista (ADR 0046): por email, con una invitación con el rol
+ * `athlete`, o vinculando a un miembro que ya tiene cuenta. Al aceptar, la cuenta es la de su
+ * ficha (`people.user_id`) y queda vinculada a ella con la relación `self`.
+ */
+export const AthleteInviteSchema = z.object({
+  email: EmailSchema,
+  locale: LocaleSchema.optional(),
+});
+export type AthleteInvite = z.infer<typeof AthleteInviteSchema>;
+
+export const AthleteLinkSchema = z.object({ userId: z.string().uuid() });
+export type AthleteLink = z.infer<typeof AthleteLinkSchema>;
 
 // --- Voz del club (DESIGN.md, sección 11) ---
 

@@ -46,7 +46,9 @@
     "viewAs": "Veure el club com…",
     "training": "Entrenament",
     "athlete": "El meu benestar",
-    "store": "Botiga"
+    "store": "Botiga",
+    "myProfile": "La meva fitxa",
+    "athleteTraining": "El meu pla"
   },
   "auth": {
     "login": {
@@ -97,7 +99,8 @@
       "confirm": "Repeteix la contrasenya",
       "mismatch": "Les contrasenyes no coincideixen.",
       "tooShort": "La contrasenya ha de tenir com a mínim {min} caràcters.",
-      "familyOf": "Com a família de {player}."
+      "familyOf": "Com a família de {player}.",
+      "athleteOf": "Per entrar a la teva fitxa d'esportista: {player}."
     },
     "product": {
       "tagline": "Gestió de clubs esportius"
@@ -119,7 +122,8 @@
       "next": "Següent: {title}, {when}",
       "newPlayer": "Nou esportista",
       "family": "La meva família",
-      "agenda": "Veure agenda"
+      "agenda": "Veure agenda",
+      "profile": "La meva fitxa"
     },
     "onboarding": {
       "title": "Deixa el club amb la seva imatge",
@@ -279,6 +283,42 @@
       "restricted": "Veus la teva part del club: {sections, plural, =0 {cap secció} one {# secció} other {# seccions}}, {teams, plural, =0 {cap equip} one {# equip} other {# equips}} i {players, plural, =0 {cap esportista solt} one {# esportista solt} other {# esportistes solts}}.",
       "emptyTitle": "Encara no tens res assignat",
       "emptyBody": "Demana a qui administra el club que t'assigni una secció, un equip o esportistes. Fins llavors el club es veu buit."
+    },
+    "profile": {
+      "title": "La teva fitxa",
+      "description": "El teu equip o grup, el teu objectiu, els teus reptes i els teus tests.",
+      "open": "Veure la meva fitxa"
+    },
+    "athlete": {
+      "availability": {
+        "available": "Disponible",
+        "limited": "Avui entrenes amb restriccions",
+        "rehab": "Ets en readaptació",
+        "out": "Ara mateix estàs de baixa",
+        "hint": "Ho ha marcat el teu cos tècnic. Al teu pla veuràs quines tasques hi xoquen.",
+        "open": "Veure el meu pla"
+      },
+      "today": {
+        "eyebrow": "Avui",
+        "title": "El teu d'avui",
+        "wellnessDone": "Benestar d'avui respost",
+        "wellnessPending": "Com arribes avui?",
+        "wellnessScore": "La teva puntuació: {score} de 25.",
+        "wellnessHint": "Cinc preguntes, dos minuts. Ajuda a ajustar la teva càrrega.",
+        "review": "Revisar",
+        "answer": "Respondre",
+        "rpeDone": "Sense esforços pendents",
+        "rpePending": "{count, plural, one {# entrenament pendent d'esforç} other {# entrenaments pendents d'esforç}}",
+        "rpeHint": "Del 0 al 10, uns 30 minuts després d'acabar."
+      },
+      "next": {
+        "eyebrow": "La teva propera sessió",
+        "title": "Sense sessions a la vista",
+        "open": "Veure el meu pla",
+        "unplanned": "El cos tècnic encara no ha publicat el pla.",
+        "summary": "{tasks, plural, one {# tasca} other {# tasques}} · {minutes}",
+        "empty": "No tens entrenaments els propers dies."
+      }
     }
   },
   "members": {
@@ -310,7 +350,8 @@
         "org_admin": "Gestiona membres, invitacions i configuració.",
         "coach": "Veu només els seus equips: plantilla, esportistes, agenda i instal·lacions que fa servir.",
         "guardian": "Família: a la Fase 1 veurà la informació dels seus fills.",
-        "staff": "Personal del club amb un càrrec: direcció, coordinació, delegació, fisio, preparació física, psicologia o scout."
+        "staff": "Personal del club amb un càrrec: direcció, coordinació, delegació, fisio, preparació física, psicologia o scout.",
+        "athlete": "Esportista amb compte propi: veu la seva fitxa i el seu pla. Se li dona accés des de la seva fitxa."
       },
       "position": "Càrrec",
       "positionSaved": "Càrrec desat: {position}.",
@@ -329,7 +370,8 @@
         "org_admin": "Gestiona membres, invitacions i configuració.",
         "coach": "Entrenador o entrenadora del club.",
         "guardian": "Mare, pare o tutor d'un jugador.",
-        "staff": "Personal del club que no entrena: entra amb un càrrec."
+        "staff": "Personal del club que no entrena: entra amb un càrrec.",
+        "athlete": "L'esportista es convida des de la seva fitxa."
       },
       "language": "Idioma del correu",
       "submit": "Enviar la invitació",
@@ -1108,7 +1150,8 @@
     "org_admin": "Administrador del club",
     "coach": "Entrenador",
     "guardian": "Tutor",
-    "staff": "Personal del club"
+    "staff": "Personal del club",
+    "athlete": "Esportista"
   },
   "locales": {
     "label": "Idioma",
@@ -1194,6 +1237,8 @@
       "updated": "Jugador editat",
       "guardian_linked": "Família vinculada",
       "guardian_unlinked": "Família desvinculada",
+      "athlete_linked": "Esportista amb accés a la seva fitxa",
+      "athlete_unlinked": "Accés de l'esportista retirat",
       "photo_updated": "Foto de jugador canviada",
       "photo_removed": "Foto de jugador treta",
       "objective_updated": "Objectiu individual desat",
@@ -1799,7 +1844,40 @@
         "empty": "No hi ha ningú més del personal disponible."
       }
     },
-    "performance": "Rendiment"
+    "performance": "Rendiment",
+    "athleteAccess": {
+      "title": "Accés de l'esportista",
+      "description": "Amb el seu propi compte veu la seva fitxa, la seva agenda, el seu pla d'entrenament i respon el seu benestar.",
+      "give": "Donar accés",
+      "active": "Entra amb el seu compte",
+      "remove": "Treure l'accés",
+      "invited": "Invitació enviada · caduca el {date}",
+      "empty": "Encara no entra amb el seu compte",
+      "emptyHint": "Per a esportistes adults, com a l'atletisme, el CrossFit o el sènior. Els menors, millor a través de la seva família.",
+      "confirmRemoveTitle": "Treure l'accés a {name}?",
+      "confirmRemoveBody": "Deixarà d'entrar a la seva fitxa i perdrà el rol d'esportista. La seva fitxa i el seu historial es queden al club."
+    },
+    "athleteSheet": {
+      "title": "Donar accés a {name}",
+      "description": "L'esportista entra amb el seu propi compte al que és seu.",
+      "how": "Com",
+      "modes": {
+        "invite": "Convidar per email",
+        "link": "Fer servir el compte d'un membre del club"
+      },
+      "email": "Email de l'esportista",
+      "language": "Idioma de l'email",
+      "member": "Membre",
+      "empty": "No hi ha membres que es puguin vincular.",
+      "what": "Veurà la seva fitxa, el seu equip o grup, la seva agenda, els seus partits, els seus reptes, el seu pla d'entrenament, el seu benestar, les seves quotes i la botiga. Res d'altres esportistes.",
+      "submitInvite": "Enviar la invitació",
+      "submitLink": "Donar accés",
+      "sent": "Invitació enviada a {email}.",
+      "failed": "Invitació creada per a {email}, però l'email no ha sortit. Copia l'enllaç.",
+      "linked": "{member} ja entra a la fitxa de {name}.",
+      "alreadyMember": "Aquesta persona ja és membre del club: tria \"Fer servir el compte d'un membre del club\".",
+      "taken": "Aquesta fitxa ja té compte o aquest compte és d'una altra persona del club."
+    }
   },
   "family": {
     "title": "La meva família",
@@ -1813,14 +1891,16 @@
     "noCoaches": "Sense cos tècnic assignat",
     "number": "Dorsal {number}",
     "inactive": "Fitxa de baixa",
-    "openProfile": "Veure fitxa"
+    "openProfile": "Veure fitxa",
+    "self": "La teva pròpia fitxa"
   },
   "relationships": {
     "mother": "Mare",
     "father": "Pare",
     "guardian": "Tutor o tutora",
     "grandparent": "Avi o àvia",
-    "other": "Una altra relació"
+    "other": "Una altra relació",
+    "self": "El mateix esportista"
   },
   "voices": {
     "cercana": "Propera",
@@ -1873,6 +1953,13 @@
       "description": "Sis àrees de treball. El veus quan el club el comparteix amb tu.",
       "notShared": "El club encara no ha compartit el pla de desenvolupament.",
       "notSharedHint": "Quan el comparteixi, el veuràs aquí amb les seves sis àrees."
+    },
+    "self": {
+      "back": "Inici",
+      "subtitle": "La teva fitxa al club: el que el club comparteix amb tu.",
+      "training": "El meu pla",
+      "wellness": "El meu benestar",
+      "team": "El teu equip o grup d'aquesta temporada i qui t'entrena."
     }
   },
   "challenges": {
@@ -5181,5 +5268,46 @@
     "saveNewDrills": "Desar les tasques noves a la biblioteca de l'equip",
     "apply": "Aplicar a les sessions",
     "applied": "{count, plural, one {Proposta aplicada a # sessió. Queda en esborrany perquè la revisis.} other {Proposta aplicada a # sessions. Queden en esborrany perquè les revisis.}}"
+  },
+  "athleteTraining": {
+    "title": "El meu pla",
+    "description": "Els teus entrenaments i classes d'aquests dies, amb el pla que ha publicat el teu cos tècnic. Només el que et toca.",
+    "wellness": "El meu benestar",
+    "noPlayer": {
+      "title": "El teu compte no té fitxa d'esportista",
+      "description": "Demana al club que et doni accés des de la teva fitxa."
+    },
+    "empty": {
+      "title": "Sense entrenaments aquests dies",
+      "description": "Quan el teu equip o grup tingui sessions a l'agenda, les veuràs aquí amb el seu pla."
+    },
+    "groups": {
+      "today": "Avui",
+      "upcoming": "Propers dies",
+      "past": "Últims dies"
+    },
+    "availability": {
+      "available": "Disponible",
+      "limited": "Avui entrenes amb restriccions",
+      "rehab": "Ets en readaptació",
+      "out": "Ara mateix estàs de baixa",
+      "hint": "Les tasques marcades hi xoquen: parla-ho amb qui t'entrena abans de fer-les.",
+      "expectedReturn": "Tornada prevista: {date}."
+    },
+    "status": {
+      "unplanned": "Sense pla publicat",
+      "planned": "Pla publicat",
+      "done": "Feta",
+      "cancelled": "Cancel·lada",
+      "class": "Classe"
+    },
+    "targetRpe": "Esforç previst {rpe}/10",
+    "rpeGiven": "El teu esforç: {rpe}/10.",
+    "giveRpe": "Donar el meu esforç",
+    "objective": "Objectiu",
+    "unplanned": "El cos tècnic encara no ha publicat el pla d'aquesta sessió.",
+    "noItems": "Aquesta sessió no té tasques per a tu.",
+    "conflict": "Consulta-ho",
+    "keys": "Claus"
   }
 }

@@ -355,9 +355,31 @@ export function createInvitationRoutes(config: ApiConfig, data: DataLayer) {
         }
       };
 
-      /** Invitación de familia (Bloque 11): la cuenta queda vinculada al jugador al aceptar. */
+      /**
+       * Invitación de familia (Bloque 11): la cuenta queda vinculada al jugador al aceptar. La del
+       * propio deportista (ADR 0046) pasa además a ser la cuenta de su ficha.
+       */
       const linkFamily = async (userId: string) => {
         if (!invitation.player || !invitation.relationship) return;
+        if (invitation.roleCode === "athlete") {
+          const outcome = await data.players.linkAthlete(
+            tenant.scope,
+            invitation.player.id,
+            userId,
+          );
+          if (outcome !== "linked") {
+            console.error("[invitations] el deportista no se pudo vincular a su ficha", outcome);
+            return;
+          }
+          await data.audit.record({
+            actorUserId: userId,
+            organizationId: tenant.organization.id,
+            action: "player.athlete_linked",
+            target: playerDisplayName(invitation.player),
+            details: { via: "invitation" },
+          });
+          return;
+        }
         await data.players.linkGuardian(
           tenant.scope,
           invitation.player.id,

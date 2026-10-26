@@ -106,6 +106,25 @@ describe("roles y permisos", () => {
     expect(coach.has("org.structure.write")).toBe(false);
   });
 
+  it("el deportista con cuenta ve lo suyo y nada del club (ADR 0046)", () => {
+    // Lo mismo que una familia: su ficha y sus equipos, sin listas de deportistas ni personal.
+    expect([...permissionsForRoles(["athlete"])].sort()).toEqual(
+      [...ROLE_PERMISSIONS.guardian].sort(),
+    );
+    for (const permission of [
+      "org.players.read",
+      "org.members.read",
+      "org.events.read",
+      "org.training.read",
+      "org.load.read",
+      "org.health.read",
+      "org.fees.read",
+      "org.store.read",
+    ] as const) {
+      expect(hasPermission(["athlete"], permission), permission).toBe(false);
+    }
+  });
+
   it("el soporte de plataforma nunca incluye datos personales ni escritura", () => {
     expect(PLATFORM_SUPPORT_PERMISSIONS).toEqual(["org.support.read"]);
     for (const permission of SUPPORT_GRANT_PERMISSIONS) {

@@ -34,5 +34,10 @@ export const InvitationCreateSchema = z
   .refine((v) => !v.teamId || v.roleCode === "staff" || v.roleCode === "coach", {
     message: "Solo el cuerpo técnico se une a un equipo.",
     path: ["teamId"],
+  })
+  // El deportista entra a su ficha (ADR 0046): se invita desde ella, no desde "Personal".
+  .refine((v) => v.roleCode !== "athlete", {
+    message: "Al deportista se le da acceso desde su ficha.",
+    path: ["roleCode"],
   });
 export type InvitationCreate = z.infer<typeof InvitationCreateSchema>;

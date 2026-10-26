@@ -46,7 +46,9 @@
     "viewAs": "Ver el club como…",
     "training": "Entrenamiento",
     "athlete": "Mi bienestar",
-    "store": "Tienda"
+    "store": "Tienda",
+    "myProfile": "Mi ficha",
+    "athleteTraining": "Mi plan"
   },
   "auth": {
     "login": {
@@ -97,7 +99,8 @@
       "confirm": "Repite la contraseña",
       "mismatch": "Las contraseñas no coinciden.",
       "tooShort": "La contraseña debe tener al menos {min} caracteres.",
-      "familyOf": "Como familia de {player}."
+      "familyOf": "Como familia de {player}.",
+      "athleteOf": "Para entrar a tu ficha de deportista: {player}."
     },
     "product": {
       "tagline": "Gestión de clubes deportivos"
@@ -119,7 +122,8 @@
       "next": "Próximo: {title}, {when}",
       "newPlayer": "Nuevo deportista",
       "family": "Mi familia",
-      "agenda": "Ver agenda"
+      "agenda": "Ver agenda",
+      "profile": "Mi ficha"
     },
     "onboarding": {
       "title": "Deja el club con su imagen",
@@ -279,6 +283,42 @@
       "restricted": "Ves tu parte del club: {sections, plural, =0 {ninguna sección} one {# sección} other {# secciones}}, {teams, plural, =0 {ningún equipo} one {# equipo} other {# equipos}} y {players, plural, =0 {ningún deportista suelto} one {# deportista suelto} other {# deportistas sueltos}}.",
       "emptyTitle": "Todavía no tienes nada asignado",
       "emptyBody": "Pide a quien administra el club que te asigne una sección, un equipo o deportistas. Hasta entonces el club se ve vacío."
+    },
+    "profile": {
+      "title": "Tu ficha",
+      "description": "Tu equipo o grupo, tu objetivo, tus retos y tus tests.",
+      "open": "Ver mi ficha"
+    },
+    "athlete": {
+      "availability": {
+        "available": "Disponible",
+        "limited": "Hoy entrenas con restricciones",
+        "rehab": "Estás en readaptación",
+        "out": "Ahora mismo estás de baja",
+        "hint": "Lo ha marcado tu cuerpo técnico. En tu plan verás qué tareas chocan con ello.",
+        "open": "Ver mi plan"
+      },
+      "today": {
+        "eyebrow": "Hoy",
+        "title": "Lo tuyo de hoy",
+        "wellnessDone": "Bienestar de hoy respondido",
+        "wellnessPending": "¿Cómo llegas hoy?",
+        "wellnessScore": "Tu puntuación: {score} de 25.",
+        "wellnessHint": "Cinco preguntas, dos minutos. Ayuda a ajustar tu carga.",
+        "review": "Revisar",
+        "answer": "Responder",
+        "rpeDone": "Sin esfuerzos pendientes",
+        "rpePending": "{count, plural, one {# entrenamiento pendiente de esfuerzo} other {# entrenamientos pendientes de esfuerzo}}",
+        "rpeHint": "Del 0 al 10, unos 30 minutos después de acabar."
+      },
+      "next": {
+        "eyebrow": "Tu próxima sesión",
+        "title": "Sin sesiones a la vista",
+        "open": "Ver mi plan",
+        "unplanned": "El cuerpo técnico todavía no ha publicado el plan.",
+        "summary": "{tasks, plural, one {# tarea} other {# tareas}} · {minutes}",
+        "empty": "No tienes entrenamientos en los próximos días."
+      }
     }
   },
   "members": {
@@ -310,7 +350,8 @@
         "org_admin": "Gestiona miembros, invitaciones y ajustes.",
         "coach": "Ve solo sus equipos: plantilla, deportistas, agenda e instalaciones que usa.",
         "guardian": "Familia: en la Fase 1 verá la información de sus hijos.",
-        "staff": "Personal del club con un cargo: dirección, coordinación, delegación, fisio, preparación física, psicología o scout."
+        "staff": "Personal del club con un cargo: dirección, coordinación, delegación, fisio, preparación física, psicología o scout.",
+        "athlete": "Deportista con cuenta propia: ve su ficha y su plan. Se le da acceso desde su ficha."
       },
       "position": "Cargo",
       "positionSaved": "Cargo guardado: {position}.",
@@ -329,7 +370,8 @@
         "org_admin": "Gestiona miembros, invitaciones y ajustes.",
         "coach": "Entrenador o entrenadora del club.",
         "guardian": "Madre, padre o tutor de un jugador.",
-        "staff": "Personal del club que no entrena: entra con un cargo."
+        "staff": "Personal del club que no entrena: entra con un cargo.",
+        "athlete": "El deportista se invita desde su ficha."
       },
       "language": "Idioma del email",
       "submit": "Enviar invitación",
@@ -1108,7 +1150,8 @@
     "org_admin": "Administrador del club",
     "coach": "Entrenador",
     "guardian": "Tutor",
-    "staff": "Personal del club"
+    "staff": "Personal del club",
+    "athlete": "Deportista"
   },
   "locales": {
     "label": "Idioma",
@@ -1194,6 +1237,8 @@
       "updated": "Jugador editado",
       "guardian_linked": "Familia vinculada",
       "guardian_unlinked": "Familia desvinculada",
+      "athlete_linked": "Deportista con acceso a su ficha",
+      "athlete_unlinked": "Acceso del deportista retirado",
       "photo_updated": "Foto de jugador cambiada",
       "photo_removed": "Foto de jugador quitada",
       "objective_updated": "Objetivo individual guardado",
@@ -1799,7 +1844,40 @@
         "empty": "No hay nadie más del personal disponible."
       }
     },
-    "performance": "Rendimiento"
+    "performance": "Rendimiento",
+    "athleteAccess": {
+      "title": "Acceso del deportista",
+      "description": "Con su propia cuenta ve su ficha, su agenda, su plan de entrenamiento y responde su bienestar.",
+      "give": "Dar acceso",
+      "active": "Entra con su cuenta",
+      "remove": "Quitar acceso",
+      "invited": "Invitación enviada · caduca el {date}",
+      "empty": "Todavía no entra con su cuenta",
+      "emptyHint": "Para deportistas adultos, como en atletismo, CrossFit o el sénior. Los menores, mejor a través de su familia.",
+      "confirmRemoveTitle": "¿Quitar el acceso a {name}?",
+      "confirmRemoveBody": "Dejará de entrar a su ficha y perderá el rol de deportista. Su ficha y su historial se quedan en el club."
+    },
+    "athleteSheet": {
+      "title": "Dar acceso a {name}",
+      "description": "El deportista entra con su propia cuenta a lo suyo.",
+      "how": "Cómo",
+      "modes": {
+        "invite": "Invitar por email",
+        "link": "Usar la cuenta de un miembro del club"
+      },
+      "email": "Email del deportista",
+      "language": "Idioma del email",
+      "member": "Miembro",
+      "empty": "No hay miembros que se puedan vincular.",
+      "what": "Verá su ficha, su equipo o grupo, su agenda, sus partidos, sus retos, su plan de entrenamiento, su bienestar, sus cuotas y la tienda. Nada de otros deportistas.",
+      "submitInvite": "Enviar invitación",
+      "submitLink": "Dar acceso",
+      "sent": "Invitación enviada a {email}.",
+      "failed": "Invitación creada para {email}, pero el email no ha salido. Copia el enlace.",
+      "linked": "{member} ya entra a la ficha de {name}.",
+      "alreadyMember": "Esa persona ya es miembro del club: elige \"Usar la cuenta de un miembro del club\".",
+      "taken": "Esta ficha ya tiene cuenta o esa cuenta es de otra persona del club."
+    }
   },
   "family": {
     "title": "Mi familia",
@@ -1813,14 +1891,16 @@
     "noCoaches": "Sin cuerpo técnico asignado",
     "number": "Dorsal {number}",
     "inactive": "Ficha de baja",
-    "openProfile": "Ver ficha"
+    "openProfile": "Ver ficha",
+    "self": "Tu propia ficha"
   },
   "relationships": {
     "mother": "Madre",
     "father": "Padre",
     "guardian": "Tutor o tutora",
     "grandparent": "Abuelo o abuela",
-    "other": "Otra relación"
+    "other": "Otra relación",
+    "self": "El propio deportista"
   },
   "voices": {
     "cercana": "Cercana",
@@ -1873,6 +1953,13 @@
       "description": "Seis áreas de trabajo. Lo ves cuando el club lo comparte contigo.",
       "notShared": "El club todavía no ha compartido el plan de desarrollo.",
       "notSharedHint": "Cuando lo comparta, lo verás aquí con sus seis áreas."
+    },
+    "self": {
+      "back": "Inicio",
+      "subtitle": "Tu ficha en el club: lo que el club comparte contigo.",
+      "training": "Mi plan",
+      "wellness": "Mi bienestar",
+      "team": "Tu equipo o grupo de esta temporada y quién te entrena."
     }
   },
   "challenges": {
@@ -5181,5 +5268,46 @@
     "saveNewDrills": "Guardar las tareas nuevas en la biblioteca del equipo",
     "apply": "Aplicar a las sesiones",
     "applied": "{count, plural, one {Propuesta aplicada a # sesión. Queda en borrador para que la revises.} other {Propuesta aplicada a # sesiones. Quedan en borrador para que las revises.}}"
+  },
+  "athleteTraining": {
+    "title": "Mi plan",
+    "description": "Tus entrenamientos y clases de estos días, con el plan que ha publicado tu cuerpo técnico. Solo lo que te toca.",
+    "wellness": "Mi bienestar",
+    "noPlayer": {
+      "title": "Tu cuenta no tiene ficha de deportista",
+      "description": "Pide al club que te dé acceso desde tu ficha."
+    },
+    "empty": {
+      "title": "Sin entrenamientos estos días",
+      "description": "Cuando tu equipo o grupo tenga sesiones en la agenda, las verás aquí con su plan."
+    },
+    "groups": {
+      "today": "Hoy",
+      "upcoming": "Próximos días",
+      "past": "Últimos días"
+    },
+    "availability": {
+      "available": "Disponible",
+      "limited": "Hoy entrenas con restricciones",
+      "rehab": "Estás en readaptación",
+      "out": "Ahora mismo estás de baja",
+      "hint": "Las tareas marcadas chocan con ello: háblalo con quien te entrena antes de hacerlas.",
+      "expectedReturn": "Vuelta prevista: {date}."
+    },
+    "status": {
+      "unplanned": "Sin plan publicado",
+      "planned": "Plan publicado",
+      "done": "Hecha",
+      "cancelled": "Cancelada",
+      "class": "Clase"
+    },
+    "targetRpe": "Esfuerzo previsto {rpe}/10",
+    "rpeGiven": "Tu esfuerzo: {rpe}/10.",
+    "giveRpe": "Dar mi esfuerzo",
+    "objective": "Objetivo",
+    "unplanned": "El cuerpo técnico todavía no ha publicado el plan de esta sesión.",
+    "noItems": "Esta sesión no tiene tareas para ti.",
+    "conflict": "Consúltalo",
+    "keys": "Claves"
   }
 }

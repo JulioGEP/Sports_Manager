@@ -13,6 +13,7 @@ import { LoginPage } from "@/routes/auth/login";
 import { ResetPasswordPage } from "@/routes/auth/reset";
 import { AgendaPage } from "@/routes/club/agenda";
 import { AthletePage } from "@/routes/club/athlete";
+import { AthleteTrainingPage } from "@/routes/club/athlete-training";
 import { ChallengePage } from "@/routes/club/challenge";
 import { ChallengesPage, FamilyPlayerChallengesPage } from "@/routes/club/challenges";
 import { ClubMemberPage } from "@/routes/club/club-member";
@@ -153,6 +154,7 @@ export const router = createBrowserRouter([
       { path: "sections/:id/training-config", element: <SectionTrainingConfigPage /> },
       { path: "sections/:id/methodology", element: <SectionMethodologyPage /> },
       { path: "me", element: <AthletePage /> },
+      { path: "me/training", element: <AthleteTrainingPage /> },
     ],
   },
   { path: "*", element: <Navigate to="/" replace /> },

@@ -108,6 +108,8 @@ export function FamilyPlayerPage() {
     );
   }
   const { player, teams, objective, developmentPlan, timeline, challenges } = detail.data;
+  /** Su propia ficha (ADR 0046): el deportista con cuenta, no una familia. */
+  const self = player.relationship === "self";
   const name = playerDisplayName(player);
   const age = dates.age(player.birthDate);
   const current = teams.find((x) => x.seasonIsCurrent) ?? null;
@@ -163,7 +165,11 @@ export function FamilyPlayerPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <BackLink to={paths.family}>{t("back")}</BackLink>
+      {self ? (
+        <BackLink to={paths.home}>{t("self.back")}</BackLink>
+      ) : (
+        <BackLink to={paths.family}>{t("back")}</BackLink>
+      )}
 
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex min-w-0 flex-wrap gap-4">
@@ -220,7 +226,9 @@ export function FamilyPlayerPage() {
               ) : null}
             </h1>
             <p className="text-body text-muted">
-              {tf("relationship", { relationship: rel(player.relationship).toLowerCase() })}
+              {self
+                ? t("self.subtitle")
+                : tf("relationship", { relationship: rel(player.relationship).toLowerCase() })}
             </p>
             <div className="flex flex-wrap gap-2 pt-1">
               {age !== null ? <InfoChip>{tp("chips.age", { age })}</InfoChip> : null}
@@ -235,11 +243,25 @@ export function FamilyPlayerPage() {
             </div>
           </div>
         </div>
+        {self ? (
+          <div className="flex flex-wrap gap-2">
+            <ButtonLink action="open" to={paths.athleteTraining} variant="secondary" size="sm">
+              {t("self.training")}
+            </ButtonLink>
+            <ButtonLink action="open" to={paths.athlete} variant="tertiary" size="sm">
+              {t("self.wellness")}
+            </ButtonLink>
+          </div>
+        ) : null}
       </header>
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Equipo de esta temporada y quién lo entrena. */}
-        <Card title={t("team.title")} description={t("team.description")} padded={false}>
+        <Card
+          title={t("team.title")}
+          description={self ? t("self.team") : t("team.description")}
+          padded={false}
+        >
           {current ? (
             <div className="flex flex-col gap-3 px-5 pb-5">
               <div className="flex items-center gap-3">

@@ -307,4 +307,6 @@ export const clubPaths = (slug: string) => ({
   sectionTrainingConfig: (id: string) => `/${slug}/sections/${id}/training-config`,
   sectionMethodology: (id: string) => `/${slug}/sections/${id}/methodology`,
   athlete: `/${slug}/me`,
+  /** Lo que entrena el deportista con cuenta propia (ADR 0046): su plan de estos días. */
+  athleteTraining: `/${slug}/me/training`,
 });

@@ -1,6 +1,7 @@
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 import {
   addDays,
+  AthletePlanResponseSchema,
   AthleteResponseSchema,
   AthleteRpeSchema,
   AvailabilitySetSchema,
@@ -17,6 +18,7 @@ import {
   playerDisplayName,
   PlayerFocusSetSchema,
   PlayerPerformanceResponseSchema,
+  SESSION_BLOCKS,
   TeamLoadResponseSchema,
   TeamTestsResponseSchema,
   weekStartOf,
@@ -1017,6 +1019,134 @@ export function createLoadRoutes(config: ApiConfig, data: DataLayer) {
       );
       await audit(data, c, tenant, "load.recorded", athlete.id, { eventId: id, self: true });
       return c.json(await athleteResponse(c, tenant), 200);
+    },
+  );
+
+  /**
+   * Lo que entrena el deportista (ADR 0046): entrenamientos y clases de sus equipos o grupos desde
+   * hace una semana hasta dentro de otra, con el plan publicado (nunca un borrador). De cada
+   * sesión, las tareas de todo el grupo y las que le asignan a él; la readaptación, solo si es
+   * suya. Nada de notas ni valoraciones del cuerpo técnico, ni datos de nadie más.
+   */
+  app.openapi(
+    createRoute({
+      method: "get",
+      path: "/api/org/me/athlete/plan",
+      tags: ["Carga"],
+      summary:
+        "Para el deportista con cuenta propia: sus entrenamientos de estos días con el plan publicado",
+      security: [{ sessionCookie: [] }],
+      responses: { 200: json("Plan", AthletePlanResponseSchema), ...errors },
+    }),
+    async (c) => {
+      const tenant = tenantOf(c);
+      const today = todayOf(tenant);
+      const athlete = await data.load.athleteOf(tenant.scope, actorOf(c).userId);
+      if (!athlete) return c.json({ today, player: null, availability: null, sessions: [] }, 200);
+      const tz = tenant.organization.timezone;
+      const fromDay = addDays(today, -7);
+      const toDay = addDays(today, 8);
+      const from = instantOf(tz, fromDay);
+      const to = instantOf(tz, toDay);
+      const teamIds = (await data.players.teamsOf(tenant.scope, athlete.id))
+        .filter((t) => t.seasonIsCurrent)
+        .map((t) => t.teamId);
+      const [events, sessions, loads, current] = await Promise.all([
+        teamIds.length > 0
+          ? data.events.listBetween(tenant.scope, from, to, { teamIds })
+          : Promise.resolve([]),
+        data.training.sessionsOfTeams(tenant.scope, teamIds, from, to),
+        data.load.loadsFor(tenant.scope, [athlete.id], fromDay, toDay),
+        data.load.currentFor(tenant.scope, [athlete.id]),
+      ]);
+      const published = sessions.filter((s) => s.status !== "draft");
+      const items = await data.training.itemsOf(
+        tenant.scope,
+        published.map((s) => s.id),
+      );
+      const sectionIds = [...new Set(events.flatMap((e) => (e.section ? [e.section.id] : [])))];
+      const sports = new Map(
+        await Promise.all(
+          sectionIds.map(
+            async (id) =>
+              [id, (await data.training.sectionOf(tenant.scope, id))?.sportCode ?? ""] as const,
+          ),
+        ),
+      );
+      const availability = current.get(athlete.id);
+      const limited = availability && availability.status !== "available" ? availability : null;
+      const forMe = (i: (typeof items)[number]) =>
+        i.playerIds ? i.playerIds.includes(athlete.id) : i.block !== "rehab";
+
+      return c.json(
+        {
+          today,
+          player: { id: athlete.id, name: playerDisplayName(athlete) },
+          availability: limited
+            ? {
+                status: limited.status,
+                restrictions: limited.restrictions,
+                maxMinutes: limited.maxMinutes,
+                expectedReturnOn: limited.expectedReturnOn,
+              }
+            : null,
+          sessions: events
+            .flatMap((e) =>
+              e.team && (e.kind === "training" || e.kind === "activity")
+                ? [{ ...e, kind: e.kind, team: e.team }]
+                : [],
+            )
+            .map((e) => {
+              const session = published.find((s) => s.eventId === e.id) ?? null;
+              const mine = session
+                ? items.filter((i) => i.sessionId === session.id).filter(forMe)
+                : [];
+              return {
+                eventId: e.id,
+                kind: e.kind,
+                title: e.title,
+                startsAt: e.startsAt.toISOString(),
+                endsAt: e.endsAt.toISOString(),
+                team: e.team,
+                sportCode: (e.section && sports.get(e.section.id)) || "",
+                facility: e.facility,
+                location: e.location,
+                status: session
+                  ? (session.status as "planned" | "done" | "cancelled")
+                  : ("unplanned" as const),
+                objective: session?.objective ?? null,
+                targetRpe: session?.targetRpe ?? null,
+                minutes: session
+                  ? plannedOf(session, mine).minutes
+                  : Math.round((e.endsAt.getTime() - e.startsAt.getTime()) / 60_000),
+                blocks: SESSION_BLOCKS.map((block) => ({
+                  block,
+                  items: mine
+                    .filter((i) => i.block === block)
+                    .sort((a, b) => a.sortOrder - b.sortOrder)
+                    .map((i) => ({
+                      id: i.id,
+                      title: i.title,
+                      minutes: i.minutes,
+                      sets: i.sets,
+                      reps: i.reps,
+                      restSec: i.restSec,
+                      targetRpe: i.targetRpe,
+                      groupLabel: i.groupLabel,
+                      description: i.description,
+                      coachingPoints: i.coachingPoints,
+                      diagram: i.diagram,
+                      conflicts: limited
+                        ? i.restrictionTags.filter((t) => limited.restrictions.includes(t))
+                        : [],
+                    })),
+                })).filter((b) => b.items.length > 0),
+                rpe: loads.find((l) => l.eventId === e.id)?.rpe ?? null,
+              };
+            }),
+        },
+        200,
+      );
     },
   );
 

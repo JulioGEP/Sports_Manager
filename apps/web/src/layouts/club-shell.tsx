@@ -103,6 +103,13 @@ function ClubFrame({ children }: { children: ReactNode }) {
    */
   type NavLinkItem = { to: string; label: string; icon: typeof Icon.House; end: boolean };
   const has = (p: string) => permissions.includes(p as (typeof permissions)[number]);
+  const actor =
+    state.kind === "ready" && state.org.actor.kind === "member" ? state.org.actor : null;
+  /** Su propia ficha de deportista (ADR 0039 y 0046): su plan, su bienestar y su RPE. */
+  const athletePlayerId = actor?.athletePlayerId ?? null;
+  /** El deportista sin nadie a su cargo no tiene "familia": tiene su ficha. */
+  const athleteOnly =
+    actor !== null && actor.roles.includes("athlete") && !actor.roles.includes("guardian");
   const groups: { key: string; label: string | null; links: NavLinkItem[] }[] = [
     {
       key: "home",
@@ -123,7 +130,14 @@ function ClubFrame({ children }: { children: ReactNode }) {
           ? { to: paths.players, label: t("players"), icon: Icon.PersonSimpleRun, end: false }
           : null,
         has("org.family.read")
-          ? { to: paths.family, label: t("family"), icon: Icon.HandHeart, end: false }
+          ? athleteOnly && athletePlayerId
+            ? {
+                to: paths.familyPlayer(athletePlayerId),
+                label: t("myProfile"),
+                icon: Icon.UserCircle,
+                end: false,
+              }
+            : { to: paths.family, label: t("family"), icon: Icon.HandHeart, end: false }
           : null,
         has("org.club_members.read")
           ? {
@@ -142,6 +156,18 @@ function ClubFrame({ children }: { children: ReactNode }) {
       key: "activity",
       label: t("groupActivity"),
       links: [
+        // El deportista con cuenta (ADR 0046): lo que entrena y cómo llega, lo primero del día.
+        athletePlayerId
+          ? {
+              to: paths.athleteTraining,
+              label: t("athleteTraining"),
+              icon: Icon.Barbell,
+              end: false,
+            }
+          : null,
+        athletePlayerId
+          ? { to: paths.athlete, label: t("athlete"), icon: Icon.Heartbeat, end: true }
+          : null,
         has("org.events.read") || has("org.family.read")
           ? { to: paths.agenda, label: t("agenda"), icon: Icon.CalendarBlank, end: false }
           : null,
@@ -152,12 +178,6 @@ function ClubFrame({ children }: { children: ReactNode }) {
         // cuelgan de su portada.
         has("org.training.read")
           ? { to: paths.training, label: t("training"), icon: Icon.SportIcons.Silbato, end: false }
-          : null,
-        // El deportista adulto con su cuenta responde su bienestar y su RPE.
-        state.kind === "ready" &&
-        state.org.actor.kind === "member" &&
-        state.org.actor.athletePlayerId
-          ? { to: paths.athlete, label: t("athlete"), icon: Icon.Heartbeat, end: false }
           : null,
         // El reto no va en la barra (ADR 0032): vive en la ficha de cada equipo y de cada sección,
         // y para la familia en la ficha de cada uno de los suyos.
@@ -177,8 +197,7 @@ function ClubFrame({ children }: { children: ReactNode }) {
           : null,
         // Tienda (ADR 0041): la gestiona quien tiene el área; la ve quien puede comprar (la
         // familia de un menor o el deportista adulto) cuando el club vende algo.
-        has("org.store.read") ||
-        (state.kind === "ready" && state.org.actor.kind === "member" && state.org.actor.canShop)
+        has("org.store.read") || actor?.canShop
           ? { to: paths.store, label: t("store"), icon: Icon.Storefront, end: false }
           : null,
         has("org.settings.write")

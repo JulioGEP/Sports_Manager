@@ -7,7 +7,7 @@ import { clubPaths, useReadyClub } from "@/lib/club";
 import { useT } from "@/lib/intl";
 import { Alert, Avatar, Button, EmptyState, Icon, Input, Sheet, StatusChip } from "@/ui";
 
-const ORDER: RoleCode[] = ["coach", "staff", "guardian", "org_admin"];
+const ORDER: RoleCode[] = ["coach", "staff", "athlete", "guardian", "org_admin"];
 
 /**
  * "Ver como" (Bloque 14): la administración elige a una persona del club y la web pasa a pedirlo
