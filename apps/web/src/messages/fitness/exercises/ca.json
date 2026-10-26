@@ -16,6 +16,26 @@
   "noMatch": "Cap exercici amb aquests filtres.",
   "clearFilters": "Treure filtres",
   "loadError": "No s'han pogut carregar els exercicis.",
+  "tabs": {
+    "label": "Biblioteca",
+    "exercises": "Exercicis",
+    "workouts": "Workouts"
+  },
+  "workouts": {
+    "description": "Els benchmarks de sempre: les noies, els herois, l'Open i les proves híbrides. Es repeteixen per mesurar el progrés.",
+    "searchPlaceholder": "Nom o moviment",
+    "filters": "Filtrar per família",
+    "count": "{count, plural, one {# workout} other {# workouts}}",
+    "noMatch": "Cap workout amb aquests filtres.",
+    "program": "Programar",
+    "programLabel": "Programar {name}",
+    "format": {
+      "time": "Per temps",
+      "timeCap": "Per temps · cap {minutes} min",
+      "amrap": "AMRAP {minutes} min",
+      "repsIn": "Repeticions en {minutes} min"
+    }
+  },
   "categories": {
     "weightlifting": "Halterofília",
     "strength": "Força",

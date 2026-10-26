@@ -16,6 +16,26 @@
   "noMatch": "Ningún ejercicio con esos filtros.",
   "clearFilters": "Quitar filtros",
   "loadError": "No se han podido cargar los ejercicios.",
+  "tabs": {
+    "label": "Biblioteca",
+    "exercises": "Ejercicios",
+    "workouts": "Workouts"
+  },
+  "workouts": {
+    "description": "Los benchmarks de siempre: las chicas, los héroes, el Open y las pruebas híbridas. Se repiten para medir el progreso.",
+    "searchPlaceholder": "Nombre o movimiento",
+    "filters": "Filtrar por familia",
+    "count": "{count, plural, one {# workout} other {# workouts}}",
+    "noMatch": "Ningún workout con esos filtros.",
+    "program": "Programar",
+    "programLabel": "Programar {name}",
+    "format": {
+      "time": "Por tiempo",
+      "timeCap": "Por tiempo · cap {minutes} min",
+      "amrap": "AMRAP {minutes} min",
+      "repsIn": "Repeticiones en {minutes} min"
+    }
+  },
   "categories": {
     "weightlifting": "Halterofilia",
     "strength": "Fuerza",

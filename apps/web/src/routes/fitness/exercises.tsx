@@ -1,4 +1,5 @@
 import {
+  BENCHMARKS,
   EXERCISE_CATEGORIES,
   EXERCISE_EQUIPMENT,
   type Exercise,
@@ -6,29 +7,34 @@ import {
   type ExerciseEquipment,
 } from "@sportsmanager/shared";
 import { useMemo, useState } from "react";
-import { Navigate } from "react-router";
+import { Navigate, useSearchParams } from "react-router";
 import {
   ExerciseCard,
   ExerciseDetailSheet,
   ExerciseFormSheet,
+  FilterChips,
+  fold,
   useExercises,
 } from "@/components/fitness/exercise-ui";
+import { WorkoutLibrary } from "@/components/fitness/workout-library";
 import { errorKey } from "@/lib/api";
 import { clubPaths, useReadyClub } from "@/lib/club";
 import { useT } from "@/lib/intl";
-import { Alert, Button, EmptyState, Field, Icon, Input, PageHeader, Select } from "@/ui";
+import { Alert, Button, EmptyState, Field, Icon, Input, PageHeader, Select, Tabs } from "@/ui";
 
-/** Sin tildes ni mayúsculas, para buscar "sentadilla" y encontrar "Sentadilla". */
-const fold = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+type Tab = "exercises" | "workouts";
 
 /**
- * Biblioteca de ejercicios del box (ADR 0050): una sola pantalla para todos. El atleta busca y
- * repasa cómo se hace un ejercicio antes de la clase; el coach y el dueño, además, la escriben.
- * Sin pizarra ni campos de deporte de equipo: categoría, material, cómo se hace, puntos clave,
- * errores comunes, escalados y vídeo.
+ * Biblioteca del box (ADR 0050): una sola pantalla para todos, con dos pestañas. En Ejercicios, el
+ * atleta busca y repasa cómo se hace un ejercicio antes de la clase; el coach y el dueño, además,
+ * la escriben. Sin pizarra ni campos de deporte de equipo: categoría, material, cómo se hace,
+ * puntos clave, errores comunes, escalados y vídeo. En Workouts, los benchmarks del catálogo.
+ * La pestaña va en la dirección (`?tab=workouts`) para poder enlazarla.
  */
 export function ExercisesPage() {
   const t = useT("fitness.exercises");
+  const [params, setParams] = useSearchParams();
+  const tab: Tab = params.get("tab") === "workouts" ? "workouts" : "exercises";
   const categories = useT("fitness.exercises.categories");
   const equipmentLabel = useT("fitness.exercises.equipment");
   const errors = useT("errors");
@@ -61,9 +67,9 @@ export function ExercisesPage() {
     <div className="flex flex-col gap-5">
       <PageHeader
         title={t("title")}
-        description={t("description")}
+        description={tab === "workouts" ? t("workouts.description") : t("description")}
         actions={
-          canWrite ? (
+          canWrite && tab === "exercises" ? (
             <Button action="add" onClick={() => setEditing("new")}>
               {t("new")}
             </Button>
@@ -71,124 +77,129 @@ export function ExercisesPage() {
         }
       />
 
-      <div className="grid gap-3 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-        <Field label={t("search")}>
-          {(id) => (
-            <Input
-              id={id}
-              type="search"
-              placeholder={t("searchPlaceholder")}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          )}
-        </Field>
-        {usedEquipment.length > 0 ? (
-          <Field label={t("equipmentFilter")}>
-            {(id) => (
-              <Select
-                id={id}
-                value={equipment}
-                onChange={(e) => setEquipment(e.target.value as ExerciseEquipment | "")}
-              >
-                <option value="">{t("equipmentAll")}</option>
-                {usedEquipment.map((code) => (
-                  <option key={code} value={code}>
-                    {equipmentLabel(code)}
-                  </option>
-                ))}
-              </Select>
-            )}
-          </Field>
-        ) : null}
-      </div>
+      <Tabs<Tab>
+        label={t("tabs.label")}
+        selected={tab}
+        onChange={(next) => setParams(next === "workouts" ? { tab: next } : {}, { replace: true })}
+        items={[
+          {
+            key: "exercises",
+            label: t("tabs.exercises"),
+            count: query.data ? all.length : undefined,
+          },
+          { key: "workouts", label: t("tabs.workouts"), count: BENCHMARKS.length },
+        ]}
+      />
 
-      <div
-        role="group"
-        aria-label={t("filters")}
-        className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1"
-      >
-        {[null, ...EXERCISE_CATEGORIES.filter((c) => counts.has(c))].map((c) => {
-          const selected = category === c;
-          return (
-            <button
-              key={c ?? "all"}
-              type="button"
-              aria-pressed={selected}
-              onClick={() => setCategory(c)}
-              className={`inline-flex min-h-10 shrink-0 items-center gap-2 rounded-chip px-3 text-secondary transition-colors ${
-                selected
-                  ? "bg-club text-on-club"
-                  : "bg-surface text-ink shadow-card hover:bg-raised"
-              }`}
-            >
-              {c ? categories(c) : t("all")}
-              <span className={`font-mono text-label ${selected ? "" : "text-muted"}`}>
-                {c ? (counts.get(c) ?? 0) : all.length}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+      {tab === "workouts" ? <WorkoutLibrary /> : null}
 
-      {canWrite ? (
-        <label className="flex items-center gap-2 text-secondary text-ink">
-          <input
-            type="checkbox"
-            className="size-5 accent-(--club-fill)"
-            checked={showArchived}
-            onChange={(e) => setShowArchived(e.target.checked)}
-          />
-          {t("showArchived")}
-        </label>
-      ) : null}
-
-      {query.isPending ? (
-        <div className="h-48 animate-pulse rounded-card bg-raised" aria-busy="true" />
-      ) : query.isError ? (
-        <Alert kind="error" title={t("loadError")}>
-          {errors(errorKey(query.error))}
-        </Alert>
-      ) : visible.length === 0 ? (
-        <EmptyState
-          icon={<Icon.Target weight="duotone" />}
-          title={all.length === 0 ? t("emptyTitle") : t("noMatch")}
-          description={
-            all.length === 0 ? (canWrite ? t("emptyHintWriter") : t("emptyHint")) : undefined
-          }
-          action={
-            filtered ? (
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  setSearch("");
-                  setCategory(null);
-                  setEquipment("");
-                }}
-              >
-                {t("clearFilters")}
-              </Button>
-            ) : canWrite && all.length === 0 ? (
-              <Button action="add" onClick={() => setEditing("new")}>
-                {t("new")}
-              </Button>
-            ) : undefined
-          }
-        />
-      ) : (
+      {tab === "exercises" ? (
         <>
-          <p className="text-secondary text-muted">{t("count", { count: visible.length })}</p>
-          <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            {visible.map((exercise) => (
-              <ExerciseCard
-                key={exercise.id}
-                exercise={exercise}
-                onOpen={() => setOpenId(exercise.id)}
+          <div className="grid gap-3 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+            <Field label={t("search")}>
+              {(id) => (
+                <Input
+                  id={id}
+                  type="search"
+                  placeholder={t("searchPlaceholder")}
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              )}
+            </Field>
+            {usedEquipment.length > 0 ? (
+              <Field label={t("equipmentFilter")}>
+                {(id) => (
+                  <Select
+                    id={id}
+                    value={equipment}
+                    onChange={(e) => setEquipment(e.target.value as ExerciseEquipment | "")}
+                  >
+                    <option value="">{t("equipmentAll")}</option>
+                    {usedEquipment.map((code) => (
+                      <option key={code} value={code}>
+                        {equipmentLabel(code)}
+                      </option>
+                    ))}
+                  </Select>
+                )}
+              </Field>
+            ) : null}
+          </div>
+
+          <FilterChips
+            label={t("filters")}
+            allLabel={t("all")}
+            total={all.length}
+            options={EXERCISE_CATEGORIES.filter((c) => counts.has(c)).map((c) => ({
+              key: c,
+              label: categories(c),
+              count: counts.get(c) ?? 0,
+            }))}
+            selected={category}
+            onChange={setCategory}
+          />
+
+          {canWrite ? (
+            <label className="flex items-center gap-2 text-secondary text-ink">
+              <input
+                type="checkbox"
+                className="size-5 accent-(--club-fill)"
+                checked={showArchived}
+                onChange={(e) => setShowArchived(e.target.checked)}
               />
-            ))}
-          </ul>
+              {t("showArchived")}
+            </label>
+          ) : null}
+
+          {query.isPending ? (
+            <div className="h-48 animate-pulse rounded-card bg-raised" aria-busy="true" />
+          ) : query.isError ? (
+            <Alert kind="error" title={t("loadError")}>
+              {errors(errorKey(query.error))}
+            </Alert>
+          ) : visible.length === 0 ? (
+            <EmptyState
+              icon={<Icon.Target weight="duotone" />}
+              title={all.length === 0 ? t("emptyTitle") : t("noMatch")}
+              description={
+                all.length === 0 ? (canWrite ? t("emptyHintWriter") : t("emptyHint")) : undefined
+              }
+              action={
+                filtered ? (
+                  <Button
+                    variant="secondary"
+                    onClick={() => {
+                      setSearch("");
+                      setCategory(null);
+                      setEquipment("");
+                    }}
+                  >
+                    {t("clearFilters")}
+                  </Button>
+                ) : canWrite && all.length === 0 ? (
+                  <Button action="add" onClick={() => setEditing("new")}>
+                    {t("new")}
+                  </Button>
+                ) : undefined
+              }
+            />
+          ) : (
+            <>
+              <p className="text-secondary text-muted">{t("count", { count: visible.length })}</p>
+              <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                {visible.map((exercise) => (
+                  <ExerciseCard
+                    key={exercise.id}
+                    exercise={exercise}
+                    onOpen={() => setOpenId(exercise.id)}
+                  />
+                ))}
+              </ul>
+            </>
+          )}
         </>
-      )}
+      ) : null}
 
       {open && !editing ? (
         <ExerciseDetailSheet

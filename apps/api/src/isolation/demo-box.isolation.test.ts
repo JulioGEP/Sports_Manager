@@ -168,11 +168,19 @@ describe("box de demostración", () => {
       await request("GET", "/api/org/exercises", cookies.get("atleta@demo.test")),
     );
     expect(library.canWrite).toBe(false);
-    expect(library.exercises.length).toBeGreaterThanOrEqual(30);
+    expect(library.exercises.length).toBeGreaterThanOrEqual(80);
     const squat = library.exercises.find((e) => e.name === "Back squat");
     expect(squat).toMatchObject({ category: "strength", movementCode: "back_squat" });
     expect(squat?.coachingPoints).toBeTruthy();
     expect(library.exercises.find((e) => e.name === "Sled push")?.section?.name).toBe("HYROX");
+    // La segunda tanda: los gimnásticos de las Girls y los Heroes, y la fuerza con máxima enlazada.
+    expect(library.exercises.find((e) => e.name === "Subida a la cuerda")).toMatchObject({
+      category: "gymnastics",
+      equipment: ["other"],
+    });
+    expect(library.exercises.find((e) => e.name === "Peso muerto sumo")?.movementCode).toBe(
+      "sumo_deadlift",
+    );
     const coach = await json<ExercisesResponse>(
       await request("GET", "/api/org/exercises", cookies.get("coach@demo.test")),
     );

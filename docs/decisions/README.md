@@ -63,4 +63,5 @@ Las decisiones no se editan una vez aceptadas. Si cambian, se escribe una nueva 
 | 0047 | Mejoras de la plataforma: la administración del club sugiere y vota, y una hoja de ruta común | Aceptada; la pantalla del club pasa a Ajustes en 0048 |
 | 0048 | Mejoras de la plataforma dentro de Ajustes, en una pestaña | Aceptada |
 | 0049 | Clubs de fitness: un modelo de club y una segunda interfaz sobre la misma base | Aceptada; revisada en 0050 |
-| 0050 | Revisión del box: sin restos de club deportivo, ejercicios propios y programación rehecha | Aceptada |
+| 0050 | Revisión del box: sin restos de club deportivo, ejercicios propios y programación rehecha | Aceptada; la biblioteca suma workouts en 0051 |
+| 0051 | Workouts en la biblioteca del box y más ejercicios en el box demo | Aceptada |

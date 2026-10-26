@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  BENCHMARK_FAMILIES,
+  BENCHMARKS,
   bestOneRm,
   bookingConsumes,
   BookingPolicySchema,
@@ -297,5 +299,27 @@ describe("constancia", () => {
     expect(isAdultOn("2008-10-27", "2026-10-26")).toBe(false);
     expect(isAdultOn("2008-10-26", "2026-10-26")).toBe(true);
     expect(isAdultOn(null, "2026-10-26")).toBe(true);
+  });
+});
+
+describe("catálogo de benchmarks", () => {
+  it("cada workout tiene código único, familia conocida y texto en los tres idiomas", () => {
+    const codes = BENCHMARKS.map((b) => b.code);
+    expect(new Set(codes).size).toBe(codes.length);
+    for (const b of BENCHMARKS) {
+      expect(BENCHMARK_FAMILIES).toContain(b.family);
+      expect(b.description.es && b.description.ca && b.description.en).toBeTruthy();
+    }
+    for (const family of BENCHMARK_FAMILIES) {
+      expect(BENCHMARKS.some((b) => b.family === family)).toBe(true);
+    }
+  });
+
+  it("un AMRAP trae sus minutos para llenar el bloque", () => {
+    for (const b of BENCHMARKS.filter((x) => x.scoreType === "rounds_reps")) {
+      expect(b.minutes, b.code).toBeGreaterThan(0);
+    }
+    expect(BENCHMARKS.find((b) => b.code === "cindy")?.minutes).toBe(20);
+    expect(BENCHMARKS.find((b) => b.code === "fran")?.minutes).toBeUndefined();
   });
 });

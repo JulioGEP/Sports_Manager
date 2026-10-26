@@ -75,4 +75,41 @@ test.describe("biblioteca de ejercicios", () => {
     await expect(page.getByRole("button", { name: new RegExp(name) })).toHaveCount(0);
     await signOut(page);
   });
+
+  test("los workouts: la atleta los repasa y el coach programa uno", async ({ page }, info) => {
+    await login(page, "atleta@demo.test", PASSWORD, BOX);
+    await page.goto(`${BOX}/exercises`);
+    await page.getByRole("tab", { name: /Workouts/ }).click();
+    await expect(page).toHaveURL(new RegExp(`${BOX}/exercises\\?tab=workouts$`));
+    await expect(page.getByRole("heading", { name: "Fran" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Murph" })).toBeVisible();
+    // La atleta los consulta; programar es cosa del coach.
+    await expect(page.getByRole("link", { name: /^Programar/ })).toHaveCount(0);
+    await shot(page, "283-box-workouts", info.project.name);
+    await expectLegibleButtons(page);
+
+    await page.getByRole("button", { name: /^Open/ }).click();
+    await expect(page.getByRole("heading", { name: "Open 20.1" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Fran" })).toHaveCount(0);
+    await page.getByRole("button", { name: /^Todos/ }).click();
+    await page.getByRole("searchbox", { name: "Buscar" }).fill("muscle-ups");
+    await expect(page.getByRole("heading", { name: "Amanda" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Cindy" })).toHaveCount(0);
+    await signOut(page);
+
+    // El coach lleva Cindy al editor: el bloque WOD llega lleno, con su AMRAP de 20 minutos.
+    await login(page, "coach@demo.test", PASSWORD, BOX);
+    await page.goto(`${BOX}/exercises?tab=workouts`);
+    await page.getByRole("link", { name: "Programar Cindy" }).click();
+    await expect(page).toHaveURL(new RegExp(`${BOX}/programming/new\\?benchmark=cindy$`));
+    const wod = page.getByRole("article", { name: "Bloque A: WOD" });
+    await expect(wod.getByLabel("Título del bloque A")).toHaveValue("Cindy");
+    await expect(wod.getByRole("button", { name: "AMRAP" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    await expect(wod.getByLabel("Duración")).toHaveValue("20");
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await signOut(page);
+  });
 });
