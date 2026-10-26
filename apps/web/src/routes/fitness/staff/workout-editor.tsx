@@ -49,6 +49,7 @@ import {
   useWorkouts,
 } from "@/lib/fitness";
 import { useLocale, useT } from "@/lib/intl";
+import { useMediaQuery } from "@/lib/media";
 import {
   Alert,
   Button,
@@ -89,6 +90,8 @@ interface Saved {
 const fingerprint = (d: Draft) =>
   JSON.stringify({ ...d, blocks: d.blocks.map(({ key: _key, ...rest }) => rest) });
 
+/** A partir de aquí, el estado va en la barra de abajo; en móvil, arriba junto al día. */
+const WIDE_QUERY = "(min-width: 640px)";
 const orNull = (text: string) => (text.trim() ? text.trim() : null);
 
 /**
@@ -481,6 +484,19 @@ function Editor({ existing }: { existing: WorkoutView | null }) {
         ? t("state.scheduled")
         : t("state.published");
   const isPublished = saved?.status === "published";
+  const wide = useMediaQuery(WIDE_QUERY);
+  const statusLine = (
+    <p
+      className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-secondary text-ink"
+      role="status"
+    >
+      {status ? <StatusChip kind={status.kind}>{status.label}</StatusChip> : null}
+      <span>{statusText}</span>
+      {existing && dirty ? (
+        <span className="font-medium text-warning">{t("state.dirty")}</span>
+      ) : null}
+    </p>
+  );
   const sectionName = names.get(draft.sectionId) ?? existing?.section.name ?? "";
   const preview = previewOf({
     id: existing?.id ?? "new",
@@ -572,6 +588,8 @@ function Editor({ existing }: { existing: WorkoutView | null }) {
         ) : sectionName ? (
           <StatusChip kind="club">{sectionName}</StatusChip>
         ) : null}
+        {/* En móvil, el estado va aquí: la barra de abajo solo lleva los botones. */}
+        {readOnly || wide ? null : <span className="w-full">{statusLine}</span>}
       </div>
 
       {topErrors["section"] ? <Alert kind="error">{topErrors["section"]}</Alert> : null}
@@ -810,19 +828,11 @@ function Editor({ existing }: { existing: WorkoutView | null }) {
 
         {readOnly ? null : (
           <div className="sticky bottom-24 z-20 lg:col-span-2 lg:bottom-4">
-            {/* En móvil, dos filas: el estado con sus opciones y, debajo, los dos botones a lo ancho. */}
-            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 rounded-card bg-surface p-3 shadow-float sm:flex sm:flex-wrap sm:justify-between precisa:border precisa:border-border">
-              <p
-                className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-secondary text-ink"
-                role="status"
-              >
-                {status ? <StatusChip kind={status.kind}>{status.label}</StatusChip> : null}
-                <span>{statusText}</span>
-                {existing && dirty ? (
-                  <span className="font-medium text-warning">{t("state.dirty")}</span>
-                ) : null}
-              </p>
-              <div className="col-span-2 row-start-2 flex items-center gap-2 sm:ml-auto">
+            {/* En móvil, una sola fila con los botones: la barra ya convive con la navegación de abajo
+                y el estado va arriba, junto al día. */}
+            <div className="flex items-center gap-2 rounded-card bg-surface p-3 shadow-float sm:justify-between precisa:border precisa:border-border">
+              {wide ? statusLine : null}
+              <div className="flex min-w-0 flex-1 items-center gap-2 sm:ml-auto sm:flex-none">
                 {isPublished ? null : (
                   <Button
                     variant="secondary"
@@ -830,8 +840,11 @@ function Editor({ existing }: { existing: WorkoutView | null }) {
                     loading={saving}
                     onClick={saveDraft}
                     className="flex-1 sm:flex-none"
+                    aria-label={t("saveDraft")}
                   >
-                    {t("saveDraft")}
+                    {/* En móvil, "Guardar": los dos botones y las opciones caben en una fila. */}
+                    <span className="sm:hidden">{c("save")}</span>
+                    <span className="hidden sm:inline">{t("saveDraft")}</span>
                   </Button>
                 )}
                 <Button
@@ -843,7 +856,7 @@ function Editor({ existing }: { existing: WorkoutView | null }) {
                   {isPublished ? t("saveChanges") : t("publish")}
                 </Button>
               </div>
-              <span className="col-start-2 row-start-1">
+              <span className="shrink-0">
                 <Menu
                   label={t("publishOptions")}
                   trigger={<Icon.CaretDown size={18} aria-hidden="true" />}
