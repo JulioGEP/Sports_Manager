@@ -2,7 +2,7 @@ import { z } from "zod";
 import type { LocalizedText } from "./locales.ts";
 import { DateTimeSchema } from "./events.ts";
 import { DateOnlySchema } from "./structure.ts";
-import { addDays, weekStartOf } from "./training-load.ts";
+import { addDays, daysBetween, weekStartOf } from "./training-load.ts";
 
 /**
  * Clubs de fitness (ADR 0049): el box de CrossFit, HYROX o entrenamiento funcional. Mismo motor que
@@ -1059,3 +1059,33 @@ export function isAdultOn(birthDate: string | null, today: string): boolean {
   const adultFrom = `${String(y + 18).padStart(4, "0")}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
   return today >= adultFrom;
 }
+
+// --- Acciones de semana de la programación (ADR 0050) ---
+
+/** Publica de una vez los borradores de un rango (la semana), de una disciplina o de todas. */
+export const WorkoutsPublishSchema = z
+  .object({
+    from: DateOnlySchema,
+    to: DateOnlySchema,
+    sectionId: z.string().uuid().optional(),
+  })
+  .refine((v) => v.to >= v.from, { message: "El final va después del inicio.", path: ["to"] })
+  .refine((v) => daysBetween(v.from, v.to) <= 31, {
+    message: "Como mucho un mes de una vez.",
+    path: ["to"],
+  });
+export type WorkoutsPublish = z.infer<typeof WorkoutsPublishSchema>;
+
+/**
+ * Copia los WODs de `days` días desde `from` a los mismos días desde `to`, como borradores. Los
+ * días que ya tienen WOD (de esa disciplina o tipo de clase) se saltan: nunca se pisa nada.
+ */
+export const WorkoutsCopySchema = z
+  .object({
+    from: DateOnlySchema,
+    to: DateOnlySchema,
+    days: z.number().int().min(1).max(14),
+    sectionId: z.string().uuid().optional(),
+  })
+  .refine((v) => v.from !== v.to, { message: "Elige otro día de destino.", path: ["to"] });
+export type WorkoutsCopy = z.infer<typeof WorkoutsCopySchema>;

@@ -697,3 +697,18 @@ export const AiWodGenerationSchema = z.object({
 export type AiWodGeneration = z.infer<typeof AiWodGenerationSchema>;
 export const AiWodGenerationResponseSchema = z.object({ generation: AiWodGenerationSchema });
 export type AiWodGenerationResponse = z.infer<typeof AiWodGenerationResponseSchema>;
+
+// --- Acciones de semana de la programación (ADR 0050) ---
+
+export const WorkoutsPublishedResponseSchema = z.object({
+  /** Borradores publicados. */
+  published: z.number().int().nonnegative(),
+});
+export type WorkoutsPublishedResponse = z.infer<typeof WorkoutsPublishedResponseSchema>;
+export const WorkoutsCopiedResponseSchema = z.object({
+  /** WODs copiados como borrador. */
+  created: z.number().int().nonnegative(),
+  /** Días que ya tenían WOD y no se han tocado. */
+  skipped: z.number().int().nonnegative(),
+});
+export type WorkoutsCopiedResponse = z.infer<typeof WorkoutsCopiedResponseSchema>;

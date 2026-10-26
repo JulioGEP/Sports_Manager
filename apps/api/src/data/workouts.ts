@@ -434,6 +434,33 @@ export function workoutsRepo(db: () => Database) {
       }
     },
 
+    /**
+     * Publica los borradores de un rango en unas disciplinas, ya (sin hora de publicación).
+     * Devuelve cuántos.
+     */
+    async publishRange(
+      scope: OrgScope,
+      from: string,
+      to: string,
+      sectionIds: string[],
+    ): Promise<number> {
+      if (sectionIds.length === 0) return 0;
+      const rows = await db()
+        .update(schema.workouts)
+        .set({ status: "published", publishAt: null })
+        .where(
+          and(
+            eq(schema.workouts.organizationId, scope.organizationId),
+            gte(schema.workouts.onDate, from),
+            lte(schema.workouts.onDate, to),
+            eq(schema.workouts.status, "draft"),
+            inArray(schema.workouts.sectionId, sectionIds),
+          ),
+        )
+        .returning({ id: schema.workouts.id });
+      return rows.length;
+    },
+
     async remove(scope: OrgScope, id: string): Promise<boolean> {
       const rows = await db()
         .delete(schema.workouts)
