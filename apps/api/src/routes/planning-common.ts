@@ -342,7 +342,7 @@ export function analyseDays(ctx: WeekContext): WeekDayAnalysis[] {
         prescriptions: prescription ? [prescription] : [],
       });
       logistics = blocks
-        .filter((b) => b.track === "class")
+        .filter((b) => b.track === "class" && b.kind !== "warmup" && b.kind !== "cooldown")
         .map((b) => logisticsOf(b, inventory, classSize))
         .filter((l): l is BlockLogistics => l !== null);
     }
@@ -385,14 +385,28 @@ export function weekCoverage(ctx: WeekContext): ComboCoverage[] {
   );
 }
 
+/**
+ * Si un bloque cuenta en el equilibrio: de la clase, con capacidad y minutos, y que no sea el
+ * calentamiento ni la vuelta a la calma (preparan, no entrenan lo que reparte el plan).
+ */
+export function trainsCapacity(
+  b: Pick<WorkoutBlockRecord, "track" | "capacity" | "plannedMinutes" | "kind">,
+): boolean {
+  return (
+    b.track === "class" &&
+    b.capacity !== null &&
+    b.plannedMinutes !== null &&
+    b.kind !== "warmup" &&
+    b.kind !== "cooldown"
+  );
+}
+
 /** Reparto de los minutos programados de la semana por capacidad, en puntos sobre 100. */
 export function weekBalance(ctx: WeekContext): Emphasis {
   const minutes = Object.fromEntries(CAPACITIES.map((c) => [c, 0])) as Record<Capacity, number>;
   for (const w of ctx.workouts.values()) {
     if (!ctx.dates.includes(w.onDate)) continue;
-    for (const b of w.blocks)
-      if (b.track === "class" && b.capacity && b.plannedMinutes)
-        minutes[b.capacity] += b.plannedMinutes;
+    for (const b of w.blocks) if (trainsCapacity(b)) minutes[b.capacity!] += b.plannedMinutes!;
   }
   const total = CAPACITIES.reduce((s, c) => s + minutes[c], 0);
   return Object.fromEntries(

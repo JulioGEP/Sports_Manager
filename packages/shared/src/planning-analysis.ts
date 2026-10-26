@@ -517,7 +517,9 @@ export function validateSession(input: ValidateInput): ValidationResult[] {
     );
   }
 
+  // El calentamiento y la vuelta a la calma rotan por estaciones: no se miden por puestos.
   const logistics = cls
+    .filter((b) => b.kind !== "warmup" && b.kind !== "cooldown")
     .map((b) => logisticsOf(b, input.inventory, input.classSize))
     .filter((l): l is BlockLogistics => l !== null);
   const short = logistics.find((l) => l.mode === "short");

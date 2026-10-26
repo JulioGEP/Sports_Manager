@@ -242,11 +242,13 @@ function ClubFrame({ children }: { children: ReactNode }) {
                   ...(has("org.training.read")
                     ? [link(paths.programming, fx("programming"), Icon.Barbell)]
                     : []),
-                  ...(has("org.training.read")
-                    ? [link(paths.planning, fx("planning"), Icon.Rows)]
-                    : []),
                   ...(has("org.players.read")
                     ? [link(paths.athletes, fx("athletes"), Icon.UsersThree)]
+                    : []),
+                  // Detrás de Atletas: en el móvil va en "Más" (la barra admite cuatro destinos) y
+                  // se llega también desde la franja del plan en la Programación.
+                  ...(has("org.training.read")
+                    ? [link(paths.planning, fx("planning"), Icon.Rows)]
                     : []),
                 ]
               : []),

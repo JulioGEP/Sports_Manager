@@ -29,6 +29,7 @@ import {
   planSummaryDto,
   requirePlan,
   requireWritablePlan,
+  trainsCapacity,
   weekLimitsOf,
 } from "./planning-common.ts";
 import { applyAdjustment, computeReview } from "./planning-review.ts";
@@ -246,8 +247,7 @@ export function addPlanningReviewRoutes(app: OpenAPIHono<AppEnv>, data: DataLaye
           const w = ctx.workouts.get(date);
           if (!w) continue;
           for (const b of w.blocks)
-            if (b.track === "class" && b.capacity && b.plannedMinutes)
-              minutes[b.capacity] += b.plannedMinutes;
+            if (trainsCapacity(b)) minutes[b.capacity!] += b.plannedMinutes!;
         }
       const total = CAPACITIES.reduce((s, x) => s + minutes[x], 0);
 

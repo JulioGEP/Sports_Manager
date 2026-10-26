@@ -406,6 +406,19 @@ function DayRow({
   const isToday = day.date === time.today;
   const past = day.date < time.today;
   const quiet = !role && !w;
+  const logisticsLines = (d: PlanWeekDay, keep: (l: PlanWeekDay["logistics"][number]) => boolean) =>
+    d.logistics.filter(keep).map((l) => (
+      <p key={l.label} className="flex items-start gap-2 text-secondary text-ink">
+        <Icon.UsersThree size={16} aria-hidden="true" className="mt-0.5 shrink-0 text-muted" />
+        {t(`logistics.${l.mode}`, {
+          block: l.label,
+          available: l.available,
+          needed: l.needed,
+          waves: l.waves,
+          size: d.classSize,
+        })}
+      </p>
+    ));
   return (
     <li
       className={`grid grid-cols-[3.5rem_minmax(0,1fr)] gap-3 sm:grid-cols-[5rem_minmax(0,1fr)] ${quiet ? "opacity-70" : ""}`}
@@ -495,24 +508,8 @@ function DayRow({
                 {w.intent?.feel ? (
                   <p className="text-secondary italic text-muted">{w.intent.feel}</p>
                 ) : null}
-                {day.logistics
-                  .filter((l) => l.mode !== "ok")
-                  .map((l) => (
-                    <p key={l.label} className="flex items-start gap-2 text-secondary text-ink">
-                      <Icon.UsersThree
-                        size={16}
-                        aria-hidden="true"
-                        className="mt-0.5 shrink-0 text-muted"
-                      />
-                      {t(`logistics.${l.mode}`, {
-                        block: l.label,
-                        available: l.available,
-                        needed: l.needed,
-                        waves: l.waves,
-                        size: day.classSize,
-                      })}
-                    </p>
-                  ))}
+                {/* A la vista, lo que el coach tiene que resolver; "por parejas", al desplegar. */}
+                {logisticsLines(day, (l) => l.mode !== "ok" && l.mode !== "partners")}
                 <button
                   type="button"
                   aria-expanded={open}
@@ -526,7 +523,12 @@ function DayRow({
                   />
                   {t("checks")}
                 </button>
-                {open ? <ValidationList results={day.validation} /> : null}
+                {open ? (
+                  <>
+                    <ValidationList results={day.validation} />
+                    {logisticsLines(day, (l) => l.mode === "partners")}
+                  </>
+                ) : null}
               </div>
             ) : role && !day.closed ? (
               <div className="flex flex-wrap items-center justify-between gap-2 rounded-control border-2 border-dashed border-line px-3 py-2">

@@ -1,4 +1,4 @@
-# Capturas de la interfaz (Bloques 14 a 26, pizarra animada, tienda, pasarela y contabilidad, identidad del club, mejoras de la plataforma, clubs de fitness y su revisión)
+# Capturas de la interfaz (Bloques 14 a 26, pizarra animada, tienda, pasarela y contabilidad, identidad del club, mejoras de la plataforma, clubs de fitness, su revisión y la planificación del box)
 
 Capturas que generan las pruebas de interfaz (`pnpm test:ui`) contra la API real con base embebida, con el front de Vite + React + Tailwind sobre el design system del producto (`packages/design`, ADR 0027). Escritorio a 1280x800; móvil, Pixel 7. La fuente viva es el artefacto `capturas-interfaz` de CI; esta carpeta es la foto de la revisión del club completo (ADR 0031), con el design system 1.3: todo botón lleva el icono de su acción (rueda dentada para editar, cubo de basura rojo para eliminar, más para añadir); la fila es el objeto (se abre tocándola, con acciones como iconos silenciosos sin borde); la paleta de mandos ⌘K encuentra personas, equipos, pantallas y acciones; y la plantilla de un equipo se ve como un tablero por posición: secciones por deporte, socios, agenda e instalaciones, cuotas y "ver como", sobre lo que ya había de los bloques 11 a 13 (ADR 0028, 0029 y 0030), más el alcance por cargo y la gestión de acceso por rol del Bloque 19 (ADR 0033): el cuerpo técnico, la dirección y la fisio ven solo su parte del club, y "Personal" gana la pestaña "Acceso", y el partido en directo del Bloque 20 (ADR 0034): configuración del motor por sección, consola en la banda a pantalla completa y en tres zonas con el banquillo arrastrable (ADR 0037), estadísticas e histórico, y el entrenamiento de los bloques 21 a 26 (ADR 0039): semana del equipo con "A tener en cuenta", sesión por bloques con su cierre y modo pista, biblioteca con pizarra, carga, enfermería, salud y "Mi bienestar".
 
@@ -776,6 +776,64 @@ Cuentas, con contraseña `123456`: `atleta@demo.test` (Laia Ferrer, atleta con t
 
 ![Una semana vacía: copiar la anterior o programar cada día](escritorio-293-box-programacion-dia-vacio.png)
 
+## Planificación del box (ADR 0053)
+
+### Planificación: el plan activo de cada disciplina, su punto del ciclo y el papel de cada día
+
+![Planificación: el plan activo de cada disciplina, su punto del ciclo y el papel de cada día](escritorio-300-box-planificacion.png)
+
+### El plan: dónde está el box, el mapa del ciclo, el reparto de los 100 puntos y lo que se puede esperar
+
+![El plan: dónde está el box, el mapa del ciclo, el reparto de los 100 puntos y lo que se puede esperar](escritorio-301-box-plan-mapa.png)
+
+### La semana del plan: cada día con su papel, su intención, su progresión, su WOD y el validador; equilibrio, cobertura y límites
+
+![La semana del plan: cada día con su papel, su intención, su progresión, su WOD y el validador; equilibrio, cobertura y límites](escritorio-302-box-plan-semana.png)
+
+### La revisión del domingo: lo previsto frente a lo que pasó, los ajustes y lo que ha aprendido el box
+
+![La revisión del domingo: lo previsto frente a lo que pasó, los ajustes y lo que ha aprendido el box](escritorio-303-box-plan-revision.png)
+
+### La salud de la programación: cumplimiento, equilibrio real, duraciones, patrones por semana y coste de la IA
+
+![La salud de la programación: cumplimiento, equilibrio real, duraciones, patrones por semana y coste de la IA](escritorio-304-box-plan-salud.png)
+
+### El material del box, con lo que está en reparación
+
+![El material del box, con lo que está en reparación](escritorio-305-box-material.png)
+
+### Nuevo plan, paso 1: la IA o una plantilla, con la proyección al lado
+
+![Nuevo plan, paso 1: la IA o una plantilla, con la proyección al lado](escritorio-306-box-plan-nuevo-objetivo.png)
+
+### Nuevo plan, paso 3: repartir 100 puntos entre seis capacidades
+
+![Nuevo plan, paso 3: repartir 100 puntos entre seis capacidades](escritorio-307-box-plan-nuevo-enfasis.png)
+
+### Nuevo plan, paso 5: lo que ya sabe el box y de dónde sale cada dato
+
+![Nuevo plan, paso 5: lo que ya sabe el box y de dónde sale cada dato](escritorio-308-box-plan-nuevo-tu-box.png)
+
+### Nuevo plan, paso 6: el resumen con el mapa del ciclo
+
+![Nuevo plan, paso 6: el resumen con el mapa del ciclo](escritorio-309-box-plan-nuevo-resumen.png)
+
+### El editor del WOD con la intención del día y los campos del plan
+
+![El editor del WOD con la intención del día y los campos del plan](escritorio-310-box-plan-editor-intencion.png)
+
+### El WOD del atleta: el plan, el papel, la intención y su versión en cada bloque
+
+![El WOD del atleta: el plan, el papel, la intención y su versión en cada bloque](escritorio-315-box-atleta-wod-plan.png)
+
+### Tu ciclo: dónde estás, tus marcas con su rango, tu constancia y tu nivel
+
+![Tu ciclo: dónde estás, tus marcas con su rango, tu constancia y tu nivel](escritorio-316-box-atleta-ciclo.png)
+
+### Tu ciclo en cifras, para guardar o compartir
+
+![Tu ciclo en cifras, para guardar o compartir](escritorio-317-box-atleta-ciclo-cifras.png)
+
 ## Móvil
 
 Las mismas pantallas en un móvil, con la forma envolvente del design system: cabecera con el escudo, barra de pestañas flotante abajo con cuatro destinos y "Más", listas en filas cápsula y hojas que ocupan todo el ancho.
@@ -1021,3 +1079,33 @@ Las mismas pantallas en un móvil, con la forma envolvente del design system: ca
 ![Editor del WOD: la pestaña Editar (móvil)](movil-291-box-programacion-editor.png)
 
 ![Editor del WOD: la pestaña Vista previa (móvil)](movil-292-box-programacion-vista-previa.png)
+
+### Planificación del box (móvil)
+
+![Planificación: el plan activo de cada disciplina, su punto del ciclo y el papel de cada día (móvil)](movil-300-box-planificacion.png)
+
+![El plan: dónde está el box, el mapa del ciclo, el reparto de los 100 puntos y lo que se puede esperar (móvil)](movil-301-box-plan-mapa.png)
+
+![La semana del plan: cada día con su papel, su intención, su progresión, su WOD y el validador; equilibrio, cobertura y límites (móvil)](movil-302-box-plan-semana.png)
+
+![La revisión del domingo: lo previsto frente a lo que pasó, los ajustes y lo que ha aprendido el box (móvil)](movil-303-box-plan-revision.png)
+
+![La salud de la programación: cumplimiento, equilibrio real, duraciones, patrones por semana y coste de la IA (móvil)](movil-304-box-plan-salud.png)
+
+![El material del box, con lo que está en reparación (móvil)](movil-305-box-material.png)
+
+![Nuevo plan, paso 1: la IA o una plantilla, con la proyección al lado (móvil)](movil-306-box-plan-nuevo-objetivo.png)
+
+![Nuevo plan, paso 3: repartir 100 puntos entre seis capacidades (móvil)](movil-307-box-plan-nuevo-enfasis.png)
+
+![Nuevo plan, paso 5: lo que ya sabe el box y de dónde sale cada dato (móvil)](movil-308-box-plan-nuevo-tu-box.png)
+
+![Nuevo plan, paso 6: el resumen con el mapa del ciclo (móvil)](movil-309-box-plan-nuevo-resumen.png)
+
+![El editor del WOD con la intención del día y los campos del plan (móvil)](movil-310-box-plan-editor-intencion.png)
+
+![El WOD del atleta: el plan, el papel, la intención y su versión en cada bloque (móvil)](movil-315-box-atleta-wod-plan.png)
+
+![Tu ciclo: dónde estás, tus marcas con su rango, tu constancia y tu nivel (móvil)](movil-316-box-atleta-ciclo.png)
+
+![Tu ciclo en cifras, para guardar o compartir (móvil)](movil-317-box-atleta-ciclo-cifras.png)

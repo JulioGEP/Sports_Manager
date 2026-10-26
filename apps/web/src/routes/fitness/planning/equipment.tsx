@@ -154,21 +154,23 @@ export function EquipmentPage() {
                       .filter(Boolean)
                       .join(" · ")}
                   </span>
+                  {/* El aviso va debajo del nombre: en el móvil, al lado, lo aplastaba. */}
+                  {item.availableToday < item.quantity ? (
+                    <span className="mt-1">
+                      <StatusChip kind="warning">
+                        {item.repairUntil
+                          ? t("repairUntil", {
+                              count: item.quantity - item.availableToday,
+                              date: time.weekday(item.repairUntil, "short"),
+                            })
+                          : t("repair", { count: item.quantity - item.availableToday })}
+                      </StatusChip>
+                    </span>
+                  ) : null}
                 </span>
-                {item.availableToday < item.quantity ? (
-                  <StatusChip kind="warning">
-                    {item.repairUntil
-                      ? t("repairUntil", {
-                          count: item.quantity - item.availableToday,
-                          date: time.weekday(item.repairUntil, "short"),
-                        })
-                      : t("repair", { count: item.quantity - item.availableToday })}
-                  </StatusChip>
-                ) : (
-                  <span className="text-secondary text-muted">
-                    {t("units", { count: item.quantity })}
-                  </span>
-                )}
+                <span className="shrink-0 text-secondary text-muted">
+                  {t("units", { count: item.quantity })}
+                </span>
                 {canWrite ? (
                   <IconButton
                     label={t("edit", { name: item.name })}
