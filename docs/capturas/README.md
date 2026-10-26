@@ -626,9 +626,13 @@ Cuentas, con contraseña `123456`: `atleta@demo.test` (Laia Ferrer, atleta con t
 
 ![Inicio de la atleta: su próxima clase, el WOD de hoy con sus kilos, racha, último PR, tarifa y el box](escritorio-240-box-atleta-inicio.png)
 
-### Reservar: la tira de días, las clases con coach, sala y plazas, y su botón
+### Reservar: la semana en calendario (ADR 0051), con tu reserva rellena, lo que puedes reservar con borde y lo pasado o cerrado en gris
 
-![Reservar: la tira de días, las clases con coach, sala y plazas, y su botón](escritorio-241-box-atleta-reservar.png)
+![Reservar: la semana en calendario (ADR 0051), con tu reserva rellena, lo que puedes reservar con borde y lo pasado o cerrado en gris](escritorio-241-box-atleta-reservar.png)
+
+### Reservar: el panel de una clase, con sus plazas, el coach y el botón
+
+![Reservar: el panel de una clase, con sus plazas, el coach y el botón](escritorio-241b-box-atleta-reservar-panel.png)
 
 ### La clase: ventanas de reserva y cancelación, quién viene y el WOD
 
@@ -670,9 +674,9 @@ Cuentas, con contraseña `123456`: `atleta@demo.test` (Laia Ferrer, atleta con t
 
 ![Inicio del coach: sus clases de hoy y el WOD](escritorio-255-box-coach-inicio.png)
 
-### Clases del coach
+### Clases del coach: su semana en calendario, con las plazas y el check-in
 
-![Clases del coach](escritorio-256-box-coach-clases.png)
+![Clases del coach: su semana en calendario, con las plazas y el check-in](escritorio-256-box-coach-clases.png)
 
 ### La clase del coach: check-in, brief con las cargas y el WOD con la clasificación de la clase
 
@@ -701,6 +705,14 @@ Cuentas, con contraseña `123456`: `atleta@demo.test` (Laia Ferrer, atleta con t
 ### Inicio de la dueña: lo que pide atención, cifras, clases de hoy y programación de la semana
 
 ![Inicio de la dueña: lo que pide atención, cifras, clases de hoy y programación de la semana](escritorio-265-box-duena-inicio.png)
+
+### Clases de la dueña: todo el box en la semana, por disciplina, con la ocupación y los huecos sin clases plegados
+
+![Clases de la dueña: todo el box en la semana, por disciplina, con la ocupación y los huecos sin clases plegados](escritorio-265b-box-duena-clases.png)
+
+### Clases en la vista de día
+
+![Clases en la vista de día](escritorio-265c-box-duena-clases-dia.png)
 
 ### Horario: tipos de clase con sus franjas, coach, sala y aforo
 
@@ -976,7 +988,11 @@ Las mismas pantallas en un móvil, con la forma envolvente del design system: ca
 
 ![Inicio de la atleta: su próxima clase, el WOD de hoy con sus kilos, racha, último PR, tarifa y el box (móvil)](movil-240-box-atleta-inicio.png)
 
-![Reservar: la tira de días, las clases con coach, sala y plazas, y su botón (móvil)](movil-241-box-atleta-reservar.png)
+![Reservar: el día en calendario con la semana arriba (móvil)](movil-241-box-atleta-reservar.png)
+
+![Reservar: el panel de una clase (móvil)](movil-241b-box-atleta-reservar-panel.png)
+
+![Clases del coach: el día en calendario (móvil)](movil-256-box-coach-clases.png)
 
 ![El WOD del día con sus kilos según su 1RM y su resultado (móvil)](movil-243-box-atleta-wod.png)
 

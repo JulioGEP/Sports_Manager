@@ -131,5 +131,43 @@
   "today": "Avui",
   "tomorrow": "Demà",
   "kg": "{value} kg",
-  "percentOf": "{percent} % del teu 1RM"
+  "percentOf": "{percent} % del teu 1RM",
+  "calendar": {
+    "weekOf": "Setmana del {day}",
+    "range": "{when, select, current {Aquesta setmana} next {La setmana que ve} previous {La setmana passada} other {Fins al {to}}}",
+    "prev": "Setmana anterior",
+    "next": "Setmana següent",
+    "today": "Avui",
+    "view": "Vista",
+    "week": "Setmana",
+    "day": "Dia",
+    "days": "Dies de la setmana",
+    "sections": "Disciplina",
+    "allSections": "Totes",
+    "openDay": "Veure el {day}",
+    "gap": "De {from} a {to}, sense classes",
+    "noClassesDay": "No hi ha classes aquest dia.",
+    "left": "{count, plural, =0 {Sense places} one {# lliure} other {# lliures}}",
+    "waitlistOpen": "Plena · hi ha espera",
+    "legend": {
+      "title": "Què vol dir cada color",
+      "mine": "La teva reserva",
+      "open": "Pots reservar",
+      "waiting": "En espera",
+      "muted": "Passada, tancada o encara sense obrir"
+    },
+    "checkin": "check-in",
+    "blockShort": {
+      "not_open_yet": "Encara no obre",
+      "closed": "Tancada",
+      "already_booked": "Ja la tens",
+      "full": "Plena",
+      "no_plan": "Sense tarifa",
+      "plan_paused": "Tarifa en pausa",
+      "plan_expired": "Fora de tarifa",
+      "not_covered": "No inclosa",
+      "no_sessions_left": "Sense sessions",
+      "daily_limit": "Límit diari"
+    }
+  }
 }

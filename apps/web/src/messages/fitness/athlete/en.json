@@ -55,14 +55,17 @@
   },
   "classes": {
     "title": "Book",
-    "description": "Classes for the next few days. You can book {days, plural, one {# day} other {# days}} ahead.",
+    "description": "The box's week, class by class. You can book {days, plural, one {# day} other {# days}} ahead.",
     "noPlanTitle": "No active plan",
     "noPlanAction": "See my plan",
     "noPlanBody": "You need a plan to book. Talk to the box.",
-    "days": "Days",
-    "emptyTitle": "No classes this day",
-    "emptyHint": "Try another day.",
-    "policy": "Cancel for free up to {hours, plural, one {# hour} other {# hours}} before. If a spot opens up, the first person on the waitlist gets it."
+    "emptyTitle": "No classes this week",
+    "emptyHint": "Try next week.",
+    "policy": "Cancel for free up to {hours, plural, one {# hour} other {# hours}} before. If a spot opens up, the first person on the waitlist gets it.",
+    "mineThisWeek": "{count, plural, =0 {No bookings this week yet} one {You have # booking this week} other {You have # bookings this week}}",
+    "seeClass": "See class",
+    "discipline": "Discipline",
+    "wodReady": "Published"
   },
   "class": {
     "missing": "Class",

@@ -1,4 +1,4 @@
-# 0051. Workouts en la biblioteca del box y más ejercicios en el box demo
+# 0052. Workouts en la biblioteca del box y más ejercicios en el box demo
 
 Estado: aceptada. Fecha: 2026-10-26. Amplía la 0050.
 

@@ -131,5 +131,43 @@
   "today": "Hoy",
   "tomorrow": "Mañana",
   "kg": "{value} kg",
-  "percentOf": "{percent} % de tu 1RM"
+  "percentOf": "{percent} % de tu 1RM",
+  "calendar": {
+    "weekOf": "Semana del {day}",
+    "range": "{when, select, current {Esta semana} next {La semana que viene} previous {La semana pasada} other {Hasta el {to}}}",
+    "prev": "Semana anterior",
+    "next": "Semana siguiente",
+    "today": "Hoy",
+    "view": "Vista",
+    "week": "Semana",
+    "day": "Día",
+    "days": "Días de la semana",
+    "sections": "Disciplina",
+    "allSections": "Todas",
+    "openDay": "Ver el {day}",
+    "gap": "De {from} a {to}, sin clases",
+    "noClassesDay": "No hay clases este día.",
+    "left": "{count, plural, =0 {Sin plazas} one {# libre} other {# libres}}",
+    "waitlistOpen": "Completa · hay espera",
+    "legend": {
+      "title": "Qué quiere decir cada color",
+      "mine": "Tu reserva",
+      "open": "Puedes reservar",
+      "waiting": "En espera",
+      "muted": "Pasada, cerrada o aún sin abrir"
+    },
+    "checkin": "check-in",
+    "blockShort": {
+      "not_open_yet": "Aún no abre",
+      "closed": "Cerrada",
+      "already_booked": "Ya la tienes",
+      "full": "Completa",
+      "no_plan": "Sin tarifa",
+      "plan_paused": "Tarifa en pausa",
+      "plan_expired": "Fuera de tarifa",
+      "not_covered": "No incluida",
+      "no_sessions_left": "Sin sesiones",
+      "daily_limit": "Límite diario"
+    }
+  }
 }
