@@ -128,7 +128,7 @@ test.describe("club completo", () => {
     await expect(page.getByText("Abono de piscina", { exact: true }).first()).toBeVisible();
     await shot(page, "98c-cuotas-planes", info.project.name);
 
-    // Ajustes: cobros, temporadas, tipos de socio y puesta en marcha.
+    // Ajustes: cobros, temporadas y tipos de socio (en la misma pestaña) y puesta en marcha.
     await page.goto(`${CLUB}/settings?tab=payments`);
     await expect(page.getByRole("heading", { name: "Cómo cobra el club" })).toBeVisible();
     await expect(page.getByText("Claves de Stripe en la plataforma")).toBeVisible();
@@ -148,13 +148,25 @@ test.describe("club completo", () => {
     await expect(page.getByText("Temporada creada.")).toBeVisible();
     await expect(page.getByText(`2027-28 ${sfx}`)).toBeVisible();
 
+    // El enlace viejo de tipos de socio abre la misma pestaña que las temporadas.
     await page.goto(`${CLUB}/settings?tab=memberTypes`);
+    await expect(page.getByRole("tab", { name: "Temporadas y socios" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+    await expect(page.getByRole("heading", { name: "Temporadas" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Tipos de socio" }).first()).toBeVisible();
     await expect(page.getByText("Abonado piscina").first()).toBeVisible();
     await shot(page, "99b-ajustes-tipos-socio", info.project.name);
 
+    // La puesta en marcha vive en General mientras le falte algo al club (el demo no tiene escudo).
     await page.goto(`${CLUB}/settings?tab=setup`);
+    await expect(page.getByRole("tab", { name: "General" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
     await expect(page.getByRole("heading", { name: "Puesta en marcha" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Datos del club" })).toBeVisible();
     await shot(page, "99c-ajustes-puesta-en-marcha", info.project.name);
   });
 

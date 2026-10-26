@@ -246,12 +246,7 @@ export function ClubHome() {
           kind="info"
           title={t("onboarding.title")}
           actions={
-            <ButtonLink
-              action="open"
-              to={`${paths.settings}?tab=setup`}
-              variant="secondary"
-              size="sm"
-            >
+            <ButtonLink action="open" to={paths.settings} variant="secondary" size="sm">
               {t("onboarding.action")}
             </ButtonLink>
           }

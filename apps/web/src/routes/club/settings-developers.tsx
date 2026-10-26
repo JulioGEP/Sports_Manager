@@ -54,8 +54,9 @@ function curlSnippet(apiBase: string, key: string): string {
 }
 
 /**
- * Desarrolladores (ADR 0041): la web del club enseña los productos públicos de su tienda con una
- * clave publicable. Se activa, se cambia y se apaga desde aquí; el código para pegar va incluido.
+ * Web del club (ADR 0041; antes "Desarrolladores", ADR 0045): la web del club enseña los productos
+ * públicos de su tienda con una clave publicable. Se activa, se cambia y se apaga desde aquí; el
+ * código para pegar va incluido.
  */
 export function DevelopersTab() {
   const t = useT("settings.developers");

@@ -423,18 +423,15 @@
   },
   "settings": {
     "title": "Club settings",
-    "description": "Name, language and time zone; the club's identity (crest, colours, type, voice); seasons, member types, payments and accounting. What you change here, the whole club sees.",
+    "description": "The club's details and identity, its seasons and member types, how it takes payments and its website. What you change here, the whole club sees.",
     "forbidden": "You cannot edit this club's settings.",
     "tabs": {
       "general": "General",
       "identity": "Identity",
-      "seasons": "Seasons",
-      "memberTypes": "Member types",
-      "payments": "Payments",
-      "setup": "Getting started",
-      "activity": "Activity",
-      "developers": "Developers",
-      "accounting": "Accounting"
+      "seasons": "Seasons and members",
+      "payments": "Payments and accounting",
+      "developers": "Club website",
+      "activity": "Activity"
     },
     "general": {
       "title": "Club details",
@@ -800,7 +797,11 @@
       },
       "manualToggle": "I have an account: type its ID",
       "returned": "You are back from Stripe. Account status updated.",
-      "conflictNotReady": "The club's Stripe account cannot collect yet: finish the sign-up in Stripe."
+      "conflictNotReady": "The club's Stripe account cannot collect yet: finish the sign-up in Stripe.",
+      "groups": {
+        "gateway": "Payment gateway",
+        "accounting": "Accounting"
+      }
     },
     "setup": {
       "title": "Getting started",

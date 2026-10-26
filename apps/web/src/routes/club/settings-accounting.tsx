@@ -40,11 +40,12 @@ import {
 const TREASURY_METHODS: readonly PaymentMethod[] = [...MANUAL_PAYMENT_METHODS, "stripe"];
 
 /**
- * Contabilidad (ADR 0042): conectar Holded con su clave de API, decidir cómo salen las cuotas
- * (factura o ticket, impuesto, serie, aprobación, desde cuándo) y en qué cuenta entra cada forma
- * de pago, sincronizar y ver lo que Holded ha rechazado. La clave entra una vez y no vuelve a salir.
+ * Contabilidad (ADR 0042), en la pestaña Cobros y contabilidad bajo la pasarela (ADR 0045):
+ * conectar Holded con su clave de API, decidir cómo salen las cuotas (factura o ticket, impuesto,
+ * serie, aprobación, desde cuándo) y en qué cuenta entra cada forma de pago, sincronizar y ver lo
+ * que Holded ha rechazado. La clave entra una vez y no vuelve a salir.
  */
-export function AccountingTab() {
+export function AccountingSection() {
   const c = useT("common");
   const errors = useT("errors");
   const { org } = useReadyClub();
