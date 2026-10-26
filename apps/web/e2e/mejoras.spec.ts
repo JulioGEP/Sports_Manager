@@ -2,12 +2,12 @@ import { expect, test, type Page } from "@playwright/test";
 import { CLUB, expectLegibleButtons, login, shot } from "./helpers";
 
 /**
- * Mejoras de la plataforma (ADR 0047) con el club demo, cuya administración (`admin@demo.test`)
- * también administra la plataforma en estas pruebas. La plataforma tiene una hoja de ruta; el club
- * la ve, vota, sugiere dos mejoras (una que ya estaba, con el aviso de parecidas, y otra nueva);
- * la plataforma une la repetida, planifica la nueva con fecha aproximada, contesta y la ordena; y
- * el club ve en qué ha quedado cada una. Escritorio y móvil comparten base: cada uno sugiere y
- * vota lo suyo.
+ * Mejoras de la plataforma (ADR 0047), en la pestaña Mejoras de Ajustes (ADR 0048), con el club
+ * demo, cuya administración (`admin@demo.test`) también administra la plataforma en estas pruebas.
+ * La plataforma tiene una hoja de ruta; el club la ve, vota y sugiere dos mejoras (una que ya
+ * estaba, con el aviso de parecidas, y otra nueva); la plataforma une la repetida, planifica la
+ * nueva con fecha aproximada, contesta y la ordena; y el club ve en qué ha quedado cada una.
+ * Escritorio y móvil comparten base: cada uno sugiere y vota lo suyo.
  */
 
 interface Seed {
@@ -114,9 +114,16 @@ test.describe("mejoras de la plataforma", () => {
     await login(page);
     await ensureRoadmap(page);
 
-    // --- El club: la hoja de ruta ---
-    await page.goto(`${CLUB}/roadmap`);
-    await expect(page.getByRole("heading", { name: "Mejoras de la plataforma" })).toBeVisible();
+    // --- El club: Mejoras es una pestaña de Ajustes (ADR 0048), no una entrada de la barra ---
+    await expect(page.getByRole("link", { name: "Mejoras", exact: true })).toHaveCount(0);
+    await page.goto(`${CLUB}/settings`);
+    await page.getByRole("tab", { name: "Mejoras" }).click();
+    await page.waitForURL(/\/settings\?tab=improvements/);
+    await expect(page.getByRole("tab", { name: "Mejoras" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+    await expect(page.getByRole("heading", { name: "Sugerencias del club" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Lo que viene" })).toBeVisible();
     await expect(
       page.getByText("Agenda del club en el calendario del móvil").first(),
@@ -152,7 +159,7 @@ test.describe("mejoras de la plataforma", () => {
     await expectLegibleButtons(page);
     await form.getByRole("button", { name: "Enviar sugerencia" }).click();
     await expect(page.getByText("Sugerencia enviada. Aquí verás en qué queda.")).toBeVisible();
-    await page.waitForURL(/tab=mine&mine=/);
+    await page.waitForURL(/tab=improvements&mine=/);
     let sent = page.getByRole("dialog");
     await expect(sent.getByRole("heading", { name: p.duplicate })).toBeVisible();
     await expect(
@@ -174,7 +181,7 @@ test.describe("mejoras de la plataforma", () => {
     await expect(sent.getByRole("heading", { name: p.fresh })).toBeVisible();
     await sent.getByRole("button", { name: "Cerrar" }).first().click();
     await expect(page.getByRole("dialog")).toHaveCount(0);
-    await expect(page.getByRole("tab", { name: /Sugerencias del club/ })).toHaveAttribute(
+    await expect(page.getByRole("tab", { name: "Mejoras" })).toHaveAttribute(
       "aria-selected",
       "true",
     );
@@ -245,7 +252,9 @@ test.describe("mejoras de la plataforma", () => {
     await shot(page, "146-negocio-mejoras-hoja-de-ruta", info.project.name);
 
     // --- El club: en qué ha quedado cada una ---
-    await page.goto(`${CLUB}/roadmap?tab=mine`);
+    // La dirección de antes (`/roadmap`, ADR 0047) lleva a la pestaña.
+    await page.goto(`${CLUB}/roadmap`);
+    await page.waitForURL(/\/settings\?tab=improvements$/);
     await page.getByText(p.duplicate).first().click();
     let mine = page.getByRole("dialog");
     await expect(

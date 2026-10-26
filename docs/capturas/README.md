@@ -400,11 +400,11 @@ Cada club vive en una ruta del mismo dominio: el club demo en `/demo`, el negoci
 
 ![Panel del negocio: sistema](escritorio-57-negocio-sistema.png)
 
-## Mejoras de la plataforma (ADR 0047)
+## Mejoras de la plataforma (ADR 0047; en Ajustes, ADR 0048)
 
-Solo la administración del club. Lo que un club envía lo ven ese club y la plataforma; lo publicado lo ven todos los clubes, sin saber quién lo pidió.
+Solo la administración del club, en la pestaña Mejoras de Ajustes (`/demo/settings?tab=improvements`). Lo que un club envía lo ven ese club y la plataforma; lo publicado lo ven todos los clubes, sin saber quién lo pidió.
 
-### Hoja de ruta del club: lo que viene en orden y con fecha aproximada, lo que está en estudio para votar y lo último disponible
+### Ajustes, Mejoras: las sugerencias del club arriba y la hoja de ruta debajo (lo que viene en orden y con fecha aproximada, lo que está en estudio para votar y lo último disponible)
 
 ![Hoja de ruta del club](escritorio-140-mejoras-hoja-de-ruta.png)
 
@@ -416,7 +416,7 @@ Solo la administración del club. Lo que un club envía lo ven ese club y la pla
 
 ![Sugerir una mejora](escritorio-142-mejoras-sugerir.png)
 
-### Sugerencias del club con su estado
+### Ajustes, Mejoras: las sugerencias del club con su estado
 
 ![Sugerencias del club](escritorio-143-mejoras-sugerencias-del-club.png)
 
@@ -820,7 +820,7 @@ Las mismas pantallas en un móvil, con la forma envolvente del design system: ca
 
 ![Mis pedidos (móvil)](movil-114-tienda-mis-pedidos.png)
 
-### Mejoras de la plataforma (móvil): la hoja de ruta y la respuesta al club
+### Ajustes, Mejoras (móvil): las sugerencias del club, la hoja de ruta y la respuesta al club
 
 ![Hoja de ruta (móvil)](movil-140-mejoras-hoja-de-ruta.png)
 

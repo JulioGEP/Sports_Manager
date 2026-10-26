@@ -48,8 +48,7 @@
     "athlete": "My wellbeing",
     "store": "Shop",
     "myProfile": "My profile",
-    "athleteTraining": "My plan",
-    "roadmap": "Improvements"
+    "athleteTraining": "My plan"
   },
   "auth": {
     "login": {
@@ -474,7 +473,8 @@
       "seasons": "Seasons and members",
       "payments": "Payments and accounting",
       "developers": "Club website",
-      "activity": "Activity"
+      "activity": "Activity",
+      "improvements": "Improvements"
     },
     "general": {
       "title": "Club details",
@@ -3517,6 +3517,7 @@
       "newProduct": "New shop product",
       "counterSale": "Counter sale",
       "developers": "Public catalog for the website",
+      "roadmap": "Platform roadmap",
       "suggest": "Suggest an improvement"
     },
     "keys": {
@@ -5421,14 +5422,9 @@
     "other": "Something else"
   },
   "roadmap": {
-    "title": "Platform improvements",
-    "description": "Suggest improvements, vote for the ones under consideration and see what is coming and when.",
+    "roadmapGroup": "Platform roadmap",
     "suggest": "Suggest an improvement",
     "onlyAdmins": "Only the club's administrators can suggest improvements and see the roadmap.",
-    "tabs": {
-      "roadmap": "Roadmap",
-      "mine": "Club suggestions"
-    },
     "coming": {
       "title": "Coming next",
       "description": "In this order. Dates are approximate and may move.",
@@ -5483,6 +5479,8 @@
       "released": "Available: you can already use it."
     },
     "mine": {
+      "title": "Club suggestions",
+      "description": "What your club has asked the platform for and what happened to it. Only the club's administrators can see it.",
       "empty": "Your club has not suggested anything yet",
       "emptyHint": "Tell us what you are missing. You will see here what happens to each suggestion.",
       "seeInRoadmap": "See it in the roadmap",
