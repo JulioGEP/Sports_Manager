@@ -41,6 +41,7 @@ Comprobaciones: `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:isolation
 | `docs/propuesta-club-completo.md` | Propuesta de replanteo del panel del administrador: secciones, personas, agenda e instalaciones (bloques 14 a 18) |
 | `docs/propuesta-planificacion-entrenamientos.md` | Propuesta de planificación de entrenamientos, carga, salud y recomendaciones para el cuerpo técnico (bloques 21 a 26), construida en la ADR 0039 |
 | `docs/propuesta-clubs-de-fitness.md` | Propuesta de una segunda interfaz, "Clubs de fitness", sobre la misma base: modelo de club, vocabulario, pantallas por rol y comparativa con AimHarder, construida entera en la ADR 0049 |
+| `docs/propuesta-planificacion-del-box.md` | Propuesta de planificación del box con IA: plan con objetivo, bloques y semanas sobre la programación diaria, con el material, los niveles, los ejercicios y el horario reales del box; pendiente de seis decisiones |
 | `docs/dominio.md`               | Conocimiento de negocio extraído del prototipo                                 |
 | `docs/informe-sportsmanager.md` | Auditoría del prototipo y propuesta de arquitectura                            |
 | `docs/dominio-y-dns.md`         | Subdominios por club, parche local y pasos para el dominio definitivo          |
