@@ -875,7 +875,16 @@
       "section": "Crea la primera secció",
       "sectionAction": "Crear secció",
       "invite": "Convida el primer entrenador o personal",
-      "inviteAction": "Convidar"
+      "inviteAction": "Convidar",
+      "box": {
+        "description": "{done} de {total} passos fets. Deixa el box a punt perquè els teus atletes reservin.",
+        "identity": "Tria els colors i el look del box",
+        "schedule": "Crea els tipus de classe i el seu horari",
+        "scheduleAction": "Obrir l'horari",
+        "plans": "Crea les teves tarifes i bons",
+        "plansAction": "Crear tarifa",
+        "invite": "Convida el teu primer coach"
+      }
     },
     "activity": {
       "title": "Activitat del club",
@@ -931,7 +940,23 @@
       "confirmRotateTitle": "Vols canviar la clau?",
       "confirmRotateBody": "La clau actual deixa de funcionar a l'instant: el web del club deixarà de mostrar productes fins que hi posis la nova.",
       "confirmDisableTitle": "Vols apagar el catàleg públic?",
-      "confirmDisableBody": "El web del club deixarà de mostrar productes. El pots tornar a activar amb una clau nova."
+      "confirmDisableBody": "El web del club deixarà de mostrar productes. El pots tornar a activar amb una clau nova.",
+      "box": {
+        "title": "Horari i classe de prova a la web del box",
+        "description": "La teva web mostra les classes dels propers dies amb les places lliures i recull peticions de classe de prova, que arriben a Leads. Fa servir la mateixa clau pública que el catàleg.",
+        "endpointClasses": "Classes dels propers dies (fins a 14) amb les places lliures. Mai no diu qui hi va.",
+        "endpointTrials": "Demana una classe de prova: nom, cognoms, email, classe opcional i consentiment. Deixa un lead.",
+        "needsKey": "Activa la clau pública de sota per tenir el codi a punt per enganxar.",
+        "leads": "Veure leads",
+        "form": {
+          "firstName": "Nom",
+          "lastName": "Cognoms",
+          "email": "Email",
+          "consent": "Accepto que el box em contacti",
+          "send": "Demanar classe de prova",
+          "thanks": "Rebut. T'escrivim de seguida."
+        }
+      }
     },
     "accounting": {
       "connect": {

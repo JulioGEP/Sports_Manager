@@ -875,7 +875,16 @@
       "section": "Create the first section",
       "sectionAction": "Create section",
       "invite": "Invite the first coach or staff member",
-      "inviteAction": "Invite"
+      "inviteAction": "Invite",
+      "box": {
+        "description": "{done} of {total} steps done. Get the box ready for your athletes to book.",
+        "identity": "Choose the box's colours and look",
+        "schedule": "Create class types and their schedule",
+        "scheduleAction": "Open schedule",
+        "plans": "Create your plans and packs",
+        "plansAction": "Create plan",
+        "invite": "Invite your first coach"
+      }
     },
     "activity": {
       "title": "Club activity",
@@ -931,7 +940,23 @@
       "confirmRotateTitle": "Change the key?",
       "confirmRotateBody": "The current key stops working immediately: the club website will stop showing products until you put in the new one.",
       "confirmDisableTitle": "Turn off the public catalog?",
-      "confirmDisableBody": "The club website will stop showing products. You can turn it back on with a new key."
+      "confirmDisableBody": "The club website will stop showing products. You can turn it back on with a new key.",
+      "box": {
+        "title": "Schedule and trial class on the box's website",
+        "description": "Your website shows the coming days' classes with free spots and collects trial class requests, which land in Leads. It uses the same public key as the catalogue.",
+        "endpointClasses": "Classes for the coming days (up to 14) with free spots. It never says who's coming.",
+        "endpointTrials": "Request a trial class: first name, last name, email, optional class and consent. Creates a lead.",
+        "needsKey": "Turn on the public key below to get the code ready to paste.",
+        "leads": "See leads",
+        "form": {
+          "firstName": "First name",
+          "lastName": "Last name",
+          "email": "Email",
+          "consent": "I agree to be contacted by the box",
+          "send": "Request a trial class",
+          "thanks": "Got it. We'll be in touch shortly."
+        }
+      }
     },
     "accounting": {
       "connect": {

@@ -875,7 +875,16 @@
       "section": "Crea la primera sección",
       "sectionAction": "Crear sección",
       "invite": "Invita al primer entrenador o personal",
-      "inviteAction": "Invitar"
+      "inviteAction": "Invitar",
+      "box": {
+        "description": "{done} de {total} pasos hechos. Deja el box listo para que tus atletas reserven.",
+        "identity": "Elige los colores y el look del box",
+        "schedule": "Crea los tipos de clase y su horario",
+        "scheduleAction": "Abrir horario",
+        "plans": "Crea tus tarifas y bonos",
+        "plansAction": "Crear tarifa",
+        "invite": "Invita a tu primer coach"
+      }
     },
     "activity": {
       "title": "Actividad del club",
@@ -931,7 +940,23 @@
       "confirmRotateTitle": "¿Cambiar la clave?",
       "confirmRotateBody": "La clave actual deja de funcionar al momento: la web del club dejará de enseñar productos hasta que pongas la nueva.",
       "confirmDisableTitle": "¿Apagar el catálogo público?",
-      "confirmDisableBody": "La web del club dejará de enseñar productos. Puedes volver a activarlo con una clave nueva."
+      "confirmDisableBody": "La web del club dejará de enseñar productos. Puedes volver a activarlo con una clave nueva.",
+      "box": {
+        "title": "Horario y clase de prueba en la web del box",
+        "description": "Tu web enseña las clases de los próximos días con sus plazas libres y recoge peticiones de clase de prueba, que llegan a Leads. Usa la misma clave pública que el catálogo.",
+        "endpointClasses": "Clases de los próximos días (hasta 14) con las plazas libres. Nunca dice quién viene.",
+        "endpointTrials": "Pide una clase de prueba: nombre, apellidos, email, clase opcional y consentimiento. Deja un lead.",
+        "needsKey": "Activa la clave pública de abajo para tener el código listo para pegar.",
+        "leads": "Ver leads",
+        "form": {
+          "firstName": "Nombre",
+          "lastName": "Apellidos",
+          "email": "Email",
+          "consent": "Acepto que el box me contacte",
+          "send": "Pedir clase de prueba",
+          "thanks": "Recibido. Te escribimos enseguida."
+        }
+      }
     },
     "accounting": {
       "connect": {
