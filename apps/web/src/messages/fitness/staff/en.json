@@ -45,16 +45,16 @@
   },
   "classes": {
     "title": "Classes",
-    "description": "The box's classes by day, with bookings, waitlist and check-in.",
+    "description": "The box's week: every class at its time, with bookings, waitlist and check-in.",
     "setup": "Edit the schedule",
-    "days": "Day",
     "scope": "Which classes to show",
     "mine": "My classes",
-    "all": "All",
+    "all": "Whole box",
     "summary": "{classes, plural, one {# class} other {# classes}} · {booked, plural, one {# booking} other {# bookings}}",
-    "empty": "No classes on this day.",
-    "emptyMine": "You're not coaching on this day.",
-    "seeAll": "See all"
+    "empty": "No classes this week.",
+    "emptyMine": "You're not coaching any class this week.",
+    "seeAll": "See all",
+    "occupancy": "{percent}% full"
   },
   "class": {
     "notFound": "That class doesn't exist or isn't one of yours.",
