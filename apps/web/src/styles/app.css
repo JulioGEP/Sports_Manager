@@ -74,3 +74,21 @@ body {
 dialog::backdrop {
   background: rgba(11, 13, 18, 0.5);
 }
+
+/*
+ * Recorrido guiado (ADR 0059): la pantalla en sombra, algo más densa que el fondo de los diálogos,
+ * y a la luz lo que se explica. La sombra es la del propio hueco: lo sigue al moverse.
+ */
+.tour::backdrop {
+  /* La sombra la pone el hueco: el fondo de los diálogos, encima, apagaría también lo iluminado. */
+  background: transparent;
+}
+.tour-spotlight {
+  box-shadow: 0 0 0 200vmax rgba(11, 13, 18, 0.6);
+  transition-property: top, left, width, height;
+  transition-duration: var(--motion-base);
+  transition-timing-function: var(--ease-out);
+}
+.tour-shade {
+  background: rgba(11, 13, 18, 0.6);
+}

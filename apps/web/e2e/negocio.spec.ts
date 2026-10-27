@@ -110,7 +110,63 @@ test.describe("panel del negocio", () => {
     await expect(page.getByRole("heading", { name: /Invitación a Club Prueba/ })).toBeVisible();
     await shot(page, "60-club-nuevo-invitacion", info.project.name);
     await page.getByRole("button", { name: /Unirme a Club Prueba/ }).click();
-    await page.waitForURL(new RegExp(`/${slug}$`));
+
+    // Un club por estrenar (ADR 0059): su administración entra primero a la puesta en marcha, con
+    // el recorrido en sombra por cada paso.
+    await page.waitForURL(new RegExp(`/${slug}/settings$`));
+    // Sin movimiento, cada paso queda quieto al instante y las capturas salen enteras.
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    const tour = page.getByRole("dialog");
+    const spotlight = page.locator(".tour-spotlight");
+    await expect(tour.getByRole("heading", { name: "Tu club, listo en 5 pasos" })).toBeVisible();
+    await expect(tour.getByText("Paso 1 de 10")).toBeVisible();
+    await expect(spotlight).toBeVisible();
+    // Lo iluminado se ve tal cual: el fondo de los diálogos no lo apaga.
+    expect(await tour.evaluate((d) => getComputedStyle(d, "::backdrop").backgroundColor)).toBe(
+      "rgba(0, 0, 0, 0)",
+    );
+    await shot(page, "60b-club-nuevo-recorrido", info.project.name, { fullPage: false });
+    const steps = [
+      "Tu escudo, en todas partes",
+      "Colores, letra y voz",
+      "La temporada actual",
+      "Secciones y equipos",
+      "Tu cuerpo técnico",
+      "Todo lo demás, por pestañas",
+      "El club, por áreas",
+      "Busca o haz cualquier cosa",
+    ];
+    for (const title of steps) {
+      await tour.getByRole("button", { name: "Seguir" }).click();
+      await expect(tour.getByRole("heading", { name: title })).toBeVisible();
+      await expect(spotlight).toBeVisible();
+      if (title === "Tu escudo, en todas partes") {
+        await shot(page, "60c-club-nuevo-recorrido-logo", info.project.name, { fullPage: false });
+      }
+      if (title === "El club, por áreas") {
+        await shot(page, "60d-club-nuevo-recorrido-areas", info.project.name, { fullPage: false });
+      }
+    }
+    await tour.getByRole("button", { name: "Seguir" }).click();
+    await expect(tour.getByRole("heading", { name: "Empieza por aquí" })).toBeVisible();
+    await expect(tour.getByText("Paso 10 de 10")).toBeVisible();
+    await shot(page, "60e-club-nuevo-recorrido-fin", info.project.name, { fullPage: false });
+    // El último paso lleva al primero pendiente: subir el logo.
+    await tour.getByRole("button", { name: "Subir logo" }).click();
+    await expect(tour).toBeHidden();
+    await page.waitForURL(new RegExp(`/${slug}/settings\\?tab=identity$`));
+
+    // Visto: el recorrido se vuelve a ver desde la puesta en marcha y se salta cuando se quiere.
+    await page.goto(`/${slug}/settings`);
+    await expect(page.getByRole("heading", { name: "Puesta en marcha" })).toBeVisible();
+    await expect(tour).toBeHidden();
+    await page.getByRole("button", { name: "Ver recorrido" }).click();
+    await expect(tour.getByRole("heading", { name: "Tu club, listo en 5 pasos" })).toBeVisible();
+    await tour.getByRole("button", { name: "Saltar" }).click();
+    await expect(tour).toBeHidden();
+
+    // Y el inicio ya es la portada del club nuevo.
+    await page.goto(`/${slug}`);
     await expect(page.getByRole("heading", { name: /Club Prueba/ })).toBeVisible();
     await shot(page, "61-club-nuevo-inicio", info.project.name);
     await expectLegibleButtons(page);

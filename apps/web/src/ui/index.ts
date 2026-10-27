@@ -11,6 +11,7 @@ export { Card } from "./card";
 export { PageHeader, BackLink } from "./page-header";
 export { Tabs, type TabItem } from "./tabs";
 export { Sheet } from "./sheet";
+export { Tour, type TourStep } from "./tour";
 export { Alert, type AlertKind } from "./alert";
 export { ToastProvider, useToast } from "./toast";
 export { EmptyState, Avatar, Crest, Stat, Definitions, initials } from "./misc";

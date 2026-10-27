@@ -182,6 +182,7 @@ export function PaletteButton({
         onClick={onClick}
         aria-label={t("open")}
         aria-keyshortcuts="Meta+K Control+K"
+        data-tour="palette"
         className="inline-grid size-(--h-control) shrink-0 place-items-center rounded-control text-nav-ink transition-colors hover:bg-nav-hover"
       >
         <Icon.MagnifyingGlass size={22} aria-hidden="true" />
@@ -193,6 +194,7 @@ export function PaletteButton({
       type="button"
       onClick={onClick}
       aria-keyshortcuts="Meta+K Control+K"
+      data-tour="palette"
       className="flex h-11 w-full items-center gap-2 rounded-field border border-control bg-page px-3 text-secondary text-muted transition-colors hover:bg-raised hover:text-ink"
     >
       <Icon.MagnifyingGlass size={18} aria-hidden="true" />

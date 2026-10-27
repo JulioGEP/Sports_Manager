@@ -11,10 +11,11 @@ import {
 import { brandTokens } from "@sportsmanager/shared/design";
 import { useQuery } from "@tanstack/react-query";
 import { useIntl } from "react-intl";
-import { Link, useNavigate } from "react-router";
+import { Link, Navigate, useNavigate } from "react-router";
 import { apiFetch } from "@/lib/api";
 import { clubPaths, useReadyClub } from "@/lib/club";
 import { useT } from "@/lib/intl";
+import { useSetupTour } from "@/lib/setup";
 import {
   Alert,
   Avatar,
@@ -53,11 +54,23 @@ function ProgressBar({ value, label }: { value: number; label: string }) {
 type AlertKey = keyof OperationsSummary;
 
 /**
- * Inicio del club (Bloque 14, ADR 0031). Responde, en este orden: qué pasa hoy, cómo está el club
+ * Inicio del club. En un club por estrenar, quien lo administra entra primero a la puesta en
+ * marcha con su recorrido (ADR 0059).
+ */
+export function ClubHome() {
+  const { slug } = useReadyClub();
+  const tour = useSetupTour();
+  if (tour.pending === null) return null;
+  if (tour.pending) return <Navigate to={clubPaths(slug).settings} replace />;
+  return <ClubOverview />;
+}
+
+/**
+ * Portada del club (Bloque 14, ADR 0031). Responde, en este orden: qué pasa hoy, cómo está el club
  * en cifras, cómo está cada sección, qué hace falta hoy y cómo van las fichas. La portada manda
  * (DESIGN.md 7). Para quien no administra, el panel de su cargo; para la familia, los suyos.
  */
-export function ClubHome() {
+function ClubOverview() {
   const t = useT("home");
   const eventKinds = useT("eventKinds");
   const roles = useT("roles");

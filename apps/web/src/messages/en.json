@@ -861,6 +861,54 @@
       "invite": "Invite the first coach or staff member",
       "inviteAction": "Invite"
     },
+    "tour": {
+      "progress": "Step {step} of {total}",
+      "next": "Continue",
+      "back": "Go back",
+      "skip": "Skip",
+      "close": "Close",
+      "replay": "Watch the tour",
+      "start": {
+        "title": "Your club, ready in {total} steps",
+        "body": "This is your launch checklist. Each step takes you to its screen and ticks itself off once done. When they are all complete, the list goes away."
+      },
+      "logo": {
+        "title": "Your crest, everywhere",
+        "body": "It shows in the app, on the club home, at sign-in and in invitations. Families recognise it as soon as they sign in."
+      },
+      "colors": {
+        "title": "Colours, type and voice",
+        "body": "Choose colours, typography, buttons and how the app talks. You see it live before saving: the whole app wears the club's identity."
+      },
+      "season": {
+        "title": "The current season",
+        "body": "It organises everything else: sections, teams, fees and the calendar all go by season. Create the current one to get started."
+      },
+      "section": {
+        "title": "Sections and teams",
+        "body": "Group your teams by section (academy, youth, senior…), each with its own coaching staff and squad."
+      },
+      "invite": {
+        "title": "Your coaching staff",
+        "body": "They get an email to sign in with their own access: call up players, take attendance and follow their squad."
+      },
+      "tabs": {
+        "title": "Everything else, in tabs",
+        "body": "Identity, seasons and members, payments and accounting, the club website, activity and the improvements you request from the platform."
+      },
+      "nav": {
+        "title": "The club, by area",
+        "body": "The club, Activity and Management: your people, the calendar, training and the club's money, always at hand."
+      },
+      "palette": {
+        "title": "Search or do anything",
+        "body": "From here, or with ⌘K or Ctrl K on a computer, reach any player, team, screen or action without going through menus."
+      },
+      "end": {
+        "title": "Start here",
+        "body": "{step}. We will take you there now. You can watch the tour again from Getting started."
+      }
+    },
     "activity": {
       "title": "Club activity",
       "description": "The last hundred actions: who did what.",
