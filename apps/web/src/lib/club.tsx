@@ -4,6 +4,7 @@ import {
   OrganizationResponseSchema,
   isReservedSubdomain,
   ORGANIZATION_SLUG_PATTERN,
+  type BoxArea,
   type ClubStyle,
   type MeResponse,
   type MyMembershipsResponse,
@@ -311,9 +312,8 @@ export const clubPaths = (slug: string) => ({
   athleteTraining: `/${slug}/me/training`,
   /**
    * Clubs de fitness (ADR 0049). El atleta: reservar, la clase, el WOD con su clasificación, su
-   * progreso, su tarifa, los mensajes y anuncios del box, el timer y los movimientos. El coach: sus
-   * clases, la programación y los atletas. El dueño: el horario, las tarifas, los leads, las
-   * métricas, el ranking y la pantalla del box.
+   * progreso, su tarifa, los mensajes y anuncios del box y los ejercicios. El coach: sus clases, la
+   * programación y los atletas. El dueño: el horario, las tarifas, los leads y la pantalla del box.
    */
   classes: `/${slug}/classes`,
   classDetail: (id: string) => `/${slug}/classes/${id}`,
@@ -324,7 +324,6 @@ export const clubPaths = (slug: string) => ({
   messages: `/${slug}/messages`,
   messageThread: (playerId: string) => `/${slug}/messages/${playerId}`,
   announcements: `/${slug}/announcements`,
-  timer: `/${slug}/timer`,
   library: `/${slug}/library`,
   /** Biblioteca de ejercicios del box: la ven todos, la escriben coach y dueño. */
   exercises: `/${slug}/exercises`,
@@ -350,7 +349,10 @@ export const clubPaths = (slug: string) => ({
   classTypes: `/${slug}/class-types`,
   plans: `/${slug}/plans`,
   leads: `/${slug}/leads`,
-  metrics: `/${slug}/metrics`,
-  ranking: `/${slug}/ranking`,
   tv: `/${slug}/tv`,
+  /**
+   * Portada de un área del box (ADR 0055): Entrenamiento, Negocio o El box, con los KPIs que el
+   * club elige y la entrada a cada pantalla del área. Sustituye a las métricas (`/metrics`).
+   */
+  area: (key: BoxArea) => `/${slug}/areas/${key}`,
 });

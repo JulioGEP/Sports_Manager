@@ -9,8 +9,6 @@
     "myPlan": "My plan",
     "messages": "Messages",
     "announcements": "Announcements",
-    "ranking": "Leaderboard",
-    "timer": "Timer",
     "library": "Exercises",
     "equipment": "Equipment",
     "programming": "Programming",
@@ -18,7 +16,6 @@
     "athletes": "Athletes",
     "plans": "Plans",
     "leads": "Leads",
-    "metrics": "Metrics",
     "tv": "Box screen",
     "classTypes": "Schedule",
     "payments": "Payments",
@@ -28,10 +25,10 @@
     "rooms": "Rooms",
     "settings": "Settings",
     "family": "My family",
+    "groupTraining": "Training",
     "groupBox": "The box",
     "groupCommunity": "Community",
     "groupBusiness": "Business",
-    "groupManagement": "Management",
     "groupAccount": "My account"
   },
   "roles": {

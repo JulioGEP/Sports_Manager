@@ -1,9 +1,10 @@
-import { DEFAULT_CLUB_STYLE, DEFAULT_CLUB_VOICE } from "@sportsmanager/shared";
+import { BOX_AREAS, DEFAULT_CLUB_STYLE, DEFAULT_CLUB_VOICE } from "@sportsmanager/shared";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router";
 import { CommandPalette, PaletteButton, usePaletteShortcut } from "@/components/command-palette";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { ViewAsBanner, ViewAsSheet } from "@/components/view-as";
+import { AREA_LABEL_KEYS, boxAreaScreens } from "@/lib/box-areas";
 import { ClubProvider, clubPaths, useClub, type ClubState } from "@/lib/club";
 import { useT, VoiceProvider } from "@/lib/intl";
 import { useMediaQuery } from "@/lib/media";
@@ -63,6 +64,7 @@ function NavCrest({ name, logoUrl }: { name: string; logoUrl: string | null | un
 function ClubFrame({ children }: { children: ReactNode }) {
   const t = useT("nav");
   const fx = useT("fitness.common.nav");
+  const kx = useT("fitness.kpis");
   const { slug, state, look } = useClub();
   const desktop = useMediaQuery(DESKTOP_QUERY);
   const navigate = useNavigate();
@@ -111,7 +113,9 @@ function ClubFrame({ children }: { children: ReactNode }) {
   /** El deportista sin nadie a su cargo no tiene "familia": tiene su ficha. */
   const athleteOnly =
     actor !== null && actor.roles.includes("athlete") && !actor.roles.includes("guardian");
-  const groups: { key: string; label: string | null; links: NavLinkItem[] }[] = [
+  /** Un grupo de la barra. Con `to`, su cabecera se toca y abre la portada del área (ADR 0055). */
+  type NavGroup = { key: string; label: string | null; to?: string; links: NavLinkItem[] };
+  const groups: NavGroup[] = [
     {
       key: "home",
       label: null,
@@ -209,8 +213,11 @@ function ClubFrame({ children }: { children: ReactNode }) {
   ].filter((g) => g.links.length > 0);
   /**
    * Un club de fitness (ADR 0049) se navega por lo que se hace cada día: el atleta reserva, mira el
-   * WOD y su progreso; el coach da clases y programa; el dueño, además, lleva el negocio. Los
-   * cinco primeros destinos son la barra del móvil.
+   * WOD y su progreso; el personal trabaja por áreas (ADR 0055). Entrenamiento (clases,
+   * programación, atletas, planificación y ejercicios), Negocio (tarifas, cobros, leads, tienda y
+   * anuncios) y El box (mensajes, horario, equipo, salas, material y la pantalla). La cabecera de
+   * cada área abre su portada con KPIs; Ajustes, al pie. Los cinco primeros destinos son la barra
+   * del móvil.
    */
   const fitness = look?.clubModel === "fitness" && state.kind === "ready" && actor !== null;
   const staffView = has("org.events.read");
@@ -221,7 +228,8 @@ function ClubFrame({ children }: { children: ReactNode }) {
     icon,
     end,
   });
-  const fitnessGroups: typeof groups = !fitness
+  const areaScreens = fitness ? boxAreaScreens(slug, has) : null;
+  const fitnessGroups: NavGroup[] = !fitness
     ? []
     : [
         {
@@ -236,58 +244,31 @@ function ClubFrame({ children }: { children: ReactNode }) {
                   link(paths.progress, fx("progress"), Icon.ChartBar),
                 ]
               : []),
-            ...(staffView
-              ? [
-                  link(paths.classes, fx("classes"), Icon.CalendarBlank),
-                  ...(has("org.training.read")
-                    ? [link(paths.programming, fx("programming"), Icon.Barbell)]
-                    : []),
-                  ...(has("org.players.read")
-                    ? [link(paths.athletes, fx("athletes"), Icon.UsersThree)]
-                    : []),
-                  // Detrás de Atletas: en el móvil va en "Más" (la barra admite cuatro destinos) y
-                  // se llega también desde la franja del plan en la Programación.
-                  ...(has("org.training.read")
-                    ? [link(paths.planning, fx("planning"), Icon.Rows)]
-                    : []),
-                ]
-              : []),
             ...(!athleteView && !staffView && has("org.family.read")
               ? [link(paths.family, fx("family"), Icon.HandHeart)]
               : []),
           ],
         },
-        // El negocio, solo para quien lo lleva: tarifas y cobros primero, captación y cifras.
+        // El personal, por áreas: cada cabecera abre la portada del área con sus KPIs.
+        ...(areaScreens
+          ? BOX_AREAS.map((area): NavGroup => ({
+              key: area,
+              label: fx(AREA_LABEL_KEYS[area]),
+              ...(staffView ? { to: paths.area(area) } : {}),
+              links: areaScreens[area].map((s) => link(s.to, fx(s.labelKey), s.icon)),
+            }))
+          : []),
+        // El atleta (y la familia de un menor): la comunidad del box y los ejercicios.
         {
-          key: "business",
-          label: fx("groupBusiness"),
-          links: [
-            ...(has("org.fees.read") ? [link(paths.plans, fx("plans"), Icon.Ticket)] : []),
-            ...(has("org.fees.read") ? [link(paths.fees, fx("payments"), Icon.Coins)] : []),
-            ...(has("org.club_members.read")
-              ? [link(paths.leads, fx("leads"), Icon.UserPlus)]
-              : []),
-            ...(has("org.fees.read") ? [link(paths.metrics, fx("metrics"), Icon.Pulse)] : []),
-            ...(has("org.store.read") ? [link(paths.store, fx("store"), Icon.Storefront)] : []),
-          ],
-        },
-        // El día a día del box: comunidad y herramientas de clase.
-        {
-          key: "box",
+          key: "athleteBox",
           label: fx("groupBox"),
-          links: [
-            ...(athleteView || has("org.community.write")
-              ? [link(paths.messages, fx("messages"), Icon.Envelope)]
-              : []),
-            link(paths.announcements, fx("announcements"), Icon.Info),
-            link(paths.ranking, fx("ranking"), Icon.Trophy),
-            link(paths.exercises, fx("library"), Icon.Target),
-            ...(staffView && has("org.training.read")
-              ? [link(paths.equipment, fx("equipment"), Icon.Package)]
-              : []),
-            link(paths.timer, fx("timer"), Icon.Timer),
-            ...(staffView ? [link(paths.tv, fx("tv"), Icon.CornersOut)] : []),
-          ],
+          links: !staffView
+            ? [
+                ...(athleteView ? [link(paths.messages, fx("messages"), Icon.Envelope)] : []),
+                link(paths.announcements, fx("announcements"), Icon.Info),
+                link(paths.exercises, fx("library"), Icon.Target),
+              ]
+            : [],
         },
         // Lo del atleta: su tarifa, lo que paga y la tienda.
         {
@@ -302,21 +283,13 @@ function ClubFrame({ children }: { children: ReactNode }) {
               ]
             : [],
         },
+        // Ajustes, al pie: se usan poco y no son de ningún área.
         {
-          key: "management",
-          label: fx("groupManagement"),
-          links: [
-            ...(has("org.structure.write")
-              ? [link(paths.classTypes, fx("classTypes"), Icon.Clock)]
-              : []),
-            ...(has("org.members.read") ? [link(paths.staff, fx("staff"), Icon.Users)] : []),
-            ...(has("org.facilities.read")
-              ? [link(paths.facilities, fx("rooms"), Icon.Buildings)]
-              : []),
-            ...(has("org.settings.write")
-              ? [link(paths.settings, fx("settings"), Icon.SlidersHorizontal)]
-              : []),
-          ],
+          key: "settings",
+          label: null,
+          links: has("org.settings.write")
+            ? [link(paths.settings, fx("settings"), Icon.SlidersHorizontal)]
+            : [],
         },
       ].filter((g) => g.links.length > 0);
   if (fitness) groups.splice(0, groups.length, ...fitnessGroups);
@@ -324,12 +297,23 @@ function ClubFrame({ children }: { children: ReactNode }) {
   /** La barra inferior admite cinco destinos (DESIGN.md 9.10): los cuatro primeros y "Más". */
   const mobileLinks = links.length > 5 ? links.slice(0, 4) : links;
   const moreLinks = links.length > 5 ? links.slice(4) : [];
+  /** "Más", por grupos: con la portada de cada área aunque sus pantallas estén en la barra. */
+  const moreTargets = new Set(moreLinks.map((l) => l.to));
+  const moreGroups = groups
+    .map((g) => ({ ...g, links: g.links.filter((l) => moreTargets.has(l.to)) }))
+    .filter((g) => g.links.length > 0 || g.to);
+  const areaPrefix = `${paths.home}/areas/`;
   const palette =
     state.kind === "ready" ? (
       <CommandPalette
         open={paletteOpen}
         onClose={() => setPaletteOpen(false)}
-        links={links.map((l) => ({ to: l.to, label: l.label }))}
+        links={[
+          ...links.map((l) => ({ to: l.to, label: l.label })),
+          ...groups.flatMap((g) =>
+            g.to && g.label ? [{ to: g.to, label: kx("summaryOf", { area: g.label }) }] : [],
+          ),
+        ]}
       />
     ) : null;
 
@@ -405,7 +389,28 @@ function ClubFrame({ children }: { children: ReactNode }) {
           <nav className="flex flex-col gap-4 overflow-y-auto" aria-label={t("mainNav")}>
             {groups.map((g) => (
               <div key={g.key} className="flex flex-col gap-1">
-                {g.label ? (
+                {g.label && g.to ? (
+                  <NavLink
+                    to={g.to}
+                    end
+                    aria-label={kx("summaryOf", { area: g.label })}
+                    title={kx("summaryOf", { area: g.label })}
+                    className={({ isActive }) =>
+                      `group flex h-(--h-control) items-center justify-between gap-2 rounded-control px-3 text-label uppercase tracking-wide no-underline transition-colors ${
+                        isActive
+                          ? "bg-nav-active text-nav-active-ink"
+                          : "text-nav-muted hover:bg-nav-hover hover:text-nav-ink"
+                      }`
+                    }
+                  >
+                    <span>{g.label}</span>
+                    <Icon.CaretRight
+                      size={16}
+                      aria-hidden="true"
+                      className="opacity-60 transition-opacity group-hover:opacity-100"
+                    />
+                  </NavLink>
+                ) : g.label ? (
                   <span className="px-3 pt-1 pb-1 text-label uppercase tracking-wide text-nav-muted">
                     {g.label}
                   </span>
@@ -502,7 +507,8 @@ function ClubFrame({ children }: { children: ReactNode }) {
               onClick={() => setMoreOpen(true)}
               aria-haspopup="dialog"
               className={`flex h-full flex-col items-center justify-center gap-0.5 rounded-control text-label ${
-                moreLinks.some((l) => location.pathname.startsWith(l.to))
+                moreLinks.some((l) => location.pathname.startsWith(l.to)) ||
+                location.pathname.startsWith(areaPrefix)
                   ? "text-nav-accent"
                   : "text-nav-muted"
               }`}
@@ -523,25 +529,53 @@ function ClubFrame({ children }: { children: ReactNode }) {
           closeLabel={t("close")}
           title={t("more")}
         >
-          <ul className="flex flex-col gap-1">
-            {moreLinks.map((l) => (
-              <li key={l.to}>
-                <NavLink
-                  to={l.to}
-                  end={l.end}
-                  onClick={() => setMoreOpen(false)}
-                  className={({ isActive }) =>
-                    `flex min-h-12 items-center gap-3 rounded-field px-3 text-body font-medium no-underline ${
-                      isActive ? "bg-club-soft text-club-soft-text" : "text-ink hover:bg-raised"
-                    }`
-                  }
-                >
-                  <l.icon size={22} weight="duotone" aria-hidden="true" />
-                  {l.label}
-                </NavLink>
-              </li>
+          <div className="flex flex-col gap-4">
+            {moreGroups.map((g) => (
+              <section key={g.key} className="flex flex-col gap-1">
+                {g.label && g.to ? (
+                  <NavLink
+                    to={g.to}
+                    end
+                    onClick={() => setMoreOpen(false)}
+                    aria-label={kx("summaryOf", { area: g.label })}
+                    className={({ isActive }) =>
+                      `flex min-h-12 items-center justify-between gap-3 rounded-field px-3 text-label uppercase tracking-wide no-underline ${
+                        isActive ? "bg-club-soft text-club-soft-text" : "text-muted hover:bg-raised"
+                      }`
+                    }
+                  >
+                    <span>{g.label}</span>
+                    <Icon.CaretRight size={16} aria-hidden="true" />
+                  </NavLink>
+                ) : g.label ? (
+                  <span className="px-3 pt-1 text-label uppercase tracking-wide text-muted">
+                    {g.label}
+                  </span>
+                ) : null}
+                <ul className="flex flex-col gap-1">
+                  {g.links.map((l) => (
+                    <li key={l.to}>
+                      <NavLink
+                        to={l.to}
+                        end={l.end}
+                        onClick={() => setMoreOpen(false)}
+                        className={({ isActive }) =>
+                          `flex min-h-12 items-center gap-3 rounded-field px-3 text-body font-medium no-underline ${
+                            isActive
+                              ? "bg-club-soft text-club-soft-text"
+                              : "text-ink hover:bg-raised"
+                          }`
+                        }
+                      >
+                        <l.icon size={22} weight="duotone" aria-hidden="true" />
+                        {l.label}
+                      </NavLink>
+                    </li>
+                  ))}
+                </ul>
+              </section>
             ))}
-          </ul>
+          </div>
         </Sheet>
       ) : null}
       {state.kind === "ready" && canViewAs ? (

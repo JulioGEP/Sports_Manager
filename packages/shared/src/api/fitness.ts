@@ -24,6 +24,7 @@ import { AI_FAILURES, AI_GENERATION_STATUSES } from "../training-ai.ts";
 import { AiQuotaSchema } from "./training-ai.ts";
 import { CAPACITIES, DAY_ROLES, TIME_DOMAINS, WORKOUT_TRACKS } from "../capacities.ts";
 import { LEVEL_CAPACITIES, PLAN_AUDIENCES } from "../planning.ts";
+import { BOX_DASHBOARD_MAX_KPIS, BoxDashboardSchema, BoxKpiSchema } from "../box-dashboards.ts";
 
 /** Contratos de los clubs de fitness (ADR 0049). */
 
@@ -655,21 +656,54 @@ export const FitnessMetricsResponseSchema = z.object({
 });
 export type FitnessMetricsResponse = z.infer<typeof FitnessMetricsResponseSchema>;
 
-/** Ranking del mes del box: constancia (clases hechas) y benchmarks. */
-export const RankingResponseSchema = z.object({
-  month: z.string(),
-  consistency: z.array(
-    z.object({
-      rank: z.number().int().positive(),
-      playerId: z.string(),
-      name: z.string(),
-      classes: z.number().int().nonnegative(),
-      isMe: z.boolean(),
-    }),
-  ),
-  hiddenCount: z.number().int().nonnegative(),
+// --- Cuadros de mando del box (ADR 0055) ---
+
+/** Cómo se pinta un KPI: el color acompaña al texto, nunca va solo. */
+export const BOX_KPI_TONES = ["neutral", "success", "warning", "danger"] as const;
+export type BoxKpiTone = (typeof BOX_KPI_TONES)[number];
+
+export const BoxKpiValueSchema = z.object({
+  id: BoxKpiSchema,
+  /** La cifra principal; nula si todavía no hay datos con los que calcularla. */
+  value: z.number().nullable(),
+  /** "De cuántos": días con clase, plazas ofrecidas… */
+  total: z.number().nullable(),
+  /** Diferencia con el periodo anterior, en la unidad de la cifra (puntos en un porcentaje). */
+  delta: z.number().nullable(),
+  /** Una cifra en texto: la franja ("18:00"). */
+  label: z.string().nullable(),
+  /** Los números del texto de apoyo ("+3 altas · 1 baja"). */
+  params: z.record(z.string(), z.number()),
+  /** Hasta tres nombres para que se entienda sin abrirlo. */
+  sample: z.array(z.string()),
+  tone: z.enum(BOX_KPI_TONES),
 });
-export type RankingResponse = z.infer<typeof RankingResponseSchema>;
+export type BoxKpiValue = z.infer<typeof BoxKpiValueSchema>;
+
+export const BoxDashboardResponseSchema = z.object({
+  dashboard: BoxDashboardSchema,
+  /** La elección del club, solo con lo que esta persona puede ver, en su orden. */
+  kpis: z.array(BoxKpiSchema),
+  /** Las cifras de esos KPIs o, al elegir, las de todos los disponibles. */
+  values: z.array(BoxKpiValueSchema),
+  /** Lo que cabe en este cuadro y esta persona puede ver. */
+  available: z.array(BoxKpiSchema),
+  /** El club ha cambiado los de serie. */
+  custom: z.boolean(),
+  /** Elige los KPIs del club (`org.settings.write`). */
+  canEdit: z.boolean(),
+  /** Solo en El box: la ocupación por franja de las últimas cuatro semanas. */
+  byHour: z
+    .array(z.object({ hour: z.string(), offered: z.number().int(), taken: z.number().int() }))
+    .nullable(),
+});
+export type BoxDashboardResponse = z.infer<typeof BoxDashboardResponseSchema>;
+
+export const BoxDashboardUpdateSchema = z.object({
+  /** Los KPIs, en orden; nulo vuelve a los de serie. */
+  kpis: z.array(BoxKpiSchema).max(BOX_DASHBOARD_MAX_KPIS).nullable(),
+});
+export type BoxDashboardUpdate = z.infer<typeof BoxDashboardUpdateSchema>;
 
 /** Librería de movimientos del box para el atleta: lo de la biblioteca con vídeo. */
 export const LibraryResponseSchema = z.object({

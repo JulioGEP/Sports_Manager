@@ -7,17 +7,6 @@
     "loadError": "Couldn't load the box data. Try again.",
     "alertsTitle": "Needs your attention",
     "allClear": "All good: no alerts.",
-    "stats": {
-      "active": "Active athletes",
-      "activeHint": "+{joined} joined · {left} left this month",
-      "occupancy": "Occupancy this week",
-      "noComparison": "No previous week to compare",
-      "occupancyDelta": "{delta} points vs last week",
-      "recurring": "Monthly recurring",
-      "recurringHint": "What active plans add up to",
-      "trials": "Trial classes this week",
-      "trialsHint": "{count, plural, one {# converted this month} other {# converted this month}}"
-    },
     "todayTitle": "Today's classes",
     "allClasses": "All",
     "todayEmpty": "No classes today.",
@@ -41,9 +30,9 @@
       "schedule": "Schedule",
       "plans": "Plans",
       "leads": "Leads",
-      "metrics": "Metrics",
-      "ranking": "Leaderboard",
-      "announcements": "Announcements"
+      "announcements": "Announcements",
+      "planning": "Planning",
+      "exercises": "Exercises"
     }
   },
   "alerts": {
@@ -419,52 +408,6 @@
       "step2": "Your website reads the schedule with free spots (no one's name).",
       "step3": "The form sends the request with consent and it shows up here as a new lead."
     }
-  },
-  "metrics": {
-    "title": "Metrics",
-    "description": "Occupancy, consistency, joiners and leavers, recurring revenue and acquisition.",
-    "loadError": "Couldn't load the metrics. Try again.",
-    "active": "Active athletes",
-    "visits": "Classes per athlete in 30 days",
-    "recurring": "Monthly recurring",
-    "trials": "Trials this week → converted this month",
-    "weekTitle": "Weekly occupancy",
-    "weekHint": "Spots taken out of spots offered.",
-    "table": {
-      "period": "Week",
-      "bar": "Chart",
-      "occupancy": "Occupancy",
-      "hour": "Time slot",
-      "taken": "Taken"
-    },
-    "thisWeek": "This week",
-    "lastWeek": "Last week",
-    "membersTitle": "Joiners and leavers this month",
-    "membersHint": "Athletes starting or ending their plan this month.",
-    "joined": "Joined",
-    "left": "Left",
-    "net": "Net",
-    "conversion": "Trials converted",
-    "byHourTitle": "Occupancy by time slot",
-    "byHourHint": "The last four weeks: where there's room and where it's tight.",
-    "byHourEmpty": "No data yet",
-    "byHourEmptyHint": "It shows up once there are capped classes with bookings.",
-    "takenOf": "{taken} of {offered}"
-  },
-  "ranking": {
-    "title": "Leaderboard",
-    "description": "Who came the most this month. Consistency counts too.",
-    "previous": "Previous",
-    "next": "Next",
-    "loadError": "Couldn't load the leaderboard.",
-    "consistency": "Consistency",
-    "consistencyHint": "Classes done this month.",
-    "empty": "Nobody has trained this month yet",
-    "emptyHint": "As soon as classes are done, the leaders show up here.",
-    "you": "You",
-    "classes": "{count, plural, one {# class} other {# classes}}",
-    "hidden": "{count, plural, one {# athlete prefers not to appear.} other {# athletes prefer not to appear.}}",
-    "privacy": "Each athlete decides whether to appear on leaderboards from their progress page."
   },
   "tv": {
     "fullscreen": "Full screen",

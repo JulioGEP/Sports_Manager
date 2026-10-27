@@ -662,14 +662,6 @@ Cuentas, con contraseña `123456`: `atleta@demo.test` (Laia Ferrer, atleta con t
 
 ![Anuncios del box](escritorio-248-box-atleta-anuncios.png)
 
-### Timer: por tiempo, AMRAP, EMOM y Tabata
-
-![Timer: por tiempo, AMRAP, EMOM y Tabata](escritorio-249-box-atleta-timer.png)
-
-### Ranking del mes por constancia
-
-![Ranking del mes por constancia](escritorio-250-box-atleta-ranking.png)
-
 ### Inicio del coach: sus clases de hoy y el WOD
 
 ![Inicio del coach: sus clases de hoy y el WOD](escritorio-255-box-coach-inicio.png)
@@ -702,9 +694,21 @@ Cuentas, con contraseña `123456`: `atleta@demo.test` (Laia Ferrer, atleta con t
 
 ![Mensajes del box con sus atletas](escritorio-262-box-coach-mensajes.png)
 
-### Inicio de la dueña: lo que pide atención, cifras, clases de hoy y programación de la semana
+### Entrenamiento para el coach: sus cifras, sin elegirlas y sin nada de dinero
 
-![Inicio de la dueña: lo que pide atención, cifras, clases de hoy y programación de la semana](escritorio-265-box-duena-inicio.png)
+![Entrenamiento para el coach: sus cifras, sin elegirlas y sin nada de dinero](escritorio-263-box-coach-area-entrenamiento.png)
+
+### Inicio de la dueña: lo que pide atención, las cifras de hoy que elige el club, clases de hoy y programación de la semana
+
+![Inicio de la dueña: lo que pide atención, las cifras de hoy que elige el club, clases de hoy y programación de la semana](escritorio-265-box-duena-inicio.png)
+
+### Elegir los KPIs de Hoy: los que salen, en orden, y los que se pueden añadir con su cifra de ahora
+
+![Elegir los KPIs de Hoy: los que salen, en orden, y los que se pueden añadir con su cifra de ahora](escritorio-265a-box-duena-elegir-kpis.png)
+
+### Entrenamiento: la cabecera de la barra abre la portada del área, con sus KPIs y sus pantallas
+
+![Entrenamiento: la cabecera de la barra abre la portada del área, con sus KPIs y sus pantallas](escritorio-265d-box-duena-area-entrenamiento.png)
 
 ### Clases de la dueña: todo el box en la semana, por disciplina, con la ocupación y los huecos sin clases plegados
 
@@ -726,9 +730,13 @@ Cuentas, con contraseña `123456`: `atleta@demo.test` (Laia Ferrer, atleta con t
 
 ![Leads y clases de prueba](escritorio-268-box-duena-leads.png)
 
-### Métricas: ocupación por franja y semana, recurrente y conversión
+### Negocio: la portada del área con sus KPIs (sustituye a Métricas, ADR 0055)
 
-![Métricas: ocupación por franja y semana, recurrente y conversión](escritorio-269-box-duena-metricas.png)
+![Negocio: la portada del área con sus KPIs (sustituye a Métricas, ADR 0055)](escritorio-269-box-duena-area-negocio.png)
+
+### El box: KPIs del horario, el equipo y el material, y la ocupación por franja
+
+![El box: KPIs del horario, el equipo y el material, y la ocupación por franja](escritorio-269b-box-duena-area-el-box.png)
 
 ### Identidad: looks de box
 
@@ -1070,13 +1078,19 @@ Las mismas pantallas en un móvil, con la forma envolvente del design system: ca
 
 ![Progreso: calendario, marcas con su tabla de porcentajes, benchmarks, medidas y privacidad (móvil)](movil-245-box-atleta-progreso.png)
 
-![Timer: por tiempo, AMRAP, EMOM y Tabata (móvil)](movil-249-box-atleta-timer.png)
-
 ![La clase del coach: check-in, brief con las cargas y el WOD con la clasificación de la clase (móvil)](movil-257-box-coach-clase.png)
 
 ![Programación de la semana por disciplina (móvil)](movil-258-box-coach-programacion.png)
 
-![Inicio de la dueña: lo que pide atención, cifras, clases de hoy y programación de la semana (móvil)](movil-265-box-duena-inicio.png)
+![Inicio de la dueña: lo que pide atención, las cifras de hoy de dos en dos, clases y programación (móvil)](movil-265-box-duena-inicio.png)
+
+![Elegir los KPIs de Hoy (móvil)](movil-265a-box-duena-elegir-kpis.png)
+
+![Más, agrupado por áreas: cada cabecera abre la portada de su área (móvil)](movil-265e-box-duena-mas.png)
+
+![Entrenamiento: la portada del área (móvil)](movil-265d-box-duena-area-entrenamiento.png)
+
+![Negocio: la portada del área (móvil)](movil-269-box-duena-area-negocio.png)
 
 ![Tarifas y bonos con su derecho de uso (móvil)](movil-267-box-duena-tarifas.png)
 

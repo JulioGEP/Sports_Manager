@@ -7,17 +7,6 @@
     "loadError": "No se han podido cargar los datos del box. Inténtalo de nuevo.",
     "alertsTitle": "Lo que pide atención",
     "allClear": "Todo en orden: no hay avisos.",
-    "stats": {
-      "active": "Atletas activos",
-      "activeHint": "+{joined} altas · {left} bajas este mes",
-      "occupancy": "Ocupación esta semana",
-      "noComparison": "Sin semana anterior para comparar",
-      "occupancyDelta": "{delta} puntos frente a la semana pasada",
-      "recurring": "Recurrente al mes",
-      "recurringHint": "Lo que suman las tarifas activas",
-      "trials": "Clases de prueba esta semana",
-      "trialsHint": "{count, plural, one {# convertida este mes} other {# convertidas este mes}}"
-    },
     "todayTitle": "Clases de hoy",
     "allClasses": "Todas",
     "todayEmpty": "Hoy no hay clases.",
@@ -41,9 +30,9 @@
       "schedule": "Horario",
       "plans": "Tarifas",
       "leads": "Leads",
-      "metrics": "Métricas",
-      "ranking": "Ranking",
-      "announcements": "Anuncios"
+      "announcements": "Anuncios",
+      "planning": "Planificación",
+      "exercises": "Ejercicios"
     }
   },
   "alerts": {
@@ -419,52 +408,6 @@
       "step2": "Tu web lee el horario con sus plazas libres (sin nombres de nadie).",
       "step3": "El formulario manda la petición con el consentimiento y aparece aquí como lead nuevo."
     }
-  },
-  "metrics": {
-    "title": "Métricas",
-    "description": "Ocupación, constancia, altas y bajas, recurrente y captación.",
-    "loadError": "No se han podido cargar las métricas. Inténtalo de nuevo.",
-    "active": "Atletas activos",
-    "visits": "Clases por atleta en 30 días",
-    "recurring": "Recurrente al mes",
-    "trials": "Pruebas esta semana → convertidas este mes",
-    "weekTitle": "Ocupación semanal",
-    "weekHint": "Plazas ocupadas sobre las ofrecidas.",
-    "table": {
-      "period": "Semana",
-      "bar": "Gráfico",
-      "occupancy": "Ocupación",
-      "hour": "Franja",
-      "taken": "Ocupadas"
-    },
-    "thisWeek": "Esta semana",
-    "lastWeek": "La anterior",
-    "membersTitle": "Altas y bajas del mes",
-    "membersHint": "Atletas que empiezan o dejan su tarifa este mes.",
-    "joined": "Altas",
-    "left": "Bajas",
-    "net": "Neto",
-    "conversion": "Pruebas convertidas",
-    "byHourTitle": "Ocupación por franja",
-    "byHourHint": "Las últimas cuatro semanas: dónde sobra sitio y dónde falta.",
-    "byHourEmpty": "Sin datos todavía",
-    "byHourEmptyHint": "Sale en cuanto haya clases con aforo y reservas.",
-    "takenOf": "{taken} de {offered}"
-  },
-  "ranking": {
-    "title": "Ranking",
-    "description": "Quién ha venido más este mes. La constancia también se premia.",
-    "previous": "Anterior",
-    "next": "Siguiente",
-    "loadError": "No se ha podido cargar el ranking.",
-    "consistency": "Constancia",
-    "consistencyHint": "Clases hechas en el mes.",
-    "empty": "Nadie ha entrenado este mes todavía",
-    "emptyHint": "En cuanto haya clases hechas, aquí sale quién va primero.",
-    "you": "Tú",
-    "classes": "{count, plural, one {# clase} other {# clases}}",
-    "hidden": "{count, plural, one {# atleta prefiere no salir.} other {# atletas prefieren no salir.}}",
-    "privacy": "Cada atleta decide si sale en las clasificaciones desde su progreso."
   },
   "tv": {
     "fullscreen": "Pantalla completa",

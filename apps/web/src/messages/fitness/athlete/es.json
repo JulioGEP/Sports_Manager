@@ -309,47 +309,5 @@
       "choose": "Elige una",
       "pin": "Fijarlo arriba"
     }
-  },
-  "timer": {
-    "title": "Timer",
-    "description": "Para entrenar en el box o en casa. Diez segundos de cuenta atrás y pitidos.",
-    "mode": "Tipo de reloj",
-    "modes": {
-      "fortime": "For time",
-      "amrap": "AMRAP",
-      "emom": "EMOM",
-      "tabata": "Tabata"
-    },
-    "hints": {
-      "fortime": "Cuenta hacia arriba hasta que acabas o llega el cap.",
-      "amrap": "Tantas rondas como puedas en el tiempo. Suma cada ronda con el botón.",
-      "emom": "Cada intervalo empieza una ronda nueva.",
-      "tabata": "Trabajo y descanso en bucle. El clásico: 20 s y 10 s, 8 rondas."
-    },
-    "cap": "Time cap (minutos)",
-    "capHint": "0 para no poner cap.",
-    "minutes": "Minutos",
-    "interval": "Intervalo (segundos)",
-    "rounds": "Rondas",
-    "work": "Trabajo (segundos)",
-    "rest": "Descanso (segundos)",
-    "start": "Empezar",
-    "clock": "Reloj",
-    "phase": {
-      "prep": "Prepárate",
-      "rest": "Descanso",
-      "done": "Tiempo",
-      "work": "Dale",
-      "ready": "Listo"
-    },
-    "roundOf": "Ronda {round} de {total}",
-    "capAt": "Cap a los {minutes} min",
-    "roundsDone": "{count, plural, one {# ronda} other {# rondas}}",
-    "addRound": "+1 ronda",
-    "pause": "Pausa",
-    "resume": "Seguir",
-    "finish": "Terminé",
-    "reset": "Reiniciar",
-    "finalTime": "Tu tiempo: {time}"
   }
 }

@@ -309,47 +309,5 @@
       "choose": "Pick one",
       "pin": "Pin it to the top"
     }
-  },
-  "timer": {
-    "title": "Timer",
-    "description": "For training at the box or at home. A ten-second countdown and beeps.",
-    "mode": "Clock type",
-    "modes": {
-      "fortime": "For time",
-      "amrap": "AMRAP",
-      "emom": "EMOM",
-      "tabata": "Tabata"
-    },
-    "hints": {
-      "fortime": "Counts up until you finish or hit the cap.",
-      "amrap": "As many rounds as possible in the time. Add each round with the button.",
-      "emom": "Each interval starts a new round.",
-      "tabata": "Work and rest on a loop. The classic: 20 s and 10 s, 8 rounds."
-    },
-    "cap": "Time cap (minutes)",
-    "capHint": "0 for no cap.",
-    "minutes": "Minutes",
-    "interval": "Interval (seconds)",
-    "rounds": "Rounds",
-    "work": "Work (seconds)",
-    "rest": "Rest (seconds)",
-    "start": "Start",
-    "clock": "Clock",
-    "phase": {
-      "prep": "Get ready",
-      "rest": "Rest",
-      "done": "Time",
-      "work": "Go",
-      "ready": "Ready"
-    },
-    "roundOf": "Round {round} of {total}",
-    "capAt": "Cap at {minutes} min",
-    "roundsDone": "{count, plural, one {# round} other {# rounds}}",
-    "addRound": "+1 round",
-    "pause": "Pause",
-    "resume": "Resume",
-    "finish": "Done",
-    "reset": "Reset",
-    "finalTime": "Your time: {time}"
   }
 }

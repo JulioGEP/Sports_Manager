@@ -440,6 +440,20 @@ La única pantalla a pantalla completa del producto: en la banda el partido est�
 - **Piezas.** Dorsal en círculo `bg-club` (tinta con aro blanco para el portero), nombre de pila y minutos en Geist Mono. Seleccionada: `bg-surface` con aro del club. En la pista, sobre `bg-black/35`; en el banquillo, sobre `bg-page` con borde.
 - **Convocatoria.** Tocar la fila decide quién sale de inicio; "Portero" es un botón de alternar (9.6), en tinta y con check cuando está marcado, nunca en el color del club, que es el de "Guardar convocatoria". Puede haber varios porteros convocados, pero en pista solo uno: marcar a un titular desmarca a los demás titulares, y el aviso dice cuántos hay cuando sobran.
 
+### 9.20 Cuadro de mando · `KpiBoard`
+
+Las cifras que un club mira de un vistazo: Hoy y la portada de cada área del box (ADR 0055). Vive en `apps/web/src/components/fitness/kpi-board.tsx`.
+
+- **Cabecera:** título (Título 2) y, a la derecha, "Elegir KPIs" (`tertiary`, `action="edit"`) solo para quien lleva los ajustes del club.
+- **Tarjeta de KPI:** `bg-surface rounded-card shadow-card`, toda ella enlace a la pantalla donde se resuelve (si quien mira la abre). Nombre en `text-secondary text-muted`, icono de su pantalla en un círculo `bg-club-soft` de 36 px, la cifra en Geist Mono (`text-display`; `text-title1` en móvil), una barra si es un porcentaje, la diferencia con el periodo anterior en una `StatusChip` ("+3 pts") y una línea que la explica. Si pide atención, esa línea va en `text-warning` o `text-danger` con `Warning`, o en `text-success` con `CheckCircle` cuando está al día: el texto dice qué pasa y el color acompaña. Hasta tres nombres debajo, en `text-label`. Nada más: una cifra por tarjeta.
+- **Rejilla:** cuatro por fila en escritorio, dos en móvil. Hasta ocho por cuadro.
+- **Vacío:** `EmptyState` con "Elegir KPIs" para quien puede elegir; para el resto, una frase. En el inicio del coach, sin cifras que enseñar, el cuadro no se pinta.
+- **Selector:** `Sheet` con dos listas. Arriba, los que salen, numerados y con subir, bajar y quitar (`ghost`, solo icono; la flecha que no aplica no se ve). Abajo, los que se pueden añadir con su definición y su cifra de ahora, agrupados por área en Hoy. Pie: "Volver a los de serie" (`tertiary`, `restore`, solo si el club cambió algo), "Cancelar" y "Guardar KPIs" (`save`).
+
+### 9.21 Cabecera de área en la navegación
+
+En la navegación del personal de un box, la cabecera de cada grupo con portada (Entrenamiento, Negocio, El box) es un enlace: misma altura que un destino (`h-(--h-control)`), texto `text-label` en mayúsculas y `CaretRight` de 16 px a la derecha, que anuncia que se abre. Activa, `bg-nav-active`. Su nombre accesible es "Resumen de …", que contiene la etiqueta visible. En "Más" del móvil, las pantallas que no caben en la barra se agrupan igual, con la cabecera de su área encima. Los grupos sin portada (los del atleta) siguen siendo una etiqueta.
+
 ---
 
 ## 10. Gráficas de rendimiento
@@ -639,6 +653,7 @@ Antes de crear o cambiar cualquier interfaz:
 | 9. Filas | La fila es el objeto: se abre tocándola; acciones `ghost` solo con icono, menú "⋯" en móvil | Botón "Abrir" por fila; "Editar" y "Quitar" con borde y texto en cada fila | El contenido manda y el cromo se aparta; nueve filas no son dieciocho botones |
 | 9. Uso | Paleta de mandos ⌘K con personas, equipos, pantallas y acciones | Solo navegación por menús | Gestionar 80 deportistas son gestos, no rutas; es lo que no tiene ninguna otra plataforma de clubes |
 | 9. Plantilla | Tablero por posición con el dorsal a la vista, lista como alternativa | Solo tabla | Es como un entrenador piensa su equipo; una tabla es como lo piensa una base de datos |
+| 9. Cuadro de mando | Catálogo cerrado de KPIs; cada club elige cuáles y en qué orden para Hoy y para cada área, y cada persona ve los de su permiso | Fórmulas libres por club; una pantalla de métricas aparte | Cada cifra se calcula igual en todos los boxes y se explica en una frase; cada box mira lo que le importa |
 | 9. Partido | Consola a pantalla completa en tres zonas (partido, nuestro equipo, rival), la zona del tiro sobre la pista y el banquillo arrastrable; la orientación decide la forma | Tarjetas apiladas dentro del espacio del club; la zona en un panel aparte | En la banda cada toque cuenta: lo nuestro y lo del rival no se mezclan y el dedo no persigue botones |
 | 5. Interacción | Confirmar siempre las acciones delicadas | Deshacer siempre | Seguridad en dinero, bajas y comunicados |
 | 6. Gráficas | Evolución para familias, comparativa para entrenadores | Radar | Lectura honesta y protección del menor |

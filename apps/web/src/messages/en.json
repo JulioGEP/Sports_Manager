@@ -1329,7 +1329,8 @@
       "logo_removed": "Logo removed",
       "payments_updated": "Payment settings changed",
       "stripe_onboarding_started": "Stripe sign-up started",
-      "ai_updated": "AI quota changed"
+      "ai_updated": "AI quota changed",
+      "dashboards_updated": "Club KPIs chosen"
     },
     "invitation": {
       "created": "Invitation sent",

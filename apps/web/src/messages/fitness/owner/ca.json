@@ -7,17 +7,6 @@
     "loadError": "No s'han pogut carregar les dades del box. Torna-ho a provar.",
     "alertsTitle": "El que demana atenció",
     "allClear": "Tot en ordre: no hi ha avisos.",
-    "stats": {
-      "active": "Atletes actius",
-      "activeHint": "+{joined} altes · {left} baixes aquest mes",
-      "occupancy": "Ocupació aquesta setmana",
-      "noComparison": "Sense setmana anterior per comparar",
-      "occupancyDelta": "{delta} punts respecte de la setmana passada",
-      "recurring": "Recurrent al mes",
-      "recurringHint": "El que sumen les tarifes actives",
-      "trials": "Classes de prova aquesta setmana",
-      "trialsHint": "{count, plural, one {# convertida aquest mes} other {# convertides aquest mes}}"
-    },
     "todayTitle": "Classes d'avui",
     "allClasses": "Totes",
     "todayEmpty": "Avui no hi ha classes.",
@@ -41,9 +30,9 @@
       "schedule": "Horari",
       "plans": "Tarifes",
       "leads": "Leads",
-      "metrics": "Mètriques",
-      "ranking": "Rànquing",
-      "announcements": "Avisos"
+      "announcements": "Avisos",
+      "planning": "Planificació",
+      "exercises": "Exercicis"
     }
   },
   "alerts": {
@@ -419,52 +408,6 @@
       "step2": "El teu web llegeix l'horari amb les places lliures (sense el nom de ningú).",
       "step3": "El formulari envia la petició amb el consentiment i apareix aquí com a lead nou."
     }
-  },
-  "metrics": {
-    "title": "Mètriques",
-    "description": "Ocupació, constància, altes i baixes, recurrent i captació.",
-    "loadError": "No s'han pogut carregar les mètriques. Torna-ho a provar.",
-    "active": "Atletes actius",
-    "visits": "Classes per atleta en 30 dies",
-    "recurring": "Recurrent al mes",
-    "trials": "Proves aquesta setmana → convertides aquest mes",
-    "weekTitle": "Ocupació setmanal",
-    "weekHint": "Places ocupades sobre les oferides.",
-    "table": {
-      "period": "Setmana",
-      "bar": "Gràfic",
-      "occupancy": "Ocupació",
-      "hour": "Franja",
-      "taken": "Ocupades"
-    },
-    "thisWeek": "Aquesta setmana",
-    "lastWeek": "L'anterior",
-    "membersTitle": "Altes i baixes del mes",
-    "membersHint": "Atletes que comencen o deixen la seva tarifa aquest mes.",
-    "joined": "Altes",
-    "left": "Baixes",
-    "net": "Net",
-    "conversion": "Proves convertides",
-    "byHourTitle": "Ocupació per franja",
-    "byHourHint": "Les últimes quatre setmanes: on sobra lloc i on en falta.",
-    "byHourEmpty": "Encara no hi ha dades",
-    "byHourEmptyHint": "Surt així que hi hagi classes amb aforament i reserves.",
-    "takenOf": "{taken} de {offered}"
-  },
-  "ranking": {
-    "title": "Rànquing",
-    "description": "Qui ha vingut més aquest mes. La constància també es premia.",
-    "previous": "Anterior",
-    "next": "Següent",
-    "loadError": "No s'ha pogut carregar el rànquing.",
-    "consistency": "Constància",
-    "consistencyHint": "Classes fetes al mes.",
-    "empty": "Encara ningú no ha entrenat aquest mes",
-    "emptyHint": "Així que hi hagi classes fetes, aquí surt qui va primer.",
-    "you": "Tu",
-    "classes": "{count, plural, one {# classe} other {# classes}}",
-    "hidden": "{count, plural, one {# atleta prefereix no sortir-hi.} other {# atletes prefereixen no sortir-hi.}}",
-    "privacy": "Cada atleta decideix si surt a les classificacions des del seu progrés."
   },
   "tv": {
     "fullscreen": "Pantalla completa",

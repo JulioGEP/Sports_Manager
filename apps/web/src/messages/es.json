@@ -1329,7 +1329,8 @@
       "logo_removed": "Logo quitado",
       "payments_updated": "Ajustes de cobro cambiados",
       "stripe_onboarding_started": "Alta en Stripe iniciada",
-      "ai_updated": "Cuota de IA cambiada"
+      "ai_updated": "Cuota de IA cambiada",
+      "dashboards_updated": "KPIs del club elegidos"
     },
     "invitation": {
       "created": "Invitación enviada",

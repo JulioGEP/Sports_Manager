@@ -9,6 +9,7 @@ export const AUDIT_ACTIONS = [
   "organization.logo_removed",
   "organization.payments_updated",
   "organization.ai_updated",
+  "organization.dashboards_updated",
   "invitation.created",
   "invitation.resent",
   "invitation.revoked",

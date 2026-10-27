@@ -9,8 +9,8 @@ import type { OrgScope } from "./scope.ts";
 
 /**
  * Lo que el box mira de un vistazo (ADR 0049): la lista de atletas con su tarifa y su última
- * visita, las cifras del negocio, la ocupación por franja, el ranking de constancia del mes y la
- * librería de movimientos con vídeo para el atleta. Solo lecturas agregadas del club.
+ * visita, las cifras del negocio, la ocupación por franja y la librería de movimientos con vídeo
+ * para el atleta. Solo lecturas agregadas del club.
  */
 
 export interface AthleteRowRecord {
@@ -165,6 +165,8 @@ export function fitnessInsightsRepo(db: () => Database) {
       to: Date,
       timezone: string,
     ): Promise<{
+      /** Clases del rango, con aforo o sin él. */
+      classes: number;
       offered: number;
       taken: number;
       byHour: Map<string, { offered: number; taken: number }>;
@@ -203,7 +205,7 @@ export function fitnessInsightsRepo(db: () => Database) {
         slot.taken += t;
         byHour.set(hour, slot);
       }
-      return { offered, taken, byHour };
+      return { classes: rows.length, offered, taken, byHour };
     },
 
     /** Entrenamientos hechos en un rango, por atleta. */
@@ -254,20 +256,6 @@ export function fitnessInsightsRepo(db: () => Database) {
       return rows.map((r) => r.playerId);
     },
 
-    /** Quién prefiere no salir en clasificaciones. */
-    async hiddenFromLeaderboards(scope: OrgScope): Promise<Set<string>> {
-      const rows = await db()
-        .select({ playerId: schema.fitnessPreferences.playerId })
-        .from(schema.fitnessPreferences)
-        .where(
-          and(
-            eq(schema.fitnessPreferences.organizationId, scope.organizationId),
-            eq(schema.fitnessPreferences.hideFromLeaderboards, true),
-          ),
-        );
-      return new Set(rows.map((r) => r.playerId));
-    },
-
     /** Leads con clase de prueba en un rango y convertidos desde una fecha. */
     async trials(scope: OrgScope, weekFrom: Date, weekTo: Date, monthFrom: Date) {
       const week = await db()
@@ -312,21 +300,87 @@ export function fitnessInsightsRepo(db: () => Database) {
       };
     },
 
-    /** Cargos vencidos de tarifas con derecho de uso (cobros que no han entrado). */
-    async overdueFitnessCharges(scope: OrgScope): Promise<string[]> {
+    /** Cargos vencidos del club: cuántos, lo que falta por cobrar y a quién. */
+    async overdueCharges(
+      scope: OrgScope,
+    ): Promise<{ count: number; outstandingCents: number; names: string[] }> {
       const rows = await db()
-        .select({ firstName: schema.people.firstName, lastName: schema.people.lastName })
+        .select({
+          firstName: schema.people.firstName,
+          lastName: schema.people.lastName,
+          amountCents: schema.feeCharges.amountCents,
+          paidCents: schema.feeCharges.paidCents,
+        })
         .from(schema.feeCharges)
-        .innerJoin(schema.feePlans, eq(schema.feePlans.id, schema.feeCharges.feePlanId))
         .innerJoin(schema.people, eq(schema.people.id, schema.feeCharges.personId))
         .where(
           and(
             eq(schema.feeCharges.organizationId, scope.organizationId),
             eq(schema.feeCharges.status, "overdue"),
-            sql`${schema.feePlans.entitlement} <> 'none'`,
+          ),
+        )
+        .orderBy(asc(schema.feeCharges.dueOn));
+      return {
+        count: rows.length,
+        outstandingCents: rows.reduce(
+          (sum, r) => sum + Math.max(0, r.amountCents - r.paidCents),
+          0,
+        ),
+        names: [...new Set(rows.map((r) => `${r.firstName} ${r.lastName}`.trim()))],
+      };
+    },
+
+    /** Lo cobrado desde una fecha (`AAAA-MM-DD`): pagos registrados, a mano o por Stripe. */
+    async collectedSince(scope: OrgScope, from: string): Promise<{ cents: number; count: number }> {
+      const rows = await db()
+        .select({
+          cents: sql<number>`coalesce(sum(${schema.payments.amountCents}), 0)`,
+          count: sql<number>`count(*)`,
+        })
+        .from(schema.payments)
+        .where(
+          and(
+            eq(schema.payments.organizationId, scope.organizationId),
+            gte(schema.payments.paidOn, from),
           ),
         );
-      return rows.map((r) => `${r.firstName} ${r.lastName}`.trim());
+      return { cents: Number(rows[0]?.cents ?? 0), count: Number(rows[0]?.count ?? 0) };
+    },
+
+    /** Pedidos de la tienda desde un instante, sin los cancelados: cuántos y por cuánto. */
+    async storeSalesSince(scope: OrgScope, from: Date): Promise<{ orders: number; cents: number }> {
+      const rows = await db()
+        .select({
+          orders: sql<number>`count(*)`,
+          cents: sql<number>`coalesce(sum(${schema.storeOrders.totalCents}), 0)`,
+        })
+        .from(schema.storeOrders)
+        .where(
+          and(
+            eq(schema.storeOrders.organizationId, scope.organizationId),
+            gte(schema.storeOrders.createdAt, from),
+            sql`${schema.storeOrders.status} <> 'cancelled'`,
+          ),
+        );
+      return { orders: Number(rows[0]?.orders ?? 0), cents: Number(rows[0]?.cents ?? 0) };
+    },
+
+    /** Clases abiertas de un rango que no tienen coach asignado. */
+    async classesWithoutCoach(scope: OrgScope, from: Date, to: Date): Promise<number> {
+      const rows = await db()
+        .select({ n: sql<number>`count(*)` })
+        .from(schema.events)
+        .innerJoin(schema.teams, eq(schema.teams.id, schema.events.teamId))
+        .where(
+          and(
+            eq(schema.events.organizationId, scope.organizationId),
+            eq(schema.teams.bookingMode, "open"),
+            isNull(schema.events.coachUserId),
+            gte(schema.events.startsAt, from),
+            lt(schema.events.startsAt, to),
+          ),
+        );
+      return Number(rows[0]?.n ?? 0);
     },
 
     /** Días con clase abierta en un rango, por disciplina (para saber qué WOD falta). */

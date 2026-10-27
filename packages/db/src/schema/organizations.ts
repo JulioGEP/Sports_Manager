@@ -13,13 +13,14 @@ import {
   CLUB_TYPOGRAPHIES,
   CLUB_VOICES,
   LOCALES,
+  type BoxDashboardsConfig,
   ORGANIZATION_SLUG_PATTERN,
   ORGANIZATION_STATUSES,
   PAYMENT_PROVIDERS,
   STRIPE_ACCOUNT_STATUSES,
 } from "@sportsmanager/shared";
 import { sql } from "drizzle-orm";
-import { check, integer, pgTable, text, uuid } from "drizzle-orm/pg-core";
+import { check, integer, jsonb, pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { id, inList, regexLiteral, timestamps } from "./_shared.ts";
 import { sports } from "./sports.ts";
 
@@ -70,6 +71,14 @@ export const organizations = pgTable(
     aiWeeklyQuota: integer("ai_weekly_quota").notNull().default(AI_DEFAULT_WEEKLY_QUOTA),
     /** Club deportivo o de fitness (ADR 0049): vocabulario, navegación e inicio. Lo fija la plataforma. */
     clubModel: text("club_model").notNull().default("sports"),
+    /**
+     * Cuadros de mando del box (ADR 0055): los KPIs que el club elige para Hoy y para la portada de
+     * cada área, en orden. Un cuadro sin entrada enseña los de serie.
+     */
+    dashboards: jsonb("dashboards")
+      .$type<BoxDashboardsConfig>()
+      .notNull()
+      .default(sql`'{}'::jsonb`),
     ...timestamps,
   },
   (t) => [

@@ -183,6 +183,13 @@
       "when": 1793097158402,
       "tag": "20261027103238_plan_audiences",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1793103599515,
+      "tag": "20261027121959_box_dashboards",
+      "breakpoints": true
     }
   ]
 }

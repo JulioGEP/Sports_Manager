@@ -1,5 +1,6 @@
 import {
   AnnouncementsResponseSchema,
+  BoxDashboardResponseSchema,
   ClassDetailResponseSchema,
   ClassesResponseSchema,
   ClassTypesResponseSchema,
@@ -15,11 +16,12 @@ import {
   MyWorkoutsResponseSchema,
   MyPlanResponseSchema,
   ProgressResponseSchema,
-  RankingResponseSchema,
   SubscriptionsResponseSchema,
   WorkoutResponseSchema,
   WorkoutsResponseSchema,
   addDays,
+  type BoxDashboard,
+  type BoxKpi,
   type ClubModel,
   type WorkoutLevel,
 } from "@sportsmanager/shared";
@@ -237,17 +239,6 @@ export function useMessageThread(playerId: string | undefined) {
   });
 }
 
-export function useRanking(month?: string) {
-  const { slug } = useReadyClub();
-  return useQuery({
-    queryKey: fitnessKey(slug, "ranking", month ?? "current"),
-    queryFn: () =>
-      apiFetch(`/api/org/fitness/ranking${month ? `?month=${month}` : ""}`, {
-        schema: RankingResponseSchema,
-      }),
-  });
-}
-
 // --- Consultas del personal ---
 
 export function useWorkouts(range: { from: string; to: string; section?: string | undefined }) {
@@ -322,6 +313,44 @@ export function useFitnessMetrics(enabled = true) {
     queryFn: () => apiFetch("/api/org/fitness/metrics", { schema: FitnessMetricsResponseSchema }),
     enabled,
   });
+}
+
+/**
+ * Un cuadro de mando del box (ADR 0055): Hoy o la portada de un área, con los KPIs que ha elegido
+ * el club. Con `preview`, las cifras de todos los que se pueden elegir (para el selector).
+ */
+export function useDashboard(
+  dashboard: BoxDashboard,
+  options: { preview?: boolean; enabled?: boolean } = {},
+) {
+  const { slug } = useReadyClub();
+  const preview = options.preview ?? false;
+  return useQuery({
+    queryKey: fitnessKey(slug, "dashboard", dashboard, preview ? "all" : "chosen"),
+    queryFn: () =>
+      apiFetch(`/api/org/dashboards/${dashboard}${preview ? "?preview=all" : ""}`, {
+        schema: BoxDashboardResponseSchema,
+      }),
+    enabled: options.enabled ?? true,
+  });
+}
+
+/** Guarda los KPIs de un cuadro para todo el club (nulo: los de serie) y refresca los cuadros. */
+export function useSaveDashboard(dashboard: BoxDashboard) {
+  const client = useQueryClient();
+  const { slug } = useReadyClub();
+  return useCallback(
+    async (kpis: BoxKpi[] | null) => {
+      const saved = await apiFetch(`/api/org/dashboards/${dashboard}`, {
+        method: "PUT",
+        body: { kpis },
+        schema: BoxDashboardResponseSchema,
+      });
+      await client.invalidateQueries({ queryKey: fitnessKey(slug, "dashboard") });
+      return saved;
+    },
+    [client, slug, dashboard],
+  );
 }
 
 // --- Formatos ---

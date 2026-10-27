@@ -1329,7 +1329,8 @@
       "logo_removed": "Logo tret",
       "payments_updated": "Ajustos de cobrament canviats",
       "stripe_onboarding_started": "Alta a Stripe iniciada",
-      "ai_updated": "Quota d'IA canviada"
+      "ai_updated": "Quota d'IA canviada",
+      "dashboards_updated": "KPI del club escollits"
     },
     "invitation": {
       "created": "Invitació enviada",
