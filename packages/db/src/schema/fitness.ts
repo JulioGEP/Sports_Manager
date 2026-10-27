@@ -1,5 +1,9 @@
 import {
   ANNOUNCEMENT_AUDIENCES,
+  CAPACITIES,
+  DAY_ROLES,
+  TIME_DOMAINS,
+  WORKOUT_TRACKS,
   BOOKING_STATUSES,
   LEAD_SOURCES,
   LEAD_STATUSES,
@@ -17,6 +21,7 @@ import {
   date,
   index,
   integer,
+  jsonb,
   numeric,
   pgTable,
   text,
@@ -29,6 +34,7 @@ import { users } from "./auth.ts";
 import { events } from "./events.ts";
 import { feePlans } from "./fees.ts";
 import { organizations } from "./organizations.ts";
+import { boxPlans } from "./planning.ts";
 import { players, sections, teams } from "./structure.ts";
 
 /**
@@ -165,10 +171,31 @@ export const workouts = pgTable(
     status: text("status").notNull().default("draft"),
     publishAt: timestamp("publish_at", { withTimezone: true }),
     createdBy: uuid("created_by").references(() => users.id, { onDelete: "set null" }),
+    /**
+     * Planificación (ADR 0053): el plan y la semana a los que sirve, el papel del día, la intención
+     * (dominio de tiempo, esfuerzo de 1 a 5 y cómo se tiene que sentir) y su porqué, una razón por línea.
+     */
+    planId: uuid("plan_id").references(() => boxPlans.id, { onDelete: "set null" }),
+    planWeek: integer("plan_week"),
+    dayRole: text("day_role"),
+    intentDomain: text("intent_domain"),
+    intentEffort: integer("intent_effort"),
+    intentFeel: text("intent_feel"),
+    why: text("why"),
     ...timestamps,
   },
   (t) => [
     index("workouts_organization_date_idx").on(t.organizationId, t.onDate),
+    index("workouts_plan_idx").on(t.planId),
+    check("workouts_day_role_check", sql`${t.dayRole} is null or ${inList(t.dayRole, DAY_ROLES)}`),
+    check(
+      "workouts_intent_domain_check",
+      sql`${t.intentDomain} is null or ${inList(t.intentDomain, TIME_DOMAINS)}`,
+    ),
+    check(
+      "workouts_intent_effort_check",
+      sql`${t.intentEffort} is null or ${t.intentEffort} between 1 and 5`,
+    ),
     uniqueIndex("workouts_section_date_unique")
       .on(t.sectionId, t.onDate)
       .where(sql`${t.teamId} is null`),
@@ -198,13 +225,32 @@ export const workoutBlocks = pgTable(
     movementCode: text("movement_code"),
     percent: integer("percent"),
     rmReps: integer("rm_reps"),
+    foundations: text("foundations"),
     scaled: text("scaled"),
     rx: text("rx"),
     rxPlus: text("rx_plus"),
+    /** Planificación (ADR 0053): capacidad, minutos previstos, ejercicios enlazados y pista. */
+    capacity: text("capacity"),
+    plannedMinutes: integer("planned_minutes"),
+    exerciseIds: jsonb("exercise_ids")
+      .$type<string[]>()
+      .notNull()
+      .default(sql`'[]'::jsonb`),
+    track: text("track").notNull().default("class"),
     ...timestamps,
   },
   (t) => [
     index("workout_blocks_workout_id_idx").on(t.workoutId),
+    check(
+      "workout_blocks_capacity_check",
+      sql`${t.capacity} is null or ${inList(t.capacity, CAPACITIES)}`,
+    ),
+    check("workout_blocks_track_check", inList(t.track, WORKOUT_TRACKS)),
+    check(
+      "workout_blocks_minutes_check",
+      sql`${t.plannedMinutes} is null or ${t.plannedMinutes} between 1 and 120`,
+    ),
+    check("workout_blocks_exercise_ids_check", sql`jsonb_typeof(${t.exerciseIds}) = 'array'`),
     index("workout_blocks_organization_id_idx").on(t.organizationId),
     check("workout_blocks_kind_check", inList(t.kind, WORKOUT_BLOCK_KINDS)),
     check("workout_blocks_score_type_check", inList(t.scoreType, SCORE_TYPES)),

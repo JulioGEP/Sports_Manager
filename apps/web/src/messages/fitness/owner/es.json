@@ -259,7 +259,9 @@
       "section": "Disciplina",
       "sectionHint": "Para ordenar las tarifas en cobros.",
       "allSections": "Todas",
-      "descriptionField": "Descripción"
+      "descriptionField": "Descripción",
+      "plus": "Incluye Clase+",
+      "plusHint": "El extra del Open Box: el atleta ve los bloques de Clase+ de cada WOD."
     },
     "kinds": {
       "none": "Sin clases",

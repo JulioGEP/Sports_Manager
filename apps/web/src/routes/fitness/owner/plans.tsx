@@ -256,6 +256,7 @@ function PlanSheet({ plan, onClose }: { plan: FeePlan | null; onClose: () => voi
   const [types, setTypes] = useState<string[]>(plan?.classTeamIds ?? []);
   const [sectionId, setSectionId] = useState(plan?.section?.id ?? "");
   const [description, setDescription] = useState(plan?.description ?? "");
+  const [plus, setPlus] = useState(plan?.includesPlus ?? false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -280,6 +281,7 @@ function PlanSheet({ plan, onClose }: { plan: FeePlan | null; onClose: () => voi
       sessions: NEEDS_SESSIONS.includes(kind) && sessions.trim() ? Number(sessions) : null,
       validityDays: kind === "pack" && validity.trim() ? Number(validity) : null,
       classTeamIds: kind === "none" || types.length === 0 ? null : types,
+      includesPlus: plus,
     };
     if (NEEDS_SESSIONS.includes(kind) && !body.sessions) {
       setError(t("sheet.sessionsRequired"));
@@ -466,6 +468,18 @@ function PlanSheet({ plan, onClose }: { plan: FeePlan | null; onClose: () => voi
             />
           )}
         </Field>
+        <label className="flex items-start gap-3 rounded-control bg-raised p-3">
+          <input
+            type="checkbox"
+            className="mt-1 size-4"
+            checked={plus}
+            onChange={(e) => setPlus(e.target.checked)}
+          />
+          <span className="flex flex-col">
+            <span className="font-medium text-ink">{t("sheet.plus")}</span>
+            <span className="text-secondary text-muted">{t("sheet.plusHint")}</span>
+          </span>
+        </label>
         {error ? <Alert kind="error">{error}</Alert> : null}
       </form>
     </Sheet>

@@ -331,6 +331,20 @@ export const clubPaths = (slug: string) => ({
   programming: `/${slug}/programming`,
   workoutNew: `/${slug}/programming/new`,
   workoutEdit: (id: string) => `/${slug}/programming/${id}`,
+  /**
+   * Planificación del box (ADR 0053): los planes de cada disciplina, el asistente para crear uno,
+   * el mapa del ciclo, la semana, la revisión del domingo, la salud y el material. El atleta ve su
+   * ciclo y su resumen para compartir.
+   */
+  planning: `/${slug}/planning`,
+  planningNew: `/${slug}/planning/new`,
+  planningPlan: (id: string) => `/${slug}/planning/${id}`,
+  planningWeek: (id: string, n: number) => `/${slug}/planning/${id}/weeks/${n}`,
+  planningReview: (id: string) => `/${slug}/planning/${id}/review`,
+  planningHealth: (id: string) => `/${slug}/planning/${id}/health`,
+  equipment: `/${slug}/equipment`,
+  cycle: `/${slug}/cycle`,
+  cycleSummary: `/${slug}/cycle/summary`,
   athletes: `/${slug}/athletes`,
   athleteFile: (id: string) => `/${slug}/athletes/${id}`,
   classTypes: `/${slug}/class-types`,

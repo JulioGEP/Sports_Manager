@@ -1,9 +1,11 @@
 import {
   BENCHMARK_FAMILIES,
   BENCHMARKS,
+  CAPACITIES,
   REP_MAXES,
   WORKOUT_BLOCK_KINDS,
   type BenchmarkEntry,
+  type Capacity,
   type WorkoutBlockKind,
 } from "@sportsmanager/shared";
 import {
@@ -22,7 +24,9 @@ import {
   type BlockDraft,
   type Format,
 } from "@/components/fitness/programming-model";
+import { CapacityDot, usePlanNames } from "@/components/fitness/planning-ui";
 import { useLocale, useT } from "@/lib/intl";
+import { useLevelName } from "@/lib/planning";
 import { Button, Field, Icon, Input, Menu, MenuDivider, MenuItem, Select, Sheet } from "@/ui";
 
 /** Errores de un bloque, por campo del editor. */
@@ -92,6 +96,7 @@ export function BlockEditor({
   errors,
   readOnly,
   movements,
+  exercises = [],
   onChange,
   onKind,
   onMove,
@@ -105,6 +110,8 @@ export function BlockEditor({
   errors: BlockErrors;
   readOnly: boolean;
   movements: { code: string; name: string }[];
+  /** La biblioteca del box, para enlazar los ejercicios del bloque. */
+  exercises?: { id: string; name: string }[];
   onChange: (patch: Partial<BlockDraft>) => void;
   onKind: (kind: WorkoutBlockKind) => void;
   onMove: (delta: number) => void;
@@ -118,7 +125,12 @@ export function BlockEditor({
   const label = letterOf(index);
   const quiet = QUIET_KINDS.includes(block.kind);
   const [scoring, setScoring] = useState(!quiet || block.format !== "none");
-  const [levels, setLevels] = useState(Boolean(block.scaled || block.rx || block.rxPlus));
+  const [levels, setLevels] = useState(
+    Boolean(block.foundations || block.scaled || block.rx || block.rxPlus),
+  );
+  const names = usePlanNames();
+  const levelName = useLevelName();
+  const exerciseName = (id: string) => exercises.find((e) => e.id === id)?.name ?? null;
   const showFormats = !quiet || scoring || block.format !== "none";
   const needsMinutes = MINUTES_REQUIRED.includes(block.format);
   const optionalMinutes = MINUTES_OPTIONAL.includes(block.format);
@@ -347,6 +359,107 @@ export function BlockEditor({
         </div>
       )}
 
+      <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_9rem]">
+        <Field label={t("capacity")} hint={t("capacityHint")}>
+          {(id, describedBy) => (
+            <Select
+              id={id}
+              disabled={readOnly}
+              aria-describedby={describedBy}
+              value={block.capacity}
+              onChange={(e) => onChange({ capacity: e.target.value as Capacity | "" })}
+            >
+              <option value="">{t("capacityNone")}</option>
+              {CAPACITIES.map((c) => (
+                <option key={c} value={c}>
+                  {names.capacity(c)}
+                </option>
+              ))}
+            </Select>
+          )}
+        </Field>
+        <Field label={t("plannedMinutes")} hint={t("plannedMinutesHint")}>
+          {(id, describedBy) => (
+            <Input
+              id={id}
+              inputMode="numeric"
+              readOnly={readOnly}
+              aria-describedby={describedBy}
+              value={block.plannedMinutes}
+              placeholder="15"
+              onChange={(e) => onChange({ plannedMinutes: e.target.value.replace(/\D/g, "") })}
+              className="font-mono"
+            />
+          )}
+        </Field>
+      </div>
+
+      {exercises.length > 0 || block.exerciseIds.length > 0 ? (
+        <div className="flex flex-col gap-2">
+          <span className="text-secondary font-medium text-ink">{t("exercises")}</span>
+          <div className="flex flex-wrap items-center gap-2">
+            {block.exerciseIds.map((id) => (
+              <span
+                key={id}
+                className="inline-flex min-h-9 items-center gap-1.5 rounded-chip border border-line bg-raised pr-1 pl-3 text-secondary text-ink"
+              >
+                {exerciseName(id) ?? t("unknownExercise")}
+                {readOnly ? null : (
+                  <button
+                    type="button"
+                    aria-label={t("removeExercise", { name: exerciseName(id) ?? "" })}
+                    onClick={() =>
+                      onChange({ exerciseIds: block.exerciseIds.filter((x) => x !== id) })
+                    }
+                    className="grid size-7 place-items-center rounded-full text-muted hover:bg-surface hover:text-ink"
+                  >
+                    <Icon.X size={14} aria-hidden="true" />
+                  </button>
+                )}
+              </span>
+            ))}
+            {readOnly || block.exerciseIds.length >= 12 ? null : (
+              <Select
+                aria-label={t("addExercise")}
+                value=""
+                onChange={(e) =>
+                  e.target.value &&
+                  onChange({ exerciseIds: [...block.exerciseIds, e.target.value] })
+                }
+                className="max-w-60"
+              >
+                <option value="">{t("addExercise")}</option>
+                {exercises
+                  .filter((x) => !block.exerciseIds.includes(x.id))
+                  .map((x) => (
+                    <option key={x.id} value={x.id}>
+                      {x.name}
+                    </option>
+                  ))}
+              </Select>
+            )}
+          </div>
+          <p className="text-label text-muted">{t("exercisesHint")}</p>
+        </div>
+      ) : null}
+
+      <label className="flex items-start gap-3">
+        <input
+          type="checkbox"
+          className="mt-1 size-4"
+          disabled={readOnly}
+          checked={block.track === "plus"}
+          onChange={(e) => onChange({ track: e.target.checked ? "plus" : "class" })}
+        />
+        <span className="flex flex-col">
+          <span className="inline-flex items-center gap-2 text-secondary font-medium text-ink">
+            {block.capacity ? <CapacityDot capacity={block.capacity} size={8} /> : null}
+            {t("plus")}
+          </span>
+          <span className="text-label text-muted">{t("plusHint")}</span>
+        </span>
+      </label>
+
       <div className="flex flex-col gap-3">
         <button
           type="button"
@@ -359,15 +472,18 @@ export function BlockEditor({
             aria-hidden="true"
             className={`transition-transform ${levels ? "" : "-rotate-90"}`}
           />
-          {block.scaled || block.rx || block.rxPlus ? t("levelsFilled") : t("levels")}
+          {block.foundations || block.scaled || block.rx || block.rxPlus
+            ? t("levelsFilled")
+            : t("levels")}
         </button>
         {levels ? (
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-2">
             {(
               [
-                ["scaled", "Scaled"],
-                ["rx", "RX"],
-                ["rxPlus", "RX+"],
+                ["foundations", levelName("foundations")],
+                ["scaled", levelName("scaled")],
+                ["rx", levelName("rx")],
+                ["rxPlus", levelName("rx_plus")],
               ] as const
             ).map(([key, name]) => (
               <Field key={key} label={name} error={key === "rx" ? errors.levels : undefined}>

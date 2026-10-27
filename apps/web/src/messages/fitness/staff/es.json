@@ -330,10 +330,23 @@
       "levels": "Escalados",
       "levelsFilled": "Escalados (con niveles)",
       "levelPlaceholder": {
+        "foundations": "Menos volumen y variantes sencillas",
         "scaled": "Thrusters 30/20 kg, ring rows",
         "rx": "Lo de la pizarra",
         "rxPlus": "Thrusters 50/35 kg, chest to bar"
-      }
+      },
+      "capacity": "Capacidad",
+      "capacityHint": "Lo que entrena: da el color y cuenta en el equilibrio de la semana.",
+      "capacityNone": "Sin capacidad",
+      "plannedMinutes": "Minutos",
+      "plannedMinutesHint": "Previstos en la clase.",
+      "exercises": "Ejercicios",
+      "exercisesHint": "Enlazados a su ficha: el atleta los toca y ve cómo se hacen. El validador mira su material.",
+      "addExercise": "Añadir ejercicio",
+      "removeExercise": "Quitar {name}",
+      "unknownExercise": "Ejercicio archivado",
+      "plus": "Clase+",
+      "plusHint": "Trabajo extra para el Open Box. Solo lo ven los atletas con Clase+ en su tarifa."
     },
     "formats": {
       "for_time": "Por tiempo",
@@ -398,6 +411,25 @@
       "emptyHint": "La propuesta llena el editor. Nada se guarda hasta que guardes.",
       "loadedTitle": "Propuesta de la IA cargada",
       "loaded": "Revísala y guarda: hasta entonces no se guarda nada."
+    },
+    "intent": {
+      "title": "Intención del día",
+      "hint": "El papel del día en la semana, cuánto tiene que durar, cómo se tiene que sentir y por qué existe.",
+      "fromPlan": "{plan} · semana {week} de {weeks} · {block}",
+      "fromPlanNew": "Del plan · semana {week}",
+      "role": "Papel del día",
+      "roleHint": "Su sitio en la semana: da el color del día.",
+      "noRole": "Sin papel",
+      "domain": "Duración del WOD",
+      "domainHint": "Para medir si salió como se planeó.",
+      "noDomain": "Sin definir",
+      "effort": "Esfuerzo objetivo",
+      "effortHint": "De 1 (suave) a 5 (a tope).",
+      "feel": "Cómo se tiene que sentir",
+      "feelHint": "Una frase para la pizarra.",
+      "feelPlaceholder": "Sin parar más de 5 segundos",
+      "why": "Por qué este WOD",
+      "whyHint": "Una razón por línea. El atleta las lee en su WOD."
     }
   },
   "athletes": {

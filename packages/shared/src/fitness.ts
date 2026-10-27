@@ -3,6 +3,12 @@ import type { LocalizedText } from "./locales.ts";
 import { DateTimeSchema } from "./events.ts";
 import { DateOnlySchema } from "./structure.ts";
 import { addDays, daysBetween, weekStartOf } from "./training-load.ts";
+import {
+  CapacitySchema,
+  DayRoleSchema,
+  TimeDomainSchema,
+  WorkoutTrackSchema,
+} from "./capacities.ts";
 
 /**
  * Clubs de fitness (ADR 0049): el box de CrossFit, HYROX o entrenamiento funcional. Mismo motor que
@@ -116,6 +122,8 @@ export const PlanEntitlementFieldsSchema = z.object({
   validityDays: z.number().int().min(1).max(730).nullable().optional(),
   /** Tipos de clase que incluye. Nulo o vacío: todos. */
   classTeamIds: z.array(z.string().uuid()).max(50).nullable().optional(),
+  /** Planificación (ADR 0053): incluye Clase+, el trabajo extra del Open Box. */
+  includesPlus: z.boolean().optional(),
 });
 
 /** Necesita número de sesiones todo lo que no es ilimitado ni cuota simple. */
@@ -189,7 +197,11 @@ export const SCORE_TYPES = [
 export type ScoreType = (typeof SCORE_TYPES)[number];
 export const ScoreTypeSchema = z.enum(SCORE_TYPES);
 
-export const WORKOUT_LEVELS = ["scaled", "rx", "rx_plus"] as const;
+/**
+ * Niveles de un WOD, del más sencillo al más exigente. Iniciación (ADR 0053) es el atleta de los
+ * primeros meses: menos volumen, variantes simples y foco en la técnica.
+ */
+export const WORKOUT_LEVELS = ["foundations", "scaled", "rx", "rx_plus"] as const;
 export type WorkoutLevel = (typeof WORKOUT_LEVELS)[number];
 export const WorkoutLevelSchema = z.enum(WORKOUT_LEVELS);
 
@@ -225,9 +237,16 @@ export const WorkoutBlockInputSchema = z
     percent: z.number().int().min(1).max(150).nullable().optional(),
     /** Si el bloque busca una máxima (1RM, 3RM…), el resultado entra en las marcas del atleta. */
     rmReps: RepMaxSchema.nullable().optional(),
+    foundations: LevelText.nullable().optional(),
     scaled: LevelText.nullable().optional(),
     rx: LevelText.nullable().optional(),
     rxPlus: LevelText.nullable().optional(),
+    /** Planificación (ADR 0053): la capacidad que trabaja, sus minutos y los ejercicios que usa. */
+    capacity: CapacitySchema.nullable().optional(),
+    plannedMinutes: z.number().int().min(1).max(120).nullable().optional(),
+    exerciseIds: z.array(z.string().uuid()).max(12).optional(),
+    /** Clase o Clase+ (el trabajo extra del Open Box). */
+    track: WorkoutTrackSchema.optional(),
   })
   .refine((b) => !b.percent || b.movementCode, {
     message: "Un porcentaje necesita el movimiento al que se aplica.",
@@ -252,7 +271,18 @@ export const WorkoutUpsertSchema = z.object({
   status: WorkoutStatusSchema,
   /** Con el WOD publicado: a partir de cuándo lo ven los atletas. Nulo: ya. */
   publishAt: DateTimeSchema.nullable().optional(),
-  blocks: z.array(WorkoutBlockInputSchema).min(1).max(10),
+  blocks: z.array(WorkoutBlockInputSchema).min(1).max(12),
+  /**
+   * Planificación (ADR 0053): el plan y la semana a los que sirve, el papel del día, la intención
+   * (dominio de tiempo, esfuerzo de 1 a 5 y cómo se tiene que sentir) y su porqué, una razón por línea.
+   */
+  planId: z.string().uuid().nullable().optional(),
+  planWeek: z.number().int().min(1).max(60).nullable().optional(),
+  dayRole: DayRoleSchema.nullable().optional(),
+  intentDomain: TimeDomainSchema.nullable().optional(),
+  intentEffort: z.number().int().min(1).max(5).nullable().optional(),
+  intentFeel: z.string().trim().max(300).nullable().optional(),
+  why: z.string().trim().max(1200).nullable().optional(),
 });
 export type WorkoutUpsert = z.infer<typeof WorkoutUpsertSchema>;
 
@@ -1196,7 +1226,7 @@ export interface RankedScore {
   capReps: number;
 }
 
-const LEVEL_ORDER: Record<WorkoutLevel, number> = { rx_plus: 0, rx: 1, scaled: 2 };
+const LEVEL_ORDER: Record<WorkoutLevel, number> = { rx_plus: 0, rx: 1, scaled: 2, foundations: 3 };
 
 /**
  * Orden de una clasificación: primero el nivel más exigente; dentro, por tiempo menos es mejor y

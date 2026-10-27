@@ -22,6 +22,8 @@ import { DateOnlySchema, TEAM_STATUSES } from "../structure.ts";
 import { STORED_AVAILABILITY_STATUSES } from "../training.ts";
 import { AI_FAILURES, AI_GENERATION_STATUSES } from "../training-ai.ts";
 import { AiQuotaSchema } from "./training-ai.ts";
+import { CAPACITIES, DAY_ROLES, TIME_DOMAINS, WORKOUT_TRACKS } from "../capacities.ts";
+import { LEVEL_CAPACITIES } from "../planning.ts";
 
 /** Contratos de los clubs de fitness (ADR 0049). */
 
@@ -197,9 +199,15 @@ export const WorkoutBlockViewSchema = z.object({
   movement: z.object({ code: z.string(), name: z.string() }).nullable(),
   percent: z.number().int().nullable(),
   rmReps: z.number().int().nullable(),
+  foundations: z.string().nullable(),
   scaled: z.string().nullable(),
   rx: z.string().nullable(),
   rxPlus: z.string().nullable(),
+  /** Planificación (ADR 0053): capacidad, minutos previstos, pista y ejercicios enlazados. */
+  capacity: z.enum(CAPACITIES).nullable(),
+  plannedMinutes: z.number().int().nullable(),
+  track: z.enum(WORKOUT_TRACKS),
+  exercises: z.array(Ref),
   /** Para el atleta: su 1RM del movimiento (real o estimada) y los kilos del porcentaje. */
   mine: z
     .object({
@@ -228,6 +236,29 @@ export const WorkoutViewSchema = z.object({
   blocks: z.array(WorkoutBlockViewSchema),
   createdBy: z.string().nullable(),
   updatedAt: z.string(),
+  /** El plan al que sirve (ADR 0053): semana, bloque y papel del día. */
+  plan: z
+    .object({
+      id: z.string(),
+      name: z.string(),
+      week: z.number().int(),
+      weeks: z.number().int(),
+      blockKind: z.string(),
+      blockLabel: z.string(),
+    })
+    .nullable(),
+  dayRole: z.enum(DAY_ROLES).nullable(),
+  intent: z
+    .object({
+      domain: z.enum(TIME_DOMAINS).nullable(),
+      effort: z.number().int().nullable(),
+      feel: z.string().nullable(),
+    })
+    .nullable(),
+  /** Una razón por línea. */
+  why: z.array(z.string()),
+  /** Bloques de Clase+ que el atleta no ve porque su tarifa no la incluye. */
+  plusHidden: z.number().int().nonnegative(),
 });
 export type WorkoutView = z.infer<typeof WorkoutViewSchema>;
 export const WorkoutsResponseSchema = z.object({
@@ -240,9 +271,24 @@ export const WorkoutsResponseSchema = z.object({
 export type WorkoutsResponse = z.infer<typeof WorkoutsResponseSchema>;
 export const WorkoutResponseSchema = z.object({ workout: WorkoutViewSchema });
 /** Los WODs publicados de un día para el atleta, con sus kilos y sus resultados. */
+/** Nivel de un atleta en una capacidad: el suyo si lo ha fijado, o el sugerido (ADR 0053). */
+export const AthleteLevelSchema = z.object({
+  capacity: z.enum(LEVEL_CAPACITIES),
+  level: z.enum(WORKOUT_LEVELS),
+  suggested: z.enum(WORKOUT_LEVELS),
+  reason: z.enum(["new", "completed", "frequent", "default", "confirmed"]),
+});
+export type AthleteLevel = z.infer<typeof AthleteLevelSchema>;
+
 export const MyWorkoutsResponseSchema = z.object({
   date: z.string(),
   workouts: z.array(WorkoutViewSchema),
+  /** Su versión: el nivel de cada capacidad. */
+  levels: z.array(AthleteLevelSchema),
+  /** El papel de los días que vienen, si el box lo enseña por adelantado. */
+  upcoming: z.array(z.object({ date: z.string(), role: z.enum(DAY_ROLES).nullable() })),
+  /** Si su tarifa incluye Clase+. */
+  plusEntitled: z.boolean(),
 });
 export type MyWorkoutsResponse = z.infer<typeof MyWorkoutsResponseSchema>;
 export type WorkoutResponse = z.infer<typeof WorkoutResponseSchema>;

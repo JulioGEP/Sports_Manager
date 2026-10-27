@@ -330,10 +330,23 @@
       "levels": "Scaling",
       "levelsFilled": "Scaling (with levels)",
       "levelPlaceholder": {
+        "foundations": "Less volume, simpler variations",
         "scaled": "Thrusters 65/45 lb, ring rows",
         "rx": "As written",
         "rxPlus": "Thrusters 115/80 lb, chest-to-bar"
-      }
+      },
+      "capacity": "Capacity",
+      "capacityHint": "What it trains: sets the colour and counts towards the week's balance.",
+      "capacityNone": "No capacity",
+      "plannedMinutes": "Minutes",
+      "plannedMinutesHint": "Planned within the class.",
+      "exercises": "Exercises",
+      "exercisesHint": "Linked to their page: athletes tap them to see how they're done. The validator checks their equipment.",
+      "addExercise": "Add exercise",
+      "removeExercise": "Remove {name}",
+      "unknownExercise": "Archived exercise",
+      "plus": "Class+",
+      "plusHint": "Extra work for Open Box. Only athletes with Class+ in their membership see it."
     },
     "formats": {
       "for_time": "For time",
@@ -398,6 +411,25 @@
       "emptyHint": "The proposal fills the editor. Nothing is saved until you save.",
       "loadedTitle": "AI proposal loaded",
       "loaded": "Review it and save: nothing is saved until then."
+    },
+    "intent": {
+      "title": "Intent of the day",
+      "hint": "The day's role in the week, how long it should last, how it should feel and why it exists.",
+      "fromPlan": "{plan} · week {week} of {weeks} · {block}",
+      "fromPlanNew": "From the plan · week {week}",
+      "role": "Day role",
+      "roleHint": "Its place in the week: sets the day's colour.",
+      "noRole": "No role",
+      "domain": "WOD length",
+      "domainHint": "To measure whether it went as planned.",
+      "noDomain": "Not set",
+      "effort": "Target effort",
+      "effortHint": "From 1 (easy) to 5 (all out).",
+      "feel": "How it should feel",
+      "feelHint": "One line for the whiteboard.",
+      "feelPlaceholder": "Never stop for more than 5 seconds",
+      "why": "Why this WOD",
+      "whyHint": "One reason per line. Athletes read them in their WOD."
     }
   },
   "athletes": {

@@ -43,7 +43,8 @@ export function ExercisesPage() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<ExerciseCategory | null>(null);
   const [equipment, setEquipment] = useState<ExerciseEquipment | "">("");
-  const [openId, setOpenId] = useState<string | null>(null);
+  // Se llega con `?exercise=<id>` desde un bloque del WOD (ADR 0053): la ficha, abierta.
+  const [openId, setOpenId] = useState<string | null>(params.get("exercise"));
   const [editing, setEditing] = useState<Exercise | "new" | null>(null);
 
   const all = useMemo(() => query.data?.exercises ?? [], [query.data]);

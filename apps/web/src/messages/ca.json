@@ -1601,6 +1601,28 @@
       "updated": "Exercici editat",
       "archived": "Exercici arxivat",
       "restored": "Exercici recuperat"
+    },
+    "equipment": {
+      "created": "Material afegit",
+      "updated": "Material editat",
+      "removed": "Material tret"
+    },
+    "planning": {
+      "settings_updated": "Ajustos de la programació canviats"
+    },
+    "plan": {
+      "created": "Pla creat",
+      "updated": "Pla editat",
+      "removed": "Pla esborrat",
+      "drafted": "Setmana del pla preparada",
+      "adjusted": "Ajust de la revisió decidit"
+    },
+    "plan_ai": {
+      "requested": "Planificació demanada a la IA",
+      "applied": "Proposta de la IA aplicada al pla"
+    },
+    "athlete_level": {
+      "updated": "Nivell de l'atleta canviat"
     }
   },
   "team": {
@@ -3643,7 +3665,9 @@
       "newWorkout": "Programar un WOD",
       "exercises": "Exercicis",
       "newPlan": "Nova tarifa o bo",
-      "newLead": "Nou lead"
+      "newLead": "Nou lead",
+      "newTrainingPlan": "Nou pla d'entrenament",
+      "equipment": "Material del box"
     },
     "keys": {
       "move": "moure's",

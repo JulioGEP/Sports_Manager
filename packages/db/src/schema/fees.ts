@@ -6,7 +6,17 @@ import {
   PLAN_ENTITLEMENTS,
 } from "@sportsmanager/shared";
 import { sql } from "drizzle-orm";
-import { check, date, index, integer, jsonb, pgTable, text, uuid } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  check,
+  date,
+  index,
+  integer,
+  jsonb,
+  pgTable,
+  text,
+  uuid,
+} from "drizzle-orm/pg-core";
 import { id, inList, timestamps } from "./_shared.ts";
 import { users } from "./auth.ts";
 import { organizations } from "./organizations.ts";
@@ -39,6 +49,8 @@ export const feePlans = pgTable(
     validityDays: integer("validity_days"),
     /** Tipos de clase que incluye. Nulo: todos. */
     classTeamIds: jsonb("class_team_ids").$type<string[]>(),
+    /** Planificación (ADR 0053): la tarifa incluye Clase+, el trabajo extra del Open Box. */
+    includesPlus: boolean("includes_plus").notNull().default(false),
     ...timestamps,
   },
   (t) => [

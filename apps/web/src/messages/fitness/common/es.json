@@ -5,13 +5,16 @@
     "classes": "Clases",
     "wod": "WOD",
     "progress": "Progreso",
+    "cycle": "Mi ciclo",
     "myPlan": "Mi tarifa",
     "messages": "Mensajes",
     "announcements": "Anuncios",
     "ranking": "Ranking",
     "timer": "Timer",
     "library": "Ejercicios",
+    "equipment": "Material",
     "programming": "Programación",
+    "planning": "Planificación",
     "athletes": "Atletas",
     "plans": "Tarifas",
     "leads": "Leads",
@@ -75,6 +78,7 @@
     "waitlist": "{count, plural, one {# en espera} other {# en espera}}"
   },
   "levels": {
+    "foundations": "Iniciación",
     "scaled": "Scaled",
     "rx": "RX",
     "rx_plus": "RX+"

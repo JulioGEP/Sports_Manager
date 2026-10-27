@@ -259,7 +259,9 @@
       "section": "Disciplina",
       "sectionHint": "Per ordenar les tarifes a cobraments.",
       "allSections": "Totes",
-      "descriptionField": "Descripció"
+      "descriptionField": "Descripció",
+      "plus": "Inclou Classe+",
+      "plusHint": "L'extra de l'Open Box: l'atleta veu els blocs de Classe+ de cada WOD."
     },
     "kinds": {
       "none": "Sense classes",

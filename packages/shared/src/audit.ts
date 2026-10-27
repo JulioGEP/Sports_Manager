@@ -172,5 +172,17 @@ export const AUDIT_ACTIONS = [
   "exercise.updated",
   "exercise.archived",
   "exercise.restored",
+  "equipment.created",
+  "equipment.updated",
+  "equipment.removed",
+  "planning.settings_updated",
+  "plan.created",
+  "plan.updated",
+  "plan.removed",
+  "plan.drafted",
+  "plan.adjusted",
+  "plan_ai.requested",
+  "plan_ai.applied",
+  "athlete_level.updated",
 ] as const;
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];

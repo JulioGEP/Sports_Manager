@@ -14,6 +14,7 @@ import {
 } from "@sportsmanager/shared";
 import { useState, type FormEvent, type ReactNode } from "react";
 import { useIntl } from "react-intl";
+import { Link } from "react-router";
 import {
   EMPTY_SCORE,
   ScoreFields,
@@ -22,9 +23,11 @@ import {
 } from "@/components/fitness/athlete-ui";
 import { useMovementName } from "@/components/fitness/workout-blocks";
 import { apiFetch, errorKey } from "@/lib/api";
+import { clubPaths, useReadyClub } from "@/lib/club";
 import { useDates } from "@/lib/dates";
 import { useClassTime, useInvalidateFitness, useKg, useProgress } from "@/lib/fitness";
 import { useLocale, useT } from "@/lib/intl";
+import { useMyCycle } from "@/lib/planning";
 import {
   Alert,
   Button,
@@ -99,6 +102,7 @@ export function ProgressPage() {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader title={t("title")} description={t("description")} />
+      <CycleTeaser />
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Stat
@@ -969,5 +973,37 @@ function BodySheet({ onClose }: { onClose: () => void }) {
         </p>
       ) : null}
     </FormSheet>
+  );
+}
+
+/** La entrada a "Tu ciclo" (ADR 0053): el plan del box en una línea y el enlace. */
+function CycleTeaser() {
+  const t = useT("fitness.planning.cycle");
+  const cycle = useMyCycle();
+  const { slug } = useReadyClub();
+  const paths = clubPaths(slug);
+  const plan = cycle.data?.plan;
+  if (!plan) return null;
+  return (
+    <Link
+      to={paths.cycle}
+      className="flex items-center gap-4 rounded-card bg-ink p-4 text-surface no-underline shadow-card"
+    >
+      <span className="grid size-11 shrink-0 place-items-center rounded-full bg-surface/15">
+        <Icon.Target size={22} aria-hidden="true" />
+      </span>
+      <span className="flex min-w-0 flex-1 flex-col">
+        <span className="text-label uppercase tracking-wide opacity-70">{t("title")}</span>
+        <span className="truncate font-semibold">{plan.name}</span>
+        <span className="truncate text-secondary opacity-80">
+          {plan.week
+            ? t("position", { n: plan.week, weeks: plan.weeks, block: plan.blockLabel ?? "" })
+            : plan.finished
+              ? t("finished")
+              : plan.name}
+        </span>
+      </span>
+      <Icon.CaretRight size={20} aria-hidden="true" className="opacity-70" />
+    </Link>
   );
 }

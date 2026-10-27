@@ -153,7 +153,7 @@ describe("voz del club en la web", () => {
  * Clubs de fitness (ADR 0049): sus pantallas tienen diccionario propio por partes y un léxico que
  * reescribe palabras de las pantallas compartidas (deportistas → atletas, secciones → disciplinas).
  */
-const FITNESS_PARTS = ["common", "athlete", "staff", "owner", "exercises"] as const;
+const FITNESS_PARTS = ["common", "athlete", "staff", "owner", "exercises", "planning"] as const;
 const fitnessFiles = import.meta.glob<Nested>("./messages/fitness/*/*.json", {
   eager: true,
   import: "default",

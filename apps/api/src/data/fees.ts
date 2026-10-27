@@ -48,6 +48,8 @@ export interface FeePlanRecord {
   sessions: number | null;
   validityDays: number | null;
   classTeamIds: string[] | null;
+  /** Incluye Clase+ (ADR 0053). */
+  includesPlus: boolean;
   activeAthletes: number;
 }
 
@@ -198,6 +200,7 @@ export function feesRepo(db: () => Database) {
       sessions: plan.sessions,
       validityDays: plan.validityDays,
       classTeamIds: plan.classTeamIds ?? null,
+      includesPlus: plan.includesPlus,
       activeAthletes: await activeSubscriptions(scope, plan.id),
     };
   }
@@ -228,6 +231,7 @@ export function feesRepo(db: () => Database) {
       sessions?: number | null | undefined;
       validityDays?: number | null | undefined;
       classTeamIds?: string[] | null | undefined;
+      includesPlus?: boolean | undefined;
     },
     current: {
       entitlement: PlanEntitlement;
@@ -263,6 +267,7 @@ export function feesRepo(db: () => Database) {
       }
       values.classTeamIds = ids.length > 0 ? ids : null;
     }
+    if (input.includesPlus !== undefined) values.includesPlus = input.includesPlus;
     return values;
   }
 

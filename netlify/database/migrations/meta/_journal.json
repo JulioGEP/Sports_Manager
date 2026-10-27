@@ -169,6 +169,13 @@
       "when": 1793038373628,
       "tag": "20261026181253_exercises",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1793050625466,
+      "tag": "20261026213705_box_planning",
+      "breakpoints": true
     }
   ]
 }

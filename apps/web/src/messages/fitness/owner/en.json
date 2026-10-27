@@ -259,7 +259,9 @@
       "section": "Discipline",
       "sectionHint": "To group plans in payments.",
       "allSections": "All",
-      "descriptionField": "Description"
+      "descriptionField": "Description",
+      "plus": "Includes Class+",
+      "plusHint": "The Open Box extra: athletes see the Class+ blocks in each WOD."
     },
     "kinds": {
       "none": "No classes",
