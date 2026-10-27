@@ -861,6 +861,54 @@
       "invite": "Convida el primer entrenador o personal",
       "inviteAction": "Convidar"
     },
+    "tour": {
+      "progress": "Pas {step} de {total}",
+      "next": "Continuar",
+      "back": "Tornar",
+      "skip": "Saltar",
+      "close": "Tancar",
+      "replay": "Veure el recorregut",
+      "start": {
+        "title": "El teu club, a punt en {total} passos",
+        "body": "Aquesta és la teva llista d'arrencada. Cada pas et porta a la seva pantalla i es marca sol quan el fas. Quan els completis, la llista desapareix."
+      },
+      "logo": {
+        "title": "El teu escut, a tot arreu",
+        "body": "Surt a l'app, a la portada del club, a l'entrada i a les invitacions. Les famílies el reconeixen només entrar."
+      },
+      "colors": {
+        "title": "Colors, lletra i veu",
+        "body": "Tria colors, tipografia, botons i com parla l'app. Ho veus en directe abans de desar: tota l'app es vesteix amb la identitat del club."
+      },
+      "season": {
+        "title": "La temporada actual",
+        "body": "Ordena tota la resta: seccions, equips, quotes i agenda van per temporada. Crea l'actual per començar."
+      },
+      "section": {
+        "title": "Seccions i equips",
+        "body": "Agrupa els teus equips per secció (escola, base, sènior…), cadascuna amb el seu cos tècnic i la seva plantilla."
+      },
+      "invite": {
+        "title": "El teu cos tècnic",
+        "body": "Li arriba un correu per entrar amb el seu propi accés: convoca, passa llista i segueix la seva plantilla."
+      },
+      "tabs": {
+        "title": "Tota la resta, per pestanyes",
+        "body": "Identitat, temporades i socis, cobraments i comptabilitat, la web del club, l'activitat i les millores que demanis a la plataforma."
+      },
+      "nav": {
+        "title": "El club, per àrees",
+        "body": "El club, Activitat i Gestió: la teva gent, l'agenda, l'entrenament i els diners del club, sempre a mà."
+      },
+      "palette": {
+        "title": "Busca o fes qualsevol cosa",
+        "body": "Des d'aquí, o amb ⌘K o Ctrl K a l'ordinador, arribes a qualsevol esportista, equip, pantalla o acció sense passar per menús."
+      },
+      "end": {
+        "title": "Comença per aquí",
+        "body": "{step}. T'hi portem ara. Pots tornar a veure el recorregut des de la posada en marxa."
+      }
+    },
     "activity": {
       "title": "Activitat del club",
       "description": "Els últims cent moviments: qui va fer què.",

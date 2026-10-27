@@ -861,6 +861,54 @@
       "invite": "Invita al primer entrenador o personal",
       "inviteAction": "Invitar"
     },
+    "tour": {
+      "progress": "Paso {step} de {total}",
+      "next": "Seguir",
+      "back": "Volver",
+      "skip": "Saltar",
+      "close": "Cerrar",
+      "replay": "Ver recorrido",
+      "start": {
+        "title": "Tu club, listo en {total} pasos",
+        "body": "Esta es tu lista de arranque. Cada paso te lleva a su pantalla y se marca solo al hacerlo. Cuando los completes, la lista desaparece."
+      },
+      "logo": {
+        "title": "Tu escudo, en todas partes",
+        "body": "Sale en la app, en la portada del club, en la entrada y en las invitaciones. Las familias lo reconocen nada más entrar."
+      },
+      "colors": {
+        "title": "Colores, letra y voz",
+        "body": "Elige colores, tipografía, botones y cómo habla la app. Lo ves en directo antes de guardar: toda la app se viste con la identidad del club."
+      },
+      "season": {
+        "title": "La temporada actual",
+        "body": "Ordena todo lo demás: secciones, equipos, cuotas y agenda van por temporada. Crea la actual para empezar."
+      },
+      "section": {
+        "title": "Secciones y equipos",
+        "body": "Agrupa tus equipos por sección (escuela, base, sénior…), cada una con su cuerpo técnico y su plantilla."
+      },
+      "invite": {
+        "title": "Tu cuerpo técnico",
+        "body": "Le llega un email para entrar con su propio acceso: convoca, pasa lista y sigue a su plantilla."
+      },
+      "tabs": {
+        "title": "Todo lo demás, por pestañas",
+        "body": "Identidad, temporadas y socios, cobros y contabilidad, la web del club, la actividad y las mejoras que pidas a la plataforma."
+      },
+      "nav": {
+        "title": "El club, por áreas",
+        "body": "El club, Actividad y Gestión: tu gente, la agenda, el entrenamiento y el dinero del club, siempre a mano."
+      },
+      "palette": {
+        "title": "Busca o haz cualquier cosa",
+        "body": "Desde aquí, o con ⌘K o Ctrl K en el ordenador, llegas a cualquier deportista, equipo, pantalla o acción sin pasar por menús."
+      },
+      "end": {
+        "title": "Empieza por aquí",
+        "body": "{step}. Te llevamos ahora. Puedes volver a ver el recorrido desde la puesta en marcha."
+      }
+    },
     "activity": {
       "title": "Actividad del club",
       "description": "Los últimos cien movimientos: quién hizo qué.",

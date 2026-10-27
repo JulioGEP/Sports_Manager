@@ -13,13 +13,14 @@ mkdirSync(dir, { recursive: true });
  * Captura de página completa con nombre estable, por proyecto (escritorio o móvil).
  * Antes comprueba que nada desborda en horizontal: en móvil eso ensancha la página y descoloca
  * los paneles. `scale: "css"` guarda un píxel por píxel CSS para que las capturas pesen poco.
+ * Lo que va fijo sobre la pantalla (el recorrido guiado) se captura tal cual se ve: `fullPage: false`.
  */
-export async function shot(page: Page, name: string, project: string) {
+export async function shot(page: Page, name: string, project: string, { fullPage = true } = {}) {
   await page.waitForLoadState("networkidle");
   await expectNoHorizontalOverflow(page, name);
   await page.screenshot({
     path: join(dir, `${project}-${name}.png`),
-    fullPage: true,
+    fullPage,
     animations: "disabled",
     scale: "css",
   });

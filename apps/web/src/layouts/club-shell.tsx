@@ -293,7 +293,11 @@ function ClubFrame({ children }: { children: ReactNode }) {
             <span className="truncate text-body font-semibold text-nav-ink">{clubName}</span>
           </Link>
           {state.kind === "ready" ? <PaletteButton onClick={togglePalette} /> : null}
-          <nav className="flex flex-col gap-4 overflow-y-auto" aria-label={t("mainNav")}>
+          <nav
+            className="flex flex-col gap-4 overflow-y-auto"
+            aria-label={t("mainNav")}
+            data-tour="nav"
+          >
             {groups.map((g) => (
               <div key={g.key} className="flex flex-col gap-1">
                 {g.label ? (
@@ -362,6 +366,7 @@ function ClubFrame({ children }: { children: ReactNode }) {
       {mobileLinks.length > 1 ? (
         <nav
           aria-label={t("mainNav")}
+          data-tour="nav"
           className="fixed inset-x-4 bottom-4 z-30 grid h-16 grid-flow-col auto-cols-fr items-center rounded-tabbar bg-nav px-2 shadow-float"
         >
           {mobileLinks.map((l) => (

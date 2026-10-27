@@ -1,10 +1,8 @@
 import {
   ActivityResponseSchema,
-  InvitationsResponseSchema,
   LOCALES,
   MemberTypeResponseSchema,
   MemberTypesResponseSchema,
-  MembersResponseSchema,
   OrganizationUpdateResponseSchema,
   OrganizationUpdateSchema,
   PAYMENT_PROVIDERS,
@@ -14,21 +12,19 @@ import {
   SeasonResponseSchema,
   SeasonUpdateSchema,
   SeasonsResponseSchema,
-  StructureSummarySchema,
   type Locale,
   type MemberType,
   type PaymentProvider,
   type PaymentsSettings,
   type Season,
 } from "@sportsmanager/shared";
-import { brandTokens } from "@sportsmanager/shared/design";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { useIntl } from "react-intl";
 import { useSearchParams } from "react-router";
 import { useAccountingStatus } from "@/components/accounting";
 import { ApiClientError, apiFetch, errorKey } from "@/lib/api";
-import { clubPaths, useReadyClub } from "@/lib/club";
+import { useReadyClub } from "@/lib/club";
 import { useDates } from "@/lib/dates";
 import { useT } from "@/lib/intl";
 import { AccountingSection } from "./settings-accounting";
@@ -36,10 +32,10 @@ import { DevelopersTab } from "./settings-developers";
 import { SettingsGroup } from "./settings-group";
 import { IdentityTab } from "./settings-identity";
 import { ImprovementsTab } from "./settings-improvements";
+import { SetupCard } from "./settings-setup";
 import {
   Alert,
   Button,
-  ButtonLink,
   Card,
   DataList,
   Definitions,
@@ -53,7 +49,6 @@ import {
   StatusChip,
   Tabs,
   useToast,
-  type ActionKind,
   type RowAction,
 } from "@/ui";
 
@@ -131,12 +126,14 @@ export function SettingsPage() {
   return (
     <div className="flex flex-col gap-5">
       <PageHeader title={t("title")} description={t("description")} />
-      <Tabs<Tab>
-        label={t("title")}
-        selected={tab}
-        onChange={(key) => setParams(key === "general" ? {} : { tab: key }, { replace: true })}
-        items={items}
-      />
+      <div data-tour="settings-tabs">
+        <Tabs<Tab>
+          label={t("title")}
+          selected={tab}
+          onChange={(key) => setParams(key === "general" ? {} : { tab: key }, { replace: true })}
+          items={items}
+        />
+      </div>
       {tab === "general" ? (
         <div className="flex flex-col gap-6">
           <SetupCard />
@@ -1132,111 +1129,6 @@ function PaymentsForm({
         </Card>
       </div>
     </form>
-  );
-}
-
-// --- Puesta en marcha (antes "primeros pasos" en la portada; en General desde la ADR 0045) ---
-
-/**
- * Lo que le falta al club para estar listo, a la entrada de los ajustes. No es un ajuste: es una
- * guía que lleva a cada sitio. Mientras carga no se pinta (no se ve un paso a medias que ya está
- * hecho) y, con todo hecho, se va.
- */
-function SetupCard() {
-  const t = useT("settings.setup");
-  const { slug, org, branding } = useReadyClub();
-  const paths = clubPaths(slug);
-  const permissions = org.actor.permissions;
-  const summary = useQuery({
-    queryKey: ["org", slug, "summary"],
-    queryFn: () => apiFetch("/api/org/summary", { schema: StructureSummarySchema }),
-    enabled: permissions.includes("org.structure.read"),
-  });
-  const members = useQuery({
-    queryKey: ["org", slug, "members"],
-    queryFn: () => apiFetch("/api/org/members", { schema: MembersResponseSchema }),
-    enabled: permissions.includes("org.members.read"),
-  });
-  const invitations = useQuery({
-    queryKey: ["org", slug, "invitations"],
-    queryFn: () => apiFetch("/api/org/invitations", { schema: InvitationsResponseSchema }),
-    enabled: permissions.includes("org.members.invite"),
-  });
-  const defaultColors =
-    branding.brandPrimaryColor === brandTokens["--color-brand-primary"] &&
-    branding.brandSecondaryColor === brandTokens["--color-brand-secondary"];
-  const staff = (members.data?.members ?? []).filter((m) =>
-    m.roles.some((r) => r === "coach" || r === "staff"),
-  ).length;
-  const pending = (invitations.data?.invitations ?? []).filter((i) => i.state === "pending").length;
-  /** Cada paso lleva el icono de la acción que propone (DESIGN.md 8.1). */
-  const setupActions = {
-    logo: "upload",
-    colors: "edit",
-    season: "add",
-    section: "add",
-    invite: "invite",
-  } as const satisfies Record<string, ActionKind>;
-  const steps = [
-    { key: "logo", done: Boolean(branding.logoUrl), to: `${paths.settings}?tab=identity` },
-    { key: "colors", done: !defaultColors, to: `${paths.settings}?tab=identity` },
-    {
-      key: "season",
-      done: Boolean(summary.data?.currentSeason),
-      to: `${paths.settings}?tab=seasons&new=1`,
-    },
-    {
-      key: "section",
-      done: (summary.data?.sections ?? 0) > 0,
-      to: summary.data?.currentSeason
-        ? `${paths.sections}?new=1`
-        : `${paths.settings}?tab=seasons&new=1`,
-    },
-    { key: "invite", done: staff > 0 || pending > 0, to: `${paths.staff}?invite=1` },
-  ] as const;
-  const done = steps.filter((s) => s.done).length;
-  if ([summary, members, invitations].some((q) => q.isLoading) || done === steps.length) {
-    return null;
-  }
-
-  return (
-    <Card
-      title={t("title")}
-      description={t("description", { done, total: steps.length })}
-      padded={false}
-    >
-      <ol className="flex flex-col divide-y divide-line">
-        {steps.map((step) => (
-          <li key={step.key} className="flex min-h-16 items-center gap-3 px-5 py-3">
-            <span
-              aria-hidden="true"
-              className={`grid size-7 shrink-0 place-items-center rounded-full ${
-                step.done ? "bg-success-soft text-success" : "border border-control text-muted"
-              }`}
-            >
-              {step.done ? <Icon.Check size={16} weight="bold" /> : null}
-            </span>
-            <span
-              className={`flex-1 text-body ${step.done ? "text-muted line-through" : "text-ink"}`}
-            >
-              {t(step.key)}
-            </span>
-            {step.done ? (
-              <StatusChip kind="success">{t("done")}</StatusChip>
-            ) : (
-              <ButtonLink
-                action={setupActions[step.key]}
-                to={step.to}
-                variant="secondary"
-                size="sm"
-              >
-                {t(`${step.key}Action`)}
-              </ButtonLink>
-            )}
-          </li>
-        ))}
-      </ol>
-    </Card>
   );
 }
 

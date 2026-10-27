@@ -72,3 +72,4 @@ Las decisiones no se editan una vez aceptadas. Si cambian, se escribe una nueva 
 | 0056 | El dinero se lee igual en toda la app: punto de miles, coma decimal y dos decimales | Aceptada |
 | 0057 | La programación dentro de las clases: qué se hace en cada clase y quién viene a hacerlo | Trasladada a inthebox (ADR 0058) |
 | 0058 | El box se va a su propio repositorio, inthebox | Aceptada |
+| 0059 | La primera entrada de un club nuevo: a la puesta en marcha, con un recorrido guiado | Aceptada |
