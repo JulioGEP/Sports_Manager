@@ -713,22 +713,6 @@
         "discard": "Descartar",
         "saved": "Identidad guardada. Ya la ve todo el club.",
         "discarded": "Cambios descartados."
-      },
-      "boxLooks": {
-        "title": "Looks de box",
-        "description": "Un punto de partida completo para un club de fitness: colores, letra, botones, iconos, fondo, navegación y voz. Luego ajusta lo que quieras.",
-        "names": {
-          "industrial": "Industrial",
-          "hybrid": "Híbrido",
-          "night": "Nocturno",
-          "studio": "Estudio"
-        },
-        "hints": {
-          "industrial": "Negro y amarillo, rectas, voz de vestuario.",
-          "hybrid": "Naranja y negro, trama y rayas.",
-          "night": "Oscuro con verde lima, degradado.",
-          "studio": "Claro y sereno, voz profesional."
-        }
       }
     },
     "logo": {
@@ -875,16 +859,7 @@
       "section": "Crea la primera sección",
       "sectionAction": "Crear sección",
       "invite": "Invita al primer entrenador o personal",
-      "inviteAction": "Invitar",
-      "box": {
-        "description": "{done} de {total} pasos hechos. Deja el box listo para que tus atletas reserven.",
-        "identity": "Elige los colores y el look del box",
-        "schedule": "Crea los tipos de clase y su horario",
-        "scheduleAction": "Abrir horario",
-        "plans": "Crea tus tarifas y bonos",
-        "plansAction": "Crear tarifa",
-        "invite": "Invita a tu primer coach"
-      }
+      "inviteAction": "Invitar"
     },
     "activity": {
       "title": "Actividad del club",
@@ -940,23 +915,7 @@
       "confirmRotateTitle": "¿Cambiar la clave?",
       "confirmRotateBody": "La clave actual deja de funcionar al momento: la web del club dejará de enseñar productos hasta que pongas la nueva.",
       "confirmDisableTitle": "¿Apagar el catálogo público?",
-      "confirmDisableBody": "La web del club dejará de enseñar productos. Puedes volver a activarlo con una clave nueva.",
-      "box": {
-        "title": "Horario y clase de prueba en la web del box",
-        "description": "Tu web enseña las clases de los próximos días con sus plazas libres y recoge peticiones de clase de prueba, que llegan a Leads. Usa la misma clave pública que el catálogo.",
-        "endpointClasses": "Clases de los próximos días (hasta 14) con las plazas libres. Nunca dice quién viene.",
-        "endpointTrials": "Pide una clase de prueba: nombre, apellidos, email, clase opcional y consentimiento. Deja un lead.",
-        "needsKey": "Activa la clave pública de abajo para tener el código listo para pegar.",
-        "leads": "Ver leads",
-        "form": {
-          "firstName": "Nombre",
-          "lastName": "Apellidos",
-          "email": "Email",
-          "consent": "Acepto que el box me contacte",
-          "send": "Pedir clase de prueba",
-          "thanks": "Recibido. Te escribimos enseguida."
-        }
-      }
+      "confirmDisableBody": "La web del club dejará de enseñar productos. Puedes volver a activarlo con una clave nueva."
     },
     "accounting": {
       "connect": {
@@ -1063,8 +1022,7 @@
         "status": "Estado",
         "members": "Miembros",
         "pending": "Pendientes",
-        "created": "Alta",
-        "model": "Tipo"
+        "created": "Alta"
       }
     },
     "createDrawer": {
@@ -1078,8 +1036,7 @@
       "sport": "Deporte",
       "submit": "Crear club",
       "created": "{name} creado.",
-      "brandNote": "La marca y el logo los configura el club desde sus ajustes.",
-      "model": "Tipo de club"
+      "brandNote": "La marca y el logo los configura el club desde sus ajustes."
     },
     "club": {
       "eyebrow": "Clubes",
@@ -1116,10 +1073,7 @@
         "sent": "Invitación enviada a {email}."
       },
       "confirmSuspendTitle": "¿Suspender {name}?",
-      "confirmArchiveTitle": "¿Archivar {name}?",
-      "model": "Tipo de club",
-      "modelHint": "Cambia la forma de ver el club: navegación, inicio y vocabulario. Los datos no cambian.",
-      "modelSaved": "{name} se ve ahora como {model}."
+      "confirmArchiveTitle": "¿Archivar {name}?"
     },
     "audit": {
       "title": "Actividad",
@@ -1256,12 +1210,6 @@
         "responseHint": "Solo la ve {club}.",
         "invalid": "Escribe un título de al menos 3 letras y elige la parte de la aplicación."
       }
-    },
-    "clubModels": {
-      "sports": "Club deportivo",
-      "fitness": "Club de fitness",
-      "sportsHint": "Secciones, equipos, partidos y familias. Para clubs de fútbol, baloncesto, natación…",
-      "fitnessHint": "Clases con reserva, WOD, marcas y tarifas. Para boxes de CrossFit, HYROX y gimnasios."
     }
   },
   "apiStatus": {
@@ -1329,8 +1277,7 @@
       "logo_removed": "Logo quitado",
       "payments_updated": "Ajustes de cobro cambiados",
       "stripe_onboarding_started": "Alta en Stripe iniciada",
-      "ai_updated": "Cuota de IA cambiada",
-      "dashboards_updated": "KPIs del club elegidos"
+      "ai_updated": "Cuota de IA cambiada"
     },
     "invitation": {
       "created": "Invitación enviada",
@@ -1558,73 +1505,6 @@
     "ai_draft": {
       "requested": "Propuesta de sesión pedida a la IA",
       "applied": "Propuesta de sesión aplicada"
-    },
-    "ai_wod": {
-      "requested": "Propuesta de WOD pedida a la IA"
-    },
-    "booking_policy": {
-      "updated": "Política de reservas cambiada"
-    },
-    "class_type": {
-      "created": "Tipo de clase creado",
-      "updated": "Tipo de clase editado"
-    },
-    "booking": {
-      "created": "Reserva hecha por el box",
-      "cancelled": "Reserva cancelada por el box"
-    },
-    "class": {
-      "closed": "Clase cerrada",
-      "capacity_changed": "Aforo de una clase cambiado"
-    },
-    "subscription": {
-      "created": "Tarifa dada a un atleta",
-      "updated": "Tarifa de un atleta cambiada",
-      "charges_generated": "Cargos de tarifas generados",
-      "subscribed": "Tarifa domiciliada"
-    },
-    "workout": {
-      "created": "WOD programado",
-      "updated": "WOD editado",
-      "removed": "WOD borrado"
-    },
-    "announcement": {
-      "created": "Anuncio publicado",
-      "updated": "Anuncio editado",
-      "removed": "Anuncio retirado"
-    },
-    "lead": {
-      "created": "Lead nuevo",
-      "updated": "Lead actualizado",
-      "converted": "Lead convertido en atleta"
-    },
-    "exercise": {
-      "created": "Ejercicio creado",
-      "updated": "Ejercicio editado",
-      "archived": "Ejercicio archivado",
-      "restored": "Ejercicio recuperado"
-    },
-    "equipment": {
-      "created": "Material añadido",
-      "updated": "Material editado",
-      "removed": "Material quitado"
-    },
-    "planning": {
-      "settings_updated": "Ajustes de la programación cambiados"
-    },
-    "plan": {
-      "created": "Plan creado",
-      "updated": "Plan editado",
-      "removed": "Plan borrado",
-      "drafted": "Semana del plan preparada",
-      "adjusted": "Ajuste de la revisión decidido"
-    },
-    "plan_ai": {
-      "requested": "Planificación pedida a la IA",
-      "applied": "Propuesta de la IA aplicada al plan"
-    },
-    "athlete_level": {
-      "updated": "Nivel del atleta cambiado"
     }
   },
   "team": {
@@ -3661,15 +3541,7 @@
       "counterSale": "Venta en el mostrador",
       "developers": "Catálogo público para la web",
       "roadmap": "Hoja de ruta de la plataforma",
-      "suggest": "Sugerir una mejora",
-      "newAthlete": "Nuevo atleta",
-      "newClassType": "Nuevo tipo de clase",
-      "newWorkout": "Programar un WOD",
-      "exercises": "Ejercicios",
-      "newPlan": "Nueva tarifa o bono",
-      "newLead": "Nuevo lead",
-      "newTrainingPlan": "Nuevo plan de entrenamiento",
-      "equipment": "Material del box"
+      "suggest": "Sugerir una mejora"
     },
     "keys": {
       "move": "moverse",
@@ -5275,10 +5147,7 @@
       },
       "invalid": "Revisa los datos: nombre, precio y opciones (sin nombres repetidos).",
       "invalidStock": "El stock es un número entero, o vacío si no hay límite.",
-      "noOptions": "Añade al menos una opción.",
-      "memberPrice": "Precio para socios (opcional)",
-      "memberPriceHint": "Lo pagan los socios y los atletas con tarifa activa. Vacío: el mismo precio para todos.",
-      "memberPriceTooHigh": "El precio para socios no puede ser mayor que el precio normal."
+      "noOptions": "Añade al menos una opción."
     }
   },
   "shop": {
@@ -5355,8 +5224,7 @@
     "empty": "Ahora mismo no hay nada a la venta.",
     "emptyHint": "Cuando el club ponga algo a la venta, lo verás aquí.",
     "soldOut": "Agotado",
-    "until": "Hasta el {date}",
-    "memberPrice": "Socios: {price}"
+    "until": "Hasta el {date}"
   },
   "storeOrder": {
     "back": "Tienda",

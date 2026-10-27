@@ -30,7 +30,6 @@ import { ChargeSheet, FeeStatusChip, PaymentSheet, money } from "@/components/fe
 import { apiFetch, errorKey } from "@/lib/api";
 import { clubPaths, useReadyClub } from "@/lib/club";
 import { useDates } from "@/lib/dates";
-import { useClubModel } from "@/lib/fitness";
 import { useT } from "@/lib/intl";
 import {
   Alert,
@@ -71,11 +70,8 @@ function FeesAdmin() {
   const { org } = useReadyClub();
   const [params, setParams] = useSearchParams();
   const canWrite = org.actor.permissions.includes("org.fees.write");
-  // En un box (ADR 0050) las tarifas y sus cargos del mes viven en Tarifas: aquí, cargos y pasarela.
-  const fitness = useClubModel() === "fitness";
-  const tabs = fitness ? ADMIN_TABS.filter((k) => k !== "plans") : ADMIN_TABS;
   const raw = params.get("tab");
-  const tab: AdminTab = tabs.includes(raw as AdminTab) ? (raw as AdminTab) : "charges";
+  const tab: AdminTab = ADMIN_TABS.includes(raw as AdminTab) ? (raw as AdminTab) : "charges";
   const [generating, setGenerating] = useState(false);
   const [newCharge, setNewCharge] = useState(false);
   const client = useQueryClient();
@@ -90,15 +86,9 @@ function FeesAdmin() {
         actions={
           canWrite ? (
             <>
-              {fitness ? (
-                <ButtonLink variant="secondary" to={`${clubPaths(slug).plans}?tab=charges`}>
-                  {t("generate.action")}
-                </ButtonLink>
-              ) : (
-                <Button variant="secondary" onClick={() => setGenerating(true)}>
-                  {t("generate.action")}
-                </Button>
-              )}
+              <Button variant="secondary" onClick={() => setGenerating(true)}>
+                {t("generate.action")}
+              </Button>
               <Button action="add" onClick={() => setNewCharge(true)}>
                 {t("newCharge")}
               </Button>
@@ -110,7 +100,11 @@ function FeesAdmin() {
         label={t("title")}
         selected={tab}
         onChange={(key) => setParams(key === "charges" ? {} : { tab: key }, { replace: true })}
-        items={tabs.map((key) => ({ key, label: t(`tabs.${key}`) }))}
+        items={[
+          { key: "charges", label: t("tabs.charges") },
+          { key: "plans", label: t("tabs.plans") },
+          { key: "connections", label: t("tabs.connections") },
+        ]}
       />
       {tab === "charges" ? <ChargesTab canWrite={canWrite} /> : null}
       {tab === "plans" ? <PlansTab canWrite={canWrite} /> : null}

@@ -1,6 +1,5 @@
 import {
   ActivityResponseSchema,
-  FeePlansResponseSchema,
   InvitationsResponseSchema,
   LOCALES,
   MemberTypeResponseSchema,
@@ -31,7 +30,6 @@ import { useAccountingStatus } from "@/components/accounting";
 import { ApiClientError, apiFetch, errorKey } from "@/lib/api";
 import { clubPaths, useReadyClub } from "@/lib/club";
 import { useDates } from "@/lib/dates";
-import { useClassTypes, useClubModel } from "@/lib/fitness";
 import { useT } from "@/lib/intl";
 import { AccountingSection } from "./settings-accounting";
 import { DevelopersTab } from "./settings-developers";
@@ -102,16 +100,13 @@ export function SettingsPage() {
     ? (raw as Tab)
     : (alias?.tab ?? "general");
   const permissions = org.actor.permissions;
-  const fitness = useClubModel() === "fitness";
 
   if (!permissions.includes("org.settings.write") || org.organization.view !== "full") {
     return <Alert kind="error">{t("forbidden")}</Alert>;
   }
   const o = org.organization;
-  // En un box (ADR 0050) no hay temporadas ni tipos de socio que gestionar: la temporada va sola
-  // y el atleta es uno solo. La pestaña no sale y su enlace lleva a General.
-  const canSeasons = !fitness && permissions.includes("org.structure.write");
-  const canMemberTypes = !fitness && permissions.includes("org.club_members.write");
+  const canSeasons = permissions.includes("org.structure.write");
+  const canMemberTypes = permissions.includes("org.club_members.write");
   const items = [
     { key: "general" as const, label: t("tabs.general") },
     { key: "identity" as const, label: t("tabs.identity") },
@@ -142,9 +137,9 @@ export function SettingsPage() {
         onChange={(key) => setParams(key === "general" ? {} : { tab: key }, { replace: true })}
         items={items}
       />
-      {tab === "general" || (tab === "seasons" && fitness) ? (
+      {tab === "general" ? (
         <div className="flex flex-col gap-6">
-          {fitness ? <BoxSetupCard /> : <SetupCard />}
+          <SetupCard />
           <GeneralTab
             key={o.id}
             name={o.name}
@@ -154,7 +149,7 @@ export function SettingsPage() {
         </div>
       ) : null}
       {tab === "identity" ? <IdentityTab key={o.id} /> : null}
-      {tab === "seasons" && !fitness ? (
+      {tab === "seasons" ? (
         <div className="flex flex-col gap-6">
           {canSeasons ? <SeasonsCard /> : null}
           {canMemberTypes ? <MemberTypesCard /> : null}
@@ -1236,135 +1231,6 @@ function SetupCard() {
                 size="sm"
               >
                 {t(`${step.key}Action`)}
-              </ButtonLink>
-            )}
-          </li>
-        ))}
-      </ol>
-    </Card>
-  );
-}
-
-/**
- * Puesta en marcha de un box (ADR 0050): lo que hace falta para abrir las reservas. Identidad,
- * tipos de clase con su horario, tarifas e invitar al primer coach. Desaparece al completarla.
- */
-function BoxSetupCard() {
-  const t = useT("settings.setup");
-  const b = useT("settings.setup.box");
-  const { slug, org, branding } = useReadyClub();
-  const paths = clubPaths(slug);
-  const permissions = org.actor.permissions;
-  const classTypes = useClassTypes(permissions.includes("org.structure.read"));
-  const plans = useQuery({
-    queryKey: ["org", slug, "fees", "plans"],
-    queryFn: () => apiFetch("/api/org/fees/plans", { schema: FeePlansResponseSchema }),
-    enabled: permissions.includes("org.fees.read"),
-  });
-  const members = useQuery({
-    queryKey: ["org", slug, "members"],
-    queryFn: () => apiFetch("/api/org/members", { schema: MembersResponseSchema }),
-    enabled: permissions.includes("org.members.read"),
-  });
-  const invitations = useQuery({
-    queryKey: ["org", slug, "invitations"],
-    queryFn: () => apiFetch("/api/org/invitations", { schema: InvitationsResponseSchema }),
-    enabled: permissions.includes("org.members.invite"),
-  });
-  const defaultColors =
-    branding.brandPrimaryColor === brandTokens["--color-brand-primary"] &&
-    branding.brandSecondaryColor === brandTokens["--color-brand-secondary"];
-  const coaches = (members.data?.members ?? []).filter((m) =>
-    m.roles.some((r) => r === "coach" || r === "staff"),
-  ).length;
-  const pending = (invitations.data?.invitations ?? []).filter((i) => i.state === "pending").length;
-  const scheduled = (classTypes.data?.classTypes ?? []).some(
-    (c) => c.status === "active" && c.slots.length > 0,
-  );
-  const sellsClasses = (plans.data?.plans ?? []).some(
-    (p) => p.status === "active" && p.entitlement !== "none",
-  );
-  const steps: {
-    key: string;
-    label: string;
-    action: string;
-    icon: ActionKind;
-    done: boolean;
-    to: string;
-  }[] = [
-    {
-      key: "logo",
-      label: t("logo"),
-      action: t("logoAction"),
-      icon: "upload",
-      done: Boolean(branding.logoUrl),
-      to: `${paths.settings}?tab=identity`,
-    },
-    {
-      key: "colors",
-      label: b("identity"),
-      action: t("colorsAction"),
-      icon: "edit",
-      done: !defaultColors,
-      to: `${paths.settings}?tab=identity`,
-    },
-    {
-      key: "schedule",
-      label: b("schedule"),
-      action: b("scheduleAction"),
-      icon: "add",
-      done: scheduled,
-      to: paths.classTypes,
-    },
-    {
-      key: "plans",
-      label: b("plans"),
-      action: b("plansAction"),
-      icon: "add",
-      done: sellsClasses,
-      to: paths.plans,
-    },
-    {
-      key: "invite",
-      label: b("invite"),
-      action: t("inviteAction"),
-      icon: "invite",
-      done: coaches > 0 || pending > 0,
-      to: `${paths.staff}?invite=1`,
-    },
-  ];
-  const done = steps.filter((s) => s.done).length;
-  if ([classTypes, plans, members, invitations].some((q) => q.isLoading) || done === steps.length) {
-    return null;
-  }
-
-  return (
-    <Card
-      title={t("title")}
-      description={b("description", { done, total: steps.length })}
-      padded={false}
-    >
-      <ol className="flex flex-col divide-y divide-line">
-        {steps.map((step) => (
-          <li key={step.key} className="flex min-h-16 items-center gap-3 px-5 py-3">
-            <span
-              aria-hidden="true"
-              className={`grid size-7 shrink-0 place-items-center rounded-full ${
-                step.done ? "bg-success-soft text-success" : "border border-control text-muted"
-              }`}
-            >
-              {step.done ? <Icon.Check size={16} weight="bold" /> : null}
-            </span>
-            <span
-              className={`flex-1 text-body ${step.done ? "text-muted line-through" : "text-ink"}`}
-            >
-              {step.label}
-            </span>
-            {step.done ? (
-              <StatusChip kind="success">{t("done")}</StatusChip>
-            ) : (
-              <ButtonLink action={step.icon} to={step.to} variant="secondary" size="sm">
-                {step.action}
               </ButtonLink>
             )}
           </li>

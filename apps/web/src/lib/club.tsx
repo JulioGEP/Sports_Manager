@@ -4,7 +4,6 @@ import {
   OrganizationResponseSchema,
   isReservedSubdomain,
   ORGANIZATION_SLUG_PATTERN,
-  type BoxArea,
   type ClubStyle,
   type MeResponse,
   type MyMembershipsResponse,
@@ -310,49 +309,4 @@ export const clubPaths = (slug: string) => ({
   athlete: `/${slug}/me`,
   /** Lo que entrena el deportista con cuenta propia (ADR 0046): su plan de estos días. */
   athleteTraining: `/${slug}/me/training`,
-  /**
-   * Clubs de fitness (ADR 0049). El atleta: reservar, la clase, el WOD con su clasificación, su
-   * progreso, su tarifa, los mensajes y anuncios del box y los ejercicios. El coach: sus clases, la
-   * programación y los atletas. El dueño: el horario, las tarifas, los leads y la pantalla del box.
-   */
-  classes: `/${slug}/classes`,
-  classDetail: (id: string) => `/${slug}/classes/${id}`,
-  wod: `/${slug}/wod`,
-  leaderboard: (blockId: string) => `/${slug}/leaderboard/${blockId}`,
-  progress: `/${slug}/progress`,
-  myPlan: `/${slug}/my-plan`,
-  messages: `/${slug}/messages`,
-  messageThread: (playerId: string) => `/${slug}/messages/${playerId}`,
-  announcements: `/${slug}/announcements`,
-  library: `/${slug}/library`,
-  /** Biblioteca de ejercicios del box: la ven todos, la escriben coach y dueño. */
-  exercises: `/${slug}/exercises`,
-  programming: `/${slug}/programming`,
-  workoutNew: `/${slug}/programming/new`,
-  workoutEdit: (id: string) => `/${slug}/programming/${id}`,
-  /**
-   * Planificación del box (ADR 0053): los planes de cada disciplina, el asistente para crear uno,
-   * el mapa del ciclo, la semana, la revisión del domingo, la salud y el material. El atleta ve su
-   * ciclo y su resumen para compartir.
-   */
-  planning: `/${slug}/planning`,
-  planningNew: `/${slug}/planning/new`,
-  planningPlan: (id: string) => `/${slug}/planning/${id}`,
-  planningWeek: (id: string, n: number) => `/${slug}/planning/${id}/weeks/${n}`,
-  planningReview: (id: string) => `/${slug}/planning/${id}/review`,
-  planningHealth: (id: string) => `/${slug}/planning/${id}/health`,
-  equipment: `/${slug}/equipment`,
-  cycle: `/${slug}/cycle`,
-  cycleSummary: `/${slug}/cycle/summary`,
-  athletes: `/${slug}/athletes`,
-  athleteFile: (id: string) => `/${slug}/athletes/${id}`,
-  classTypes: `/${slug}/class-types`,
-  plans: `/${slug}/plans`,
-  leads: `/${slug}/leads`,
-  tv: `/${slug}/tv`,
-  /**
-   * Portada de un área del box (ADR 0055): Entrenamiento, Negocio o El box, con los KPIs que el
-   * club elige y la entrada a cada pantalla del área. Sustituye a las métricas (`/metrics`).
-   */
-  area: (key: BoxArea) => `/${slug}/areas/${key}`,
 });

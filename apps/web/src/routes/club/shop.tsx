@@ -49,19 +49,6 @@ type CartLine = { personId: string; productId: string; variantId: string; quanti
 const cartKey = (slug: string) => `sm.cart.${slug}`;
 
 /** La cesta vive en la sesión del navegador: sobrevive a ir y volver, no a cerrar la pestaña. */
-/**
- * Precio de un producto para una persona (ADR 0049): el de socio si el producto lo tiene y la
- * persona es socia o atleta con tarifa activa; si no, el de siempre.
- */
-export function priceFor(
-  product: { priceCents: number; memberPriceCents: number | null },
-  beneficiary: StoreBeneficiary | null | undefined,
-): number {
-  return beneficiary?.memberPrice && product.memberPriceCents !== null
-    ? product.memberPriceCents
-    : product.priceCents;
-}
-
 function useCart(slug: string) {
   const [lines, setLines] = useState<CartLine[]>(() => {
     try {
@@ -303,11 +290,6 @@ function Catalog({
                         <span className="font-mono text-body text-ink">{money(p.priceCents)}</span>
                         {available ? null : <StatusChip kind="neutral">{t("soldOut")}</StatusChip>}
                       </span>
-                      {p.memberPriceCents !== null ? (
-                        <span className="text-label text-club-text">
-                          {t("memberPrice", { price: money(p.memberPriceCents) })}
-                        </span>
-                      ) : null}
                       {p.availableUntil ? (
                         <span className="text-label text-muted">
                           {t("until", { date: day(p.availableUntil) })}
@@ -349,10 +331,6 @@ function ProductBuySheet({
   const chosen = options.find((v) => v.id === variantId) ?? null;
   const available = options.some((v) => v.inStock);
   const maxQty = chosen?.lowStock ?? STORE_MAX_LINE_QUANTITY;
-  const unit = priceFor(
-    product,
-    beneficiaries.find((b) => b.personId === personId),
-  );
 
   return (
     <Sheet
@@ -360,7 +338,7 @@ function ProductBuySheet({
       onClose={onClose}
       closeLabel={c("close")}
       title={product.name}
-      description={money(unit)}
+      description={money(product.priceCents)}
       footer={
         <>
           <Button variant="secondary" onClick={onClose}>
@@ -371,7 +349,7 @@ function ProductBuySheet({
             disabled={!chosen || !chosen.inStock || !personId}
             onClick={() => onAdd({ personId, productId: product.id, variantId, quantity })}
           >
-            {t("add", { total: money(unit * quantity) })}
+            {t("add", { total: money(product.priceCents * quantity) })}
           </Button>
         </>
       }
@@ -502,16 +480,8 @@ function CartSheet({
   const groups = beneficiaries
     .map((b) => ({ beneficiary: b, lines: lines.filter((l) => l.personId === b.personId) }))
     .filter((g) => g.lines.length > 0);
-  const lineTotal = (l: CartLine) => {
-    const product = variants.get(l.variantId)?.product;
-    if (!product) return 0;
-    return (
-      priceFor(
-        product,
-        beneficiaries.find((b) => b.personId === l.personId),
-      ) * l.quantity
-    );
-  };
+  const lineTotal = (l: CartLine) =>
+    (variants.get(l.variantId)?.product.priceCents ?? 0) * l.quantity;
   const total = lines.reduce((sum, l) => sum + lineTotal(l), 0);
   const who = (b: StoreBeneficiary) => (b.kind === "self" ? t("forSelf") : personDisplayName(b));
 
@@ -615,7 +585,7 @@ function CartSheet({
                               {found.product.name}
                             </span>
                             <span className="text-label text-muted">
-                              {[option?.label, money(priceFor(found.product, g.beneficiary))]
+                              {[option?.label, money(found.product.priceCents)]
                                 .filter(Boolean)
                                 .join(" · ")}
                             </span>
