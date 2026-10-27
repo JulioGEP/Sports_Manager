@@ -1,6 +1,6 @@
 # 0049. Clubs de fitness: un modelo de club y una segunda interfaz sobre la misma base
 
-Estado: aceptada. Fecha: 2026-10-26. Construye la propuesta `docs/propuesta-clubs-de-fitness.md` entera, sin fases. Amplía la 0046 (rol de deportista), la 0041 (tienda y API pública), la 0042 (Stripe) y la 0044 (propuesta con IA).
+Estado: aceptada; trasladada a inthebox (ADR 0058). Fecha: 2026-10-26. Construye la propuesta `docs/propuesta-clubs-de-fitness.md` entera, sin fases. Amplía la 0046 (rol de deportista), la 0041 (tienda y API pública), la 0042 (Stripe) y la 0044 (propuesta con IA).
 
 ## Contexto
 

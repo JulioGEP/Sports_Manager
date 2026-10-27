@@ -1,6 +1,6 @@
 # 0055. Áreas del box con portada de KPIs que personaliza cada club, sin timer, ranking ni métricas
 
-Estado: aceptada. Fecha: 2026-10-27. Revisa la navegación del box de la 0049 y la 0050. Sustituye la pantalla de Métricas (`/metrics`) de la 0049.
+Estado: aceptada; trasladada a inthebox (ADR 0058). Fecha: 2026-10-27. Revisa la navegación del box de la 0049 y la 0050. Sustituye la pantalla de Métricas (`/metrics`) de la 0049.
 
 ## Contexto
 

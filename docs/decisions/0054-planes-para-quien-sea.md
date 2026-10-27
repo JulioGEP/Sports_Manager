@@ -1,6 +1,6 @@
 # 0054. Planes para quien sea: todo el box, un nivel, un grupo o una persona
 
-Estado: aceptada. Fecha: 2026-10-27. Amplía la 0053 (planificación del box). Abierto para todos los boxes, como el resto de la planificación: la división en módulos de pago se hará después.
+Estado: aceptada; trasladada a inthebox (ADR 0058). Fecha: 2026-10-27. Amplía la 0053 (planificación del box). Abierto para todos los boxes, como el resto de la planificación: la división en módulos de pago se hará después.
 
 ## Contexto
 

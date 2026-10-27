@@ -1,6 +1,6 @@
 # 0051. Clases del box en calendario: la semana en rejilla horaria y el color según lo que puedes hacer
 
-Estado: aceptada. Fecha: 2026-10-26. Revisa la pantalla de Clases de la 0049.
+Estado: aceptada; trasladada a inthebox (ADR 0058). Fecha: 2026-10-26. Revisa la pantalla de Clases de la 0049.
 
 ## Contexto
 
