@@ -1,0 +1,234 @@
+{
+  "areas": {
+    "training": "Clases, programación, atletas, planificación y ejercicios, de un vistazo.",
+    "business": "Tarifas, cobros, captación, tienda y anuncios: cómo va el box como negocio.",
+    "box": "Mensajes, horario, equipo, salas y material: cómo funciona el box por dentro."
+  },
+  "eyebrow": "Resumen del área",
+  "summaryOf": "Resumen de {area}",
+  "boardTitle": "Cifras clave",
+  "todayTitle": "Las cifras de hoy",
+  "screensTitle": "En esta área",
+  "screens": {
+    "classes": "Calendario de clases, reservas y check-in.",
+    "programming": "El WOD de cada día y disciplina.",
+    "athletes": "Fichas, tarifas, asistencia y marcas.",
+    "planning": "Ciclos por disciplina, nivel, grupo o persona.",
+    "exercises": "La biblioteca de movimientos del box.",
+    "plans": "Tarifas, bonos y cargos del mes.",
+    "payments": "Cargos, pagos y lo que falta por cobrar.",
+    "leads": "Interesados y clases de prueba.",
+    "store": "Productos, stock y pedidos.",
+    "announcements": "Lo que el box cuenta a sus atletas.",
+    "messages": "Conversaciones con los atletas.",
+    "schedule": "Tipos de clase, horario semanal y aforo.",
+    "staff": "Coaches y personal, con sus permisos.",
+    "rooms": "Las salas del box.",
+    "equipment": "El inventario del material y lo que está roto.",
+    "tv": "El WOD y el reloj en la tele del box."
+  },
+  "empty": {
+    "title": "Este cuadro no tiene cifras",
+    "hint": "Personalízalo y elige los KPIs que quieres ver aquí.",
+    "readOnly": "La administración del box no ha elegido cifras para este cuadro."
+  },
+  "loadError": "No se han podido cargar las cifras. Inténtalo de nuevo.",
+  "noData": "Sin datos todavía",
+  "delta": "{delta} pts frente a la semana pasada",
+  "slotOccupancy": "{percent} de ocupación",
+  "dashboards": {
+    "today": "Hoy",
+    "training": "Entrenamiento",
+    "business": "Negocio",
+    "box": "El box"
+  },
+  "kpi": {
+    "classes_today": {
+      "label": "Clases hoy",
+      "hint": "{booked, plural, one {# reserva} other {# reservas}} · {free, plural, one {# plaza libre} other {# plazas libres}}",
+      "about": "Las clases abiertas de hoy, con lo reservado y lo que queda libre."
+    },
+    "occupancy_week": {
+      "label": "Ocupación esta semana",
+      "hint": "Plazas ocupadas sobre las ofrecidas",
+      "about": "Plazas ocupadas sobre las ofrecidas en las clases de esta semana, frente a la anterior."
+    },
+    "programming_ready": {
+      "label": "Días con WOD publicado",
+      "hint": "{drafts, plural, one {# en borrador} other {# en borrador}} · {missing, plural, one {# sin WOD} other {# sin WOD}}",
+      "about": "De los próximos siete días con clase, los que tienen el WOD publicado en todas las disciplinas."
+    },
+    "active_athletes": {
+      "label": "Atletas activos",
+      "hint": "+{joined} altas · {left} bajas este mes",
+      "about": "Atletas con una tarifa activa o en pausa, y las altas y bajas del mes."
+    },
+    "inactive_athletes": {
+      "label": "Atletas que no vienen",
+      "hint": "Más de 14 días sin venir y sin reserva",
+      "about": "Atletas con tarifa que llevan más de 14 días sin entrenar y no tienen ninguna reserva."
+    },
+    "visits_per_athlete": {
+      "label": "Asistencia media",
+      "hint": "Clases por atleta activo en 30 días",
+      "about": "Las clases que ha hecho de media cada atleta activo en los últimos 30 días."
+    },
+    "prs_week": {
+      "label": "PRs esta semana",
+      "hint": "{athletes, plural, one {# atleta} other {# atletas}} en 7 días",
+      "about": "Marcas personales nuevas de los últimos siete días."
+    },
+    "active_plans": {
+      "label": "Planes activos",
+      "hint": "{uncovered, plural, =0 {Todas las disciplinas con plan} one {# disciplina sin plan} other {# disciplinas sin plan}}",
+      "about": "Planificaciones en marcha, y las disciplinas que todavía no tienen una."
+    },
+    "exercises_library": {
+      "label": "Ejercicios en la biblioteca",
+      "hint": "{noVideo, plural, =0 {Todos con vídeo} one {# sin vídeo} other {# sin vídeo}}",
+      "about": "Los ejercicios activos de la biblioteca y los que aún no tienen vídeo."
+    },
+    "recurring_revenue": {
+      "label": "Recurrente al mes",
+      "hint": "Lo que suman las tarifas activas",
+      "about": "Lo que suman al mes las tarifas recurrentes activas (las trimestrales y anuales, prorrateadas)."
+    },
+    "members_net": {
+      "label": "Altas netas del mes",
+      "hint": "+{joined} altas · {left} bajas",
+      "about": "Atletas que empiezan menos los que dejan su tarifa este mes."
+    },
+    "packs_expiring": {
+      "label": "Bonos por renovar",
+      "hint": "Caducan en 7 días o les queda una sesión",
+      "about": "Bonos que caducan en los próximos siete días o a los que les queda una sesión o ninguna."
+    },
+    "paused_plans": {
+      "label": "Tarifas en pausa",
+      "hint": "{ending, plural, =0 {Ninguna vuelve esta semana} one {# vuelve esta semana} other {# vuelven esta semana}}",
+      "about": "Tarifas pausadas ahora mismo, y las que se reactivan en los próximos siete días."
+    },
+    "overdue_charges": {
+      "label": "Pendiente de cobro",
+      "hint": "{count, plural, =0 {Nada vencido} one {# cargo vencido} other {# cargos vencidos}}",
+      "about": "Lo que falta por cobrar de los cargos vencidos."
+    },
+    "collected_month": {
+      "label": "Cobrado este mes",
+      "hint": "{payments, plural, one {# pago} other {# pagos}}",
+      "about": "Pagos registrados este mes, a mano o por Stripe."
+    },
+    "open_leads": {
+      "label": "Leads abiertos",
+      "hint": "{fresh, plural, =0 {Ninguno sin atender} one {# nuevo sin atender} other {# nuevos sin atender}}",
+      "about": "Leads que ni se han convertido ni se han perdido, y los nuevos que nadie ha atendido."
+    },
+    "trials_week": {
+      "label": "Pruebas esta semana",
+      "hint": "{converted, plural, one {# convertida este mes} other {# convertidas este mes}}",
+      "about": "Clases de prueba de esta semana, y los leads convertidos en atletas este mes."
+    },
+    "lead_conversion": {
+      "label": "Conversión de leads",
+      "hint": "{converted} de {total} en 90 días",
+      "about": "De los leads que han entrado en los últimos 90 días, los que ya son atletas."
+    },
+    "store_sales_month": {
+      "label": "Ventas de la tienda",
+      "hint": "{orders, plural, one {# pedido} other {# pedidos}} · {toPrepare} por preparar",
+      "about": "Lo que suman los pedidos de este mes, sin los cancelados."
+    },
+    "announcements_month": {
+      "label": "Anuncios publicados",
+      "hint": "{reads, plural, one {# lectura} other {# lecturas}} este mes",
+      "about": "Anuncios publicados este mes y cuántas veces se han leído."
+    },
+    "classes_week": {
+      "label": "Clases esta semana",
+      "hint": "{seats} plazas · {booked} reservadas",
+      "about": "Clases abiertas de esta semana, las plazas que ofrecen y las reservadas."
+    },
+    "peak_slot": {
+      "label": "Franja más llena",
+      "hint": "{taken} de {offered} plazas en 4 semanas",
+      "about": "La hora de inicio con más ocupación en las últimas cuatro semanas: donde puede faltar sitio."
+    },
+    "quiet_slot": {
+      "label": "Franja con más hueco",
+      "hint": "{taken} de {offered} plazas en 4 semanas",
+      "about": "La hora de inicio con menos ocupación en las últimas cuatro semanas: donde sobra sitio."
+    },
+    "classes_without_coach": {
+      "label": "Clases sin coach",
+      "hint": "{count, plural, =0 {Todas con coach en los próximos 7 días} other {En los próximos 7 días}}",
+      "about": "Clases abiertas de los próximos siete días que no tienen coach asignado."
+    },
+    "unread_messages": {
+      "label": "Conversaciones por contestar",
+      "hint": "{messages, plural, one {# mensaje sin leer} other {# mensajes sin leer}}",
+      "about": "Conversaciones con atletas que tienen mensajes que el box no ha leído."
+    },
+    "equipment_out": {
+      "label": "Material fuera de servicio",
+      "hint": "{kinds, plural, =0 {Todo funciona · {total} tipos en el inventario} one {# tipo de material afectado} other {# tipos de material afectados}}",
+      "about": "Piezas de material marcadas como rotas o en reparación."
+    }
+  },
+  "customize": "Personalizar",
+  "edit": {
+    "hint": "Arrastra cada pieza por su asa para ordenarla. Elige cómo se ve y qué sitio ocupa. Se guarda para todo el equipo.",
+    "save": "Guardar cuadro",
+    "cancel": "Cancelar",
+    "restore": "Volver a los de serie",
+    "saved": "Cuadro guardado. Ya lo ve todo el equipo.",
+    "restored": "Vuelve el cuadro de serie.",
+    "add": "Añadir KPI",
+    "full": "Caben doce piezas. Quita una para añadir otra.",
+    "drag": "Arrastrar {name}",
+    "moveBefore": "Mover antes",
+    "moveAfter": "Mover después",
+    "remove": "Quitar",
+    "options": "Opciones de {name}",
+    "view": "Vista de {name}",
+    "size": "Tamaño",
+    "moved": "{name}: posición {position} de {total}",
+    "removed": "{name} quitado del cuadro",
+    "unsaved": "Cambios sin guardar",
+    "addTitle": "Añadir a {dashboard}",
+    "addDescription": "Cada KPI con su cifra de ahora y las vistas que admite. Llega con su vista de serie; luego la cambias en el cuadro.",
+    "addOne": "Añadir {name}",
+    "addEmpty": "Ya están todos en el cuadro.",
+    "now": "Ahora: {value}",
+    "discardTitle": "¿Descartar los cambios?",
+    "discardBody": "El cuadro vuelve a como estaba antes de personalizarlo.",
+    "discard": "Descartar cambios",
+    "keep": "Seguir editando"
+  },
+  "views": {
+    "number": "Número",
+    "line": "Línea",
+    "bar": "Barras",
+    "radial": "Radial"
+  },
+  "sizes": {
+    "s": "Pequeño · 1×1",
+    "m": "Ancho · 2×1",
+    "l": "Grande · 2×2",
+    "xl": "Todo el ancho"
+  },
+  "trend": {
+    "week": "Últimas 8 semanas",
+    "month": "Últimos 6 meses",
+    "slot": "Por franja · 4 semanas",
+    "estimated": "Meses anteriores estimados con las fechas de las tarifas"
+  },
+  "chart": {
+    "summary": "{name}, {period}: de {first} a {last}.",
+    "slotSummary": "{name}: la franja de las {hour}, con {value}.",
+    "radialSummary": "{name}: {value}.",
+    "weekOf": "semana del {date}",
+    "sevenDaysTo": "7 días hasta el {date}",
+    "windowTo": "30 días hasta el {date}",
+    "slotAt": "franja de las {hour}"
+  }
+}

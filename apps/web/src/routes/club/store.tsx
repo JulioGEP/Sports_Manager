@@ -14,7 +14,8 @@ import {
   StoreProductsResponseSchema,
   StoreProductUpdateSchema,
   TeamsResponseSchema,
-  centsToAmount,
+  formatAmount,
+  parseMoney,
   type StoreOrder,
   type StoreOrderStatus,
   type StoreProduct,
@@ -31,7 +32,7 @@ import { clubPaths, useReadyClub } from "@/lib/club";
 import { useDates } from "@/lib/dates";
 import { shrinkImage } from "@/lib/images";
 import { useT } from "@/lib/intl";
-import { downloadXlsx } from "@/lib/xlsx";
+import { downloadXlsx, moneyCell } from "@/lib/xlsx";
 import {
   Alert,
   Button,
@@ -234,8 +235,8 @@ function OrdersTab({ canWrite }: { canWrite: boolean }) {
             personDisplayName(o.person),
             os(o.status),
             ps(o.payment.status),
-            o.totalCents / 100,
-            o.payment.paidCents / 100,
+            moneyCell(o.totalCents),
+            moneyCell(o.payment.paidCents),
             o.note ?? "",
           ]),
         ],
@@ -259,7 +260,7 @@ function OrdersTab({ canWrite }: { canWrite: boolean }) {
               i.productName,
               i.variantLabel ?? "",
               i.quantity,
-              i.unitPriceCents / 100,
+              moneyCell(i.unitPriceCents),
               os(o.status),
             ]),
           ),
@@ -674,10 +675,10 @@ function ProductSheet({
   const [product, setProduct] = useState<StoreProduct | null>(initial);
   const [name, setName] = useState(initial?.name ?? "");
   const [category, setCategory] = useState<StoreProductCategory>(initial?.category ?? "apparel");
-  const [price, setPrice] = useState(initial ? centsToAmount(initial.priceCents) : "");
+  const [price, setPrice] = useState(initial ? formatAmount(initial.priceCents) : "");
   /** Precio para socios o atletas con tarifa activa (ADR 0049): vacío, el mismo para todos. */
   const [memberPrice, setMemberPrice] = useState(
-    initial?.memberPriceCents != null ? centsToAmount(initial.memberPriceCents) : "",
+    initial?.memberPriceCents != null ? formatAmount(initial.memberPriceCents) : "",
   );
   const [description, setDescription] = useState(initial?.description ?? "");
   const [status, setStatus] = useState<StoreProduct["status"]>(initial?.status ?? "draft");
@@ -742,10 +743,8 @@ function ProductSheet({
   async function submit(e: FormEvent) {
     e.preventDefault();
     setError(null);
-    const priceCents = Math.round(Number(price.replace(",", ".")) * 100);
-    const memberPriceCents = memberPrice.trim()
-      ? Math.round(Number(memberPrice.replace(",", ".")) * 100)
-      : null;
+    const priceCents = parseMoney(price) ?? Number.NaN;
+    const memberPriceCents = memberPrice.trim() ? (parseMoney(memberPrice) ?? Number.NaN) : null;
     if (
       memberPriceCents !== null &&
       (!Number.isFinite(memberPriceCents) || memberPriceCents > priceCents)

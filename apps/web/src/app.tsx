@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createBrowserRouter, Navigate, RouterProvider, useParams } from "react-router";
 import { ClubShell } from "@/layouts/club-shell";
 import { PlatformShell } from "@/layouts/platform-shell";
+import { isValidClubSlug } from "@/lib/club";
 import { LocaleProvider } from "@/lib/intl";
 import { PlatformAuditPage } from "@/routes/admin/audit";
 import { PlatformClubPage } from "@/routes/admin/club";
@@ -66,16 +67,14 @@ import { AnnouncementsPage } from "@/routes/fitness/athlete/announcements";
 import { LeaderboardPage } from "@/routes/fitness/athlete/leaderboard";
 import { MyPlanPage } from "@/routes/fitness/athlete/plan";
 import { ProgressPage } from "@/routes/fitness/athlete/progress";
-import { TimerPage } from "@/routes/fitness/athlete/timer";
 import { WodPage } from "@/routes/fitness/athlete/wod";
 import { ExercisesPage, LibraryRedirect } from "@/routes/fitness/exercises";
 import { ClassTypesPage } from "@/routes/fitness/owner/class-types";
 import { LeadsPage } from "@/routes/fitness/owner/leads";
-import { MetricsPage } from "@/routes/fitness/owner/metrics";
 import { PlansPage } from "@/routes/fitness/owner/plans";
-import { RankingPage } from "@/routes/fitness/owner/ranking";
 import { BoxTvPage } from "@/routes/fitness/owner/tv";
 import { AthleteFilePage } from "@/routes/fitness/staff/athlete-file";
+import { AreaPage } from "@/routes/fitness/staff/area";
 import { AthletesPage } from "@/routes/fitness/staff/athletes";
 import { MessageThreadPage } from "@/routes/fitness/staff/messages";
 import { ProgrammingPage } from "@/routes/fitness/staff/programming";
@@ -106,6 +105,12 @@ function LegacyRedirect({ to }: { to: string }) {
 function ClubRedirect({ to }: { to: string }) {
   const { club } = useParams();
   return <Navigate to={`/${club}${to}${window.location.search}`} replace />;
+}
+
+/** Ruta desconocida dentro de un club: a su inicio. Si el primer tramo no puede ser un club, a la raíz. */
+function ClubFallback() {
+  const { club } = useParams();
+  return <Navigate to={isValidClubSlug(club) ? `/${club}` : "/"} replace />;
 }
 
 /** `/roadmap` (ADR 0047) pasa a la pestaña Mejoras de Ajustes (ADR 0048), con lo que abría. */
@@ -421,9 +426,9 @@ export const router = createBrowserRouter([
         ),
       },
       // Clubs de fitness (ADR 0049): reservar y la clase, el WOD y su clasificación, el progreso, la
-      // tarifa, la comunidad (mensajes, anuncios, ranking), el timer y los movimientos; la
-      // programación y los atletas del coach; el horario, las tarifas, los leads, las métricas y
-      // la pantalla del box del dueño.
+      // tarifa, los mensajes, los anuncios y los ejercicios; la programación y los atletas del
+      // coach; el horario, las tarifas, los leads y la pantalla del box del dueño. Cada área del
+      // personal tiene su portada con KPIs (ADR 0055), que sustituye a las métricas.
       { path: "classes", element: <FitnessClassesRoute /> },
       { path: "classes/:id", element: <FitnessClassRoute /> },
       { path: "wod", element: <WodPage /> },
@@ -433,7 +438,6 @@ export const router = createBrowserRouter([
       { path: "messages", element: <FitnessMessagesRoute /> },
       { path: "messages/:id", element: <MessageThreadPage /> },
       { path: "announcements", element: <AnnouncementsPage /> },
-      { path: "timer", element: <TimerPage /> },
       { path: "library", element: <LibraryRedirect /> },
       { path: "exercises", element: <ExercisesPage /> },
       { path: "programming", element: <ProgrammingPage /> },
@@ -453,11 +457,14 @@ export const router = createBrowserRouter([
       { path: "class-types", element: <ClassTypesPage /> },
       { path: "plans", element: <PlansPage /> },
       { path: "leads", element: <LeadsPage /> },
-      { path: "metrics", element: <MetricsPage /> },
-      { path: "ranking", element: <RankingPage /> },
+      { path: "areas/:area", element: <AreaPage /> },
+      { path: "metrics", element: <ClubRedirect to="/areas/business" /> },
       { path: "tv", element: <BoxTvPage /> },
       // Mejoras de la plataforma: vivían en `/roadmap` (ADR 0047); ahora son una pestaña de Ajustes (ADR 0048).
       { path: "roadmap", element: <RoadmapRedirect /> },
+      // Una pantalla que ya no existe (el timer, el ranking) o una ruta mal escrita: al inicio del
+      // club, no a la portada del producto.
+      { path: "*", element: <ClubFallback /> },
     ],
   },
   { path: "*", element: <Navigate to="/" replace /> },

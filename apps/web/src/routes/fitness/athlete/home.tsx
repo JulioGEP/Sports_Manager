@@ -244,8 +244,8 @@ export function AthleteFitnessHome() {
       <nav aria-label={t("shortcuts")} className="grid grid-cols-3 gap-3">
         {[
           { to: paths.classes, label: c("nav.book"), icon: Icon.CalendarBlank },
-          { to: paths.timer, label: c("nav.timer"), icon: Icon.Timer },
           { to: paths.progress, label: c("nav.progress"), icon: Icon.ChartBar },
+          { to: paths.exercises, label: c("nav.library"), icon: Icon.Target },
         ].map((s) => (
           <Link
             key={s.to}

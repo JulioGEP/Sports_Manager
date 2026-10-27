@@ -29,6 +29,7 @@ export * from "./suggestions.ts";
 export * from "./capacities.ts";
 export * from "./fitness.ts";
 export * from "./fitness-ai.ts";
+export * from "./box-dashboards.ts";
 export * from "./exercises.ts";
 export * from "./planning.ts";
 export * from "./planning-analysis.ts";

@@ -3,6 +3,7 @@ import type { ORGANIZATION_STATUSES } from "@sportsmanager/shared";
 import {
   normalizeMotto,
   ROLE_CODES,
+  type BoxDashboardsConfig,
   type ClubModel,
   type LocalizedText,
   type OrganizationCreate,
@@ -205,6 +206,14 @@ export function organizationsRepo(db: () => Database) {
         .where(eq(schema.organizations.id, scope.organizationId))
         .returning();
       return rows[0]!;
+    },
+
+    /** Los cuadros de mando del box (ADR 0055): guarda lo que el club ha elegido. */
+    async setDashboards(scope: OrgScope, dashboards: BoxDashboardsConfig): Promise<void> {
+      await db()
+        .update(schema.organizations)
+        .set({ dashboards })
+        .where(eq(schema.organizations.id, scope.organizationId));
     },
 
     /** El club de un ámbito ya resuelto: para el webhook, que llega sin host de club. */

@@ -9,8 +9,6 @@
     "myPlan": "La meva tarifa",
     "messages": "Missatges",
     "announcements": "Avisos",
-    "ranking": "Rànquing",
-    "timer": "Timer",
     "library": "Exercicis",
     "equipment": "Material",
     "programming": "Programació",
@@ -18,7 +16,6 @@
     "athletes": "Atletes",
     "plans": "Tarifes",
     "leads": "Leads",
-    "metrics": "Mètriques",
     "tv": "Pantalla del box",
     "classTypes": "Horari",
     "payments": "Cobraments",
@@ -28,10 +25,10 @@
     "rooms": "Sales",
     "settings": "Configuració",
     "family": "La meva família",
+    "groupTraining": "Entrenament",
     "groupBox": "El box",
     "groupCommunity": "Comunitat",
     "groupBusiness": "Negoci",
-    "groupManagement": "Gestió",
     "groupAccount": "El meu compte"
   },
   "roles": {

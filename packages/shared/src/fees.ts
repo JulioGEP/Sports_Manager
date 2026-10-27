@@ -120,7 +120,39 @@ export const PaymentsSettingsUpdateSchema = z.object({
 });
 export type PaymentsSettingsUpdate = z.infer<typeof PaymentsSettingsUpdateSchema>;
 
-/** Importe en céntimos como texto con dos decimales, sin símbolo. La web añade la moneda. */
+/**
+ * Importe para leer, igual en toda la app y en todos los idiomas: punto de miles, coma decimal y
+ * siempre dos decimales, sin símbolo. `123456` → `1.234,56`.
+ */
+export function formatAmount(cents: number): string {
+  const rounded = Math.round(cents);
+  const sign = rounded < 0 ? "-" : "";
+  const abs = Math.abs(rounded);
+  const units = String(Math.floor(abs / 100)).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  return `${sign}${units},${String(abs % 100).padStart(2, "0")}`;
+}
+
+/** Dinero para leer: `1.234,56 €`. Con otro símbolo para otra moneda (`12,40 $`). */
+export function formatMoney(cents: number, symbol = "€"): string {
+  return `${formatAmount(cents)} ${symbol}`;
+}
+
+/**
+ * Lo que alguien escribe en un campo de importe, en céntimos. Acepta `1.234,56`, `1234,56`,
+ * `1234.56`, `12,5`, `12` y el símbolo del euro. Con coma, los puntos son de miles; sin coma, un
+ * punto seguido de grupos de tres cifras también lo es (`1.234`), y si no, es el decimal (`12.50`).
+ * Nulo si no es un número.
+ */
+export function parseMoney(text: string): number | null {
+  let t = text.replace(/[€\s\u00a0]/g, "");
+  if (t === "") return null;
+  if (t.includes(",")) t = t.replace(/\./g, "").replace(",", ".");
+  else if (/^-?\d{1,3}(\.\d{3})+$/.test(t)) t = t.replace(/\./g, "");
+  if (!/^-?\d+(\.\d+)?$/.test(t)) return null;
+  return Math.round(Number(t) * 100);
+}
+
+/** Importe en céntimos como texto con dos decimales y punto decimal, sin símbolo: para APIs. */
 export function centsToAmount(cents: number): string {
   const sign = cents < 0 ? "-" : "";
   const abs = Math.abs(cents);

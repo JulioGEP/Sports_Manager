@@ -1,7 +1,6 @@
 import type { FitnessMetricsResponse } from "@sportsmanager/shared";
 import { ClassRow } from "@/components/fitness/class-row";
-import { MeterBar, usePercent } from "@/components/fitness/owner-ui";
-import { money } from "@/components/fees";
+import { KpiBoard } from "@/components/fitness/kpi-board";
 import { clubPaths, useReadyClub } from "@/lib/club";
 import { dayRange, useClasses, useClassTime, useFitnessMetrics } from "@/lib/fitness";
 import { useT } from "@/lib/intl";
@@ -12,7 +11,6 @@ import {
   EmptyState,
   Icon,
   PageHeader,
-  Stat,
   StatusChip,
   type StatusKind,
 } from "@/ui";
@@ -28,17 +26,17 @@ const PROGRAMMING_TONE: Record<ProgrammingStatus, StatusKind> = {
 };
 
 /**
- * El inicio del dueño de un box (ADR 0049): primero lo que pide atención, luego las cifras que
- * mueven el negocio (atletas, ocupación, recurrente y captación), las clases de hoy y la
- * programación de la semana. Todo con su botón a donde se resuelve.
+ * El inicio del dueño de un box (ADR 0049): primero lo que pide atención, luego las cifras que el
+ * club ha elegido para Hoy (ADR 0055; de serie, atletas, ocupación, recurrente y pruebas), las
+ * clases de hoy y la programación de la semana. Todo con su botón a donde se resuelve.
  */
 export function OwnerFitnessHome() {
   const t = useT("fitness.owner.home");
+  const k = useT("fitness.kpis");
   const a = useT("fitness.owner.alerts");
   const { me, slug, org } = useReadyClub();
   const paths = clubPaths(slug);
   const time = useClassTime();
-  const percent = usePercent();
   const canMetrics = org.actor.permissions.includes("org.fees.read");
   const metrics = useFitnessMetrics(canMetrics);
   const classes = useClasses(dayRange(time.timezone, time.today));
@@ -53,10 +51,6 @@ export function OwnerFitnessHome() {
     charges_failed: `${paths.fees}?status=overdue`,
     plans_paused_ending: `${paths.plans}?tab=athletes`,
   };
-  const occupancyDelta =
-    m && m.occupancyWeek !== null && m.occupancyLastWeek !== null
-      ? Math.round((m.occupancyWeek - m.occupancyLastWeek) * 100)
-      : null;
 
   return (
     <div className="flex flex-col gap-6">
@@ -135,61 +129,7 @@ export function OwnerFitnessHome() {
         </Card>
       ) : null}
 
-      {m ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <Stat
-            icon={<Icon.UsersThree weight="duotone" />}
-            value={m.activeAthletes}
-            label={
-              <span className="flex flex-col">
-                <span>{t("stats.active")}</span>
-                <span className="text-label">
-                  {t("stats.activeHint", { joined: m.joinedThisMonth, left: m.leftThisMonth })}
-                </span>
-              </span>
-            }
-          />
-          <Stat
-            icon={<Icon.ChartBar weight="duotone" />}
-            value={m.occupancyWeek === null ? "–" : percent(m.occupancyWeek)}
-            label={
-              <span className="flex flex-col gap-1">
-                <span>{t("stats.occupancy")}</span>
-                {m.occupancyWeek !== null ? <MeterBar ratio={m.occupancyWeek} /> : null}
-                <span className="text-label">
-                  {occupancyDelta === null
-                    ? t("stats.noComparison")
-                    : t("stats.occupancyDelta", {
-                        delta: occupancyDelta > 0 ? `+${occupancyDelta}` : String(occupancyDelta),
-                      })}
-                </span>
-              </span>
-            }
-          />
-          <Stat
-            icon={<Icon.Coins weight="duotone" />}
-            value={money(m.recurringMonthlyCents)}
-            label={
-              <span className="flex flex-col">
-                <span>{t("stats.recurring")}</span>
-                <span className="text-label">{t("stats.recurringHint")}</span>
-              </span>
-            }
-          />
-          <Stat
-            icon={<Icon.UserPlus weight="duotone" />}
-            value={m.trialsThisWeek}
-            label={
-              <span className="flex flex-col">
-                <span>{t("stats.trials")}</span>
-                <span className="text-label">
-                  {t("stats.trialsHint", { count: m.trialsConvertedThisMonth })}
-                </span>
-              </span>
-            }
-          />
-        </div>
-      ) : null}
+      <KpiBoard dashboard="today" title={k("todayTitle")} />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card
@@ -273,15 +213,15 @@ export function OwnerFitnessHome() {
       </div>
 
       <Card title={t("shortcuts")}>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {(
             [
               [paths.classTypes, t("links.schedule"), Icon.Clock],
               [paths.plans, t("links.plans"), Icon.Ticket],
               [paths.leads, t("links.leads"), Icon.UserPlus],
-              [paths.metrics, t("links.metrics"), Icon.Pulse],
-              [paths.ranking, t("links.ranking"), Icon.Trophy],
               [paths.announcements, t("links.announcements"), Icon.Info],
+              [paths.planning, t("links.planning"), Icon.Rows],
+              [paths.exercises, t("links.exercises"), Icon.Target],
             ] as const
           ).map(([to, label, LinkIcon]) => (
             <ButtonLink

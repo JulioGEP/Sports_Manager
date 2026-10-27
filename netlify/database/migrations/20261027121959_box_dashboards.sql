@@ -1,0 +1,1 @@
+ALTER TABLE "organizations" ADD COLUMN "dashboards" jsonb DEFAULT '{}'::jsonb NOT NULL;

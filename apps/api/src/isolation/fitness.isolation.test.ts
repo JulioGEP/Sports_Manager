@@ -2,7 +2,9 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import { NetlifyDB } from "@netlify/database-dev";
 import {
   addDays,
+  BOX_DASHBOARD_DEFAULTS,
   type AnnouncementsResponse,
+  type BoxDashboardResponse,
   type BookingResult,
   type CancelResult,
   type ClassDetailResponse,
@@ -1199,7 +1201,7 @@ describe("clubs de fitness", () => {
     expect(plans.plans.map((p) => p.player.name)).toContain("Iris Mas");
   });
 
-  it("métricas del dueño y ranking del box", async () => {
+  it("métricas del dueño, y el ranking del box ya no existe", async () => {
     expect(
       status(await request("GET", "/api/org/fitness/metrics", A, { cookie: as(coachA) })),
     ).toBe(403);
@@ -1213,17 +1215,115 @@ describe("clubs de fitness", () => {
     expect(metrics.programming.find((p) => p.date === today)?.status).toBe("published");
     expect(metrics.programming.find((p) => p.date === addDays(today, 1))?.status).toBe("draft");
 
-    const ranking = await json<{ consistency: { name: string }[] }>(
-      await request("GET", "/api/org/fitness/ranking", A, { cookie: as(marta) }),
-      200,
+    expect(status(await request("GET", "/api/org/fitness/ranking", A, { cookie: as(marta) }))).toBe(
+      404,
     );
-    expect(ranking.consistency.map((r) => r.name)).toContain("Marta Roig");
     const athletes = await json<{ athletes: { name: string; plan: { name: string } | null }[] }>(
       await request("GET", "/api/org/athletes", A, { cookie: as(ownerA) }),
       200,
     );
     expect(athletes.athletes.find((a) => a.name === "Sergi Puig")?.plan?.name).toBe("Bono 2 WOD");
     expect(athletes.athletes.map((a) => a.name)).not.toContain("Berta Bosch");
+  });
+
+  it("cuadros de mando: cada uno ve sus cifras y el club elige KPI, vista y tamaño", async () => {
+    const dashboard = (path: string, user: Seeded, host = A) =>
+      request("GET", `/api/org/dashboards/${path}`, host, { cookie: as(user) });
+    // El atleta no tiene cuadros de mando; el coach no los personaliza.
+    expect(status(await dashboard("today", marta))).toBe(403);
+    expect(
+      status(
+        await request("PUT", "/api/org/dashboards/today", A, {
+          cookie: as(coachA),
+          body: { widgets: [{ kpi: "active_athletes", view: "number", size: "s" }] },
+        }),
+      ),
+    ).toBe(403);
+
+    // De serie, Hoy enseña atletas, ocupación, recurrente, pruebas y cobrado, con su histórico
+    // donde la pieza lo dibuja.
+    const today = await json<BoxDashboardResponse>(await dashboard("today", ownerA), 200);
+    expect(today.widgets).toEqual(BOX_DASHBOARD_DEFAULTS.today);
+    expect(today.custom).toBe(false);
+    expect(today.canEdit).toBe(true);
+    const value = (r: BoxDashboardResponse, id: string) => r.values.find((v) => v.id === id);
+    expect(value(today, "active_athletes")?.value).toBe(5);
+    expect(value(today, "active_athletes")?.series).toBeNull();
+    const recurring = value(today, "recurring_revenue");
+    expect(recurring?.value).toBe(4 * 6900);
+    expect(recurring?.series).toHaveLength(6);
+    expect(recurring?.series?.at(-1)?.value).toBe(4 * 6900);
+    expect(value(today, "trials_week")?.series).toHaveLength(8);
+
+    // El coach ve el área de Negocio sin lo que no puede ver: nada de dinero.
+    const business = await json<BoxDashboardResponse>(await dashboard("business", coachA), 200);
+    expect(business.widgets.map((x) => x.kpi)).not.toContain("recurring_revenue");
+    expect(business.values.map((v) => v.id)).not.toContain("recurring_revenue");
+    expect(business.canEdit).toBe(false);
+
+    // Personalizar: sin repetir, solo los del área, con una vista que el KPI admite (si no, la de
+    // serie) y en el orden pedido. Vale para todo el club.
+    const saved = await json<BoxDashboardResponse>(
+      await request("PUT", "/api/org/dashboards/training", A, {
+        cookie: as(ownerA),
+        body: {
+          widgets: [
+            { kpi: "prs_week", view: "line", size: "l" },
+            { kpi: "active_athletes", view: "radial", size: "s" },
+            { kpi: "prs_week", view: "bar", size: "s" },
+            { kpi: "recurring_revenue", view: "line", size: "m" },
+          ],
+        },
+      }),
+      200,
+    );
+    expect(saved.widgets).toEqual([
+      { kpi: "prs_week", view: "line", size: "l" },
+      { kpi: "active_athletes", view: "number", size: "s" },
+    ]);
+    expect(saved.custom).toBe(true);
+    expect(value(saved, "prs_week")?.series).toHaveLength(8);
+    const coachView = await json<BoxDashboardResponse>(await dashboard("training", coachA), 200);
+    expect(coachView.widgets.map((x) => x.kpi)).toEqual(["prs_week", "active_athletes"]);
+    // Al personalizar, las cifras de todos los disponibles, con histórico los que lo tienen.
+    const preview = await json<BoxDashboardResponse>(
+      await dashboard("training?preview=all", ownerA),
+      200,
+    );
+    expect(preview.values.map((v) => v.id)).toEqual(preview.available);
+    expect(value(preview, "occupancy_week")?.series).toHaveLength(8);
+    expect(value(preview, "classes_today")?.series).toBeNull();
+
+    // Otro club no ve la elección de este.
+    const other = await json<BoxDashboardResponse>(await dashboard("training", ownerB, B), 200);
+    expect(other.widgets).toEqual(BOX_DASHBOARD_DEFAULTS.training);
+
+    // Volver a los de serie.
+    const reset = await json<BoxDashboardResponse>(
+      await request("PUT", "/api/org/dashboards/training", A, {
+        cookie: as(ownerA),
+        body: { widgets: null },
+      }),
+      200,
+    );
+    expect(reset.widgets).toEqual(BOX_DASHBOARD_DEFAULTS.training);
+    expect(reset.custom).toBe(false);
+
+    // El box: la franja más llena con la ocupación de cada hora; un KPI que no existe no se guarda.
+    const box = await json<BoxDashboardResponse>(await dashboard("box", ownerA), 200);
+    const peak = value(box, "peak_slot");
+    expect(peak?.series).not.toBeNull();
+    // Sin clases en las cuatro semanas anteriores todavía no hay franja; si la hay, está en la serie.
+    if (peak?.label) expect(peak.series?.map((p) => p.label)).toContain(peak.label);
+    else expect(peak?.series).toEqual([]);
+    expect(
+      status(
+        await request("PUT", "/api/org/dashboards/box", A, {
+          cookie: as(ownerA),
+          body: { widgets: [{ kpi: "timer", view: "number", size: "s" }] },
+        }),
+      ),
+    ).toBe(400);
   });
 
   it("domiciliar la tarifa por Stripe: el alta, cada factura una sola vez y la baja", async () => {

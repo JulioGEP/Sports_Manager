@@ -8,6 +8,8 @@ import {
   PlanChargesGenerateSchema,
   SubscriptionCreateSchema,
   SubscriptionResponseSchema,
+  formatAmount,
+  parseMoney,
   type FeePeriod,
   type FeePlan,
   type PlanEntitlement,
@@ -246,9 +248,7 @@ function PlanSheet({ plan, onClose }: { plan: FeePlan | null; onClose: () => voi
   const invalidate = useInvalidateOwner();
   const classTypes = useClassTypes();
   const [name, setName] = useState(plan?.name ?? "");
-  const [amount, setAmount] = useState(
-    plan ? (plan.amountCents / 100).toFixed(2).replace(".", ",") : "",
-  );
+  const [amount, setAmount] = useState(plan ? formatAmount(plan.amountCents) : "");
   const [period, setPeriod] = useState<FeePeriod>(plan?.period ?? "monthly");
   const [kind, setKind] = useState<PlanEntitlement>(plan?.entitlement ?? "unlimited");
   const [sessions, setSessions] = useState(plan?.sessions ? String(plan.sessions) : "");
@@ -271,7 +271,7 @@ function PlanSheet({ plan, onClose }: { plan: FeePlan | null; onClose: () => voi
   async function submit(e: FormEvent) {
     e.preventDefault();
     setError(null);
-    const amountCents = Math.round(Number(amount.replace(",", ".")) * 100);
+    const amountCents = parseMoney(amount) ?? Number.NaN;
     const body = {
       name,
       amountCents,

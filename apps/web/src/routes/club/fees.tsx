@@ -13,8 +13,9 @@ import {
   MyFeesResponseSchema,
   PaymentsSettingsResponseSchema,
   SectionsResponseSchema,
-  centsToAmount,
+  formatAmount,
   personDisplayName,
+  parseMoney,
   type FeeCharge,
   type FeeChargeStatus,
   type FeePeriod,
@@ -707,7 +708,7 @@ function PlanSheet({
   const toast = useToast();
   const { slug } = useReadyClub();
   const [name, setName] = useState(plan?.name ?? "");
-  const [amount, setAmount] = useState(plan ? centsToAmount(plan.amountCents) : "");
+  const [amount, setAmount] = useState(plan ? formatAmount(plan.amountCents) : "");
   const [period, setPeriod] = useState<FeePeriod>(plan?.period ?? "monthly");
   const [target, setTarget] = useState<PlanTarget>(
     plan?.memberType
@@ -731,7 +732,7 @@ function PlanSheet({
   async function submit(e: FormEvent) {
     e.preventDefault();
     setError(null);
-    const amountCents = Math.round(Number(amount.replace(",", ".")) * 100);
+    const amountCents = parseMoney(amount) ?? Number.NaN;
     const parsed = FeePlanCreateSchema.safeParse({
       name,
       amountCents,
