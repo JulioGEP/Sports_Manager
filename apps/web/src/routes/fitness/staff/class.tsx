@@ -4,11 +4,20 @@ import {
   ClassDetailResponseSchema,
   type Attendee,
   type ClassDetailResponse,
+  type ClassPerson,
   type WorkoutBlockView,
+  type WorkoutView,
 } from "@sportsmanager/shared";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import {
+  FacePile,
+  ProgrammingSplit,
+  useSessionState,
+} from "@/components/fitness/class-programming";
 import { BOOKING_TONE, SpotsMeter } from "@/components/fitness/class-row";
+import { RoleChip } from "@/components/fitness/planning-ui";
+import { useWorkoutName, useWorkoutState } from "@/components/fitness/programming-week";
 import {
   AthletePicker,
   Figure,
@@ -37,10 +46,24 @@ import {
   EmptyState,
   Icon,
   PageHeader,
+  Segmented,
   Sheet,
   StatusChip,
   useToast,
 } from "@/ui";
+
+/** Qué lista enseñar: todos, quien hace el WOD del box o quien hace la sesión de su plan. */
+type Doing = "all" | "box" | "own";
+
+/**
+ * La sesión de su plan propio que hace hoy un atleta (ADR 0055): la de su plan, si ya la ve. Con
+ * ella en borrador, o sin sesión ese día, hace el WOD del box.
+ */
+function sessionOf(a: Attendee, sessions: readonly WorkoutView[]) {
+  return a.ownPlanId ? (sessions.find((s) => s.plan?.id === a.ownPlanId) ?? null) : null;
+}
+const doesOwn = (a: Attendee, sessions: readonly WorkoutView[]) =>
+  sessionOf(a, sessions)?.visible === true;
 
 /** Lo que responde cerrar la clase: cuántos no vinieron. */
 const CloseResultSchema = { parse: (data: unknown) => data as { noShows: number } };
@@ -70,6 +93,7 @@ export function StaffClassPage({ id }: { id: string }) {
   const [removing, setRemoving] = useState<Attendee | null>(null);
   const [closing, setClosing] = useState(false);
   const [board, setBoard] = useState<WorkoutBlockView | null>(null);
+  const [doing, setDoing] = useState<Doing>("all");
 
   if (detail.isError) {
     return (
@@ -101,6 +125,12 @@ export function StaffClassPage({ id }: { id: string }) {
   );
   const pending = active.filter((a) => a.status === "booked").length;
   const present = new Set([...active, ...data.waitlist].map((a) => a.playerId));
+  // Quién hace qué hoy (ADR 0055): el WOD del box o la sesión de su plan propio.
+  const sessions = data.sessions;
+  const ownToday = active.filter((a) => doesOwn(a, sessions));
+  const boxToday = active.filter((a) => !doesOwn(a, sessions));
+  const split = ownToday.length > 0 || active.some((a) => a.ownPlanId);
+  const listed = doing === "own" ? ownToday : doing === "box" ? boxToday : active;
 
   /** Guarda la clase que devuelve la API sin esperar a volver a pedirla. */
   function put(next: ClassDetailResponse) {
@@ -246,13 +276,35 @@ export function StaffClassPage({ id }: { id: string }) {
         <Alert kind="success">{t("close.closed")}</Alert>
       ) : null}
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+      <ProgrammingCard
+        workout={data.workout}
+        split={split ? { box: boxToday.length, own: ownToday.length } : null}
+      />
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <div className="flex flex-col gap-6">
           <Card
             padded={false}
             title={t("list.title")}
             description={t("list.count", { count: active.length })}
+            actions={
+              split ? (
+                <Segmented<Doing>
+                  label={t("doing.label")}
+                  value={doing}
+                  onChange={setDoing}
+                  options={[
+                    { key: "all", label: t("doing.all", { count: active.length }) },
+                    { key: "box", label: t("doing.box", { count: boxToday.length }) },
+                    { key: "own", label: t("doing.own", { count: ownToday.length }) },
+                  ]}
+                />
+              ) : null
+            }
           >
+            {active.length > 0 && listed.length === 0 ? (
+              <p className="px-5 pb-5 text-secondary text-muted">{t("doing.empty")}</p>
+            ) : null}
             {active.length === 0 ? (
               <div className="px-5 pb-5">
                 <EmptyState
@@ -274,10 +326,11 @@ export function StaffClassPage({ id }: { id: string }) {
               </div>
             ) : (
               <ul className="flex flex-col divide-y divide-line">
-                {active.map((a) => (
+                {listed.map((a) => (
                   <AttendeeRow
                     key={a.playerId}
                     attendee={a}
+                    session={sessionOf(a, sessions)}
                     manage={manage}
                     busy={busy === a.playerId}
                     onToggle={() => void checkIn(a, a.status !== "attended")}
@@ -396,6 +449,8 @@ export function StaffClassPage({ id }: { id: string }) {
               />
             )}
           </Card>
+
+          <OwnSessionsCard attendees={active} sessions={sessions} />
         </div>
       </div>
 
@@ -461,15 +516,20 @@ export function StaffClassPage({ id }: { id: string }) {
   );
 }
 
-/** Un atleta de la lista: su estado y un toque grande para el check-in. */
+/**
+ * Un atleta de la lista: su estado y un toque grande para el check-in. Si sigue un plan propio,
+ * qué hace hoy (ADR 0055): su sesión, o el WOD si su sesión aún no se ve o no tiene ese día.
+ */
 function AttendeeRow({
   attendee,
+  session,
   manage,
   busy,
   onToggle,
   onRemove,
 }: {
   attendee: Attendee;
+  session: WorkoutView | null;
   manage: boolean;
   busy: boolean;
   onToggle: () => void;
@@ -477,10 +537,15 @@ function AttendeeRow({
 }) {
   const t = useT("fitness.staff.class");
   const status = useT("fitness.common.bookingStatus");
+  const nameOf = useWorkoutName();
   const arrived = attendee.status === "attended";
   return (
     <li className="flex min-h-18 items-center gap-3 px-5 py-2">
-      <Avatar name={attendee.name} src={attendee.photoUrl} />
+      <span
+        className={`inline-flex shrink-0 rounded-full ${attendee.ownPlan ? "ring-2 ring-club ring-offset-2 ring-offset-surface" : ""}`}
+      >
+        <Avatar name={attendee.name} src={attendee.photoUrl} />
+      </span>
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="truncate font-medium text-ink">{attendee.name}</span>
         {(attendee.status && attendee.status !== "booked") || attendee.ownPlan ? (
@@ -494,6 +559,15 @@ function AttendeeRow({
             {attendee.ownPlan ? (
               <StatusChip kind="club">{t("ownPlan", { plan: attendee.ownPlan })}</StatusChip>
             ) : null}
+          </span>
+        ) : null}
+        {attendee.ownPlan ? (
+          <span className="text-secondary text-muted">
+            {session?.visible
+              ? t("today.session", { title: nameOf(session) })
+              : session
+                ? t("today.notYet")
+                : t("today.noSession")}
           </span>
         ) : null}
       </span>
@@ -528,6 +602,169 @@ function AttendeeRow({
         </button>
       ) : null}
     </li>
+  );
+}
+
+/**
+ * La programación de la clase (ADR 0055), arriba del todo: el WOD con su papel y su estado, el plan
+ * al que sirve (semana y bloque, con su semana a un toque) y quién hace qué hoy.
+ */
+function ProgrammingCard({
+  workout,
+  split,
+}: {
+  workout: WorkoutView | null;
+  split: { box: number; own: number } | null;
+}) {
+  const t = useT("fitness.staff.class.programming");
+  const nameOf = useWorkoutName();
+  const stateOf = useWorkoutState();
+  const { slug } = useReadyClub();
+  const paths = clubPaths(slug);
+  const state = workout ? stateOf(workout) : null;
+  return (
+    <section
+      aria-label={t("label")}
+      className="flex flex-col gap-4 rounded-card bg-surface p-4 shadow-card precisa:border precisa:border-border lg:flex-row lg:items-center lg:gap-6"
+    >
+      <div className="flex min-w-0 flex-1 items-start gap-3">
+        <span
+          aria-hidden="true"
+          className={`grid size-10 shrink-0 place-items-center rounded-field ${
+            workout ? "bg-club-soft text-club-soft-text" : "bg-warning-soft text-warning"
+          }`}
+        >
+          {workout ? <Icon.Barbell size={22} /> : <Icon.Warning size={22} />}
+        </span>
+        <div className="flex min-w-0 flex-col gap-1">
+          {workout ? (
+            <>
+              <span className="flex flex-wrap items-center gap-2">
+                <span className="font-semibold text-ink">{nameOf(workout)}</span>
+                {workout.dayRole ? <RoleChip role={workout.dayRole} /> : null}
+                {state ? <StatusChip kind={state.kind}>{state.label}</StatusChip> : null}
+              </span>
+              <span className="text-secondary text-muted">
+                {workout.plan
+                  ? t("plan", {
+                      plan: workout.plan.name,
+                      week: workout.plan.week,
+                      weeks: workout.plan.weeks,
+                      block: workout.plan.blockLabel,
+                    })
+                  : t("loose")}
+              </span>
+            </>
+          ) : (
+            <>
+              <span className="font-semibold text-ink">{t("none")}</span>
+              <span className="text-secondary text-muted">{t("noneHint")}</span>
+            </>
+          )}
+        </div>
+      </div>
+      {split ? (
+        <div className="w-full lg:w-80">
+          <ProgrammingSplit box={split.box} own={split.own} />
+        </div>
+      ) : null}
+      {workout?.plan ? (
+        <ButtonLink
+          to={paths.planningWeek(workout.plan.id, workout.plan.week)}
+          variant="tertiary"
+          size="sm"
+          action="open"
+        >
+          {t("openWeek")}
+        </ButtonLink>
+      ) : null}
+    </section>
+  );
+}
+
+/**
+ * Los planes propios de quien viene (ADR 0055): cada plan con su gente en la clase y su sesión de
+ * hoy, que se despliega entera. Con la sesión en borrador o sin sesión, esa gente hace el WOD.
+ */
+function OwnSessionsCard({
+  attendees,
+  sessions,
+}: {
+  attendees: readonly Attendee[];
+  sessions: readonly WorkoutView[];
+}) {
+  const t = useT("fitness.staff.class.sessions");
+  const nameOf = useWorkoutName();
+  const stateOf = useSessionState();
+  const { slug } = useReadyClub();
+  const paths = clubPaths(slug);
+  const plans = new Map<string, { id: string; name: string; people: ClassPerson[] }>();
+  for (const a of attendees) {
+    if (!a.ownPlanId || !a.ownPlan) continue;
+    const plan = plans.get(a.ownPlanId) ?? { id: a.ownPlanId, name: a.ownPlan, people: [] };
+    plan.people.push({
+      playerId: a.playerId,
+      name: a.name,
+      initials: a.initials,
+      photoUrl: a.photoUrl,
+      status: a.status ?? "booked",
+      ownPlan: { id: a.ownPlanId, name: a.ownPlan },
+    });
+    plans.set(a.ownPlanId, plan);
+  }
+  if (plans.size === 0) return null;
+  return (
+    <Card title={t("title")} description={t("hint")}>
+      <ul className="flex flex-col gap-3">
+        {[...plans.values()].map((plan) => {
+          const session = sessions.find((w) => w.plan?.id === plan.id) ?? null;
+          const state = session ? stateOf(session) : null;
+          return (
+            <li key={plan.id} className="flex flex-col gap-2 rounded-field bg-raised p-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="flex min-w-0 flex-col">
+                  <span className="font-medium text-ink">{plan.name}</span>
+                  <span className="text-secondary text-muted">
+                    {session ? t("session", { title: nameOf(session) }) : t("none")}
+                  </span>
+                </span>
+                <span className="flex items-center gap-2">
+                  {state ? <StatusChip kind={state.kind}>{state.label}</StatusChip> : null}
+                  <FacePile people={plan.people} max={4} size="xs" />
+                </span>
+              </div>
+              {session && !session.visible ? (
+                <p className="text-secondary text-warning">{t("notYet")}</p>
+              ) : null}
+              {session ? (
+                <details>
+                  <summary className="cursor-pointer text-secondary font-medium text-club-text">
+                    {t("see")}
+                  </summary>
+                  <div className="mt-3">
+                    <WorkoutBlocks workout={session} />
+                  </div>
+                </details>
+              ) : null}
+              <div>
+                <ButtonLink
+                  to={
+                    session?.plan
+                      ? paths.planningWeek(session.plan.id, session.plan.week)
+                      : paths.planningPlan(plan.id)
+                  }
+                  variant="tertiary"
+                  size="sm"
+                  action="open"
+                >
+                  {t("openWeek")}
+                </ButtonLink>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </Card>
   );
 }
 

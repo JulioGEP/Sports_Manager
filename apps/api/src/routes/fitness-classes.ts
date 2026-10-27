@@ -17,7 +17,9 @@ import {
   percentLoad,
   TeamScheduleSetSchema,
   type Attendee,
+  type BookingStatus,
   type ClassBrief,
+  type ClassProgramming,
   type ClassType,
 } from "@sportsmanager/shared";
 import type { ApiConfig } from "../config.ts";
@@ -58,6 +60,8 @@ import {
 } from "./fitness-common.ts";
 
 const DAY = 86_400_000;
+/** Quien tiene plaza en una clase: reservada, con check-in o no presentada. */
+const SEATED: readonly BookingStatus[] = ["booked", "attended", "no_show"];
 const rangeQuery = z.object({
   from: z.string().optional(),
   to: z.string().optional(),
@@ -163,6 +167,60 @@ export function createFitnessClassRoutes(config: ApiConfig, data: DataLayer) {
       if (match.length > 0) has.add(cls.id);
     }
     return has;
+  }
+
+  /**
+   * Lo que se programa en cada clase y quién viene a hacerlo, para el personal (ADR 0055): el WOD
+   * del box en cualquier estado (el de su tipo de clase o, si no hay, el de su disciplina) y quien
+   * tiene plaza, con su plan propio si lo sigue en esa disciplina. Tres consultas para la semana.
+   * `published`: las clases con algún WOD publicado, como `workoutsFor` para el personal.
+   */
+  async function programmingFor(c: Ctx, classes: ClassRecord[]) {
+    const tenant = orgOf(c);
+    const programming = new Map<string, ClassProgramming>();
+    const published = new Set<string>();
+    if (classes.length === 0) return { programming, published };
+    const dates = classes.map((x) => x.date).sort();
+    const [list, attendees] = await Promise.all([
+      data.workouts.list(tenant.scope, dates[0]!, dates[dates.length - 1]!),
+      data.bookings.attendeesOf(
+        tenant.scope,
+        classes.map((x) => x.id),
+      ),
+    ]);
+    const seatedOf = (id: string) =>
+      (attendees.get(id) ?? []).filter((a) => SEATED.includes(a.status));
+    const own = await data.planning.plans.activeOf(tenant.scope, [
+      ...new Set(classes.flatMap((x) => seatedOf(x.id).map((a) => a.playerId))),
+    ]);
+    for (const cls of classes) {
+      const match = cls.section
+        ? list.filter(
+            (w) =>
+              w.section.id === cls.section!.id &&
+              w.onDate === cls.date &&
+              (!w.team || w.team.id === cls.team?.id),
+          )
+        : [];
+      if (match.some((w) => w.status === "published")) published.add(cls.id);
+      const workout = match.find((w) => w.team) ?? match[0] ?? null;
+      programming.set(cls.id, {
+        workoutId: workout?.id ?? null,
+        people: seatedOf(cls.id).map((a) => {
+          const plan = own.get(a.playerId);
+          return {
+            playerId: a.playerId,
+            name: personName(a),
+            initials: initialsOf(a),
+            photoUrl: playerPhotoUrlFor(a.photoBlobKey, tenant.organization.slug, a.playerId),
+            status: a.status,
+            ownPlan:
+              plan && plan.sectionId === cls.section?.id ? { id: plan.id, name: plan.name } : null,
+          };
+        }),
+      });
+    }
+    return { programming, published };
   }
 
   /** La sesión del plan propio de un atleta para el día y la disciplina de una clase, si la hay. */
@@ -485,12 +543,17 @@ export function createFitnessClassRoutes(config: ApiConfig, data: DataLayer) {
             ...(query.mine ? { coachUserId: actor.userId } : {}),
           })
         ).filter((x) => classInStaffScope(scope, x));
-        const workouts = await workoutsFor(c, classes, true);
+        const { programming, published } = await programmingFor(c, classes);
         return c.json(
           {
             from: from.toISOString(),
             to: to.toISOString(),
-            classes: classes.map((x) => classDto(x, policy, { hasWorkout: workouts.has(x.id) })),
+            classes: classes.map((x) =>
+              classDto(x, policy, {
+                hasWorkout: published.has(x.id),
+                programming: programming.get(x.id) ?? null,
+              }),
+            ),
             policy,
             plan: null,
             role: "staff" as const,
@@ -529,8 +592,16 @@ export function createFitnessClassRoutes(config: ApiConfig, data: DataLayer) {
     },
   );
 
-  /** El brief del coach: nuevos, restricciones, quién vuelve y las cargas del bloque de fuerza. */
-  async function briefOf(c: Ctx, cls: ClassRecord, playerIds: string[]): Promise<ClassBrief> {
+  /**
+   * El brief del coach: nuevos, restricciones, quién vuelve y las cargas del bloque de fuerza. Las
+   * cargas son del WOD del box: no salen quienes hacen hoy la sesión de su plan propio (`apart`).
+   */
+  async function briefOf(
+    c: Ctx,
+    cls: ClassRecord,
+    playerIds: string[],
+    apart: ReadonlySet<string> = new Set(),
+  ): Promise<ClassBrief> {
     const tenant = orgOf(c);
     const now = new Date();
     if (playerIds.length === 0)
@@ -568,6 +639,7 @@ export function createFitnessClassRoutes(config: ApiConfig, data: DataLayer) {
     const block = workout?.blocks.find((b) => b.movementCode && b.percent);
     if (block) {
       for (const playerId of playerIds) {
+        if (apart.has(playerId)) continue;
         const rm = oneRmByMovement(records.get(playerId) ?? []).get(block.movementCode!);
         if (!rm) continue;
         brief.loads.push({
@@ -601,10 +673,10 @@ export function createFitnessClassRoutes(config: ApiConfig, data: DataLayer) {
           tenant.scope,
           all.map((a) => a.playerId),
         )
-      : new Map<string, { name: string; sectionId: string }>();
+      : new Map<string, { id: string; name: string; sectionId: string }>();
     const ownPlanOf = (playerId: string) => {
       const own = ownPlans.get(playerId);
-      return own && own.sectionId === cls.section?.id ? own.name : null;
+      return own && own.sectionId === cls.section?.id ? own : null;
     };
     const toAttendee = (a: (typeof all)[number]): Attendee => ({
       playerId: a.playerId,
@@ -614,9 +686,29 @@ export function createFitnessClassRoutes(config: ApiConfig, data: DataLayer) {
       isMe: player?.id === a.playerId,
       status: staff ? a.status : null,
       note: null,
-      ownPlan: ownPlanOf(a.playerId),
+      ownPlan: ownPlanOf(a.playerId)?.name ?? null,
+      ownPlanId: ownPlanOf(a.playerId)?.id ?? null,
     });
     const seated = all.filter((a) => a.status === "booked" || a.status === "attended");
+    // Las sesiones de ese día de sus planes propios (ADR 0055), en cualquier estado: quien tiene la
+    // suya publicada la hace en vez del WOD del box, y sus kilos del WOD no van en el brief.
+    const planIds = [...new Set(all.flatMap((a) => ownPlanOf(a.playerId)?.id ?? []))];
+    const sessions =
+      staff && cls.section && planIds.length > 0
+        ? (
+            await data.workouts.list(tenant.scope, cls.date, cls.date, {
+              sectionIds: [cls.section.id],
+              alsoPlans: planIds,
+            })
+          ).filter((w) => w.specific)
+        : [];
+    const apart = new Set(
+      seated
+        .filter((a) =>
+          sessions.some((s) => s.plan?.id === ownPlanOf(a.playerId)?.id && workoutVisible(s, now)),
+        )
+        .map((a) => a.playerId),
+    );
     let attendees: Attendee[];
     let hiddenCount = 0;
     if (staff) {
@@ -669,6 +761,13 @@ export function createFitnessClassRoutes(config: ApiConfig, data: DataLayer) {
         workout = await athleteWorkoutDto(data, c, w, player.id, now);
       }
     }
+    const sessionCounts =
+      sessions.length > 0
+        ? await data.workouts.results.counts(
+            tenant.scope,
+            sessions.flatMap((w) => w.blocks.map((b) => b.id)),
+          )
+        : new Map<string, number>();
     return {
       class: summary,
       attendees,
@@ -679,9 +778,11 @@ export function createFitnessClassRoutes(config: ApiConfig, data: DataLayer) {
             c,
             cls,
             seated.map((a) => a.playerId),
+            apart,
           )
         : null,
       workout,
+      sessions: sessions.map((w) => workoutDto(w, now, localeOf(c), { counts: sessionCounts })),
       canCheckIn: manage,
     };
   }

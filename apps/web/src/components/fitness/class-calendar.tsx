@@ -528,6 +528,7 @@ export function ClassBlock({
   icon,
   iconOnlyWhenNarrow = false,
   aside,
+  marker,
   label,
   ...target
 }: {
@@ -550,6 +551,11 @@ export function ClassBlock({
   iconOnlyWhenNarrow?: boolean;
   /** En el día, arriba a la derecha (la cifra de plazas). */
   aside?: ReactNode;
+  /**
+   * Junto al nombre, lo que hay que ver de un vistazo (sin WOD, cuántos con plan propio: ADR 0055).
+   * Siempre con su texto en `label`: un icono solo no basta.
+   */
+  marker?: ReactNode;
   /** Todo lo de la clase, para el lector de pantalla y el ratón. */
   label: string;
 } & ({ to: string } | { onClick: () => void })) {
@@ -574,7 +580,18 @@ export function ClassBlock({
     ) : null;
   const body = week ? (
     <>
-      <span className="truncate text-label font-semibold">{title}</span>
+      <span className="flex min-w-0 items-center gap-1">
+        <span className="truncate text-label font-semibold">{title}</span>
+        {/* Sin ancho, antes el nombre: la marca sigue en la etiqueta y el tooltip. */}
+        {marker ? (
+          <span
+            aria-hidden="true"
+            className="hidden shrink-0 items-center gap-1 text-label @min-[6rem]:flex"
+          >
+            {marker}
+          </span>
+        ) : null}
+      </span>
       <span className="truncate text-label">
         <span className="font-mono">{when}</span>
         {meta ? <span className="hidden opacity-80 @min-[6.5rem]:inline"> · {meta}</span> : null}
@@ -584,7 +601,14 @@ export function ClassBlock({
   ) : (
     <>
       <span className="flex min-w-0 items-center justify-between gap-2">
-        <span className="truncate text-body font-semibold">{title}</span>
+        <span className="flex min-w-0 items-center gap-1.5">
+          <span className="truncate text-body font-semibold">{title}</span>
+          {marker ? (
+            <span aria-hidden="true" className="flex shrink-0 items-center gap-1.5 text-secondary">
+              {marker}
+            </span>
+          ) : null}
+        </span>
         {aside ? <span className="shrink-0">{aside}</span> : null}
       </span>
       <span className="truncate text-secondary">

@@ -91,6 +91,27 @@ export const MyBookingSchema = z.object({
   position: z.number().int().nullable(),
 });
 
+/** Quien tiene plaza en una clase, para el personal (ADR 0055): su cara y si hace otra sesión. */
+export const ClassPersonSchema = z.object({
+  playerId: z.string(),
+  name: z.string(),
+  initials: z.string(),
+  photoUrl: z.string().nullable(),
+  status: z.enum(BOOKING_STATUSES),
+  /** El plan propio que sigue en la disciplina de la clase (ADR 0054), si lo tiene. */
+  ownPlan: Ref.nullable(),
+});
+export type ClassPerson = z.infer<typeof ClassPersonSchema>;
+
+/** Lo que se programa en una clase y quién viene a hacerlo, para el personal (ADR 0055). */
+export const ClassProgrammingSchema = z.object({
+  /** El WOD del box de la clase (el de su tipo de clase o el de su disciplina), en cualquier estado. */
+  workoutId: z.string().nullable(),
+  /** Reservadas, con check-in o no presentadas, en orden de reserva. */
+  people: z.array(ClassPersonSchema),
+});
+export type ClassProgramming = z.infer<typeof ClassProgrammingSchema>;
+
 /** Una clase del horario tal como la ve quien pregunta: plazas, su reserva y si puede reservar. */
 export const ClassSummarySchema = z.object({
   id: z.string(),
@@ -117,6 +138,8 @@ export const ClassSummarySchema = z.object({
   hasWorkout: z.boolean(),
   /** Check-in hecho por el coach (para el personal). */
   checkedIn: z.number().int().nonnegative(),
+  /** Para el personal: su WOD y quién viene, con su plan propio (ADR 0055). */
+  programming: ClassProgrammingSchema.nullable(),
 });
 export type ClassSummary = z.infer<typeof ClassSummarySchema>;
 
@@ -144,6 +167,8 @@ export const AttendeeSchema = z.object({
   note: z.string().nullable(),
   /** Para el personal: el plan propio que sigue (su sesión no es el WOD del box), si lo tiene. */
   ownPlan: z.string().nullable().optional(),
+  /** Para el personal: el id de ese plan, para encontrar su sesión en `sessions` (ADR 0055). */
+  ownPlanId: z.string().nullable().optional(),
 });
 export type Attendee = z.infer<typeof AttendeeSchema>;
 
@@ -308,6 +333,11 @@ export const ClassDetailResponseSchema = z.object({
   /** Para el personal. */
   brief: ClassBriefSchema.nullable(),
   workout: WorkoutViewSchema.nullable(),
+  /**
+   * Para el personal (ADR 0055): las sesiones de ese día de los planes propios de quien viene, en
+   * cualquier estado. Quien tiene la suya publicada la hace en vez del WOD; si no, hace el WOD.
+   */
+  sessions: z.array(WorkoutViewSchema),
   /** Para el personal: puede hacer check-in y cerrar la clase. */
   canCheckIn: z.boolean(),
 });

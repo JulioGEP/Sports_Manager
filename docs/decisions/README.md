@@ -68,3 +68,4 @@ Las decisiones no se editan una vez aceptadas. Si cambian, se escribe una nueva 
 | 0052 | Workouts en la biblioteca del box y más ejercicios en el box demo | Aceptada |
 | 0053 | Planificación del box: un plan con objetivo, bloques y semanas, y la IA que lo diseña, lo escribe y lo ajusta | Aceptada; los planes para un nivel, un grupo o una persona, en 0054 |
 | 0054 | Planes para quien sea: todo el box, un nivel, un grupo o una persona | Aceptada |
+| 0055 | La programación dentro de las clases: qué se hace en cada clase y quién viene a hacerlo | Aceptada |

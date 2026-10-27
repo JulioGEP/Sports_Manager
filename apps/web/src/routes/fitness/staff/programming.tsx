@@ -9,6 +9,14 @@ import { useMemo, useState } from "react";
 import { useIntl } from "react-intl";
 import { useSearchParams } from "react-router";
 import {
+  OwnPlansOfDay,
+  ownPeople,
+  PeopleLine,
+  peopleOf,
+  WodClasses,
+  type OwnPlanDay,
+} from "@/components/fitness/class-programming";
+import {
   CopyFromSheet,
   DaySheet,
   EmptyDay,
@@ -54,7 +62,9 @@ const DATE = /^\d{4}-\d{2}-\d{2}$/;
  * La programación de la semana (ADR 0050), pensada como la pizarra del coach: un día debajo de
  * otro, a todo el ancho, con el WOD entero a la vista y su estado. Los días con clase y sin WOD
  * se ven a la primera y se programan desde ahí (en blanco, con un benchmark, con IA o copiando
- * otro día); la semana se publica de una vez y se arranca copiando la anterior.
+ * otro día); la semana se publica de una vez y se arranca copiando la anterior. Cada WOD dice en
+ * qué clases se hace y quién viene, y debajo van los planes propios del día con su sesión y su
+ * gente en clase (ADR 0055).
  */
 export function ProgrammingPage() {
   const t = useT("fitness.staff.programming");
@@ -87,9 +97,11 @@ export function ProgrammingPage() {
     );
   const goWeek = (date: string) => setParam("week", date === mondayOf(time.today) ? null : date);
 
-  const workouts = useWorkouts({ from: monday, to: sunday });
+  // Con las sesiones de los planes propios (ADR 0055): van aparte, debajo del WOD de cada día.
+  const workouts = useWorkouts({ from: monday, to: sunday, own: true });
   const classes = useClasses(dayRange(time.timezone, monday, 7));
   const classTypes = useClassTypes(has("org.structure.read"));
+  const plans = usePlans();
 
   const sections = useMemo(() => {
     const map = new Map<string, string>();
@@ -118,10 +130,34 @@ export function ProgrammingPage() {
     return map;
   }, [classes.data]);
 
-  const list = (workouts.data?.workouts ?? []).filter(
-    (w) => section === ALL || w.section.id === section,
+  const inShown = (sectionId: string) => shown.some((s) => s.id === sectionId);
+  const list = (workouts.data?.workouts ?? []).filter((w) => !w.specific && inShown(w.section.id));
+  const sessions = (workouts.data?.workouts ?? []).filter((w) => w.specific);
+  const ownPlans = (plans.data?.plans ?? []).filter(
+    (p) => p.status === "active" && p.audience !== "section" && inShown(p.section.id),
+  );
+  const weekClasses = (classes.data?.classes ?? []).filter(
+    (cl) => cl.section && inShown(cl.section.id),
   );
   const drafts = list.filter((w) => w.status === "draft" && writable.has(w.section.id)).length;
+
+  /** Las clases en que se hace un WOD: las que lo tienen como suyo (ADR 0055). */
+  const classesOfWod = (w: WorkoutView) =>
+    weekClasses.filter((cl) => cl.programming?.workoutId === w.id);
+  /** Los planes propios de un día: los que tienen sesión o gente en clase ese día. */
+  const ownRowsOf = (day: string): OwnPlanDay[] => {
+    const people = peopleOf(weekClasses.filter((cl) => cl.date === day));
+    return ownPlans.flatMap((plan) => {
+      const session = sessions.find((w) => w.onDate === day && w.plan?.id === plan.id) ?? null;
+      const inClass = people.filter((p) => p.ownPlan?.id === plan.id && p.status !== "no_show");
+      return session || inClass.length > 0 ? [{ plan, session, inClass }] : [];
+    });
+  };
+  const weekBooked = weekClasses.reduce((sum, cl) => sum + cl.booked, 0);
+  const weekOwn = weekClasses.reduce(
+    (sum, cl) => sum + ownPeople(cl.programming?.people ?? []).length,
+    0,
+  );
   const classDays = week.filter((d) => shown.some((s) => (classesBy.get(d)?.get(s.id) ?? 0) > 0));
   const programmed = classDays.filter((d) =>
     shown.every(
@@ -324,6 +360,7 @@ export function ProgrammingPage() {
           {drafts > 0 ? (
             <StatusChip kind="neutral">{t("drafts", { count: drafts })}</StatusChip>
           ) : null}
+          <PeopleLine booked={weekBooked} own={weekOwn} />
         </p>
       ) : null}
 
@@ -343,6 +380,11 @@ export function ProgrammingPage() {
           // Lo pasado no se programa: un día pasado sin WOD solo lo dice.
           const toProgram = past ? [] : missing;
           const quiet = ofDay.length === 0 && toProgram.length === 0;
+          const ownRows = ownRowsOf(day);
+          const bookedIn = (sectionId: string) =>
+            weekClasses
+              .filter((cl) => cl.date === day && cl.section?.id === sectionId)
+              .reduce((sum, cl) => sum + cl.booked, 0);
           return (
             <li
               key={day}
@@ -351,7 +393,11 @@ export function ProgrammingPage() {
             >
               <div
                 className={`flex flex-col items-center justify-start rounded-card py-3 ${
-                  isToday ? "bg-club text-on-club" : quiet ? "text-muted" : "bg-raised text-ink"
+                  isToday
+                    ? "bg-club text-on-club"
+                    : quiet && ownRows.length === 0
+                      ? "text-muted"
+                      : "bg-raised text-ink"
                 }`}
               >
                 <span className="text-label font-semibold tracking-wide">{p.weekday}</span>
@@ -361,25 +407,26 @@ export function ProgrammingPage() {
               <div className="flex min-w-0 flex-col gap-2">
                 {loading ? (
                   <div className="h-20 animate-pulse rounded-card bg-raised" />
-                ) : quiet ? (
-                  <div className="flex min-h-14 flex-wrap items-center justify-between gap-2 rounded-card px-4 py-2">
-                    <span className="text-secondary text-muted">
-                      {counts && counts.size > 0 ? t("noWod") : t("noClasses")}
-                    </span>
-                    {canWrite && !past ? (
-                      <ButtonLink
-                        to={`${paths.workoutNew}?date=${day}${section !== ALL ? `&section=${section}` : ""}`}
-                        variant="tertiary"
-                        size="sm"
-                        action="add"
-                        aria-label={t("programAnyway", { day: time.day(day) })}
-                      >
-                        {t("program")}
-                      </ButtonLink>
-                    ) : null}
-                  </div>
                 ) : (
                   <>
+                    {quiet ? (
+                      <div className="flex min-h-14 flex-wrap items-center justify-between gap-2 rounded-card px-4 py-2">
+                        <span className="text-secondary text-muted">
+                          {counts && counts.size > 0 ? t("noWod") : t("noClasses")}
+                        </span>
+                        {canWrite && !past ? (
+                          <ButtonLink
+                            to={`${paths.workoutNew}?date=${day}${section !== ALL ? `&section=${section}` : ""}`}
+                            variant="tertiary"
+                            size="sm"
+                            action="add"
+                            aria-label={t("programAnyway", { day: time.day(day) })}
+                          >
+                            {t("program")}
+                          </ButtonLink>
+                        ) : null}
+                      </div>
+                    ) : null}
                     {ofDay.map((w) => (
                       <WorkoutCard
                         key={w.id}
@@ -389,6 +436,7 @@ export function ProgrammingPage() {
                         onDuplicate={() => setSheet({ kind: "duplicate", workout: w })}
                         onMove={() => setSheet({ kind: "move", workout: w })}
                         onPublish={() => void publishOne(w)}
+                        footer={<WodClasses classes={classesOfWod(w)} />}
                       />
                     ))}
                     {toProgram.map((s) => (
@@ -397,10 +445,12 @@ export function ProgrammingPage() {
                         date={day}
                         section={s}
                         classes={counts?.get(s.id) ?? 0}
+                        booked={bookedIn(s.id)}
                         showSection={multi}
                         onCopyFrom={() => setSheet({ kind: "copyFrom", date: day, section: s })}
                       />
                     ))}
+                    <OwnPlansOfDay date={day} rows={ownRows} />
                   </>
                 )}
               </div>

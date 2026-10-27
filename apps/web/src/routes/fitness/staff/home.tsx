@@ -1,3 +1,4 @@
+import { FacePile, ownPeople } from "@/components/fitness/class-programming";
 import { ClassRow } from "@/components/fitness/class-row";
 import { useHas } from "@/components/fitness/staff-ui";
 import { clubPaths, useReadyClub } from "@/lib/club";
@@ -12,6 +13,7 @@ import { Alert, ButtonLink, Card, EmptyState, Icon, PageHeader, StatusChip } fro
 export function CoachFitnessHome() {
   const t = useT("fitness.staff.home");
   const s = useT("fitness.staff");
+  const p = useT("fitness.staff.inClasses");
   const nav = useT("fitness.common.nav");
   const status = useT("fitness.common.workoutStatus");
   const { me, slug } = useReadyClub();
@@ -68,10 +70,21 @@ export function CoachFitnessHome() {
               </span>
             </div>
           </div>
-          <div>
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <ButtonLink action="open" to={paths.classDetail(next.id)} variant="secondary" size="sm">
               {t("next.open")}
             </ButtonLink>
+            {/* Quién viene y cuántos hacen su plan propio (ADR 0055). */}
+            {next.programming && next.programming.people.length > 0 ? (
+              <span className="flex items-center gap-2">
+                <FacePile people={next.programming.people} max={6} />
+                {ownPeople(next.programming.people).length > 0 ? (
+                  <span className="text-label opacity-80">
+                    {p("withOwn", { count: ownPeople(next.programming.people).length })}
+                  </span>
+                ) : null}
+              </span>
+            ) : null}
           </div>
         </section>
       ) : null}

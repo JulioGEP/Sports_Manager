@@ -921,8 +921,16 @@ export function bookingsRepo(db: () => Database) {
 
     /** Quién viene a una clase (y quién espera), con su preferencia de salir o no en la lista. */
     async attendees(scope: OrgScope, eventId: string): Promise<AttendeeRecord[]> {
+      return (await this.attendeesOf(scope, [eventId])).get(eventId) ?? [];
+    },
+
+    /** Quién viene a cada una de unas clases (ADR 0055): una consulta para toda la semana. */
+    async attendeesOf(scope: OrgScope, eventIds: string[]): Promise<Map<string, AttendeeRecord[]>> {
+      const out = new Map<string, AttendeeRecord[]>();
+      if (eventIds.length === 0) return out;
       const rows = await db()
         .select({
+          eventId: schema.bookings.eventId,
           bookingId: schema.bookings.id,
           playerId: schema.bookings.playerId,
           status: schema.bookings.status,
@@ -943,7 +951,7 @@ export function bookingsRepo(db: () => Database) {
         .where(
           and(
             eq(schema.bookings.organizationId, scope.organizationId),
-            eq(schema.bookings.eventId, eventId),
+            inArray(schema.bookings.eventId, eventIds),
             inArray(schema.bookings.status, [
               "booked",
               "waitlist",
@@ -954,17 +962,22 @@ export function bookingsRepo(db: () => Database) {
           ),
         )
         .orderBy(asc(schema.bookings.queuedAt));
-      return rows.map((r) => ({
-        bookingId: r.bookingId,
-        playerId: r.playerId,
-        firstName: r.firstName,
-        lastName: r.lastName,
-        photoBlobKey: r.photoBlobKey,
-        userId: r.userId,
-        status: r.status as BookingStatus,
-        queuedAt: r.queuedAt,
-        hidden: r.hidden ?? false,
-      }));
+      for (const r of rows) {
+        const list = out.get(r.eventId) ?? [];
+        list.push({
+          bookingId: r.bookingId,
+          playerId: r.playerId,
+          firstName: r.firstName,
+          lastName: r.lastName,
+          photoBlobKey: r.photoBlobKey,
+          userId: r.userId,
+          status: r.status as BookingStatus,
+          queuedAt: r.queuedAt,
+          hidden: r.hidden ?? false,
+        });
+        out.set(r.eventId, list);
+      }
+      return out;
     },
 
     /** Las clases reservadas por un atleta en un rango (todas, si no se dice). */

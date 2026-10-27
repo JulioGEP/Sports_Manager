@@ -440,6 +440,14 @@ La única pantalla a pantalla completa del producto: en la banda el partido est�
 - **Piezas.** Dorsal en círculo `bg-club` (tinta con aro blanco para el portero), nombre de pila y minutos en Geist Mono. Seleccionada: `bg-surface` con aro del club. En la pista, sobre `bg-black/35`; en el banquillo, sobre `bg-page` con borde.
 - **Convocatoria.** Tocar la fila decide quién sale de inicio; "Portero" es un botón de alternar (9.6), en tinta y con check cuando está marcado, nunca en el color del club, que es el de "Guardar convocatoria". Puede haber varios porteros convocados, pero en pista solo uno: marcar a un titular desmarca a los demás titulares, y el aviso dice cuántos hay cuando sobran.
 
+### 9.20 Pila de caras · `FacePile`
+
+Quién viene a una clase de un vistazo (ADR 0055): las primeras caras solapadas y "+N" con el resto, en Geist Mono.
+
+- Dos tamaños: `sm` (32 px) en listas y tarjetas, `xs` (28 px) en el calendario y en filas densas. Se solapan lo justo para que las iniciales de cada cara se lean enteras.
+- Cada cara lleva un aro de 2 px del color de la superficie; quien sigue un plan propio, del color del club; quien no vino, apagada. El color nunca va solo: la pila es una imagen con etiqueta (los nombres, "y N más" y cuántos con plan propio), que es también su *tooltip*, y al lado va siempre la cifra en texto.
+- Nunca es un botón: decora la fila o la tarjeta, que es la que se abre.
+
 ---
 
 ## 10. Gráficas de rendimiento

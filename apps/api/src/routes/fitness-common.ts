@@ -10,6 +10,7 @@ import {
   percentLoad,
   planExpiresOn,
   type BookingPolicy,
+  type ClassProgramming,
   type ClassSummary,
   type CountedBooking,
   type Locale,
@@ -168,6 +169,7 @@ export function classDto(
     action?: "book" | "waitlist" | null;
     block?: ClassSummary["block"];
     hasWorkout?: boolean;
+    programming?: ClassProgramming | null;
   } = {},
 ): ClassSummary {
   const windows = bookingWindows(cls.startsAt, policy);
@@ -192,6 +194,7 @@ export function classDto(
     freeCancelUntil: windows.freeCancelUntil.toISOString(),
     hasWorkout: extra.hasWorkout ?? false,
     checkedIn: cls.checkedIn,
+    programming: extra.programming ?? null,
   };
 }
 
