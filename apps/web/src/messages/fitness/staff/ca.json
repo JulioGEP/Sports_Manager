@@ -54,7 +54,17 @@
     "empty": "No hi ha classes aquesta setmana.",
     "emptyMine": "Aquesta setmana no fas cap classe.",
     "seeAll": "Veure-les totes",
-    "occupancy": "{percent} % d'ocupació"
+    "occupancy": "{percent} % d'ocupació",
+    "withoutWod": "{count, plural, one {# classe sense WOD} other {# classes sense WOD}}",
+    "day": {
+      "title": "Programació del dia",
+      "empty": "Aquell dia no hi ha classes.",
+      "missing": "Falta el WOD",
+      "program": "Programar {section} el {day}",
+      "programShort": "Programar",
+      "openWod": "Obrir el WOD {title}",
+      "plan": "{plan} · Setmana {week} de {weeks} · {block}"
+    }
   },
   "class": {
     "notFound": "Aquesta classe no existeix o no és de les teves classes.",
@@ -78,8 +88,9 @@
     },
     "waitlist": {
       "title": "Llista d'espera",
-      "hint": "Per ordre. Si s'allibera una plaça, entra el primer que pugui.",
-      "remove": "Treure de l'espera {name}"
+      "hint": "Per ordre. Si algú cancel·la, entra el primer a qui li arribi la tarifa.",
+      "remove": "Treure de l'espera {name}",
+      "hintResize": "Per ordre. Si algú cancel·la, entra el primer a qui li arribi la tarifa. Per donar-los plaça ara, amplia l'aforament."
     },
     "add": {
       "button": "Afegir atleta",
@@ -126,7 +137,57 @@
       "leaderboard": "Classificació de la classe",
       "leaderboardEmpty": "Ningú d'aquesta classe ha apuntat el seu resultat."
     },
-    "ownPlan": "Pla propi: {plan}"
+    "ownPlan": "Pla propi: {plan}",
+    "doing": {
+      "label": "Què fa cadascú avui",
+      "all": "Tothom {count}",
+      "box": "WOD {count}",
+      "own": "El seu pla {count}",
+      "empty": "Ningú en aquest grup."
+    },
+    "today": {
+      "session": "Avui fa la seva sessió: {title}",
+      "notYet": "La seva sessió encara no està publicada: avui fa el WOD",
+      "noSession": "El seu pla no té sessió avui: fa el WOD"
+    },
+    "programming": {
+      "label": "Programació de la classe",
+      "plan": "{plan} · Setmana {week} de {weeks} · {block}",
+      "loose": "WOD solt, fora d'un pla",
+      "none": "Aquesta classe encara no té WOD",
+      "noneHint": "Qui vingui el veurà a la seva app quan el publiquis.",
+      "openWeek": "Setmana del pla"
+    },
+    "sessions": {
+      "title": "Plans propis",
+      "hint": "Fan la seva sessió en lloc del WOD del box. Mentre la sessió estigui en esborrany, fan el WOD.",
+      "session": "Avui: {title}",
+      "none": "El seu pla no té sessió avui: fan el WOD",
+      "notYet": "Encara no la veuen: publica-la des de la setmana del pla.",
+      "see": "Veure la sessió",
+      "openWeek": "Setmana del pla"
+    },
+    "fromWaitlist": "Des de l'espera",
+    "removedPromoted": "Reserva treta. Entra {name} des de l'espera.",
+    "capacity": {
+      "button": "{count, plural, one {Donar plaça} other {Donar plaça a #}}",
+      "edit": "Canviar l'aforament d'aquesta classe",
+      "title": "Aforament d'aquesta classe",
+      "description": "Només aquesta classe: l'horari i el tipus de classe no canvien. Mai per sota de qui ja té plaça.",
+      "less": "Una plaça menys",
+      "more": "Una plaça més",
+      "value": "{count, plural, one {# plaça} other {# places}}",
+      "unit": "{count, plural, one {plaça} other {places}}",
+      "now": "Ara: {capacity} · {booked} amb plaça{waiting, plural, =0 {} other { · # en espera}}",
+      "all": "{count, plural, one {Donar plaça al de l'espera} other {Donar plaça als # de l'espera}}",
+      "entering": "Entren des de l'espera, per ordre",
+      "free": "{count, plural, =0 {Sense places lliures.} one {Queda # plaça lliure per reservar.} other {Queden # places lliures per reservar.}}",
+      "save": "Desar l'aforament",
+      "saveAdmit": "{count, plural, one {Ampliar i donar plaça a #} other {Ampliar i donar plaça a #}}",
+      "saved": "Aforament de la classe: {capacity} places.",
+      "admitted": "Aforament de la classe: {capacity} places. Entren des de l'espera: {names}.",
+      "min": "Ja hi ha {booked} amb plaça: l'aforament no pot baixar d'aquí."
+    }
   },
   "programming": {
     "title": "Programació",
@@ -165,7 +226,7 @@
     "results": "{count, plural, one {# resultat} other {# resultats}}",
     "missing": "Falta el WOD",
     "missingSection": "{section}: falta el WOD",
-    "classesThatDay": "{count, plural, one {# classe aquell dia} other {# classes aquell dia}}",
+    "classesThatDay": "{count, plural, one {# classe aquell dia} other {# classes aquell dia}}{booked, plural, =0 {} one { · # reserva esperant el WOD} other { · # reserves esperant el WOD}}",
     "programDay": "Programar {section} el {day}",
     "moreWays": "Altres maneres de programar el {day}",
     "fromBenchmark": "Partir d'un benchmark",
@@ -538,5 +599,29 @@
     "send": "Enviar",
     "minor": "Els missatges són només amb atletes adults. Per a un menor, parla amb la seva família.",
     "notFound": "Aquest atleta no existeix o no ve a les teves classes."
+  },
+  "inClasses": {
+    "more": "{count} més",
+    "withOwn": "{count} amb pla propi",
+    "booked": "{count, plural, one {# reserva} other {# reserves}}",
+    "classes": "{count, plural, one {En # classe} other {En # classes}}",
+    "chip": "Classe de les {hour}: {booked} de {capacity} places{own, plural, =0 {} other {, # amb pla propi}}",
+    "chipOpen": "Classe de les {hour}: {booked, plural, one {# reserva} other {# reserves}}{own, plural, =0 {} other {, # amb pla propi}}",
+    "ownTitle": "Plans propis",
+    "ownOpen": "Obrir la setmana de {plan}",
+    "inClass": "{count} de {members} a classe",
+    "noWod": "Sense WOD",
+    "draftWod": "WOD en esborrany",
+    "session": {
+      "draft": "En esborrany",
+      "scheduled": "Es publica {when}",
+      "published": "Publicada",
+      "title": "Sessió: {title}",
+      "none": "Sense sessió: qui vingui fa el WOD del box"
+    },
+    "split": {
+      "box": "{count, plural, one {# fa el WOD del box} other {# fan el WOD del box}}",
+      "own": "{count, plural, one {# fa el seu pla propi} other {# fan el seu pla propi}}"
+    }
   }
 }

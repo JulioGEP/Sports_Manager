@@ -54,7 +54,17 @@
     "empty": "No classes this week.",
     "emptyMine": "You're not coaching any class this week.",
     "seeAll": "See all",
-    "occupancy": "{percent}% full"
+    "occupancy": "{percent}% full",
+    "withoutWod": "{count, plural, one {# class without a WOD} other {# classes without a WOD}}",
+    "day": {
+      "title": "The day's programming",
+      "empty": "No classes that day.",
+      "missing": "WOD missing",
+      "program": "Program {section} on {day}",
+      "programShort": "Program",
+      "openWod": "Open the WOD {title}",
+      "plan": "{plan} · Week {week} of {weeks} · {block}"
+    }
   },
   "class": {
     "notFound": "That class doesn't exist or isn't one of yours.",
@@ -78,8 +88,9 @@
     },
     "waitlist": {
       "title": "Waitlist",
-      "hint": "In order. When a spot opens, the first person who can take it gets in.",
-      "remove": "Remove {name} from the waitlist"
+      "hint": "In order. When someone cancels, the first person whose plan covers it gets in.",
+      "remove": "Remove {name} from the waitlist",
+      "hintResize": "In order. When someone cancels, the first person whose plan covers it gets in. To give them a spot now, raise the capacity."
     },
     "add": {
       "button": "Add athlete",
@@ -126,7 +137,57 @@
       "leaderboard": "Class leaderboard",
       "leaderboardEmpty": "Nobody in this class has logged a result."
     },
-    "ownPlan": "Own plan: {plan}"
+    "ownPlan": "Own plan: {plan}",
+    "doing": {
+      "label": "What each person does today",
+      "all": "All {count}",
+      "box": "WOD {count}",
+      "own": "Own plan {count}",
+      "empty": "Nobody in this group."
+    },
+    "today": {
+      "session": "Today: their own session, {title}",
+      "notYet": "Their session isn't published yet: today they do the WOD",
+      "noSession": "Their plan has no session today: they do the WOD"
+    },
+    "programming": {
+      "label": "Class programming",
+      "plan": "{plan} · Week {week} of {weeks} · {block}",
+      "loose": "Standalone WOD, outside a plan",
+      "none": "This class has no WOD yet",
+      "noneHint": "Whoever comes will see it in their app as soon as you publish it.",
+      "openWeek": "Plan week"
+    },
+    "sessions": {
+      "title": "Own plans",
+      "hint": "They do their own session instead of the box WOD. While their session is a draft, they do the WOD.",
+      "session": "Today: {title}",
+      "none": "Their plan has no session today: they do the WOD",
+      "notYet": "They can't see it yet: publish it from the plan week.",
+      "see": "See the session",
+      "openWeek": "Plan week"
+    },
+    "fromWaitlist": "From the waitlist",
+    "removedPromoted": "Booking removed. {name} gets in from the waitlist.",
+    "capacity": {
+      "button": "{count, plural, one {Give a spot} other {Give # spots}}",
+      "edit": "Change this class's capacity",
+      "title": "This class's capacity",
+      "description": "Only this class: the schedule and the class type stay the same. Never below the people who already have a spot.",
+      "less": "One spot fewer",
+      "more": "One more spot",
+      "value": "{count, plural, one {# spot} other {# spots}}",
+      "unit": "{count, plural, one {spot} other {spots}}",
+      "now": "Now: {capacity} · {booked} with a spot{waiting, plural, =0 {} other { · # waiting}}",
+      "all": "{count, plural, one {Give the waitlisted person a spot} other {Give all # on the waitlist a spot}}",
+      "entering": "Getting in from the waitlist, in order",
+      "free": "{count, plural, =0 {No free spots.} one {# spot left to book.} other {# spots left to book.}}",
+      "save": "Save capacity",
+      "saveAdmit": "{count, plural, one {Raise and give # spot} other {Raise and give # spots}}",
+      "saved": "Class capacity: {capacity} spots.",
+      "admitted": "Class capacity: {capacity} spots. In from the waitlist: {names}.",
+      "min": "{booked} already have a spot: capacity can't go below that."
+    }
   },
   "programming": {
     "title": "Programming",
@@ -165,7 +226,7 @@
     "results": "{count, plural, one {# result} other {# results}}",
     "missing": "WOD missing",
     "missingSection": "{section}: WOD missing",
-    "classesThatDay": "{count, plural, one {# class that day} other {# classes that day}}",
+    "classesThatDay": "{count, plural, one {# class that day} other {# classes that day}}{booked, plural, =0 {} one { · # booking waiting for the WOD} other { · # bookings waiting for the WOD}}",
     "programDay": "Program {section} on {day}",
     "moreWays": "Other ways to program {day}",
     "fromBenchmark": "Start from a benchmark",
@@ -538,5 +599,29 @@
     "send": "Send",
     "minor": "Messages are only with adult athletes. For a minor, talk to their family.",
     "notFound": "That athlete doesn't exist or doesn't come to your classes."
+  },
+  "inClasses": {
+    "more": "{count} more",
+    "withOwn": "{count} on their own plan",
+    "booked": "{count, plural, one {# booking} other {# bookings}}",
+    "classes": "{count, plural, one {In # class} other {In # classes}}",
+    "chip": "{hour} class: {booked} of {capacity} spots{own, plural, =0 {} other {, # on their own plan}}",
+    "chipOpen": "{hour} class: {booked, plural, one {# booking} other {# bookings}}{own, plural, =0 {} other {, # on their own plan}}",
+    "ownTitle": "Own plans",
+    "ownOpen": "Open the week of {plan}",
+    "inClass": "{count} of {members} in class",
+    "noWod": "No WOD",
+    "draftWod": "WOD in draft",
+    "session": {
+      "draft": "In draft",
+      "scheduled": "Publishes {when}",
+      "published": "Live",
+      "title": "Session: {title}",
+      "none": "No session: anyone who comes does the box WOD"
+    },
+    "split": {
+      "box": "{count, plural, one {# does the box WOD} other {# do the box WOD}}",
+      "own": "{count, plural, one {# does their own plan} other {# do their own plan}}"
+    }
   }
 }

@@ -70,3 +70,4 @@ Las decisiones no se editan una vez aceptadas. Si cambian, se escribe una nueva 
 | 0054 | Planes para quien sea: todo el box, un nivel, un grupo o una persona | Aceptada |
 | 0055 | Áreas del box con portada de KPIs que personaliza cada club, sin timer, ranking ni métricas | Aceptada |
 | 0056 | El dinero se lee igual en toda la app: punto de miles, coma decimal y dos decimales | Aceptada |
+| 0057 | La programación dentro de las clases: qué se hace en cada clase y quién viene a hacerlo | Aceptada |

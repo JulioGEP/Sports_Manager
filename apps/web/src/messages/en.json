@@ -1574,7 +1574,8 @@
       "cancelled": "Booking cancelled by the box"
     },
     "class": {
-      "closed": "Class closed"
+      "closed": "Class closed",
+      "capacity_changed": "Class capacity changed"
     },
     "subscription": {
       "created": "Plan given to an athlete",

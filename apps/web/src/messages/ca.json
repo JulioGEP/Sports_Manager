@@ -1574,7 +1574,8 @@
       "cancelled": "Reserva cancel·lada pel box"
     },
     "class": {
-      "closed": "Classe tancada"
+      "closed": "Classe tancada",
+      "capacity_changed": "Aforament d'una classe canviat"
     },
     "subscription": {
       "created": "Tarifa donada a un atleta",

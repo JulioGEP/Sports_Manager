@@ -111,6 +111,8 @@ export interface AttendeeRecord {
   status: BookingStatus;
   queuedAt: Date;
   hidden: boolean;
+  /** Cómo llegó a la clase: reservó, la reservó el box o entró desde la espera. */
+  source: string;
 }
 
 /** Lo que el atleta lleva reservado y gastado: las cuentas de sus tarifas. */
@@ -921,12 +923,21 @@ export function bookingsRepo(db: () => Database) {
 
     /** Quién viene a una clase (y quién espera), con su preferencia de salir o no en la lista. */
     async attendees(scope: OrgScope, eventId: string): Promise<AttendeeRecord[]> {
+      return (await this.attendeesOf(scope, [eventId])).get(eventId) ?? [];
+    },
+
+    /** Quién viene a cada una de unas clases (ADR 0057): una consulta para toda la semana. */
+    async attendeesOf(scope: OrgScope, eventIds: string[]): Promise<Map<string, AttendeeRecord[]>> {
+      const out = new Map<string, AttendeeRecord[]>();
+      if (eventIds.length === 0) return out;
       const rows = await db()
         .select({
+          eventId: schema.bookings.eventId,
           bookingId: schema.bookings.id,
           playerId: schema.bookings.playerId,
           status: schema.bookings.status,
           queuedAt: schema.bookings.queuedAt,
+          source: schema.bookings.source,
           firstName: schema.people.firstName,
           lastName: schema.people.lastName,
           photoBlobKey: schema.people.photoBlobKey,
@@ -943,7 +954,7 @@ export function bookingsRepo(db: () => Database) {
         .where(
           and(
             eq(schema.bookings.organizationId, scope.organizationId),
-            eq(schema.bookings.eventId, eventId),
+            inArray(schema.bookings.eventId, eventIds),
             inArray(schema.bookings.status, [
               "booked",
               "waitlist",
@@ -954,17 +965,113 @@ export function bookingsRepo(db: () => Database) {
           ),
         )
         .orderBy(asc(schema.bookings.queuedAt));
-      return rows.map((r) => ({
-        bookingId: r.bookingId,
-        playerId: r.playerId,
-        firstName: r.firstName,
-        lastName: r.lastName,
-        photoBlobKey: r.photoBlobKey,
-        userId: r.userId,
-        status: r.status as BookingStatus,
-        queuedAt: r.queuedAt,
-        hidden: r.hidden ?? false,
-      }));
+      for (const r of rows) {
+        const list = out.get(r.eventId) ?? [];
+        list.push({
+          bookingId: r.bookingId,
+          playerId: r.playerId,
+          firstName: r.firstName,
+          lastName: r.lastName,
+          photoBlobKey: r.photoBlobKey,
+          userId: r.userId,
+          status: r.status as BookingStatus,
+          queuedAt: r.queuedAt,
+          hidden: r.hidden ?? false,
+          source: r.source,
+        });
+        out.set(r.eventId, list);
+      }
+      return out;
+    },
+
+    /**
+     * Cambia el aforo de una clase concreta (ADR 0057), nunca por debajo de quien ya tiene plaza y
+     * solo antes de empezar. Si sube, las plazas nuevas pasan a la espera por orden de cola. Lo
+     * decide el personal, así que entran aunque su tarifa no llegue, como cuando reserva por un
+     * atleta; si llega, la reserva gasta de la tarifa que toca.
+     */
+    async setCapacity(
+      scope: OrgScope,
+      input: { eventId: string; capacity: number; timezone: string; now: Date },
+    ): Promise<
+      | { outcome: "not_found" }
+      | { outcome: "started" }
+      | { outcome: "below_booked"; booked: number }
+      | { outcome: "updated"; admitted: string[] }
+    > {
+      return db().transaction(async (tx) => {
+        if (!(await lockEvent(tx, scope, input.eventId))) return { outcome: "not_found" as const };
+        const cls = await classById(scope, input.eventId, input.timezone, tx);
+        if (!cls) return { outcome: "not_found" as const };
+        if (input.now.getTime() >= cls.startsAt.getTime()) return { outcome: "started" as const };
+        if (input.capacity < cls.booked)
+          return { outcome: "below_booked" as const, booked: cls.booked };
+        await tx
+          .update(schema.events)
+          .set({ capacity: input.capacity })
+          .where(
+            and(
+              eq(schema.events.organizationId, scope.organizationId),
+              eq(schema.events.id, input.eventId),
+            ),
+          );
+        const free = input.capacity - cls.booked;
+        if (free <= 0) return { outcome: "updated" as const, admitted: [] };
+        const queue = await tx
+          .select({ playerId: schema.bookings.playerId })
+          .from(schema.bookings)
+          .where(
+            and(
+              eq(schema.bookings.organizationId, scope.organizationId),
+              eq(schema.bookings.eventId, cls.id),
+              eq(schema.bookings.status, "waitlist"),
+            ),
+          )
+          .orderBy(asc(schema.bookings.queuedAt))
+          .limit(free);
+        const policy = await policyWith(tx, scope);
+        const wider = { ...cls, capacity: input.capacity };
+        const admitted: string[] = [];
+        for (const candidate of queue) {
+          const context = await contextOf(
+            tx,
+            scope,
+            candidate.playerId,
+            input.timezone,
+            policy,
+            cls.id,
+          );
+          // La tarifa que toca, si la tiene; si no, la activa, como al reservar por un atleta.
+          const check = evaluate(
+            wider,
+            { ...policy, opensDaysBefore: 60, closesMinutesBefore: 0 },
+            context,
+            null,
+            input.now,
+            cls.booked + admitted.length,
+          );
+          await tx
+            .update(schema.bookings)
+            .set({
+              status: "booked",
+              consumes: true,
+              subscriptionId:
+                check.action === "book"
+                  ? check.planId
+                  : (context.subscriptions.find((s) => s.status === "active")?.id ?? null),
+              source: "waitlist",
+              queuedAt: input.now,
+            })
+            .where(
+              and(
+                eq(schema.bookings.eventId, cls.id),
+                eq(schema.bookings.playerId, candidate.playerId),
+              ),
+            );
+          admitted.push(candidate.playerId);
+        }
+        return { outcome: "updated" as const, admitted };
+      });
     },
 
     /** Las clases reservadas por un atleta en un rango (todas, si no se dice). */

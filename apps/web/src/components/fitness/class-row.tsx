@@ -1,6 +1,7 @@
 import type { BookingStatus, ClassSummary } from "@sportsmanager/shared";
 import type { ReactNode } from "react";
 import { Link } from "react-router";
+import { FacePile, ownPeople } from "@/components/fitness/class-programming";
 import { useClassTime } from "@/lib/fitness";
 import { useT } from "@/lib/intl";
 import { Icon, StatusChip, type StatusKind } from "@/ui";
@@ -84,7 +85,11 @@ export function ClassRow({
   const time = useClassTime();
   const c = useT("fitness.common");
   const status = useT("fitness.common.bookingStatus");
+  const p = useT("fitness.staff.inClasses");
   const past = Date.parse(cls.endsAt) < Date.now();
+  // Para el personal (ADR 0057): su WOD, quién viene y cuántos con plan propio.
+  const programming = cls.programming;
+  const own = programming ? ownPeople(programming.people).length : 0;
   const body = (
     <>
       <span className="flex w-14 shrink-0 flex-col">
@@ -106,10 +111,26 @@ export function ClassRow({
               {cls.facility.name}
             </span>
           ) : null}
-          {cls.hasWorkout ? (
+          {programming && cls.section && !programming.workoutId && !past ? (
+            <span className="inline-flex items-center gap-1 font-medium text-warning">
+              <Icon.Warning size={14} aria-hidden="true" />
+              {p("noWod")}
+            </span>
+          ) : programming?.workoutId && !cls.hasWorkout ? (
+            <span className="inline-flex items-center gap-1">
+              <Icon.Barbell size={14} aria-hidden="true" />
+              {p("draftWod")}
+            </span>
+          ) : cls.hasWorkout ? (
             <span className="inline-flex items-center gap-1">
               <Icon.Barbell size={14} aria-hidden="true" />
               WOD
+            </span>
+          ) : null}
+          {own > 0 ? (
+            <span className="inline-flex items-center gap-1 text-club-text">
+              <Icon.Target size={14} aria-hidden="true" />
+              {p("withOwn", { count: own })}
             </span>
           ) : null}
         </span>
@@ -126,7 +147,8 @@ export function ClassRow({
           </span>
         ) : null}
       </span>
-      <span className="hidden sm:flex">
+      <span className="hidden items-center gap-4 sm:flex">
+        {programming ? <FacePile people={programming.people} max={5} size="xs" /> : null}
         <SpotsMeter cls={cls} />
       </span>
     </>

@@ -1,5 +1,5 @@
 import { addDays, WorkoutResponseSchema, type WorkoutView } from "@sportsmanager/shared";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useIntl } from "react-intl";
 import { Link, useNavigate } from "react-router";
 import { detailOf, QUIET_KINDS } from "@/components/fitness/programming-model";
@@ -100,6 +100,7 @@ export function WorkoutCard({
   onDuplicate,
   onMove,
   onPublish,
+  footer,
 }: {
   workout: WorkoutView;
   showSection: boolean;
@@ -107,6 +108,8 @@ export function WorkoutCard({
   onDuplicate: () => void;
   onMove: () => void;
   onPublish: () => void;
+  /** Debajo de los bloques: las clases en que se hace (ADR 0057). */
+  footer?: ReactNode;
 }) {
   const t = useT("fitness.staff.programming");
   const line = useT("fitness.staff.programming.line");
@@ -205,6 +208,7 @@ export function WorkoutCard({
           {t("results", { count: results })}
         </span>
       ) : null}
+      {footer}
     </article>
   );
 }
@@ -217,12 +221,15 @@ export function EmptyDay({
   date,
   section,
   classes,
+  booked,
   showSection,
   onCopyFrom,
 }: {
   date: string;
   section: { id: string; name: string };
   classes: number;
+  /** Reservas de esas clases: la gente que espera el WOD (ADR 0057). */
+  booked: number;
   showSection: boolean;
   onCopyFrom: () => void;
 }) {
@@ -237,7 +244,9 @@ export function EmptyDay({
         <span className="font-medium text-ink">
           {showSection ? t("missingSection", { section: section.name }) : t("missing")}
         </span>
-        <span className="text-secondary text-muted">{t("classesThatDay", { count: classes })}</span>
+        <span className="text-secondary text-muted">
+          {t("classesThatDay", { count: classes, booked })}
+        </span>
       </span>
       <span className="flex items-center gap-1">
         <ButtonLink

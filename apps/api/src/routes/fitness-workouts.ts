@@ -264,6 +264,8 @@ export function createFitnessWorkoutRoutes(config: ApiConfig, data: DataLayer) {
           from: DateOnlySchema.optional(),
           to: DateOnlySchema.optional(),
           section: z.string().uuid().optional(),
+          /** También las sesiones de los planes propios activos (ADR 0057), con `specific`. */
+          own: z.enum(["1"]).optional(),
         }),
       },
       responses: { 200: json("WODs", WorkoutsResponseSchema), ...errors },
@@ -279,7 +281,12 @@ export function createFitnessWorkoutRoutes(config: ApiConfig, data: DataLayer) {
       const ids = query.section
         ? sections.visible.filter((s) => s === query.section)
         : sections.visible;
-      const list = await data.workouts.list(tenant.scope, from, to, { sectionIds: ids });
+      const alsoPlans = query.own
+        ? (await data.planning.plans.list(tenant.scope, ids))
+            .filter((p) => p.status === "active" && p.audience !== "section")
+            .map((p) => p.id)
+        : [];
+      const list = await data.workouts.list(tenant.scope, from, to, { sectionIds: ids, alsoPlans });
       const counts = await data.workouts.results.counts(
         tenant.scope,
         list.flatMap((w) => w.blocks.map((b) => b.id)),

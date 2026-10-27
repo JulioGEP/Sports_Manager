@@ -457,6 +457,14 @@ Las cifras que un club mira de un vistazo: Hoy y la portada de cada área del bo
 
 En la navegación del personal de un box, la cabecera de cada grupo con portada (Entrenamiento, Negocio, El box) es un enlace: misma altura que un destino (`h-(--h-control)`), texto `text-label` en mayúsculas y `CaretRight` de 16 px a la derecha, que anuncia que se abre. Activa, `bg-nav-active`. Su nombre accesible es "Resumen de …", que contiene la etiqueta visible. En "Más" del móvil, las pantallas que no caben en la barra se agrupan igual, con la cabecera de su área encima. Los grupos sin portada (los del atleta) siguen siendo una etiqueta.
 
+### 9.22 Pila de caras · `FacePile`
+
+Quién viene a una clase de un vistazo (ADR 0057): las primeras caras solapadas y "+N" con el resto, en Geist Mono.
+
+- Dos tamaños: `sm` (32 px) en listas y tarjetas, `xs` (28 px) en el calendario y en filas densas. Se solapan lo justo para que las iniciales de cada cara se lean enteras.
+- Cada cara lleva un aro de 2 px del color de la superficie; quien sigue un plan propio, del color del club; quien no vino, apagada. El color nunca va solo: la pila es una imagen con etiqueta (los nombres, "y N más" y cuántos con plan propio), que es también su *tooltip*, y al lado va siempre la cifra en texto.
+- Nunca es un botón: decora la fila o la tarjeta, que es la que se abre.
+
 ---
 
 ## 10. Gráficas de rendimiento

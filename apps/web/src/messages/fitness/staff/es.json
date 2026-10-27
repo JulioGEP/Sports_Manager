@@ -54,7 +54,17 @@
     "empty": "No hay clases esta semana.",
     "emptyMine": "Esta semana no das ninguna clase.",
     "seeAll": "Ver todas",
-    "occupancy": "{percent} % de ocupación"
+    "occupancy": "{percent} % de ocupación",
+    "withoutWod": "{count, plural, one {# clase sin WOD} other {# clases sin WOD}}",
+    "day": {
+      "title": "Programación del día",
+      "empty": "Ese día no hay clases.",
+      "missing": "Falta el WOD",
+      "program": "Programar {section} el {day}",
+      "programShort": "Programar",
+      "openWod": "Abrir el WOD {title}",
+      "plan": "{plan} · Semana {week} de {weeks} · {block}"
+    }
   },
   "class": {
     "notFound": "Esa clase no existe o no es de tus clases.",
@@ -78,8 +88,9 @@
     },
     "waitlist": {
       "title": "Lista de espera",
-      "hint": "En orden. Si se libera una plaza, entra el primero que pueda.",
-      "remove": "Sacar de la espera a {name}"
+      "hint": "En orden. Si alguien cancela, entra el primero al que le llegue su tarifa.",
+      "remove": "Sacar de la espera a {name}",
+      "hintResize": "En orden. Si alguien cancela, entra el primero al que le llegue su tarifa. Para darles plaza ya, amplía el aforo."
     },
     "add": {
       "button": "Añadir atleta",
@@ -126,7 +137,57 @@
       "leaderboard": "Clasificación de la clase",
       "leaderboardEmpty": "Nadie de esta clase ha apuntado su resultado."
     },
-    "ownPlan": "Plan propio: {plan}"
+    "ownPlan": "Plan propio: {plan}",
+    "doing": {
+      "label": "Qué hace cada uno hoy",
+      "all": "Todos {count}",
+      "box": "WOD {count}",
+      "own": "Su plan {count}",
+      "empty": "Nadie en este grupo."
+    },
+    "today": {
+      "session": "Hoy hace su sesión: {title}",
+      "notYet": "Su sesión aún no está publicada: hoy hace el WOD",
+      "noSession": "Su plan no tiene sesión hoy: hace el WOD"
+    },
+    "programming": {
+      "label": "Programación de la clase",
+      "plan": "{plan} · Semana {week} de {weeks} · {block}",
+      "loose": "WOD suelto, fuera de un plan",
+      "none": "Esta clase aún no tiene WOD",
+      "noneHint": "Quien viene lo verá en su app en cuanto lo publiques.",
+      "openWeek": "Semana del plan"
+    },
+    "sessions": {
+      "title": "Planes propios",
+      "hint": "Hacen su sesión en vez del WOD del box. Mientras su sesión esté en borrador, hacen el WOD.",
+      "session": "Hoy: {title}",
+      "none": "Su plan no tiene sesión hoy: hacen el WOD",
+      "notYet": "Aún no la ven: publícala desde la semana del plan.",
+      "see": "Ver la sesión",
+      "openWeek": "Semana del plan"
+    },
+    "fromWaitlist": "Desde la espera",
+    "removedPromoted": "Reserva quitada. Entra {name} desde la espera.",
+    "capacity": {
+      "button": "{count, plural, one {Dar plaza} other {Dar plaza a #}}",
+      "edit": "Cambiar el aforo de esta clase",
+      "title": "Aforo de esta clase",
+      "description": "Solo esta clase: el horario y el tipo de clase no cambian. Nunca por debajo de quien ya tiene plaza.",
+      "less": "Una plaza menos",
+      "more": "Una plaza más",
+      "value": "{count, plural, one {# plaza} other {# plazas}}",
+      "unit": "{count, plural, one {plaza} other {plazas}}",
+      "now": "Ahora: {capacity} · {booked} con plaza{waiting, plural, =0 {} other { · # en espera}}",
+      "all": "{count, plural, one {Dar plaza al de la espera} other {Dar plaza a los # de la espera}}",
+      "entering": "Entran desde la espera, por orden",
+      "free": "{count, plural, =0 {Sin plazas libres.} one {Queda # plaza libre para reservar.} other {Quedan # plazas libres para reservar.}}",
+      "save": "Guardar aforo",
+      "saveAdmit": "{count, plural, one {Ampliar y dar plaza a #} other {Ampliar y dar plaza a #}}",
+      "saved": "Aforo de la clase: {capacity} plazas.",
+      "admitted": "Aforo de la clase: {capacity} plazas. Entran desde la espera: {names}.",
+      "min": "Ya hay {booked} con plaza: el aforo no puede bajar de ahí."
+    }
   },
   "programming": {
     "title": "Programación",
@@ -165,7 +226,7 @@
     "results": "{count, plural, one {# resultado} other {# resultados}}",
     "missing": "Falta el WOD",
     "missingSection": "{section}: falta el WOD",
-    "classesThatDay": "{count, plural, one {# clase ese día} other {# clases ese día}}",
+    "classesThatDay": "{count, plural, one {# clase ese día} other {# clases ese día}}{booked, plural, =0 {} one { · # reserva esperando el WOD} other { · # reservas esperando el WOD}}",
     "programDay": "Programar {section} el {day}",
     "moreWays": "Otras formas de programar el {day}",
     "fromBenchmark": "Partir de un benchmark",
@@ -538,5 +599,29 @@
     "send": "Enviar",
     "minor": "Los mensajes son solo con atletas adultos. Para un menor, habla con su familia.",
     "notFound": "Ese atleta no existe o no viene a tus clases."
+  },
+  "inClasses": {
+    "more": "{count} más",
+    "withOwn": "{count} con plan propio",
+    "booked": "{count, plural, one {# reserva} other {# reservas}}",
+    "classes": "{count, plural, one {En # clase} other {En # clases}}",
+    "chip": "Clase de las {hour}: {booked} de {capacity} plazas{own, plural, =0 {} other {, # con plan propio}}",
+    "chipOpen": "Clase de las {hour}: {booked, plural, one {# reserva} other {# reservas}}{own, plural, =0 {} other {, # con plan propio}}",
+    "ownTitle": "Planes propios",
+    "ownOpen": "Abrir la semana de {plan}",
+    "inClass": "{count} de {members} en clase",
+    "noWod": "Sin WOD",
+    "draftWod": "WOD en borrador",
+    "session": {
+      "draft": "En borrador",
+      "scheduled": "Se publica {when}",
+      "published": "Publicada",
+      "title": "Sesión: {title}",
+      "none": "Sin sesión: quien venga hace el WOD del box"
+    },
+    "split": {
+      "box": "{count, plural, one {# hace el WOD del box} other {# hacen el WOD del box}}",
+      "own": "{count, plural, one {# hace su plan propio} other {# hacen su plan propio}}"
+    }
   }
 }

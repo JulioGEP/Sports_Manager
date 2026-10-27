@@ -241,13 +241,19 @@ export function useMessageThread(playerId: string | undefined) {
 
 // --- Consultas del personal ---
 
-export function useWorkouts(range: { from: string; to: string; section?: string | undefined }) {
+/** `own`: también las sesiones de los planes propios activos, con `specific` (ADR 0057). */
+export function useWorkouts(
+  range: { from: string; to: string; section?: string | undefined; own?: boolean },
+  enabled = true,
+) {
   const { slug } = useReadyClub();
   const params = new URLSearchParams({ from: range.from, to: range.to });
   if (range.section) params.set("section", range.section);
+  if (range.own) params.set("own", "1");
   return useQuery({
     queryKey: fitnessKey(slug, "workouts", params.toString()),
     queryFn: () => apiFetch(`/api/org/workouts?${params}`, { schema: WorkoutsResponseSchema }),
+    enabled,
   });
 }
 
