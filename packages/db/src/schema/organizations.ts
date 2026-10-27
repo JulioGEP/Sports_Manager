@@ -5,7 +5,6 @@ import {
   CLUB_BACKGROUNDS,
   CLUB_BUTTON_STYLES,
   CLUB_CORNERS,
-  CLUB_MODELS,
   CLUB_HERO_STYLES,
   CLUB_ICON_STYLES,
   CLUB_MOTTO_MAX,
@@ -13,14 +12,13 @@ import {
   CLUB_TYPOGRAPHIES,
   CLUB_VOICES,
   LOCALES,
-  type BoxDashboardsConfig,
   ORGANIZATION_SLUG_PATTERN,
   ORGANIZATION_STATUSES,
   PAYMENT_PROVIDERS,
   STRIPE_ACCOUNT_STATUSES,
 } from "@sportsmanager/shared";
 import { sql } from "drizzle-orm";
-import { check, integer, jsonb, pgTable, text, uuid } from "drizzle-orm/pg-core";
+import { check, integer, pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { id, inList, regexLiteral, timestamps } from "./_shared.ts";
 import { sports } from "./sports.ts";
 
@@ -69,16 +67,6 @@ export const organizations = pgTable(
     publicApiKey: text("public_api_key").unique(),
     /** Propuestas de sesión con IA por semana (ADR 0044). Lo fija la plataforma; 0 la apaga. */
     aiWeeklyQuota: integer("ai_weekly_quota").notNull().default(AI_DEFAULT_WEEKLY_QUOTA),
-    /** Club deportivo o de fitness (ADR 0049): vocabulario, navegación e inicio. Lo fija la plataforma. */
-    clubModel: text("club_model").notNull().default("sports"),
-    /**
-     * Cuadros de mando del box (ADR 0055): los KPIs que el club elige para Hoy y para la portada de
-     * cada área, en orden. Un cuadro sin entrada enseña los de serie.
-     */
-    dashboards: jsonb("dashboards")
-      .$type<BoxDashboardsConfig>()
-      .notNull()
-      .default(sql`'{}'::jsonb`),
     ...timestamps,
   },
   (t) => [
@@ -110,7 +98,6 @@ export const organizations = pgTable(
       "organizations_stripe_account_status_check",
       sql`${t.stripeAccountStatus} is null or ${inList(t.stripeAccountStatus, STRIPE_ACCOUNT_STATUSES)}`,
     ),
-    check("organizations_club_model_check", inList(t.clubModel, CLUB_MODELS)),
     check(
       "organizations_ai_weekly_quota_check",
       sql`${t.aiWeeklyQuota} between 0 and ${sql.raw(String(AI_MAX_WEEKLY_QUOTA))}`,

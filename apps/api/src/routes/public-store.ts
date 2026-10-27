@@ -52,7 +52,7 @@ export function createPublicStoreRoutes(config: ApiConfig, data: DataLayer) {
     "/api/public/*",
     cors({
       origin: "*",
-      allowMethods: ["GET", "POST", "OPTIONS"],
+      allowMethods: ["GET", "OPTIONS"],
       allowHeaders: [PUBLIC_KEY_HEADER, "content-type"],
       maxAge: 86_400,
     }),

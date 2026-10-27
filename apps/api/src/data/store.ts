@@ -43,7 +43,6 @@ export interface StoreProductRecord {
   description: string | null;
   category: StoreProductCategory;
   priceCents: number;
-  memberPriceCents: number | null;
   imageBlobKey: string | null;
   status: StoreProductStatus;
   visibility: StoreProductVisibility;
@@ -94,8 +93,6 @@ export interface StoreBeneficiaryRecord {
   kind: "self" | "ward";
   teamIds: string[];
   sectionIds: string[];
-  /** Paga el precio para socios: tiene tarifa activa o es socio (ADR 0049). */
-  memberPrice: boolean;
 }
 
 export interface StoreOrderFilter {
@@ -231,7 +228,6 @@ export function storeRepo(db: () => Database, images: BlobStore) {
       description: product.description,
       category: product.category as StoreProductCategory,
       priceCents: product.priceCents,
-      memberPriceCents: product.memberPriceCents,
       imageBlobKey: product.imageBlobKey,
       status: product.status as StoreProductStatus,
       visibility: product.visibility as StoreProductVisibility,
@@ -362,36 +358,6 @@ export function storeRepo(db: () => Database, images: BlobStore) {
   }
 
   /**
-   * Quién paga el precio para socios (ADR 0049): las personas con ficha de socio activa o con una
-   * tarifa del box activa o en pausa.
-   */
-  async function memberPriced(scope: OrgScope, personIds: string[]): Promise<Set<string>> {
-    if (personIds.length === 0) return new Set();
-    const socios = await db()
-      .select({ personId: schema.clubMembers.personId })
-      .from(schema.clubMembers)
-      .where(
-        and(
-          eq(schema.clubMembers.organizationId, scope.organizationId),
-          eq(schema.clubMembers.status, "active"),
-          inArray(schema.clubMembers.personId, personIds),
-        ),
-      );
-    const athletes = await db()
-      .select({ personId: schema.players.personId })
-      .from(schema.subscriptions)
-      .innerJoin(schema.players, eq(schema.players.id, schema.subscriptions.playerId))
-      .where(
-        and(
-          eq(schema.subscriptions.organizationId, scope.organizationId),
-          inArray(schema.subscriptions.status, ["active", "paused"]),
-          inArray(schema.players.personId, personIds),
-        ),
-      );
-    return new Set([...socios, ...athletes].map((r) => r.personId));
-  }
-
-  /**
    * Para quién puede comprar una cuenta (ADR 0041): para sí misma si es deportista adulta con su
    * cuenta, y para los menores de los que es familia. La familia de un adulto no compra por él.
    */
@@ -434,7 +400,7 @@ export function storeRepo(db: () => Database, images: BlobStore) {
         ),
       )
       .orderBy(asc(schema.people.birthDate));
-    const list: Omit<StoreBeneficiaryRecord, "teamIds" | "sectionIds" | "memberPrice">[] = [];
+    const list: Omit<StoreBeneficiaryRecord, "teamIds" | "sectionIds">[] = [];
     // Con cuenta propia y sin fecha de nacimiento se le trata como adulto: entra él mismo.
     for (const p of own) {
       if (p.birthDate === null || !isMinor(p.birthDate)) list.push({ ...p, kind: "self" });
@@ -447,10 +413,6 @@ export function storeRepo(db: () => Database, images: BlobStore) {
       scope,
       list.map((b) => b.personId),
     );
-    const members = await memberPriced(
-      scope,
-      list.map((b) => b.personId),
-    );
     return list.map(({ personId, firstName, lastName, kind }) => ({
       personId,
       firstName,
@@ -458,7 +420,6 @@ export function storeRepo(db: () => Database, images: BlobStore) {
       kind,
       teamIds: teams.get(personId)?.teamIds ?? [],
       sectionIds: teams.get(personId)?.sectionIds ?? [],
-      memberPrice: members.has(personId),
     }));
   }
 
@@ -632,9 +593,6 @@ export function storeRepo(db: () => Database, images: BlobStore) {
       )
       .limit(1);
     if (person.length === 0) return { outcome: "unknown_person" };
-    const memberPricing = (await memberPriced(scope, [input.personId])).has(input.personId);
-    const priceOf = (line: { priceCents: number; memberPriceCents: number | null }) =>
-      memberPricing && line.memberPriceCents !== null ? line.memberPriceCents : line.priceCents;
     const today = todayIso();
     type TxOutcome =
       Exclude<CreateOrderOutcome, { outcome: "created" }> | { outcome: "created"; id: string };
@@ -651,7 +609,6 @@ export function storeRepo(db: () => Database, images: BlobStore) {
               productId: schema.storeProducts.id,
               productName: schema.storeProducts.name,
               priceCents: schema.storeProducts.priceCents,
-              memberPriceCents: schema.storeProducts.memberPriceCents,
               status: schema.storeProducts.status,
               availableUntil: schema.storeProducts.availableUntil,
               sectionId: schema.storeProducts.sectionId,
@@ -689,7 +646,7 @@ export function storeRepo(db: () => Database, images: BlobStore) {
                 variant: line.label,
                 left: line.stock,
               };
-            total += priceOf(line) * item.quantity;
+            total += line.priceCents * item.quantity;
           }
           for (const item of input.items) {
             const line = byId.get(item.variantId)!;
@@ -744,7 +701,7 @@ export function storeRepo(db: () => Database, images: BlobStore) {
                 variantId: line.variantId,
                 productName: line.productName,
                 variantLabel: line.label,
-                unitPriceCents: priceOf(line),
+                unitPriceCents: line.priceCents,
                 quantity: item.quantity,
               };
             }),
@@ -875,7 +832,6 @@ export function storeRepo(db: () => Database, images: BlobStore) {
               description: input.description ?? null,
               category: input.category,
               priceCents: input.priceCents,
-              memberPriceCents: input.memberPriceCents ?? null,
               status: input.status,
               visibility: input.visibility,
               sectionId: input.sectionId ?? null,
@@ -918,7 +874,6 @@ export function storeRepo(db: () => Database, images: BlobStore) {
         if (patch.description !== undefined) values.description = patch.description;
         if (patch.category !== undefined) values.category = patch.category;
         if (patch.priceCents !== undefined) values.priceCents = patch.priceCents;
-        if (patch.memberPriceCents !== undefined) values.memberPriceCents = patch.memberPriceCents;
         if (patch.status !== undefined) values.status = patch.status;
         if (patch.visibility !== undefined) values.visibility = patch.visibility;
         if (patch.availableUntil !== undefined) values.availableUntil = patch.availableUntil;

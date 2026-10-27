@@ -47,9 +47,6 @@ export const EventSummarySchema = z.object({
   homeAway: z.enum(HOME_AWAY).nullable(),
   notes: z.string().nullable(),
   seriesId: z.string().nullable(),
-  /** Clase abierta (ADR 0049): aforo y quién la da. */
-  capacity: z.number().int().nullable(),
-  coach: z.object({ userId: z.string(), name: z.string() }).nullable(),
   /** Pase de lista hecho (Bloque 17): presentes sobre convocados, o nulo si no se ha pasado. */
   attendance: z
     .object({ present: z.number().int().nonnegative(), total: z.number().int().nonnegative() })

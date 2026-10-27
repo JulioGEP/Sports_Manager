@@ -8,7 +8,6 @@ import {
   PERSON_GENDERS,
   PLAYER_STATUSES,
   SECTION_STATUSES,
-  TEAM_BOOKING_MODES,
   TEAM_STAFF_ROLES,
   TEAM_STATUSES,
 } from "../structure.ts";
@@ -88,8 +87,6 @@ export const TeamSummarySchema = z.object({
   category: z.string().nullable(),
   categoryId: z.string(),
   capacity: z.number().int().nullable(),
-  /** Plantilla fija o clase abierta a quien reserve (ADR 0049). */
-  bookingMode: z.enum(TEAM_BOOKING_MODES),
   status: z.enum(TEAM_STATUSES),
   section: z.object({ id: z.string(), name: z.string(), kind: SectionKindSchema }),
   season: z.object({ id: z.string(), name: z.string(), isCurrent: z.boolean() }),
@@ -125,8 +122,6 @@ export const TeamScheduleSlotResponseSchema = z.object({
   startsAt: z.string(),
   endsAt: z.string(),
   facility: z.object({ id: z.string(), name: z.string() }).nullable(),
-  coach: z.object({ userId: z.string(), name: z.string() }).nullable(),
-  capacity: z.number().int().nullable(),
 });
 export type TeamScheduleSlotResponse = z.infer<typeof TeamScheduleSlotResponseSchema>;
 

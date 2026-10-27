@@ -265,12 +265,7 @@ describe("admin interno", () => {
     ).json()) as {
       organizations: { slug: string; counts: { members: number } }[];
     };
-    expect(list.organizations.map((o) => o.slug).sort()).toEqual([
-      "club-a",
-      "demo",
-      "demo-box",
-      "nuevo",
-    ]);
+    expect(list.organizations.map((o) => o.slug).sort()).toEqual(["club-a", "demo", "nuevo"]);
     expect(list.organizations.find((o) => o.slug === "club-a")?.counts.members).toBe(1);
 
     // el club nuevo ya responde en su host

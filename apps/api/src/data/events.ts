@@ -50,9 +50,6 @@ export interface EventRecord {
   homeAway: HomeAway | null;
   notes: string | null;
   seriesId: string | null;
-  /** Clase abierta (ADR 0049): su aforo (el propio o el del tipo de clase) y quién la da. */
-  capacity: number | null;
-  coach: { userId: string; name: string } | null;
   attendance: { present: number; total: number } | null;
 }
 
@@ -87,8 +84,6 @@ export interface ScheduleSlotRecord {
   startsAt: string;
   endsAt: string;
   facility: { id: string; name: string } | null;
-  coach: { userId: string; name: string } | null;
-  capacity: number | null;
 }
 
 export interface AttendanceEntryRecord {
@@ -220,10 +215,6 @@ export function eventsRepo(db: () => Database) {
     homeAway: schema.events.homeAway,
     notes: schema.events.notes,
     seriesId: schema.events.seriesId,
-    capacity: schema.events.capacity,
-    teamCapacity: schema.teams.capacity,
-    coachUserId: schema.events.coachUserId,
-    coachName: schema.users.name,
   };
   const query = () =>
     db()
@@ -231,8 +222,7 @@ export function eventsRepo(db: () => Database) {
       .from(schema.events)
       .leftJoin(schema.sections, eq(schema.sections.id, schema.events.sectionId))
       .leftJoin(schema.teams, eq(schema.teams.id, schema.events.teamId))
-      .leftJoin(schema.facilities, eq(schema.facilities.id, schema.events.facilityId))
-      .leftJoin(schema.users, eq(schema.users.id, schema.events.coachUserId));
+      .leftJoin(schema.facilities, eq(schema.facilities.id, schema.events.facilityId));
   type Row = Awaited<ReturnType<ReturnType<typeof query>["execute"]>>[number];
 
   /** Presentes y convocados con lista pasada, por evento. Sin filas: no se ha pasado lista. */
@@ -280,9 +270,6 @@ export function eventsRepo(db: () => Database) {
     homeAway: row.homeAway as HomeAway | null,
     notes: row.notes,
     seriesId: row.seriesId,
-    capacity: row.capacity ?? row.teamCapacity ?? null,
-    coach:
-      row.coachUserId && row.coachName ? { userId: row.coachUserId, name: row.coachName } : null,
     attendance,
   });
 
@@ -364,19 +351,6 @@ export function eventsRepo(db: () => Database) {
       .select({ id: schema.teams.id, sectionId: schema.teams.sectionId })
       .from(schema.teams)
       .where(and(eq(schema.teams.organizationId, scope.organizationId), eq(schema.teams.id, id)))
-      .limit(1);
-    return rows[0] ?? null;
-  }
-  async function memberOf(scope: OrgScope, userId: string) {
-    const rows = await db()
-      .select({ userId: schema.memberships.userId })
-      .from(schema.memberships)
-      .where(
-        and(
-          eq(schema.memberships.organizationId, scope.organizationId),
-          eq(schema.memberships.userId, userId),
-        ),
-      )
       .limit(1);
     return rows[0] ?? null;
   }
@@ -490,7 +464,6 @@ export function eventsRepo(db: () => Database) {
         .leftJoin(schema.sections, eq(schema.sections.id, schema.events.sectionId))
         .leftJoin(schema.teams, eq(schema.teams.id, schema.events.teamId))
         .leftJoin(schema.facilities, eq(schema.facilities.id, schema.events.facilityId))
-        .leftJoin(schema.users, eq(schema.users.id, schema.events.coachUserId))
         .where(
           and(
             eq(schema.events.organizationId, scope.organizationId),
@@ -577,7 +550,6 @@ export function eventsRepo(db: () => Database) {
       | { outcome: "unknown_section" }
       | { outcome: "unknown_team" }
       | { outcome: "unknown_facility" }
-      | { outcome: "unknown_coach" }
     > {
       let sectionId = input.sectionId ?? null;
       if (input.teamId) {
@@ -588,8 +560,6 @@ export function eventsRepo(db: () => Database) {
       if (sectionId && !(await sectionOf(scope, sectionId))) return { outcome: "unknown_section" };
       if (input.facilityId && !(await facilityOf(scope, input.facilityId)))
         return { outcome: "unknown_facility" };
-      if (input.coachUserId && !(await memberOf(scope, input.coachUserId)))
-        return { outcome: "unknown_coach" };
 
       const starts = new Date(input.startsAt);
       const duration = new Date(input.endsAt).getTime() - starts.getTime();
@@ -624,8 +594,6 @@ export function eventsRepo(db: () => Database) {
             homeAway: input.homeAway ?? null,
             notes: input.notes?.trim() ? input.notes.trim() : null,
             seriesId,
-            capacity: input.capacity ?? null,
-            coachUserId: input.coachUserId ?? null,
             createdBy: options.createdBy,
           })),
         )
@@ -645,7 +613,6 @@ export function eventsRepo(db: () => Database) {
       | { outcome: "unknown_section" }
       | { outcome: "unknown_team" }
       | { outcome: "unknown_facility" }
-      | { outcome: "unknown_coach" }
       | { outcome: "invalid_range" }
     > {
       const current = (
@@ -674,12 +641,6 @@ export function eventsRepo(db: () => Database) {
         values.opponent = patch.opponent?.trim() ? patch.opponent.trim() : null;
       if (patch.homeAway !== undefined) values.homeAway = patch.homeAway;
       if (patch.notes !== undefined) values.notes = patch.notes?.trim() ? patch.notes.trim() : null;
-      if (patch.capacity !== undefined) values.capacity = patch.capacity;
-      if (patch.coachUserId !== undefined) {
-        if (patch.coachUserId && !(await memberOf(scope, patch.coachUserId)))
-          return { outcome: "unknown_coach" };
-        values.coachUserId = patch.coachUserId;
-      }
       if (patch.teamId !== undefined) {
         if (patch.teamId) {
           const team = await teamOf(scope, patch.teamId);
@@ -1012,13 +973,9 @@ export function schedulesRepo(db: () => Database) {
         endsAt: schema.teamSchedules.endsAt,
         facilityId: schema.facilities.id,
         facilityName: schema.facilities.name,
-        coachUserId: schema.teamSchedules.coachUserId,
-        coachName: schema.users.name,
-        capacity: schema.teamSchedules.capacity,
       })
       .from(schema.teamSchedules)
       .leftJoin(schema.facilities, eq(schema.facilities.id, schema.teamSchedules.facilityId))
-      .leftJoin(schema.users, eq(schema.users.id, schema.teamSchedules.coachUserId))
       .where(
         and(
           eq(schema.teamSchedules.organizationId, scope.organizationId),
@@ -1033,9 +990,6 @@ export function schedulesRepo(db: () => Database) {
       endsAt: row.endsAt,
       facility:
         row.facilityId && row.facilityName ? { id: row.facilityId, name: row.facilityName } : null,
-      coach:
-        row.coachUserId && row.coachName ? { userId: row.coachUserId, name: row.coachName } : null,
-      capacity: row.capacity,
     }));
   }
 
@@ -1071,7 +1025,6 @@ export function schedulesRepo(db: () => Database) {
       | { outcome: "saved"; schedule: ScheduleSlotRecord[] }
       | { outcome: "unknown_team" }
       | { outcome: "unknown_facility" }
-      | { outcome: "unknown_coach" }
     > {
       if (!(await teamOf(scope, teamId))) return { outcome: "unknown_team" };
       const facilityIds = [...new Set(slots.map((s) => s.facilityId).filter(Boolean))] as string[];
@@ -1087,21 +1040,8 @@ export function schedulesRepo(db: () => Database) {
           );
         if (known.length !== facilityIds.length) return { outcome: "unknown_facility" };
       }
-      const coachIds = [...new Set(slots.map((s) => s.coachUserId).filter(Boolean))] as string[];
-      if (coachIds.length > 0) {
-        const known = await db()
-          .selectDistinct({ userId: schema.memberships.userId })
-          .from(schema.memberships)
-          .where(
-            and(
-              eq(schema.memberships.organizationId, scope.organizationId),
-              inArray(schema.memberships.userId, coachIds),
-            ),
-          );
-        if (known.length !== coachIds.length) return { outcome: "unknown_coach" };
-      }
-      // Una franja que sigue igual (día y horas) conserva su id: sus clases ya generadas siguen
-      // siendo suyas. Las que desaparecen se llevan sus sesiones futuras sin lista ni reservas.
+      // Una franja que sigue igual (día y horas) conserva su id: sus sesiones ya generadas siguen
+      // siendo suyas. Las que desaparecen se llevan sus sesiones futuras sin lista.
       const before = await listForTeam(scope, teamId);
       const keyOf = (s: { weekday: number; startsAt: string; endsAt: string }) =>
         `${s.weekday}|${s.startsAt}|${s.endsAt}`;
@@ -1114,11 +1054,7 @@ export function schedulesRepo(db: () => Database) {
           wanted.delete(keyOf(old));
           await tx
             .update(schema.teamSchedules)
-            .set({
-              facilityId: slot.facilityId ?? null,
-              coachUserId: slot.coachUserId ?? null,
-              capacity: slot.capacity ?? null,
-            })
+            .set({ facilityId: slot.facilityId ?? null })
             .where(
               and(
                 eq(schema.teamSchedules.organizationId, scope.organizationId),
@@ -1142,13 +1078,6 @@ export function schedulesRepo(db: () => Database) {
                     .from(schema.attendance)
                     .where(eq(schema.attendance.organizationId, scope.organizationId)),
                 ),
-                notInArray(
-                  schema.events.id,
-                  tx
-                    .selectDistinct({ eventId: schema.bookings.eventId })
-                    .from(schema.bookings)
-                    .where(eq(schema.bookings.organizationId, scope.organizationId)),
-                ),
               ),
             );
           await tx
@@ -1170,8 +1099,6 @@ export function schedulesRepo(db: () => Database) {
               startsAt: s.startsAt,
               endsAt: s.endsAt,
               facilityId: s.facilityId ?? null,
-              coachUserId: s.coachUserId ?? null,
-              capacity: s.capacity ?? null,
             })),
           );
         }
@@ -1190,11 +1117,6 @@ export function schedulesRepo(db: () => Database) {
       timezone: string,
       now = new Date(),
       createdBy: string | null = null,
-      /**
-       * Solo añadir (ADR 0050): no borra nada y crea lo que falta hasta el fin de temporada. Lo usa
-       * la temporada continua de un box, que no puede deshacer los cambios a mano de una clase.
-       */
-      options: { onlyAdd?: boolean } = {},
     ): Promise<number> {
       const team = await teamOf(scope, teamId);
       if (!team) return 0;
@@ -1204,27 +1126,20 @@ export function schedulesRepo(db: () => Database) {
         .selectDistinct({ eventId: schema.attendance.eventId })
         .from(schema.attendance)
         .where(eq(schema.attendance.organizationId, scope.organizationId));
-      // Una clase con reservas tampoco se borra (ADR 0049): las reservas son de los atletas.
-      const withBookings = db()
-        .selectDistinct({ eventId: schema.bookings.eventId })
-        .from(schema.bookings)
-        .where(eq(schema.bookings.organizationId, scope.organizationId));
-      if (!options.onlyAdd)
-        await db()
-          .delete(schema.events)
-          .where(
-            and(
-              eq(schema.events.organizationId, scope.organizationId),
-              eq(schema.events.teamId, teamId),
-              inArray(
-                schema.events.seriesId,
-                slots.map((s) => s.id),
-              ),
-              gte(schema.events.startsAt, now),
-              notInArray(schema.events.id, withAttendance),
-              notInArray(schema.events.id, withBookings),
+      await db()
+        .delete(schema.events)
+        .where(
+          and(
+            eq(schema.events.organizationId, scope.organizationId),
+            eq(schema.events.teamId, teamId),
+            inArray(
+              schema.events.seriesId,
+              slots.map((s) => s.id),
             ),
-          );
+            gte(schema.events.startsAt, now),
+            notInArray(schema.events.id, withAttendance),
+          ),
+        );
       const kind: EventKind = team.sectionKind === "activity" ? "activity" : "training";
       const title = team.sectionKind === "activity" ? team.name : `Entrenamiento ${team.name}`;
       const today = localParts(timezone, now);
@@ -1251,8 +1166,6 @@ export function schedulesRepo(db: () => Database) {
             startsAt,
             endsAt,
             seriesId: slot.id,
-            capacity: slot.capacity,
-            coachUserId: slot.coach?.userId ?? null,
             createdBy,
           });
         }
@@ -1275,15 +1188,11 @@ export function schedulesRepo(db: () => Database) {
       const taken = new Set(existing.map((e) => `${e.seriesId}|${e.startsAt.toISOString()}`));
       const fresh = values.filter((v) => !taken.has(`${v.seriesId}|${v.startsAt.toISOString()}`));
       if (fresh.length > 0) await db().insert(schema.events).values(fresh);
-      // Las que se han quedado (con lista o reservas) toman la sala, el coach y el aforo de su franja.
-      for (const slot of options.onlyAdd ? [] : slots) {
+      // Las que se han quedado (con lista) toman la sala de su franja.
+      for (const slot of slots) {
         await db()
           .update(schema.events)
-          .set({
-            facilityId: slot.facility?.id ?? null,
-            coachUserId: slot.coach?.userId ?? null,
-            capacity: slot.capacity,
-          })
+          .set({ facilityId: slot.facility?.id ?? null })
           .where(
             and(
               eq(schema.events.organizationId, scope.organizationId),
@@ -1371,7 +1280,7 @@ export function attendanceRepo(db: () => Database) {
           ),
         )
         .orderBy(asc(schema.people.lastName), asc(schema.people.firstName));
-      // En una clase abierta (ADR 0049) no hay plantilla: cuenta quien tiene asistencia apuntada.
+      // Cuenta también quien tiene asistencia apuntada sin estar en la plantilla.
       const inRoster = new Set(rows.map((r) => r.playerId));
       const recorded = await db()
         .select({

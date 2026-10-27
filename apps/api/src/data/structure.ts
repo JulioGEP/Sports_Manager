@@ -15,7 +15,6 @@ import {
   type SectionKind,
   type SectionStatus,
   type SectionUpdate,
-  type TeamBookingMode,
   type TeamCreate,
   type TeamStaffRole,
   type TeamStatus,
@@ -74,8 +73,6 @@ export interface TeamRecord {
   category: string | null;
   categoryId: string;
   capacity: number | null;
-  /** Plantilla fija o clase abierta (ADR 0049). */
-  bookingMode: TeamBookingMode;
   status: TeamStatus;
   section: { id: string; name: string; kind: SectionKind };
   season: { id: string; name: string; isCurrent: boolean };
@@ -744,7 +741,6 @@ export function teamsRepo(db: () => Database) {
     category: schema.categories.name,
     categoryId: schema.teams.categoryId,
     capacity: schema.teams.capacity,
-    bookingMode: schema.teams.bookingMode,
     status: schema.teams.status,
     sectionId: schema.sections.id,
     sectionName: schema.sections.name,
@@ -804,7 +800,6 @@ export function teamsRepo(db: () => Database) {
     category: row.category,
     categoryId: row.categoryId,
     capacity: row.capacity,
-    bookingMode: row.bookingMode as TeamBookingMode,
     status: row.status as TeamStatus,
     section: { id: row.sectionId, name: row.sectionName, kind: row.sectionKind as SectionKind },
     season: { id: row.seasonId, name: row.seasonName, isCurrent: row.seasonIsCurrent },
@@ -949,7 +944,6 @@ export function teamsRepo(db: () => Database) {
             seasonId: input.seasonId,
             name: input.name,
             capacity: input.capacity ?? null,
-            bookingMode: input.bookingMode ?? "roster",
           })
           .returning({ id: schema.teams.id });
         const team = await byId(scope, rows[0]!.id);
@@ -977,7 +971,6 @@ export function teamsRepo(db: () => Database) {
       const values: Partial<typeof schema.teams.$inferInsert> = {};
       if (patch.name !== undefined) values.name = patch.name;
       if (patch.capacity !== undefined) values.capacity = patch.capacity;
-      if (patch.bookingMode !== undefined) values.bookingMode = patch.bookingMode;
       if (patch.status !== undefined) values.status = patch.status;
       if (patch.categoryId !== undefined) {
         const category = await db()

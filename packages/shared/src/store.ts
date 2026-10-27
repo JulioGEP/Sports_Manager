@@ -99,8 +99,6 @@ export const StoreProductCreateSchema = z
     description: z.string().trim().max(2000).nullable().optional(),
     category: StoreProductCategorySchema,
     priceCents: Cents,
-    /** Precio para quien tiene tarifa activa o es socio (ADR 0049). Nulo: el mismo para todos. */
-    memberPriceCents: Cents.nullable().optional(),
     status: z.enum(["draft", "active"]).default("draft"),
     visibility: StoreProductVisibilitySchema.default("members"),
     /** A quién se vende en la app: a todo el club, a una sección o a un solo equipo. */
@@ -113,17 +111,7 @@ export const StoreProductCreateSchema = z
   .refine((v) => !(v.sectionId && v.teamId), {
     message: "Elige una sección o un equipo, no los dos.",
     path: ["teamId"],
-  })
-  .refine(
-    (v) =>
-      v.memberPriceCents === null ||
-      v.memberPriceCents === undefined ||
-      v.memberPriceCents <= v.priceCents,
-    {
-      message: "El precio para socios no puede ser mayor que el precio normal.",
-      path: ["memberPriceCents"],
-    },
-  );
+  });
 export type StoreProductCreate = z.infer<typeof StoreProductCreateSchema>;
 
 export const StoreProductUpdateSchema = z
@@ -132,7 +120,6 @@ export const StoreProductUpdateSchema = z
     description: z.string().trim().max(2000).nullable().optional(),
     category: StoreProductCategorySchema.optional(),
     priceCents: Cents.optional(),
-    memberPriceCents: Cents.nullable().optional(),
     status: StoreProductStatusSchema.optional(),
     visibility: StoreProductVisibilitySchema.optional(),
     sectionId: z.string().uuid().nullable().optional(),

@@ -1,15 +1,7 @@
 import { schema, type Database } from "@sportsmanager/db";
 import {
-  AI_PLAN_KINDS,
-  AI_PLAN_PROFILE_CODE,
-  AI_PLAN_PROFILE_VERSION,
-  AI_PLAN_WEEKLY_LIMIT,
   AI_QUOTA_STATUSES,
-  type AiPlanKind,
-  type AiPlanProposal,
   AI_STALE_MINUTES,
-  AI_WOD_PROFILE_CODE,
-  AI_WOD_PROFILE_VERSION,
   type AiContext,
   type AiDraftRequest,
   type AiFailure,
@@ -18,10 +10,6 @@ import {
   type AiProposalOutput,
   type AiProposalResolved,
   type AiUsage,
-  type AiWodContext,
-  type AiWodOutput,
-  type AiWodProposal,
-  type AiWodRequest,
   type SectionEquipmentCreate,
   type SectionEquipmentUpdate,
 } from "@sportsmanager/shared";
@@ -30,8 +18,8 @@ import { isUniqueViolation } from "./db.ts";
 import { mintOrgScope, type OrgScope } from "./scope.ts";
 
 /**
- * Propuesta de sesión con IA (ADR 0044) y de WOD (ADR 0049): el inventario de material de cada
- * sección, la cuota semanal del club (la comparten las dos) y el registro de cada propuesta. Toda consulta lleva el ámbito del club
+ * Propuesta de sesión con IA (ADR 0044): el inventario de material de cada sección, la cuota
+ * semanal del club y el registro de cada propuesta. Toda consulta lleva el ámbito del club
  * (ADR 0015), salvo la del trabajo en segundo plano, que solo conoce el id de la propuesta y saca
  * el club de su fila.
  */
@@ -70,70 +58,6 @@ export interface AiTrainingEvent {
   facility: { id: string; name: string; kind: string; description: string | null } | null;
   session: { id: string; objective: string | null; mdLabel: string | null } | null;
 }
-
-/** Una propuesta de WOD (ADR 0049): de una disciplina, con tipo de clase o sin él. */
-export interface AiWodRecord {
-  id: string;
-  section: { id: string; name: string };
-  team: { id: string; name: string } | null;
-  requestedBy: string | null;
-  weekStart: string;
-  status: AiGenerationStatus;
-  failure: AiFailure | null;
-  model: string;
-  request: AiWodRequest;
-  context: AiWodContext;
-  proposal: AiWodProposal | null;
-  createdAt: Date;
-  finishedAt: Date | null;
-}
-
-export interface NewWodGeneration {
-  kind: "wod";
-  sectionId: string;
-  teamId: string | null;
-  requestedBy: string;
-  weekStart: string;
-  model: string;
-  request: AiWodRequest;
-  context: AiWodContext;
-}
-
-/** Una generación de la planificación (ADR 0053): el plan, una semana o un cambio del copiloto. */
-export interface AiPlanRecord {
-  id: string;
-  kind: AiPlanKind;
-  sectionId: string;
-  planId: string | null;
-  requestedBy: string | null;
-  weekStart: string;
-  status: AiGenerationStatus;
-  failure: AiFailure | null;
-  model: string;
-  request: Record<string, unknown>;
-  context: Record<string, unknown>;
-  proposal: AiPlanProposal | null;
-  createdAt: Date;
-  finishedAt: Date | null;
-  appliedAt: Date | null;
-}
-
-export interface NewPlanGeneration {
-  kind: AiPlanKind;
-  sectionId: string;
-  planId: string | null;
-  requestedBy: string;
-  weekStart: string;
-  model: string;
-  request: Record<string, unknown>;
-  context: Record<string, unknown>;
-}
-
-/** Lo que toma el trabajo en segundo plano: una propuesta de sesiones, una de WOD o del plan. */
-export type ClaimedGeneration =
-  | { kind: "training"; scope: OrgScope; record: AiGenerationRecord }
-  | { kind: "wod"; scope: OrgScope; record: AiWodRecord }
-  | { kind: "plan"; scope: OrgScope; record: AiPlanRecord };
 
 export interface NewGeneration {
   sectionId: string;
@@ -175,8 +99,8 @@ export function aiRepo(db: () => Database) {
   type Row = {
     id: string;
     sectionId: string;
-    teamId: string | null;
-    teamName: string | null;
+    teamId: string;
+    teamName: string;
     requestedBy: string | null;
     requestedByName: string | null;
     weekStart: string;
@@ -185,18 +109,17 @@ export function aiRepo(db: () => Database) {
     profileCode: string;
     profileVersion: number;
     model: string;
-    request: AiDraftRequest | AiWodRequest | Record<string, unknown>;
-    context: AiContext | AiWodContext | Record<string, unknown>;
-    proposal: AiProposalResolved | AiWodProposal | Record<string, unknown> | null;
+    request: AiDraftRequest;
+    context: AiContext;
+    proposal: AiProposalResolved | null;
     createdAt: Date;
     finishedAt: Date | null;
     appliedAt: Date | null;
   };
-  // Las consultas de sesiones filtran por `kind = 'training'`: siempre llevan equipo y su forma.
   const toRecord = (r: Row): AiGenerationRecord => ({
     id: r.id,
     sectionId: r.sectionId,
-    team: { id: r.teamId!, name: r.teamName! },
+    team: { id: r.teamId, name: r.teamName },
     requestedBy:
       r.requestedBy && r.requestedByName
         ? { userId: r.requestedBy, name: r.requestedByName }
@@ -207,9 +130,9 @@ export function aiRepo(db: () => Database) {
     profileCode: r.profileCode as AiProfileCode,
     profileVersion: r.profileVersion,
     model: r.model,
-    request: r.request as AiDraftRequest,
-    context: r.context as AiContext,
-    proposal: r.proposal as AiProposalResolved | null,
+    request: r.request,
+    context: r.context,
+    proposal: r.proposal,
     createdAt: r.createdAt,
     finishedAt: r.finishedAt,
     appliedAt: r.appliedAt,
@@ -218,49 +141,8 @@ export function aiRepo(db: () => Database) {
     db()
       .select(selection)
       .from(g)
-      .leftJoin(schema.teams, eq(schema.teams.id, g.teamId))
+      .innerJoin(schema.teams, eq(schema.teams.id, g.teamId))
       .leftJoin(schema.users, eq(schema.users.id, g.requestedBy));
-  const isTraining = eq(g.kind, "training");
-
-  const wodSelection = {
-    id: g.id,
-    sectionId: g.sectionId,
-    sectionName: schema.sections.name,
-    teamId: g.teamId,
-    teamName: schema.teams.name,
-    requestedBy: g.requestedBy,
-    weekStart: g.weekStart,
-    status: g.status,
-    failure: g.failure,
-    model: g.model,
-    request: g.request,
-    context: g.context,
-    proposal: g.proposal,
-    createdAt: g.createdAt,
-    finishedAt: g.finishedAt,
-  };
-  const wodBase = () =>
-    db()
-      .select(wodSelection)
-      .from(g)
-      .innerJoin(schema.sections, eq(schema.sections.id, g.sectionId))
-      .leftJoin(schema.teams, eq(schema.teams.id, g.teamId));
-  type WodRow = Awaited<ReturnType<ReturnType<typeof wodBase>["execute"]>>[number];
-  const toWod = (r: WodRow): AiWodRecord => ({
-    id: r.id,
-    section: { id: r.sectionId, name: r.sectionName },
-    team: r.teamId && r.teamName ? { id: r.teamId, name: r.teamName } : null,
-    requestedBy: r.requestedBy,
-    weekStart: r.weekStart,
-    status: r.status as AiGenerationStatus,
-    failure: r.failure as AiFailure | null,
-    model: r.model,
-    request: r.request as AiWodRequest,
-    context: r.context as AiWodContext,
-    proposal: r.proposal as AiWodProposal | null,
-    createdAt: r.createdAt,
-    finishedAt: r.finishedAt,
-  });
 
   /** Las que llevan demasiado en cola o generándose se dan por perdidas y devuelven su cuota. */
   async function failStale(organizationId: string) {
@@ -290,70 +172,10 @@ export function aiRepo(db: () => Database) {
           eq(g.organizationId, organizationId),
           eq(g.weekStart, weekStart),
           inArray(g.status, [...AI_QUOTA_STATUSES]),
-          inArray(g.kind, ["training", "wod"]),
         ),
       );
     return rows[0]?.total ?? 0;
   }
-
-  /** Las de la planificación cuentan aparte (ADR 0053). */
-  async function planUsedIn(
-    organizationId: string,
-    weekStart: string,
-    exec: Pick<Database, "select"> = db(),
-  ) {
-    const rows = await exec
-      .select({ total: count() })
-      .from(g)
-      .where(
-        and(
-          eq(g.organizationId, organizationId),
-          eq(g.weekStart, weekStart),
-          inArray(g.status, [...AI_QUOTA_STATUSES]),
-          inArray(g.kind, [...AI_PLAN_KINDS]),
-        ),
-      );
-    return rows[0]?.total ?? 0;
-  }
-
-  const planSelection = {
-    id: g.id,
-    kind: g.kind,
-    sectionId: g.sectionId,
-    planId: g.planId,
-    requestedBy: g.requestedBy,
-    weekStart: g.weekStart,
-    status: g.status,
-    failure: g.failure,
-    model: g.model,
-    request: g.request,
-    context: g.context,
-    proposal: g.proposal,
-    createdAt: g.createdAt,
-    finishedAt: g.finishedAt,
-    appliedAt: g.appliedAt,
-  };
-  const planGenBase = () => db().select(planSelection).from(g);
-  type PlanGenRow = Awaited<ReturnType<ReturnType<typeof planGenBase>["execute"]>>[number];
-  const toPlanGen = (r: PlanGenRow): AiPlanRecord => ({
-    id: r.id,
-    kind: r.kind as AiPlanKind,
-    sectionId: r.sectionId,
-    planId: r.planId,
-    requestedBy: r.requestedBy,
-    weekStart: r.weekStart,
-    status: r.status as AiGenerationStatus,
-    failure: r.failure as AiFailure | null,
-    model: r.model,
-    request: r.request,
-    context: r.context as Record<string, unknown>,
-    proposal: (r.proposal as AiPlanProposal | null) ?? null,
-    createdAt: r.createdAt,
-    finishedAt: r.finishedAt,
-    appliedAt: r.appliedAt,
-  });
-  const isPlanKind = (kind: string): kind is AiPlanKind =>
-    (AI_PLAN_KINDS as readonly string[]).includes(kind);
 
   return {
     /** Entrenamientos de un equipo por id (solo los de tipo entrenamiento y de ese equipo). */
@@ -532,7 +354,7 @@ export function aiRepo(db: () => Database) {
      */
     async reserve(
       scope: OrgScope,
-      input: NewGeneration | NewWodGeneration,
+      input: NewGeneration,
     ): Promise<{ id: string } | "quota_exceeded"> {
       await failStale(scope.organizationId);
       return db().transaction(async (tx) => {
@@ -544,116 +366,12 @@ export function aiRepo(db: () => Database) {
         const quota = org[0]?.quota ?? 0;
         if ((await usedIn(scope.organizationId, input.weekStart, tx)) >= quota)
           return "quota_exceeded" as const;
-        const values =
-          "kind" in input
-            ? {
-                ...input,
-                profileCode: AI_WOD_PROFILE_CODE,
-                profileVersion: AI_WOD_PROFILE_VERSION,
-              }
-            : input;
         const rows = await tx
           .insert(g)
-          .values({ organizationId: scope.organizationId, status: "queued", ...values })
+          .values({ organizationId: scope.organizationId, status: "queued", ...input })
           .returning({ id: g.id });
         return { id: rows[0]!.id };
       });
-    },
-
-    // --- Planificación (ADR 0053) ---
-
-    async planUsedThisWeek(scope: OrgScope, weekStart: string): Promise<number> {
-      await failStale(scope.organizationId);
-      return planUsedIn(scope.organizationId, weekStart);
-    },
-
-    /** Reserva una generación de la planificación dentro de su límite semanal. */
-    async reservePlan(
-      scope: OrgScope,
-      input: NewPlanGeneration,
-    ): Promise<{ id: string } | "quota_exceeded"> {
-      await failStale(scope.organizationId);
-      return db().transaction(async (tx) => {
-        await tx
-          .select({ id: schema.organizations.id })
-          .from(schema.organizations)
-          .where(eq(schema.organizations.id, scope.organizationId))
-          .for("update");
-        if ((await planUsedIn(scope.organizationId, input.weekStart, tx)) >= AI_PLAN_WEEKLY_LIMIT)
-          return "quota_exceeded" as const;
-        const rows = await tx
-          .insert(g)
-          .values({
-            organizationId: scope.organizationId,
-            status: "queued",
-            ...input,
-            teamId: null,
-            profileCode: AI_PLAN_PROFILE_CODE,
-            profileVersion: AI_PLAN_PROFILE_VERSION,
-          })
-          .returning({ id: g.id });
-        return { id: rows[0]!.id };
-      });
-    },
-
-    async planById(scope: OrgScope, id: string): Promise<AiPlanRecord | null> {
-      await failStale(scope.organizationId);
-      const rows = await planGenBase()
-        .where(
-          and(
-            eq(g.organizationId, scope.organizationId),
-            eq(g.id, id),
-            inArray(g.kind, [...AI_PLAN_KINDS]),
-          ),
-        )
-        .limit(1);
-      return rows[0] ? toPlanGen(rows[0]) : null;
-    },
-
-    /** Las últimas generaciones de un plan de un tipo, de la más reciente a la más antigua. */
-    async latestForPlan(
-      scope: OrgScope,
-      planId: string,
-      kind: AiPlanKind,
-    ): Promise<AiPlanRecord[]> {
-      await failStale(scope.organizationId);
-      const rows = await planGenBase()
-        .where(
-          and(eq(g.organizationId, scope.organizationId), eq(g.planId, planId), eq(g.kind, kind)),
-        )
-        .orderBy(desc(g.createdAt))
-        .limit(10);
-      return rows.map(toPlanGen);
-    },
-
-    async markPlanReady(
-      scope: OrgScope,
-      id: string,
-      result: {
-        model: string;
-        output: Record<string, unknown>;
-        proposal: AiPlanProposal;
-        usage: AiUsage;
-        costMicros: number;
-        durationMs: number;
-      },
-    ) {
-      await db()
-        .update(g)
-        .set({
-          status: "ready",
-          model: result.model,
-          output: result.output,
-          proposal: result.proposal,
-          inputTokens: result.usage.inputTokens,
-          outputTokens: result.usage.outputTokens,
-          cacheReadTokens: result.usage.cacheReadTokens,
-          cacheWriteTokens: result.usage.cacheWriteTokens,
-          costMicros: result.costMicros,
-          durationMs: result.durationMs,
-          finishedAt: new Date(),
-        })
-        .where(and(eq(g.organizationId, scope.organizationId), eq(g.id, id)));
     },
 
     // --- Propuestas ---
@@ -661,24 +379,15 @@ export function aiRepo(db: () => Database) {
     async byId(scope: OrgScope, id: string): Promise<AiGenerationRecord | null> {
       await failStale(scope.organizationId);
       const rows = await base()
-        .where(and(eq(g.organizationId, scope.organizationId), eq(g.id, id), isTraining))
+        .where(and(eq(g.organizationId, scope.organizationId), eq(g.id, id)))
         .limit(1);
       return rows[0] ? toRecord(rows[0]) : null;
-    },
-
-    /** Una propuesta de WOD del club (ADR 0049); nula si no existe o es de sesiones. */
-    async wodById(scope: OrgScope, id: string): Promise<AiWodRecord | null> {
-      await failStale(scope.organizationId);
-      const rows = await wodBase()
-        .where(and(eq(g.organizationId, scope.organizationId), eq(g.id, id), eq(g.kind, "wod")))
-        .limit(1);
-      return rows[0] ? toWod(rows[0]) : null;
     },
 
     async listForTeam(scope: OrgScope, teamId: string, limit = 8): Promise<AiGenerationRecord[]> {
       await failStale(scope.organizationId);
       const rows = await base()
-        .where(and(eq(g.organizationId, scope.organizationId), eq(g.teamId, teamId), isTraining))
+        .where(and(eq(g.organizationId, scope.organizationId), eq(g.teamId, teamId)))
         .orderBy(desc(g.createdAt))
         .limit(limit);
       return rows.map((r) => toRecord(r));
@@ -688,25 +397,16 @@ export function aiRepo(db: () => Database) {
      * El trabajo en segundo plano toma la propuesta: solo si sigue en cola, así una segunda
      * llamada con el mismo id no vuelve a gastar. Devuelve el club para seguir con su ámbito.
      */
-    async claim(id: string): Promise<ClaimedGeneration | null> {
+    async claim(id: string): Promise<{ scope: OrgScope; record: AiGenerationRecord } | null> {
       const claimed = await db()
         .update(g)
         .set({ status: "running", startedAt: new Date() })
         .where(and(eq(g.id, id), eq(g.status, "queued")))
-        .returning({ organizationId: g.organizationId, kind: g.kind });
+        .returning({ organizationId: g.organizationId });
       const organizationId = claimed[0]?.organizationId;
       if (!organizationId) return null;
-      const scope = mintOrgScope(organizationId);
-      if (claimed[0] && isPlanKind(claimed[0].kind)) {
-        const rows = await planGenBase().where(eq(g.id, id)).limit(1);
-        return rows[0] ? { kind: "plan", scope, record: toPlanGen(rows[0]) } : null;
-      }
-      if (claimed[0]?.kind === "wod") {
-        const rows = await wodBase().where(eq(g.id, id)).limit(1);
-        return rows[0] ? { kind: "wod", scope, record: toWod(rows[0]) } : null;
-      }
       const rows = await base().where(eq(g.id, id)).limit(1);
-      return rows[0] ? { kind: "training", scope, record: toRecord(rows[0]) } : null;
+      return rows[0] ? { scope: mintOrgScope(organizationId), record: toRecord(rows[0]) } : null;
     },
 
     async markReady(
@@ -716,37 +416,6 @@ export function aiRepo(db: () => Database) {
         model: string;
         output: AiProposalOutput;
         proposal: AiProposalResolved;
-        usage: AiUsage;
-        costMicros: number;
-        durationMs: number;
-      },
-    ) {
-      await db()
-        .update(g)
-        .set({
-          status: "ready",
-          model: result.model,
-          output: result.output,
-          proposal: result.proposal,
-          inputTokens: result.usage.inputTokens,
-          outputTokens: result.usage.outputTokens,
-          cacheReadTokens: result.usage.cacheReadTokens,
-          cacheWriteTokens: result.usage.cacheWriteTokens,
-          costMicros: result.costMicros,
-          durationMs: result.durationMs,
-          finishedAt: new Date(),
-        })
-        .where(and(eq(g.organizationId, scope.organizationId), eq(g.id, id)));
-    },
-
-    /** La propuesta de WOD lista: la salida del modelo y la ya validada para el editor. */
-    async markWodReady(
-      scope: OrgScope,
-      id: string,
-      result: {
-        model: string;
-        output: AiWodOutput;
-        proposal: AiWodProposal;
         usage: AiUsage;
         costMicros: number;
         durationMs: number;

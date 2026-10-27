@@ -396,13 +396,7 @@ describe("tienda del club", () => {
     );
     // Solo Clara: Pau es adulto y compra él si tiene cuenta.
     expect(family.beneficiaries).toEqual([
-      {
-        personId: claraPerson,
-        kind: "ward",
-        firstName: "Clara",
-        lastName: "Martí",
-        memberPrice: false,
-      },
+      { personId: claraPerson, kind: "ward", firstName: "Clara", lastName: "Martí" },
     ]);
     expect(family.products.map((p) => p.id).sort()).toEqual(
       [shirt.id, dinner.id, bottle.id].sort(),

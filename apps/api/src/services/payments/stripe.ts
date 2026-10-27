@@ -47,23 +47,8 @@ export interface StripeConnect {
   accountStatus(accountId: string): Promise<StripeAccountStatus>;
 }
 
-/**
- * Domiciliar una tarifa (ADR 0049): Checkout en modo suscripción en la cuenta del club, con
- * tarjeta o adeudo SEPA. Cada factura cobrada llega luego por el webhook (`invoice.paid`).
- */
-export interface SubscriptionCheckoutInput {
-  subscriptionId: string;
-  organizationId: string;
-  organization: { stripeAccountId: string | null };
-  plan: { name: string; amountCents: number; interval: "month" | "year"; intervalCount: number };
-  successUrl: string;
-  cancelUrl: string;
-  customerEmail?: string | null | undefined;
-}
-
 export interface StripeProvider extends PaymentsProvider {
   readonly connect: StripeConnect;
-  createSubscriptionCheckout(input: SubscriptionCheckoutInput): Promise<CheckoutSession>;
 }
 
 const STRIPE_API = "https://api.stripe.com";
@@ -148,48 +133,6 @@ export function createStripeProvider(options: StripeProviderOptions): StripeProv
       );
       return {
         url: stringField(body, "url", "la URL de pago"),
-        sessionId: stringField(body, "id", "la sesión"),
-      };
-    },
-
-    async createSubscriptionCheckout(input: SubscriptionCheckoutInput): Promise<CheckoutSession> {
-      if (!input.organization.stripeAccountId) {
-        throw new PaymentsProviderError(
-          "not_connected",
-          "El club no tiene conectada su cuenta de Stripe.",
-        );
-      }
-      const form = new URLSearchParams();
-      form.set("mode", "subscription");
-      form.set("success_url", input.successUrl);
-      form.set("cancel_url", input.cancelUrl);
-      form.set("client_reference_id", input.subscriptionId);
-      form.set("payment_method_types[0]", "card");
-      form.set("payment_method_types[1]", "sepa_debit");
-      form.set("line_items[0][quantity]", "1");
-      form.set("line_items[0][price_data][currency]", "eur");
-      form.set("line_items[0][price_data][unit_amount]", String(input.plan.amountCents));
-      form.set("line_items[0][price_data][product_data][name]", input.plan.name);
-      form.set("line_items[0][price_data][recurring][interval]", input.plan.interval);
-      form.set(
-        "line_items[0][price_data][recurring][interval_count]",
-        String(input.plan.intervalCount),
-      );
-      form.set("metadata[kind]", "subscription");
-      form.set("metadata[subscription_id]", input.subscriptionId);
-      form.set("metadata[organization_id]", input.organizationId);
-      form.set("subscription_data[metadata][subscription_id]", input.subscriptionId);
-      form.set("subscription_data[metadata][organization_id]", input.organizationId);
-      if (input.customerEmail) form.set("customer_email", input.customerEmail);
-      const body = await call(
-        "POST",
-        "/v1/checkout/sessions",
-        "la domiciliación",
-        form,
-        input.organization.stripeAccountId,
-      );
-      return {
-        url: stringField(body, "url", "la URL de la domiciliación"),
         sessionId: stringField(body, "id", "la sesión"),
       };
     },
