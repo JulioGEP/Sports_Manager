@@ -3,6 +3,7 @@ import {
   DEFAULT_FITNESS_PREFERENCES,
   type Capacity,
   type DayRole,
+  type PlanAudience,
   type PlanStructure,
   type TimeDomain,
   type WorkoutTrack,
@@ -75,7 +76,10 @@ export interface WorkoutRecord {
     startsOn: string;
     weeks: number;
     structure: PlanStructure;
+    audience: PlanAudience;
   } | null;
+  /** La sesión de un plan propio (un nivel, un grupo o una persona), no la del box. */
+  specific: boolean;
   planWeek: number | null;
   dayRole: DayRole | null;
   intentDomain: TimeDomain | null;
@@ -180,6 +184,7 @@ export function workoutsRepo(db: () => Database) {
         planStartsOn: schema.boxPlans.startsOn,
         planWeeks: schema.boxPlans.weeks,
         planStructure: schema.boxPlans.structure,
+        planAudience: schema.boxPlans.audience,
       })
       .from(schema.workouts)
       .innerJoin(schema.sections, eq(schema.sections.id, schema.workouts.sectionId))
@@ -269,8 +274,10 @@ export function workoutsRepo(db: () => Database) {
               startsOn: r.planStartsOn ?? r.workout.onDate,
               weeks: r.planWeeks ?? r.planStructure.weeks.length,
               structure: r.planStructure,
+              audience: (r.planAudience ?? "section") as PlanAudience,
             }
           : null,
+      specific: r.workout.specific,
       planWeek: r.workout.planWeek,
       dayRole: r.workout.dayRole as DayRole | null,
       intentDomain: r.workout.intentDomain as TimeDomain | null,
@@ -406,20 +413,41 @@ export function workoutsRepo(db: () => Database) {
   return {
     byId,
 
-    /** WODs de un rango de días, de las disciplinas dadas (todas, si no se dicen). */
+    /**
+     * WODs de un rango de días, de las disciplinas dadas (todas, si no se dicen). Por defecto, los
+     * del box; con `plan`, solo las sesiones propias de ese plan; con `alsoPlans`, los del box y
+     * las sesiones propias de esos planes (las de un atleta que tiene plan propio).
+     */
     async list(
       scope: OrgScope,
       from: string,
       to: string,
-      filter: { sectionIds?: string[] | undefined; teamId?: string | undefined } = {},
+      filter: {
+        sectionIds?: string[] | undefined;
+        teamId?: string | undefined;
+        plan?: string | undefined;
+        alsoPlans?: string[] | undefined;
+      } = {},
     ): Promise<WorkoutRecord[]> {
       if (filter.sectionIds && filter.sectionIds.length === 0) return [];
+      const which = filter.plan
+        ? and(eq(schema.workouts.specific, true), eq(schema.workouts.planId, filter.plan))
+        : filter.alsoPlans && filter.alsoPlans.length > 0
+          ? or(
+              eq(schema.workouts.specific, false),
+              and(
+                eq(schema.workouts.specific, true),
+                inArray(schema.workouts.planId, filter.alsoPlans),
+              ),
+            )
+          : eq(schema.workouts.specific, false);
       const rows = await base()
         .where(
           and(
             eq(schema.workouts.organizationId, scope.organizationId),
             gte(schema.workouts.onDate, from),
             lte(schema.workouts.onDate, to),
+            which,
             filter.sectionIds ? inArray(schema.workouts.sectionId, filter.sectionIds) : undefined,
             filter.teamId
               ? or(eq(schema.workouts.teamId, filter.teamId), isNull(schema.workouts.teamId))
@@ -442,6 +470,7 @@ export function workoutsRepo(db: () => Database) {
           eq(schema.workouts.organizationId, scope.organizationId),
           eq(schema.workouts.sectionId, sectionId),
           eq(schema.workouts.onDate, date),
+          eq(schema.workouts.specific, false),
           teamId
             ? or(eq(schema.workouts.teamId, teamId), isNull(schema.workouts.teamId))
             : isNull(schema.workouts.teamId),
@@ -465,9 +494,11 @@ export function workoutsRepo(db: () => Database) {
       const teamId = input.teamId ?? null;
       if (!(await knownSectionAndTeam(scope, input.sectionId, teamId)))
         return { outcome: "unknown_section" };
+      // Una sesión propia pide su plan, y ese plan no puede ser de todo el box.
+      if (input.specific && !input.planId) return { outcome: "unknown_section" };
       if (input.planId) {
         const plan = await db()
-          .select({ id: schema.boxPlans.id })
+          .select({ id: schema.boxPlans.id, audience: schema.boxPlans.audience })
           .from(schema.boxPlans)
           .where(
             and(
@@ -478,6 +509,7 @@ export function workoutsRepo(db: () => Database) {
           )
           .limit(1);
         if (!plan[0]) return { outcome: "unknown_section" };
+        if (input.specific && plan[0].audience === "section") return { outcome: "unknown_section" };
       }
       // Solo ejercicios de la biblioteca del club.
       const wanted = [...new Set(input.blocks.flatMap((b) => b.exerciseIds ?? []))];
@@ -519,13 +551,15 @@ export function workoutsRepo(db: () => Database) {
         intentFeel: input.intentFeel?.trim() ? input.intentFeel.trim() : null,
         why: input.why?.trim() ? input.why.trim() : null,
       };
+      // Al editar sin decirlo, una sesión propia lo sigue siendo (mientras tenga su plan).
+      const specific = input.specific ?? (id && input.planId ? undefined : false);
       try {
         const result = await db().transaction(async (tx) => {
           let workoutId = id;
           if (workoutId) {
             const updated = await tx
               .update(schema.workouts)
-              .set(values)
+              .set(specific === undefined ? values : { ...values, specific })
               .where(
                 and(
                   eq(schema.workouts.organizationId, scope.organizationId),
@@ -537,7 +571,12 @@ export function workoutsRepo(db: () => Database) {
           } else {
             const inserted = await tx
               .insert(schema.workouts)
-              .values({ organizationId: scope.organizationId, ...values, createdBy: userId })
+              .values({
+                organizationId: scope.organizationId,
+                ...values,
+                specific: specific ?? false,
+                createdBy: userId,
+              })
               .returning({ id: schema.workouts.id });
             workoutId = inserted[0]!.id;
           }
@@ -554,15 +593,13 @@ export function workoutsRepo(db: () => Database) {
       }
     },
 
-    /**
-     * Publica los borradores de un rango en unas disciplinas, ya (sin hora de publicación).
-     * Devuelve cuántos.
-     */
+    /** Publica los borradores de un rango: los del box o, con `plan`, las sesiones de ese plan. */
     async publishRange(
       scope: OrgScope,
       from: string,
       to: string,
       sectionIds: string[],
+      plan?: string,
     ): Promise<number> {
       if (sectionIds.length === 0) return 0;
       const rows = await db()
@@ -575,6 +612,9 @@ export function workoutsRepo(db: () => Database) {
             lte(schema.workouts.onDate, to),
             eq(schema.workouts.status, "draft"),
             inArray(schema.workouts.sectionId, sectionIds),
+            plan
+              ? and(eq(schema.workouts.specific, true), eq(schema.workouts.planId, plan))
+              : eq(schema.workouts.specific, false),
           ),
         )
         .returning({ id: schema.workouts.id });

@@ -128,6 +128,7 @@ export type { AnnouncementRecord, LeadRecord, MessageRecord } from "./community.
 export type { AthleteRowRecord } from "./fitness-insights.ts";
 export type { ExerciseRecord } from "./exercises.ts";
 export type {
+  ActivePlanRef,
   BlockResultRow,
   BoxPlanRecord,
   EquipmentRecord,

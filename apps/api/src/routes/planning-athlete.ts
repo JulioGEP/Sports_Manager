@@ -10,8 +10,8 @@ import type { BoxPlanRecord, DataLayer, OrgScope } from "../data/index.ts";
 
 /**
  * Lo que la planificación del box (ADR 0053) le cuenta a un atleta: su nivel en cada capacidad
- * (el que fija él o el que se le sugiere con sus resultados), su plan (el de la disciplina en la que
- * más entrena) y el papel de los próximos días si el box lo enseña por adelantado.
+ * (el que fija él o el que se le sugiere con sus resultados), su plan (el propio, si lo tiene; si no,
+ * el de la disciplina en la que más entrena) y el papel de los próximos días si el box lo enseña.
  */
 
 const DAY = 86_400_000;
@@ -43,7 +43,10 @@ export async function athleteLevels(
   });
 }
 
-/** El plan del atleta: el activo de la disciplina donde más ha entrenado en las últimas 8 semanas. */
+/**
+ * El plan del atleta: el propio (de su nivel, su grupo o solo suyo) si tiene uno activo; si no, el
+ * de todo el box en la disciplina donde más ha entrenado en las últimas 8 semanas.
+ */
 export async function mainPlanOf(
   data: DataLayer,
   scope: OrgScope,
@@ -51,6 +54,8 @@ export async function mainPlanOf(
   timezone: string,
   now = new Date(),
 ): Promise<BoxPlanRecord | null> {
+  const own = await data.planning.plans.specificOf(scope, playerId);
+  if (own) return own;
   const plans = await data.planning.plans.active(scope);
   if (plans.length <= 1) return plans[0] ?? null;
   const sections = new Map<string, number>();

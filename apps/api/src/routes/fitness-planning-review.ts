@@ -25,6 +25,7 @@ import {
   blockFacts,
   clubToday,
   currentWeekOf,
+  isSpecific,
   loadWeek,
   planSummaryDto,
   requirePlan,
@@ -203,19 +204,35 @@ export function addPlanningReviewRoutes(app: OpenAPIHono<AppEnv>, data: DataLaye
       const last = today > endsOn ? plan.weeks : current ? Math.min(plan.weeks, current + 1) : 1;
       const weeks = Array.from({ length: last }, (_, i) => i + 1);
       const started = weeks.filter((n) => planWeekStart(plan.startsOn, n) <= today);
+      // Un plan propio se mide con su gente; uno de todo el box, con todo el box.
+      const members = isSpecific(plan)
+        ? (await data.planning.plans.members(tenant.scope, plan.id)).map((m) => m.playerId)
+        : undefined;
 
       const [contexts, reviews, prs, athletes, during, beforeAtt, tally, usage, ahead] =
         await Promise.all([
           Promise.all(weeks.map((n) => loadWeek(data, tenant.scope, tz, plan, n))),
           Promise.all(started.map((n) => computeReview(data, tenant.scope, tz, plan, n))),
-          data.planning.prCount(tenant.scope, plan.startsOn, today < endsOn ? today : endsOn),
-          data.planning.activeAthletes(tenant.scope, plan.section.id, instantOf(tz, plan.startsOn)),
+          data.planning.prCount(
+            tenant.scope,
+            plan.startsOn,
+            today < endsOn ? today : endsOn,
+            members,
+          ),
+          members
+            ? Promise.resolve(members.length)
+            : data.planning.activeAthletes(
+                tenant.scope,
+                plan.section.id,
+                instantOf(tz, plan.startsOn),
+              ),
           data.planning.attendance(
             tenant.scope,
             plan.section.id,
             instantOf(tz, plan.startsOn),
             instantOf(tz, addDays(today < endsOn ? today : endsOn, 1)),
             tz,
+            members,
           ),
           data.planning.attendance(
             tenant.scope,
@@ -223,11 +240,13 @@ export function addPlanningReviewRoutes(app: OpenAPIHono<AppEnv>, data: DataLaye
             instantOf(tz, addDays(plan.startsOn, -56)),
             instantOf(tz, plan.startsOn),
             tz,
+            members,
           ),
           data.planning.adjustments.tally(tenant.scope, plan.id),
           data.planning.aiUsage(tenant.scope, plan.createdAt),
           data.workouts.list(tenant.scope, addDays(today, 1), endsOn, {
             sectionIds: [plan.section.id],
+            plan: isSpecific(plan) ? plan.id : undefined,
           }),
         ]);
 

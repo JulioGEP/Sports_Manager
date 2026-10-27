@@ -51,6 +51,8 @@ export const feePlans = pgTable(
     classTeamIds: jsonb("class_team_ids").$type<string[]>(),
     /** Planificación (ADR 0053): la tarifa incluye Clase+, el trabajo extra del Open Box. */
     includesPlus: boolean("includes_plus").notNull().default(false),
+    /** Es la cuota de una programación propia (individual o de grupo): se ve quién la paga. */
+    includesProgramming: boolean("includes_programming").notNull().default(false),
     ...timestamps,
   },
   (t) => [

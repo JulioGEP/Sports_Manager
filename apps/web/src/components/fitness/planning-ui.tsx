@@ -61,6 +61,15 @@ export function usePlanNames() {
           .replace(".", ""),
       [intl],
     ),
+    /** "lunes", "Monday"…: el nombre entero de un día de la semana (1 = lunes). */
+    weekday: useCallback(
+      (weekday: number) =>
+        intl.formatDate(new Date(Date.UTC(2024, 0, weekday)), {
+          weekday: "long",
+          timeZone: "UTC",
+        }),
+      [intl],
+    ),
     /** "3 nov.": un día de calendario corto. */
     shortDate: useCallback(
       (date: string) =>

@@ -21,6 +21,7 @@ import {
 import {
   calibrationOf,
   coverageOf,
+  frequencyFactor,
   frequentCombos,
   logisticsOf,
   patternsOfExercise,
@@ -265,6 +266,40 @@ describe("proyección", () => {
     });
     expect(calibrated.tests.find((x) => x.code === "back_squat")!.high).toBeGreaterThan(squat.high);
     expect(base.capacities.find((c) => c.capacity === "mobility")!.band).toBe("maintain");
+  });
+
+  it("la frecuencia va de 1 a 7 días con rendimientos decrecientes", () => {
+    const factors = [1, 2, 3, 4, 5, 6, 7].map(frequencyFactor);
+    expect(factors[2]).toBe(1);
+    // Cada día más suma, pero cada vez menos.
+    for (let i = 1; i < factors.length; i++) expect(factors[i]!).toBeGreaterThan(factors[i - 1]!);
+    expect(factors[6]! - factors[5]!).toBeLessThan(factors[3]! - factors[2]!);
+    expect(frequencyFactor(0)).toBe(factors[0]);
+    expect(frequencyFactor(12)).toBe(factors[6]);
+    const once = projectPlan({
+      emphasis: open.emphasis,
+      weeks: 16,
+      frequency: 1,
+      tests: open.tests,
+    });
+    const daily = projectPlan({
+      emphasis: open.emphasis,
+      weeks: 16,
+      frequency: 7,
+      tests: open.tests,
+    });
+    const squat = (p: typeof once) => p.tests.find((x) => x.code === "back_squat")!.high;
+    expect(squat(once)).toBeLessThan(squat(daily));
+  });
+
+  it("el plan de una persona solo pone papel en sus días de entreno", () => {
+    const s = buildPlanStructure({
+      template: planTemplateByCode("weightlifting_technique")!,
+      startsOn: "2026-10-26",
+      weeks: 6,
+      classWeekdays: [2, 4],
+    });
+    for (const w of s.weeks) expect(w.roles.flatMap((r, i) => (r ? [i + 1] : []))).toEqual([2, 4]);
   });
 
   it("en un tiempo, mejorar es bajar", () => {

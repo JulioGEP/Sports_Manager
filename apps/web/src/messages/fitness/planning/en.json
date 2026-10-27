@@ -63,7 +63,11 @@
     "ended": "{section} · already finished",
     "thisWeek": "This week",
     "open": "Open the plan",
-    "weekRoles": "Each day's role this week"
+    "weekRoles": "Each day's role this week",
+    "ownPlans": "Own plans",
+    "ownPlansHint": "For a level, a group or one athlete: they see their sessions instead of the box WOD.",
+    "weekOf": "week {n} of {weeks}",
+    "athletes": "{count, plural, one {# athlete} other {# athletes}}"
   },
   "settings": {
     "title": "Levels and what athletes see",
@@ -127,11 +131,12 @@
   },
   "wizard": {
     "title": "New plan",
-    "description": "Six steps. On the right, what you can expect: it updates with every change.",
+    "description": "Seven steps. On the right, what to expect: it moves with every change.",
     "back": "Planning",
     "section": "Discipline",
     "steps": "Wizard steps",
     "step": {
+      "audience": "Who for",
       "goal": "Goal",
       "calendar": "Calendar",
       "emphasis": "Emphasis",
@@ -233,8 +238,44 @@
       "previousSource": "Calibrates this plan's projection.",
       "reference": "Reference frequency",
       "referenceHint": "The projection is worked out for people who come this many days a week.",
-      "days": "{days} days"
-    }
+      "days": "{days} days",
+      "referenceDays": "{days, plural, one {# day a week} other {# days a week}}",
+      "referenceHintOwn": "Its athletes' frequency: the projection is worked out with it."
+    },
+    "audience": {
+      "title": "Who is this plan for?",
+      "hint": "The whole box or part of it: a level, a group or one athlete. You can have as many own plans as you like; each athlete follows one.",
+      "section": {
+        "name": "Whole box",
+        "body": "Everyone who comes to {section} classes follows it. One active per discipline."
+      },
+      "level": {
+        "name": "A level",
+        "body": "The athletes at one level. You start with all of them and remove whoever doesn't fit."
+      },
+      "group": {
+        "name": "A group",
+        "body": "A named group: competition, mornings, masters… You pick each person."
+      },
+      "athlete": {
+        "name": "One athlete",
+        "body": "A plan for a single athlete. When they book a class, they see their session."
+      },
+      "whichLevel": "Which level",
+      "levelHint": "The level each athlete uses most in their results over the last 8 weeks.",
+      "groupName": "Group name",
+      "groupNameHint": "The coach sees it in class and the athlete in their cycle.",
+      "groupPlaceholder": "Competition",
+      "sectionNote": "Every {section} athlete without an own plan will see it. Anyone with one keeps theirs."
+    },
+    "weekdays": "Training days",
+    "weekdaysHint": "The discipline's class days. Remove the ones the plan doesn't use.",
+    "weekdaysHintOwn": "The days its athletes train. They are also its frequency.",
+    "summaryWho": "For {who} · {count, plural, one {# athlete} other {# athletes}}{moving, plural, =0 {} one { · # has their plan cancelled} other { · # have their plans cancelled}}",
+    "replaceActive": "Activate it and finish {name}",
+    "replaceActiveHint": "{name} is marked finished and this one takes its place. Unticked, it's saved as a draft.",
+    "activateHintOwn": "Once active, its athletes see their sessions instead of the box WOD.",
+    "expectPending": "The projection appears once you choose a goal."
   },
   "projection": {
     "forFrequency": "For people who come {days} days a week.",
@@ -309,7 +350,16 @@
     "name": "Name",
     "goal": "Goal",
     "eventName": "Event",
-    "status": "Status"
+    "status": "Status",
+    "athletes": "{count, plural, one {Its athlete} other {Its # athletes}}",
+    "athletesHint": "They train {days} · {frequency, plural, one {# day a week} other {# days a week}}. They see their sessions instead of the box WOD.",
+    "editAthletes": "Change athletes",
+    "noAthletes": "This plan has no athletes left.",
+    "athletesSaved": "Plan athletes saved.",
+    "weekdays": "Training days",
+    "weekdaysChanged": "Changing the days redoes each day's role. WODs already written stay.",
+    "frequency": "Reference frequency",
+    "frequencyHint": "{days, plural, one {# day a week} other {# days a week}}: the projection is read with it."
   },
   "week": {
     "notFoundTitle": "Plan week",
@@ -617,7 +667,8 @@
     "openPlan": "Open the plan",
     "noPlanTitle": "This discipline has no plan",
     "noPlanBody": "With a plan, every day has its role, intent and progression, and the drafts write themselves.",
-    "create": "Create a plan"
+    "create": "Create a plan",
+    "ownPlans": "Own plans"
   },
   "block": {
     "plus": "Class+",
@@ -697,5 +748,48 @@
     "weeks": "weeks",
     "finished": "{improved} of {tests} tests improved.",
     "inProgress": "Cycle in progress: the numbers update with every class."
+  },
+  "members": {
+    "fee": {
+      "paid": "Fee paid",
+      "pending": "Fee pending",
+      "overdue": "Fee overdue",
+      "none": "No fee"
+    },
+    "feeTitle": "Programming fee",
+    "feeCount": {
+      "paid": "{count} paid",
+      "pending": "{count} pending",
+      "overdue": "{count} overdue",
+      "none": "{count} without the fee"
+    },
+    "leaves": "Leaves {plan}",
+    "follows": "Follows {plan}",
+    "conflictsTitle": "{count, plural, one {# athlete already follows an own plan} other {# athletes already follow an own plan}}",
+    "conflictsBody": "Nobody follows two own plans at once. Cancel theirs to move them to this one, or leave them out.",
+    "cancelTheirs": "Cancel theirs",
+    "leaveOut": "Leave out",
+    "cancelAll": "Cancel all of theirs",
+    "leaveAllOut": "Leave them all out",
+    "person": "The athlete",
+    "count": "{count, plural, =0 {No athletes} one {# athlete} other {# athletes}}",
+    "removeHint": "Remove anyone who shouldn't be here.",
+    "remove": "Remove {name}",
+    "empty": "Nobody yet. Search and add the group's athletes.",
+    "emptyPerson": "Search for the athlete this plan is for.",
+    "change": "Change athlete",
+    "add": "Add athletes",
+    "addHint": "Search by name.",
+    "searchPlaceholder": "Athlete's name",
+    "results": "Results",
+    "noResults": "Nobody with that name.",
+    "addOne": "Add {name}",
+    "audience": {
+      "section": "Whole box",
+      "level": "Level {level}",
+      "group": "Group {name}",
+      "groupless": "A group",
+      "athlete": "One athlete"
+    }
   }
 }

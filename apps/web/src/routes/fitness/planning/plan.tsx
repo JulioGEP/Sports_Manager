@@ -1,6 +1,8 @@
 import {
   addDays,
   DAY_ROLE_INFO,
+  PLAN_FREQUENCY_MAX,
+  PLAN_FREQUENCY_MIN,
   PLAN_STATUSES,
   PlanResponseSchema,
   type PlanStatus,
@@ -10,6 +12,12 @@ import { useState } from "react";
 import { useIntl } from "react-intl";
 import { useNavigate, useParams } from "react-router";
 import { CopilotSheet } from "@/components/fitness/planning-ai";
+import {
+  FeeSummary,
+  MemberRow,
+  PlanMembersEditor,
+  useAudienceLabel,
+} from "@/components/fitness/planning-members";
 import { PlanTabs } from "@/components/fitness/planning-nav";
 import { ProjectionView } from "@/components/fitness/planning-projection";
 import {
@@ -26,7 +34,7 @@ import { apiFetch } from "@/lib/api";
 import { clubPaths, useReadyClub } from "@/lib/club";
 import { useClassTime, useInvalidateFitness } from "@/lib/fitness";
 import { useT } from "@/lib/intl";
-import { usePlan } from "@/lib/planning";
+import { usePlan, usePlanningCandidates } from "@/lib/planning";
 import {
   Alert,
   Button,
@@ -39,6 +47,7 @@ import {
   Menu,
   MenuItem,
   PageHeader,
+  Segmented,
   Select,
   Sheet,
   StatusChip,
@@ -54,8 +63,9 @@ const STATUS_KIND = {
 
 /**
  * Un plan (ADR 0053): dónde está el box, el mapa del ciclo con sus bloques y sus semanas, el
- * reparto de los 100 puntos, las marcas de partida y lo que se puede esperar. El copiloto está a
- * un botón para cualquier cambio.
+ * reparto de los 100 puntos, las marcas de partida y lo que se puede esperar. Si es un plan propio
+ * (ADR 0054), su gente: nivel, cuota de programación y quién entra o sale. El copiloto está a un
+ * botón para cualquier cambio.
  */
 export function PlanPage() {
   const { id } = useParams();
@@ -94,8 +104,11 @@ function PlanView({ plan }: { plan: PlanView }) {
   const errorText = useStaffError();
   const { slug } = useReadyClub();
   const paths = clubPaths(slug);
+  const audienceLabel = useAudienceLabel();
+  const own = plan.audience !== "section";
   const [copilot, setCopilot] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [editingMembers, setEditingMembers] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const n = plan.currentWeek;
   const week = n ? plan.structure.weeks[n - 1] : undefined;
@@ -137,6 +150,7 @@ function PlanView({ plan }: { plan: PlanView }) {
           <span className="flex flex-wrap items-center gap-2">
             {plan.section.name}
             <StatusChip kind={STATUS_KIND[plan.status]}>{home(`status.${plan.status}`)}</StatusChip>
+            <StatusChip kind={own ? "club" : "neutral"}>{audienceLabel(plan)}</StatusChip>
           </span>
         }
         title={plan.name}
@@ -259,6 +273,41 @@ function PlanView({ plan }: { plan: PlanView }) {
         </Card>
       </section>
 
+      {own ? (
+        <Card
+          title={t("athletes", { count: plan.memberList.length })}
+          description={t("athletesHint", {
+            days: plan.weekdays.map(names.weekdayShort).join(" · "),
+            frequency: plan.frequency,
+          })}
+          actions={
+            plan.canWrite ? (
+              <Button
+                variant="secondary"
+                size="sm"
+                action="edit"
+                onClick={() => setEditingMembers(true)}
+              >
+                {t("editAthletes")}
+              </Button>
+            ) : undefined
+          }
+        >
+          <div className="flex flex-col gap-3">
+            {plan.feeTracking ? <FeeSummary people={plan.memberList} /> : null}
+            {plan.memberList.length > 0 ? (
+              <ul className="grid gap-x-6 divide-y divide-line sm:grid-cols-2 sm:divide-y-0">
+                {plan.memberList.map((m) => (
+                  <MemberRow key={m.playerId} person={m} />
+                ))}
+              </ul>
+            ) : (
+              <p className="text-secondary text-muted">{t("noAthletes")}</p>
+            )}
+          </div>
+        </Card>
+      ) : null}
+
       <Card title={t("map")} description={t("mapHint")}>
         <CycleMap
           structure={plan.structure}
@@ -355,6 +404,9 @@ function PlanView({ plan }: { plan: PlanView }) {
             week={n}
           />
           <EditPlanSheet plan={plan} open={editing} onClose={() => setEditing(false)} />
+          {own && editingMembers ? (
+            <MembersSheet plan={plan} onClose={() => setEditingMembers(false)} />
+          ) : null}
           <ConfirmDialog
             open={confirmDelete}
             title={t("deleteTitle", { name: plan.name })}
@@ -408,7 +460,20 @@ function EditPlanSheet({
   const [goal, setGoal] = useState(plan.goal ?? "");
   const [eventName, setEventName] = useState(plan.eventName ?? "");
   const [status, setStatus] = useState<PlanStatus>(plan.status);
+  const [weekdays, setWeekdays] = useState<number[]>(plan.weekdays);
+  const [frequency, setFrequency] = useState(plan.frequency);
   const [saving, setSaving] = useState(false);
+  const names = usePlanNames();
+  const own = plan.audience !== "section";
+  const toggle = (d: number) => {
+    const next = weekdays.includes(d)
+      ? weekdays.filter((x) => x !== d)
+      : [...weekdays, d].sort((a, b) => a - b);
+    if (next.length === 0) return;
+    setWeekdays(next);
+    if (own) setFrequency(next.length);
+  };
+  const daysChanged = weekdays.join() !== plan.weekdays.join();
   async function save() {
     setSaving(true);
     try {
@@ -419,6 +484,8 @@ function EditPlanSheet({
           goal: goal.trim() || null,
           eventName: eventName.trim() || null,
           status,
+          frequency,
+          ...(daysChanged ? { weekdays } : {}),
         },
         schema: PlanResponseSchema,
       });
@@ -475,6 +542,49 @@ function EditPlanSheet({
             />
           )}
         </Field>
+        <div className="flex flex-col gap-2">
+          <span className="text-secondary font-medium text-ink" id="plan-days">
+            {t("weekdays")}
+          </span>
+          <ul className="flex flex-wrap gap-2" aria-labelledby="plan-days">
+            {[1, 2, 3, 4, 5, 6, 7].map((d) => {
+              const on = weekdays.includes(d);
+              return (
+                <li key={d}>
+                  <button
+                    type="button"
+                    aria-pressed={on}
+                    aria-label={names.weekday(d)}
+                    onClick={() => toggle(d)}
+                    className={`inline-flex size-11 items-center justify-center rounded-full border text-secondary font-semibold ${
+                      on ? "border-club bg-club text-on-club" : "border-line bg-surface text-ink"
+                    }`}
+                  >
+                    {names.weekdayShort(d)}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+          {daysChanged ? (
+            <span className="text-label text-warning">{t("weekdaysChanged")}</span>
+          ) : null}
+        </div>
+        <div className="flex flex-col gap-2">
+          <span className="text-secondary font-medium text-ink">{t("frequency")}</span>
+          <div className="max-w-full overflow-x-auto">
+            <Segmented<string>
+              label={t("frequency")}
+              value={String(frequency)}
+              onChange={(v) => setFrequency(Number(v))}
+              options={Array.from(
+                { length: PLAN_FREQUENCY_MAX - PLAN_FREQUENCY_MIN + 1 },
+                (_, i) => PLAN_FREQUENCY_MIN + i,
+              ).map((d) => ({ key: String(d), label: String(d) }))}
+            />
+          </div>
+          <span className="text-label text-muted">{t("frequencyHint", { days: frequency })}</span>
+        </div>
         <Field label={t("status")}>
           {(id) => (
             <Select
@@ -491,6 +601,86 @@ function EditPlanSheet({
           )}
         </Field>
       </div>
+    </Sheet>
+  );
+}
+
+/**
+ * Quién sigue un plan propio: quitar a cualquiera, añadir buscando y, a quien ya sigue otro plan
+ * propio, anular el suyo o dejarlo fuera. Se guarda de una vez.
+ */
+function MembersSheet({ plan, onClose }: { plan: PlanView; onClose: () => void }) {
+  const t = useT("fitness.planning.plan");
+  const c = useT("fitness.common");
+  const toast = useToast();
+  const invalidate = useInvalidateFitness();
+  const errorText = useStaffError();
+  const candidates = usePlanningCandidates(plan.section.id, plan.id);
+  const before = plan.memberList.map((m) => m.playerId);
+  const [members, setMembers] = useState<string[]>(before);
+  const [replace, setReplace] = useState<string[]>([]);
+  const [saving, setSaving] = useState(false);
+  const pool = candidates.data?.athletes ?? [];
+  const unresolved = pool.filter(
+    (a) => members.includes(a.playerId) && a.plan && !replace.includes(a.playerId),
+  ).length;
+  const add = members.filter((m) => !before.includes(m));
+  const remove = before.filter((m) => !members.includes(m));
+  async function save() {
+    setSaving(true);
+    try {
+      await apiFetch(`/api/org/plans/${plan.id}/members`, {
+        method: "PUT",
+        body: { add, remove, replace: replace.filter((r) => add.includes(r)) },
+        schema: PlanResponseSchema,
+      });
+      await invalidate();
+      toast("success", t("athletesSaved", { added: add.length, removed: remove.length }));
+      onClose();
+    } catch (err) {
+      toast("error", errorText(err));
+    } finally {
+      setSaving(false);
+    }
+  }
+  return (
+    <Sheet
+      open
+      onClose={onClose}
+      closeLabel={c("close")}
+      title={t("editAthletes")}
+      footer={
+        <>
+          <Button variant="tertiary" onClick={onClose}>
+            {c("cancel")}
+          </Button>
+          <Button
+            action="save"
+            loading={saving}
+            disabled={
+              unresolved > 0 || members.length === 0 || (add.length === 0 && remove.length === 0)
+            }
+            onClick={() => void save()}
+          >
+            {c("save")}
+          </Button>
+        </>
+      }
+    >
+      {candidates.data ? (
+        <PlanMembersEditor
+          candidates={pool}
+          members={members}
+          replace={replace}
+          single={plan.audience === "athlete"}
+          onChange={(m, r) => {
+            setMembers(m);
+            setReplace(r);
+          }}
+        />
+      ) : (
+        <div className="h-64 animate-pulse rounded-card bg-raised" />
+      )}
     </Sheet>
   );
 }

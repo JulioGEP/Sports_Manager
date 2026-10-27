@@ -1,6 +1,7 @@
 import {
   BOX_EQUIPMENT_KINDS,
   LEVEL_CAPACITIES,
+  PLAN_AUDIENCES,
   PLAN_STATUSES,
   PLAN_TEMPLATE_CODES,
   WORKOUT_LEVELS,
@@ -88,7 +89,8 @@ export const planningSettings = pgTable(
 
 /**
  * El plan de una disciplina: objetivo, fechas, énfasis, tests y su estructura de bloques y
- * semanas (`PlanStructure`, validada en la API). Un solo plan activo por disciplina.
+ * semanas (`PlanStructure`, validada en la API). Es para todo el box (uno activo por disciplina)
+ * o para un nivel, un grupo o una persona, con su lista de atletas (`box_plan_members`).
  */
 export const boxPlans = pgTable(
   "box_plans",
@@ -123,6 +125,15 @@ export const boxPlans = pgTable(
     /** La proyección guardada al crearlo, para calibrar el siguiente al acabar. */
     projection: jsonb("projection").$type<unknown>(),
     status: text("status").notNull().default("draft"),
+    /** Para quién: todo el box (`section`), un nivel, un grupo o una persona. */
+    audience: text("audience").notNull().default("section"),
+    audienceLevel: text("audience_level"),
+    audienceName: text("audience_name"),
+    /** Días de entreno (1 = lunes … 7 = domingo). Vacío: los días con clase de la disciplina. */
+    weekdays: jsonb("weekdays")
+      .$type<number[]>()
+      .notNull()
+      .default(sql`'[]'::jsonb`),
     createdBy: uuid("created_by").references(() => users.id, { onDelete: "set null" }),
     ...timestamps,
   },
@@ -131,11 +142,43 @@ export const boxPlans = pgTable(
     index("box_plans_section_idx").on(t.sectionId),
     uniqueIndex("box_plans_active_unique")
       .on(t.sectionId)
-      .where(sql`${t.status} = 'active'`),
+      .where(sql`${t.status} = 'active' and ${t.audience} = 'section'`),
     check("box_plans_status_check", inList(t.status, PLAN_STATUSES)),
     check("box_plans_template_check", inList(t.templateCode, PLAN_TEMPLATE_CODES)),
+    check("box_plans_audience_check", inList(t.audience, PLAN_AUDIENCES)),
+    check(
+      "box_plans_audience_level_check",
+      sql`${t.audienceLevel} is null or ${inList(t.audienceLevel, WORKOUT_LEVELS)}`,
+    ),
     check("box_plans_weeks_check", sql`${t.weeks} between 1 and 60`),
-    check("box_plans_frequency_check", sql`${t.frequency} between 2 and 6`),
+    check("box_plans_frequency_check", sql`${t.frequency} between 1 and 7`),
+  ],
+);
+
+/**
+ * Los atletas de un plan que no es de todo el box. Un atleta puede estar en varios planes, pero la
+ * API no deja que esté en dos activos a la vez: antes de solaparlos, avisa y se elige.
+ */
+export const boxPlanMembers = pgTable(
+  "box_plan_members",
+  {
+    id: id(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
+    planId: uuid("plan_id")
+      .notNull()
+      .references(() => boxPlans.id, { onDelete: "cascade" }),
+    playerId: uuid("player_id")
+      .notNull()
+      .references(() => players.id, { onDelete: "cascade" }),
+    addedBy: uuid("added_by").references(() => users.id, { onDelete: "set null" }),
+    ...timestamps,
+  },
+  (t) => [
+    uniqueIndex("box_plan_members_unique").on(t.planId, t.playerId),
+    index("box_plan_members_organization_id_idx").on(t.organizationId),
+    index("box_plan_members_player_idx").on(t.playerId),
   ],
 );
 

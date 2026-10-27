@@ -10,14 +10,16 @@ import {
   type EquipmentItemInput,
   type InventoryLine,
   type LevelCapacity,
+  type PlanAudience,
   type PlanningSettings,
+  type ProgrammingFeeStatus,
   type PlanStatus,
   type PlanStructure,
   type PlanTemplateCode,
   type Projection,
   type WorkoutLevel,
 } from "@sportsmanager/shared";
-import { and, asc, count, desc, eq, gte, inArray, lt, lte, sql, sum } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, inArray, lt, lte, ne, sql, sum } from "drizzle-orm";
 import { isUniqueViolation } from "./db.ts";
 import type { OrgScope } from "./scope.ts";
 
@@ -59,7 +61,31 @@ export interface BoxPlanRecord {
   structure: PlanStructure;
   projection: Projection | null;
   status: PlanStatus;
+  /** Para quién (ADR 0054): todo el box, un nivel, un grupo o una persona. */
+  audience: PlanAudience;
+  audienceLevel: WorkoutLevel | null;
+  audienceName: string | null;
+  /** Días de entreno; vacío, los días con clase de la disciplina. */
+  weekdays: number[];
+  /** Atletas del plan (0 en uno de todo el box). */
+  members: number;
   createdAt: Date;
+}
+
+/** Un atleta de la lista de un plan, o que podría entrar en él. */
+export interface PlanAthleteRow {
+  playerId: string;
+  firstName: string;
+  lastName: string;
+  photoBlobKey: string | null;
+}
+
+/** El plan propio activo de un atleta, para avisar antes de solaparlo. */
+export interface ActivePlanRef {
+  id: string;
+  name: string;
+  audience: PlanAudience;
+  sectionId: string;
 }
 
 export interface NewBoxPlan {
@@ -78,6 +104,10 @@ export interface NewBoxPlan {
   structure: PlanStructure;
   projection: Projection | null;
   status: PlanStatus;
+  audience?: PlanAudience;
+  audienceLevel?: WorkoutLevel | null;
+  audienceName?: string | null;
+  weekdays?: number[];
 }
 
 export interface BlockResultRow {
@@ -174,9 +204,11 @@ export function planningRepo(db: () => Database) {
     notes: input.notes?.trim() ? input.notes.trim() : null,
   });
 
+  const m = schema.boxPlanMembers;
   const planSelection = {
     plan: p,
     sectionName: schema.sections.name,
+    members: sql<number>`(select count(*)::int from ${m} where ${m.planId} = ${p.id})`,
   };
   const planBase = () =>
     db()
@@ -201,8 +233,68 @@ export function planningRepo(db: () => Database) {
     structure: r.plan.structure,
     projection: (r.plan.projection as Projection | null) ?? null,
     status: r.plan.status as PlanStatus,
+    audience: r.plan.audience as PlanAudience,
+    audienceLevel: (r.plan.audienceLevel as WorkoutLevel | null) ?? null,
+    audienceName: r.plan.audienceName,
+    weekdays: r.plan.weekdays,
+    members: Number(r.members ?? 0),
     createdAt: r.plan.createdAt,
   });
+
+  /**
+   * Saca a unos atletas de los planes propios activos en los que estén (salvo `keep`): es "anular
+   * su programación" antes de pasarlos a otra. Un plan de una persona que se queda sin nadie se
+   * archiva.
+   */
+  async function detachFromActive(
+    tx: Parameters<Parameters<ReturnType<typeof db>["transaction"]>[0]>[0],
+    scope: OrgScope,
+    playerIds: string[],
+    keep: string | null,
+  ) {
+    if (playerIds.length === 0) return;
+    const rows = await tx
+      .select({ id: m.id, planId: m.planId })
+      .from(m)
+      .innerJoin(p, eq(p.id, m.planId))
+      .where(
+        and(
+          eq(m.organizationId, scope.organizationId),
+          inArray(m.playerId, playerIds),
+          eq(p.status, "active"),
+          ne(p.audience, "section"),
+          keep ? ne(p.id, keep) : undefined,
+        ),
+      );
+    if (rows.length === 0) return;
+    await tx.delete(m).where(
+      inArray(
+        m.id,
+        rows.map((r) => r.id),
+      ),
+    );
+    const touched = [...new Set(rows.map((r) => r.planId))];
+    const empty = await tx
+      .select({ id: p.id })
+      .from(p)
+      .where(
+        and(
+          inArray(p.id, touched),
+          eq(p.audience, "athlete"),
+          sql`not exists (select 1 from ${m} where ${m.planId} = ${p.id})`,
+        ),
+      );
+    if (empty.length > 0)
+      await tx
+        .update(p)
+        .set({ status: "archived" })
+        .where(
+          inArray(
+            p.id,
+            empty.map((e) => e.id),
+          ),
+        );
+  }
 
   /** Fecha local de una clase en SQL. */
   const localDay = (timezone: string) =>
@@ -360,34 +452,180 @@ export function planningRepo(db: () => Database) {
         return rows[0] ? toPlan(rows[0]) : null;
       },
 
-      /** El plan activo de cada disciplina. */
+      /** Los planes activos de todo el box de cada disciplina (uno por disciplina). */
       async active(scope: OrgScope, sectionIds?: string[]): Promise<BoxPlanRecord[]> {
         if (sectionIds && sectionIds.length === 0) return [];
         const rows = await planBase().where(
           and(
             eq(p.organizationId, scope.organizationId),
             eq(p.status, "active"),
+            eq(p.audience, "section"),
             sectionIds ? inArray(p.sectionId, sectionIds) : undefined,
           ),
         );
         return rows.map(toPlan);
       },
 
+      /**
+       * Crea un plan con sus atletas. `replace`: atletas que salen de su plan propio activo para
+       * entrar en este. `replaceActive`: en uno de todo el box, termina el activo de la disciplina.
+       */
       async create(
         scope: OrgScope,
         input: NewBoxPlan,
         userId: string,
+        options: { members?: string[]; replace?: string[]; replaceActive?: boolean } = {},
       ): Promise<BoxPlanRecord | "active_taken"> {
         try {
-          const rows = await db()
-            .insert(p)
-            .values({ organizationId: scope.organizationId, ...input, createdBy: userId })
-            .returning({ id: p.id });
-          return (await this.byId(scope, rows[0]!.id))!;
+          const id = await db().transaction(async (tx) => {
+            if (
+              options.replaceActive &&
+              input.status === "active" &&
+              (input.audience ?? "section") === "section"
+            )
+              await tx
+                .update(p)
+                .set({ status: "finished" })
+                .where(
+                  and(
+                    eq(p.organizationId, scope.organizationId),
+                    eq(p.sectionId, input.sectionId),
+                    eq(p.status, "active"),
+                    eq(p.audience, "section"),
+                  ),
+                );
+            const rows = await tx
+              .insert(p)
+              .values({ organizationId: scope.organizationId, ...input, createdBy: userId })
+              .returning({ id: p.id });
+            const planId = rows[0]!.id;
+            const members = [...new Set(options.members ?? [])];
+            if (members.length > 0) {
+              await detachFromActive(tx, scope, options.replace ?? [], planId);
+              await tx.insert(m).values(
+                members.map((playerId) => ({
+                  organizationId: scope.organizationId,
+                  planId,
+                  playerId,
+                  addedBy: userId,
+                })),
+              );
+            }
+            return planId;
+          });
+          return (await this.byId(scope, id))!;
         } catch (error) {
           if (isUniqueViolation(error)) return "active_taken";
           throw error;
         }
+      },
+
+      /** Atletas de un plan, por nombre. */
+      async members(scope: OrgScope, planId: string): Promise<PlanAthleteRow[]> {
+        return db()
+          .select({
+            playerId: m.playerId,
+            firstName: schema.people.firstName,
+            lastName: schema.people.lastName,
+            photoBlobKey: schema.people.photoBlobKey,
+          })
+          .from(m)
+          .innerJoin(schema.players, eq(schema.players.id, m.playerId))
+          .innerJoin(schema.people, eq(schema.people.id, schema.players.personId))
+          .where(and(eq(m.organizationId, scope.organizationId), eq(m.planId, planId)))
+          .orderBy(asc(schema.people.firstName), asc(schema.people.lastName));
+      },
+
+      /**
+       * El plan propio activo (de un nivel, un grupo o una persona) de cada uno de unos atletas,
+       * sin contar `exclude`: lo que se solaparía si entran en otro.
+       */
+      async activeOf(
+        scope: OrgScope,
+        playerIds: string[],
+        exclude: string | null = null,
+      ): Promise<Map<string, ActivePlanRef>> {
+        const out = new Map<string, ActivePlanRef>();
+        if (playerIds.length === 0) return out;
+        const rows = await db()
+          .select({
+            playerId: m.playerId,
+            id: p.id,
+            name: p.name,
+            audience: p.audience,
+            sectionId: p.sectionId,
+          })
+          .from(m)
+          .innerJoin(p, eq(p.id, m.planId))
+          .where(
+            and(
+              eq(m.organizationId, scope.organizationId),
+              inArray(m.playerId, playerIds),
+              eq(p.status, "active"),
+              ne(p.audience, "section"),
+              exclude ? ne(p.id, exclude) : undefined,
+            ),
+          );
+        for (const r of rows)
+          out.set(r.playerId, {
+            id: r.id,
+            name: r.name,
+            audience: r.audience as PlanAudience,
+            sectionId: r.sectionId,
+          });
+        return out;
+      },
+
+      /** El plan propio activo de un atleta, entero. */
+      async specificOf(scope: OrgScope, playerId: string): Promise<BoxPlanRecord | null> {
+        const rows = await planBase()
+          .innerJoin(m, eq(m.planId, p.id))
+          .where(
+            and(
+              eq(p.organizationId, scope.organizationId),
+              eq(m.playerId, playerId),
+              eq(p.status, "active"),
+              ne(p.audience, "section"),
+            ),
+          )
+          .orderBy(desc(p.startsOn))
+          .limit(1);
+        return rows[0] ? toPlan(rows[0]) : null;
+      },
+
+      /** Añade y quita atletas; los de `replace` salen antes de su plan propio activo. */
+      async setMembers(
+        scope: OrgScope,
+        planId: string,
+        change: { add: string[]; remove: string[]; replace: string[] },
+        userId: string,
+      ): Promise<void> {
+        await db().transaction(async (tx) => {
+          await detachFromActive(tx, scope, change.replace, planId);
+          if (change.remove.length > 0)
+            await tx
+              .delete(m)
+              .where(
+                and(
+                  eq(m.organizationId, scope.organizationId),
+                  eq(m.planId, planId),
+                  inArray(m.playerId, change.remove),
+                ),
+              );
+          const add = [...new Set(change.add)].filter((id) => !change.remove.includes(id));
+          if (add.length > 0)
+            await tx
+              .insert(m)
+              .values(
+                add.map((playerId) => ({
+                  organizationId: scope.organizationId,
+                  planId,
+                  playerId,
+                  addedBy: userId,
+                })),
+              )
+              .onConflictDoNothing();
+        });
       },
 
       async update(
@@ -408,12 +646,24 @@ export function planningRepo(db: () => Database) {
         }
       },
 
+      /** Borra un plan: los WODs del box se quedan sin plan; las sesiones propias, con él. */
       async remove(scope: OrgScope, id: string): Promise<boolean> {
-        const rows = await db()
-          .delete(p)
-          .where(and(eq(p.organizationId, scope.organizationId), eq(p.id, id)))
-          .returning({ id: p.id });
-        return rows.length > 0;
+        return db().transaction(async (tx) => {
+          await tx
+            .delete(schema.workouts)
+            .where(
+              and(
+                eq(schema.workouts.organizationId, scope.organizationId),
+                eq(schema.workouts.planId, id),
+                eq(schema.workouts.specific, true),
+              ),
+            );
+          const rows = await tx
+            .delete(p)
+            .where(and(eq(p.organizationId, scope.organizationId), eq(p.id, id)))
+            .returning({ id: p.id });
+          return rows.length > 0;
+        });
       },
 
       async workoutCount(scope: OrgScope, planId: string): Promise<number> {
@@ -596,8 +846,9 @@ export function planningRepo(db: () => Database) {
       from: Date,
       to: Date,
       timezone: string,
-      playerId?: string,
+      players?: string | string[],
     ): Promise<{ playerId: string; date: string; eventId: string }[]> {
+      if (Array.isArray(players) && players.length === 0) return [];
       const rows = await db()
         .select({
           playerId: schema.bookings.playerId,
@@ -611,7 +862,11 @@ export function planningRepo(db: () => Database) {
             eq(schema.bookings.organizationId, scope.organizationId),
             eq(schema.bookings.status, "attended"),
             sectionId ? eq(schema.events.sectionId, sectionId) : undefined,
-            playerId ? eq(schema.bookings.playerId, playerId) : undefined,
+            typeof players === "string"
+              ? eq(schema.bookings.playerId, players)
+              : players
+                ? inArray(schema.bookings.playerId, players)
+                : undefined,
             gte(schema.events.startsAt, from),
             lt(schema.events.startsAt, to),
           ),
@@ -712,6 +967,135 @@ export function planningRepo(db: () => Database) {
       return out;
     },
 
+    /** Los atletas activos del club: a quién se le puede poner un plan propio. */
+    async athletes(scope: OrgScope): Promise<PlanAthleteRow[]> {
+      return db()
+        .select({
+          playerId: schema.players.id,
+          firstName: schema.people.firstName,
+          lastName: schema.people.lastName,
+          photoBlobKey: schema.people.photoBlobKey,
+        })
+        .from(schema.players)
+        .innerJoin(schema.people, eq(schema.people.id, schema.players.personId))
+        .where(
+          and(
+            eq(schema.players.organizationId, scope.organizationId),
+            eq(schema.players.status, "active"),
+          ),
+        )
+        .orderBy(asc(schema.people.firstName), asc(schema.people.lastName));
+    },
+
+    /** El nivel general de cada atleta: el que más usa en sus resultados desde una fecha. */
+    async primaryLevels(
+      scope: OrgScope,
+      since: string,
+      playerIds?: string[],
+    ): Promise<Map<string, WorkoutLevel>> {
+      const out = new Map<string, WorkoutLevel>();
+      if (playerIds && playerIds.length === 0) return out;
+      const rows = await db()
+        .select({
+          playerId: schema.workoutResults.playerId,
+          level: schema.workoutResults.level,
+          n: count(),
+        })
+        .from(schema.workoutResults)
+        .innerJoin(schema.workoutBlocks, eq(schema.workoutBlocks.id, schema.workoutResults.blockId))
+        .innerJoin(schema.workouts, eq(schema.workouts.id, schema.workoutBlocks.workoutId))
+        .where(
+          and(
+            eq(schema.workoutResults.organizationId, scope.organizationId),
+            gte(schema.workouts.onDate, since),
+            playerIds ? inArray(schema.workoutResults.playerId, playerIds) : undefined,
+          ),
+        )
+        .groupBy(schema.workoutResults.playerId, schema.workoutResults.level);
+      const best = new Map<string, number>();
+      for (const r of rows)
+        if (r.n > (best.get(r.playerId) ?? 0)) {
+          best.set(r.playerId, r.n);
+          out.set(r.playerId, r.level as WorkoutLevel);
+        }
+      return out;
+    },
+
+    /**
+     * La cuota de programación de unos atletas (ADR 0054): nula si el box no tiene ninguna tarifa
+     * de programación; si no, por atleta, si la paga (último cargo pagado), la tiene pendiente o
+     * vencida, o no la tiene.
+     */
+    async programmingFees(
+      scope: OrgScope,
+      playerIds: string[],
+      today: string,
+    ): Promise<Map<string, ProgrammingFeeStatus> | null> {
+      const plans = await db()
+        .select({ id: schema.feePlans.id })
+        .from(schema.feePlans)
+        .where(
+          and(
+            eq(schema.feePlans.organizationId, scope.organizationId),
+            eq(schema.feePlans.includesProgramming, true),
+            eq(schema.feePlans.status, "active"),
+          ),
+        );
+      if (plans.length === 0) return null;
+      const out = new Map<string, ProgrammingFeeStatus>(playerIds.map((id) => [id, "none"]));
+      if (playerIds.length === 0) return out;
+      const planIds = plans.map((x) => x.id);
+      const subs = await db()
+        .select({ playerId: schema.subscriptions.playerId, personId: schema.players.personId })
+        .from(schema.subscriptions)
+        .innerJoin(schema.players, eq(schema.players.id, schema.subscriptions.playerId))
+        .where(
+          and(
+            eq(schema.subscriptions.organizationId, scope.organizationId),
+            inArray(schema.subscriptions.playerId, playerIds),
+            inArray(schema.subscriptions.feePlanId, planIds),
+            inArray(schema.subscriptions.status, ["active", "paused"]),
+            lte(schema.subscriptions.startsOn, today),
+            sql`(${schema.subscriptions.endsOn} is null or ${schema.subscriptions.endsOn} >= ${today})`,
+          ),
+        );
+      if (subs.length === 0) return out;
+      const charges = await db()
+        .select({
+          personId: schema.feeCharges.personId,
+          status: schema.feeCharges.status,
+          dueOn: schema.feeCharges.dueOn,
+        })
+        .from(schema.feeCharges)
+        .where(
+          and(
+            eq(schema.feeCharges.organizationId, scope.organizationId),
+            inArray(
+              schema.feeCharges.personId,
+              subs.map((x) => x.personId),
+            ),
+            inArray(schema.feeCharges.feePlanId, planIds),
+            ne(schema.feeCharges.status, "cancelled"),
+          ),
+        )
+        .orderBy(desc(schema.feeCharges.dueOn));
+      const latest = new Map<string, { status: string; dueOn: string }>();
+      for (const c of charges) if (!latest.has(c.personId)) latest.set(c.personId, c);
+      for (const s of subs) {
+        const c = latest.get(s.personId);
+        // Con la tarifa y sin cargo todavía: pendiente del primero.
+        const status: ProgrammingFeeStatus = !c
+          ? "pending"
+          : c.status === "paid"
+            ? "paid"
+            : c.status === "overdue" || c.dueOn < today
+              ? "overdue"
+              : "pending";
+        out.set(s.playerId, status);
+      }
+      return out;
+    },
+
     /** Resultados de unos bloques: lo que necesita la revisión del domingo. */
     async blockResults(scope: OrgScope, blockIds: string[]): Promise<BlockResultRow[]> {
       if (blockIds.length === 0) return [];
@@ -773,8 +1157,9 @@ export function planningRepo(db: () => Database) {
       scope: OrgScope,
       from: string,
       to: string,
-      playerId?: string,
+      players?: string | string[],
     ): Promise<{ total: number; athletes: number }> {
+      if (Array.isArray(players) && players.length === 0) return { total: 0, athletes: 0 };
       const rows = await db()
         .select({
           total: count(),
@@ -786,7 +1171,11 @@ export function planningRepo(db: () => Database) {
             eq(schema.personalRecords.organizationId, scope.organizationId),
             gte(schema.personalRecords.onDate, from),
             lte(schema.personalRecords.onDate, to),
-            playerId ? eq(schema.personalRecords.playerId, playerId) : undefined,
+            typeof players === "string"
+              ? eq(schema.personalRecords.playerId, players)
+              : players
+                ? inArray(schema.personalRecords.playerId, players)
+                : undefined,
           ),
         );
       return { total: rows[0]?.total ?? 0, athletes: Number(rows[0]?.athletes ?? 0) };

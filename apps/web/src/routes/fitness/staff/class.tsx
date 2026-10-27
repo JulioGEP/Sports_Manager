@@ -483,9 +483,17 @@ function AttendeeRow({
       <Avatar name={attendee.name} src={attendee.photoUrl} />
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="truncate font-medium text-ink">{attendee.name}</span>
-        {attendee.status && attendee.status !== "booked" ? (
-          <span>
-            <StatusChip kind={BOOKING_TONE[attendee.status]}>{status(attendee.status)}</StatusChip>
+        {(attendee.status && attendee.status !== "booked") || attendee.ownPlan ? (
+          <span className="flex flex-wrap gap-1.5">
+            {attendee.status && attendee.status !== "booked" ? (
+              <StatusChip kind={BOOKING_TONE[attendee.status]}>
+                {status(attendee.status)}
+              </StatusChip>
+            ) : null}
+            {/* Sigue un plan propio: hoy hace su sesión, no el WOD de la clase. */}
+            {attendee.ownPlan ? (
+              <StatusChip kind="club">{t("ownPlan", { plan: attendee.ownPlan })}</StatusChip>
+            ) : null}
           </span>
         ) : null}
       </span>

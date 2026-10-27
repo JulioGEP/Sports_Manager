@@ -93,6 +93,8 @@ interface Draft {
   intentEffort: number | null;
   intentFeel: string;
   why: string;
+  /** Sesión de un plan propio (ADR 0054): la ven sus atletas en vez del WOD del box. */
+  specific: boolean;
 }
 
 /** Lo que el servidor tiene guardado de cómo se publica. */
@@ -110,7 +112,10 @@ const fingerprint = (d: Draft) =>
 const WIDE_QUERY = "(min-width: 640px)";
 const orNull = (text: string) => (text.trim() ? text.trim() : null);
 
-/** Un WOD nuevo que se escribe desde la semana del plan: llega con su plan, su semana y su papel. */
+/**
+ * Un WOD nuevo que se escribe desde la semana del plan: llega con su plan, su semana, su papel y,
+ * si el plan es propio (`own=1`), como sesión de ese plan.
+ */
 function fromPlanParams(params: URLSearchParams) {
   const role = params.get("role");
   const dayRole =
@@ -125,6 +130,7 @@ function fromPlanParams(params: URLSearchParams) {
     intentEffort: info?.effort ?? null,
     intentFeel: "",
     why: "",
+    specific: params.get("own") === "1",
   };
 }
 
@@ -358,6 +364,7 @@ function Editor({ existing }: { existing: WorkoutView | null }) {
       intentEffort: draft.intentEffort,
       intentFeel: orNull(draft.intentFeel),
       why: orNull(draft.why),
+      specific: draft.planId ? draft.specific : false,
     };
     const top: Record<string, string> = {};
     const parsed = WorkoutUpsertSchema.safeParse(value);

@@ -125,7 +125,8 @@
       "results": "{count, plural, =0 {Sense resultats} one {# resultat} other {# resultats}}",
       "leaderboard": "Classificació de la classe",
       "leaderboardEmpty": "Ningú d'aquesta classe ha apuntat el seu resultat."
-    }
+    },
+    "ownPlan": "Pla propi: {plan}"
   },
   "programming": {
     "title": "Programació",

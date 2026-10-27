@@ -62,10 +62,12 @@ export interface Projection {
   tests: ProjectedTest[];
 }
 
+/** Cuánto rinde cada día por semana: de 1 a 7, con rendimientos decrecientes a partir de 4. */
+const FREQUENCY_FACTORS = [0.35, 0.6, 1, 1.25, 1.4, 1.5, 1.55] as const;
+
 export function frequencyFactor(frequency: number): number {
-  if (frequency <= 2) return 0.6;
-  if (frequency === 3) return 1;
-  return 1.25;
+  const days = Math.max(1, Math.min(7, Math.round(frequency)));
+  return FREQUENCY_FACTORS[days - 1]!;
 }
 
 /** Quien empieza progresa más deprisa: el reparto de niveles del box mueve la proyección. */

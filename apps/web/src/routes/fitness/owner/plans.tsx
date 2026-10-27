@@ -257,6 +257,7 @@ function PlanSheet({ plan, onClose }: { plan: FeePlan | null; onClose: () => voi
   const [sectionId, setSectionId] = useState(plan?.section?.id ?? "");
   const [description, setDescription] = useState(plan?.description ?? "");
   const [plus, setPlus] = useState(plan?.includesPlus ?? false);
+  const [programming, setProgramming] = useState(plan?.includesProgramming ?? false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -282,6 +283,7 @@ function PlanSheet({ plan, onClose }: { plan: FeePlan | null; onClose: () => voi
       validityDays: kind === "pack" && validity.trim() ? Number(validity) : null,
       classTeamIds: kind === "none" || types.length === 0 ? null : types,
       includesPlus: plus,
+      includesProgramming: programming,
     };
     if (NEEDS_SESSIONS.includes(kind) && !body.sessions) {
       setError(t("sheet.sessionsRequired"));
@@ -478,6 +480,18 @@ function PlanSheet({ plan, onClose }: { plan: FeePlan | null; onClose: () => voi
           <span className="flex flex-col">
             <span className="font-medium text-ink">{t("sheet.plus")}</span>
             <span className="text-secondary text-muted">{t("sheet.plusHint")}</span>
+          </span>
+        </label>
+        <label className="flex items-start gap-3 rounded-control bg-raised p-3">
+          <input
+            type="checkbox"
+            className="mt-1 size-4"
+            checked={programming}
+            onChange={(e) => setProgramming(e.target.checked)}
+          />
+          <span className="flex flex-col">
+            <span className="font-medium text-ink">{t("sheet.programming")}</span>
+            <span className="text-secondary text-muted">{t("sheet.programmingHint")}</span>
           </span>
         </label>
         {error ? <Alert kind="error">{error}</Alert> : null}

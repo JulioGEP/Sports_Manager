@@ -512,13 +512,19 @@ export function createFitnessWorkoutRoutes(config: ApiConfig, data: DataLayer) {
 
   // --- El atleta ---
 
-  /** Los WODs visibles de un día para el atleta, uno por disciplina (o tipo de clase). */
+  /**
+   * Los WODs visibles de un día para el atleta, uno por disciplina (o tipo de clase). Si tiene plan
+   * propio, su sesión de ese día sustituye al WOD del box en esa disciplina.
+   */
   async function athleteWorkouts(c: Ctx, playerId: string, date: string) {
     const tenant = orgOf(c);
     const now = new Date();
-    const list = (await data.workouts.list(tenant.scope, date, date)).filter((w) =>
-      workoutVisible(w, now),
-    );
+    const own = await data.planning.plans.specificOf(tenant.scope, playerId);
+    const all = (
+      await data.workouts.list(tenant.scope, date, date, { alsoPlans: own ? [own.id] : undefined })
+    ).filter((w) => workoutVisible(w, now));
+    const mine = all.filter((w) => w.specific);
+    const list = all.filter((w) => w.specific || !mine.some((m) => m.section.id === w.section.id));
     const out = [];
     for (const w of list) out.push(await athleteWorkoutDto(data, c, w, playerId, now));
     return out;
@@ -555,10 +561,17 @@ export function createFitnessWorkoutRoutes(config: ApiConfig, data: DataLayer) {
     },
   );
 
-  /** Un bloque de un WOD que el atleta puede ver ya. */
-  async function visibleBlock(c: Ctx, blockId: string) {
-    const found = await data.workouts.blockById(orgOf(c).scope, blockId);
+  /** Un bloque de un WOD que el atleta puede ver ya (el de un plan propio, solo si es suyo). */
+  async function visibleBlock(c: Ctx, blockId: string, playerId: string | null) {
+    const scope = orgOf(c).scope;
+    const found = await data.workouts.blockById(scope, blockId);
     if (!found || !workoutVisible(found.workout, new Date()))
+      throw notFound("Ese bloque no existe.");
+    const plan = found.workout.specific ? found.workout.plan : null;
+    if (
+      plan &&
+      !(await data.planning.plans.members(scope, plan.id)).some((m) => m.playerId === playerId)
+    )
       throw notFound("Ese bloque no existe.");
     return found;
   }
@@ -580,7 +593,7 @@ export function createFitnessWorkoutRoutes(config: ApiConfig, data: DataLayer) {
       const { id } = c.req.valid("param");
       const input = c.req.valid("json");
       const player = await requireSelfPlayer(data, c);
-      const { block, workout } = await visibleBlock(c, id);
+      const { block, workout } = await visibleBlock(c, id, player.id);
       if (workout.onDate > todayIn(tenant.organization.timezone))
         throw conflict("Ese WOD es de un día que aún no ha llegado.");
       const completed = input.completed ?? true;
@@ -658,7 +671,7 @@ export function createFitnessWorkoutRoutes(config: ApiConfig, data: DataLayer) {
     async (c) => {
       const { id } = c.req.valid("param");
       const player = await requireSelfPlayer(data, c);
-      await visibleBlock(c, id);
+      await visibleBlock(c, id, player.id);
       await data.workouts.results.remove(orgOf(c).scope, id, player.id);
       return c.body(null, 204);
     },
@@ -695,7 +708,7 @@ export function createFitnessWorkoutRoutes(config: ApiConfig, data: DataLayer) {
       if (!staff && !player) throw forbidden();
       const found = staff
         ? await data.workouts.blockById(tenant.scope, id)
-        : await visibleBlock(c, id);
+        : await visibleBlock(c, id, player?.id ?? null);
       if (!found) throw notFound("Ese bloque no existe.");
       const policy = await data.bookings.policy(tenant.scope);
       if (!staff && !policy.showLeaderboards)

@@ -182,6 +182,8 @@ export const workouts = pgTable(
     intentEffort: integer("intent_effort"),
     intentFeel: text("intent_feel"),
     why: text("why"),
+    /** La sesión de un plan propio (un nivel, un grupo o una persona), no la del box. */
+    specific: boolean("specific").notNull().default(false),
     ...timestamps,
   },
   (t) => [
@@ -198,10 +200,14 @@ export const workouts = pgTable(
     ),
     uniqueIndex("workouts_section_date_unique")
       .on(t.sectionId, t.onDate)
-      .where(sql`${t.teamId} is null`),
+      .where(sql`${t.teamId} is null and not ${t.specific}`),
     uniqueIndex("workouts_team_date_unique")
       .on(t.teamId, t.onDate)
-      .where(sql`${t.teamId} is not null`),
+      .where(sql`${t.teamId} is not null and not ${t.specific}`),
+    uniqueIndex("workouts_plan_date_unique")
+      .on(t.planId, t.onDate)
+      .where(sql`${t.specific}`),
+    check("workouts_specific_plan_check", sql`not ${t.specific} or ${t.planId} is not null`),
     check("workouts_status_check", inList(t.status, WORKOUT_STATUSES)),
   ],
 );

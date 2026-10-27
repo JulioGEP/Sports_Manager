@@ -4,6 +4,7 @@ import {
   MyCycleResponseSchema,
   MyCycleSummaryResponseSchema,
   PlanHealthResponseSchema,
+  PlanningCandidatesResponseSchema,
   PlanningContextResponseSchema,
   PlanningSettingsResponseSchema,
   PlanResponseSchema,
@@ -38,6 +39,22 @@ export function usePlanningContext(section: string | null, enabled = true) {
       }),
     enabled,
     retry: false,
+  });
+}
+
+/**
+ * Atletas que pueden entrar en un plan propio de una disciplina (ADR 0054): su nivel, el plan propio
+ * que ya siguen y su cuota de programación. Con `plan`, ese plan no cuenta como solapamiento.
+ */
+export function usePlanningCandidates(section: string | null, plan?: string, enabled = true) {
+  const { slug } = useReadyClub();
+  return useQuery({
+    queryKey: key(slug, "candidates", section, plan),
+    queryFn: () =>
+      apiFetch(`/api/org/planning/candidates?section=${section}${plan ? `&plan=${plan}` : ""}`, {
+        schema: PlanningCandidatesResponseSchema,
+      }),
+    enabled: enabled && Boolean(section),
   });
 }
 

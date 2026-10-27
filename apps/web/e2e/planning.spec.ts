@@ -3,10 +3,12 @@ import { expectLegibleButtons, login, shot } from "./helpers";
 
 /**
  * La planificación del box (ADR 0053) en el box de demostración, que llega con "Camino al Open" en
- * su semana 5 y un plan terminado para calibrar: la dueña ve el plan, el mapa del ciclo, la semana
- * con su validación, la revisión del domingo, la salud, el material y el asistente de un plan nuevo
- * hasta el resumen (sin crearlo); el coach escribe un WOD desde la semana; la atleta ve el plan en
- * su WOD, su ciclo y su ciclo en cifras.
+ * su semana 5, un plan terminado para calibrar y dos planes propios (ADR 0054): uno solo para Carla
+ * y otro para el grupo de competición, con su cuota de programación. La dueña ve el plan, el mapa
+ * del ciclo, la semana con su validación, la revisión del domingo, la salud, el material, el
+ * asistente de un plan nuevo hasta el resumen (sin crearlo), un grupo nuevo en el que Carla ya
+ * tiene plan propio y el grupo de competición con sus atletas; el coach escribe un WOD desde la
+ * semana; la atleta ve el plan en su WOD, su ciclo y su ciclo en cifras.
  */
 const BOX = "/demo-box";
 const PASSWORD = "123456";
@@ -76,13 +78,18 @@ test.describe("planificación del box", () => {
     await login(page, "box@demo.test", PASSWORD, BOX);
     await page.goto(`${BOX}/planning/new`);
     await expect(page.getByRole("heading", { level: 1, name: "Nuevo plan" })).toBeVisible();
-    // CrossFit ya tiene un plan activo: el nuevo iría en borrador.
+    // Para todo el box, y CrossFit ya tiene un plan activo: el nuevo lo sustituye o va en borrador.
+    await expect(page.getByRole("button", { name: /Todo el box/ })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
     await expect(page.getByText(/ya tiene un plan activo: Camino al Open/)).toBeVisible();
+    const next = page.getByRole("button", { name: "Siguiente", exact: true });
+    await next.click();
     await page.getByRole("button", { name: /Base de fuerza/ }).click();
     await expect(page.getByRole("heading", { name: "Lo que puedes esperar" })).toBeVisible();
     await capture(page, "306-box-plan-nuevo-objetivo", project);
 
-    const next = page.getByRole("button", { name: "Siguiente", exact: true });
     await next.click();
     await expect(page.getByLabel("Nombre del plan")).toHaveValue("Base de fuerza");
     await next.click();
@@ -96,7 +103,52 @@ test.describe("planificación del box", () => {
     await capture(page, "308-box-plan-nuevo-tu-box", project);
     await next.click();
     await expect(page.getByRole("button", { name: "Crear el plan" })).toBeVisible();
+    await expect(page.getByText("Activarlo y terminar Camino al Open")).toBeVisible();
     await capture(page, "309-box-plan-nuevo-resumen", project);
+  });
+
+  test("la dueña: un grupo nuevo en el que Carla ya tiene plan propio", async ({ page }, info) => {
+    const project = info.project.name;
+    await login(page, "box@demo.test", PASSWORD, BOX);
+    await page.goto(`${BOX}/planning/new`);
+    await page.getByRole("button", { name: /Un grupo/ }).click();
+    await page.getByLabel("Nombre del grupo").fill("Mañanas");
+    const next = page.getByRole("button", { name: "Siguiente", exact: true });
+
+    // Carla ya sigue "Carla · Halterofilia": se avisa y no se sigue hasta decidir.
+    const search = page.getByLabel("Añadir atletas");
+    await search.fill("Carla");
+    await page.getByRole("button", { name: /Carla Prieto/ }).click();
+    await search.fill("Laia");
+    await page.getByRole("button", { name: /Laia Ferrer/ }).click();
+    await expect(page.getByText("1 atleta ya sigue un plan propio")).toBeVisible();
+    await expect(next).toBeDisabled();
+    await capture(page, "318-box-plan-nuevo-para-quien", project);
+
+    await page.getByRole("button", { name: "Anular el suyo" }).click();
+    await expect(page.getByText("Deja Carla · Halterofilia")).toBeVisible();
+    await expect(next).toBeEnabled();
+    // Y se puede quitar a cualquiera del grupo.
+    await page.getByRole("button", { name: "Quitar a Laia Ferrer" }).click();
+    await expect(page.getByText("1 atleta", { exact: true })).toBeVisible();
+    await expectLegibleButtons(page);
+  });
+
+  test("la dueña: el grupo de competición con sus atletas y su cuota", async ({ page }, info) => {
+    const project = info.project.name;
+    await login(page, "box@demo.test", PASSWORD, BOX);
+    await page.goto(`${BOX}/planning`);
+    await expect(page.getByRole("heading", { name: "Planes propios" })).toBeVisible();
+    await page.getByRole("button", { name: /Grupo competición/ }).click();
+    await expect(page.getByRole("heading", { level: 1, name: "Grupo competición" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Sus 5 atletas" })).toBeVisible();
+    await expect(page.getByText("Cuota vencida")).toBeVisible();
+    await expect(page.getByText("Sin cuota", { exact: true })).toBeVisible();
+    await capture(page, "319-box-plan-propio-atletas", project);
+
+    await page.getByRole("button", { name: "Cambiar atletas" }).click();
+    await expect(page.getByRole("button", { name: "Quitar a Núria Casals" })).toBeVisible();
+    await shot(page, "320-box-plan-propio-cambiar-atletas", project);
   });
 
   test("el coach escribe un día desde la semana del plan, con su papel", async ({ page }, info) => {

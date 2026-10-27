@@ -261,7 +261,9 @@
       "allSections": "Totes",
       "descriptionField": "Descripció",
       "plus": "Inclou Classe+",
-      "plusHint": "L'extra de l'Open Box: l'atleta veu els blocs de Classe+ de cada WOD."
+      "plusHint": "L'extra de l'Open Box: l'atleta veu els blocs de Classe+ de cada WOD.",
+      "programming": "Inclou programació pròpia",
+      "programmingHint": "Per a qui paga un pla propi. A Planificació es veu qui la paga, qui la deu i qui no la té."
     },
     "kinds": {
       "none": "Sense classes",
