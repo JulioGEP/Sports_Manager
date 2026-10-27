@@ -442,6 +442,22 @@ Solo la administración del club, en la pestaña Mejoras de Ajustes (`/demo/sett
 
 ![La misma cuenta acepta la invitación al club nuevo](escritorio-60-club-nuevo-invitacion.png)
 
+### Club nuevo (ADR 0059): entra directo a la puesta en marcha, con el recorrido en sombra
+
+![Recorrido: la lista de arranque](escritorio-60b-club-nuevo-recorrido.png)
+
+### Recorrido: cada paso con para qué sirve, empezando por el escudo
+
+![Recorrido: el escudo](escritorio-60c-club-nuevo-recorrido-logo.png)
+
+### Recorrido: las áreas de la navegación
+
+![Recorrido: las áreas](escritorio-60d-club-nuevo-recorrido-areas.png)
+
+### Recorrido: el último paso ilumina el primero pendiente y su botón lleva a hacerlo
+
+![Recorrido: empieza por aquí](escritorio-60e-club-nuevo-recorrido-fin.png)
+
 ### Portada del club nuevo con su propia marca
 
 ![Portada del club nuevo](escritorio-61-club-nuevo-inicio.png)
@@ -825,3 +841,11 @@ Las mismas pantallas en un móvil, con la forma envolvente del design system: ca
 ![Hoja de ruta (móvil)](movil-140-mejoras-hoja-de-ruta.png)
 
 ![Respuesta de la plataforma (móvil)](movil-147-mejoras-respuesta.png)
+
+### Recorrido de la primera entrada: la lista de arranque
+
+![Recorrido: la lista de arranque (móvil)](movil-60b-club-nuevo-recorrido.png)
+
+### Recorrido de la primera entrada: la barra inferior
+
+![Recorrido: las áreas (móvil)](movil-60d-club-nuevo-recorrido-areas.png)

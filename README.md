@@ -4,6 +4,8 @@ SaaS B2B para la gestión de clubes deportivos. Cada club tiene su espacio aisla
 
 ## Estado
 
+La primera entrada de un club nuevo (ADR 0059): cuando el negocio da de alta un club y su administración entra por el enlace, va directa a Ajustes, General, y se abre un recorrido en sombra por la puesta en marcha: la pantalla se oscurece y queda a la luz, paso a paso, cada cosa con para qué sirve (la lista de arranque, sus cinco pasos, las pestañas de Ajustes, las áreas de la navegación y la paleta de mandos). Acaba en el primer paso pendiente, con su botón para hacerlo. Se salta cuando se quiere, sale una sola vez y se vuelve a ver desde "Ver recorrido".
+
 El box se va a su propio repositorio (ADR 0058): los clubs de fitness (ADR 0049 a 0055 y 0057) viven ahora en **inthebox**, con su base, su despliegue y su hoja de ruta. Este repositorio queda para clubes deportivos: sale todo lo del box y una migración borra el club `demo-box` y sus cuentas. Lo general que llegó con el box se queda, como el dinero, que se lee igual en toda la app: `1.234,56 €` (ADR 0056). Las tablas y columnas del box siguen en la base sin uso y se quitan en la siguiente migración de esquema.
 
 Mejoras dentro de Ajustes (ADR 0048): las mejoras de la plataforma dejan de tener entrada propia en la navegación del club y pasan a una pestaña "Mejoras" de Ajustes, solo para la administración: arriba las sugerencias del club con el botón para sugerir otra, y debajo la hoja de ruta. El enlace de antes (`/<club>/roadmap`) lleva a la pestaña y la paleta de mandos la abre.

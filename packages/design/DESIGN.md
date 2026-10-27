@@ -440,6 +440,17 @@ La única pantalla a pantalla completa del producto: en la banda el partido est�
 - **Piezas.** Dorsal en círculo `bg-club` (tinta con aro blanco para el portero), nombre de pila y minutos en Geist Mono. Seleccionada: `bg-surface` con aro del club. En la pista, sobre `bg-black/35`; en el banquillo, sobre `bg-page` con borde.
 - **Convocatoria.** Tocar la fila decide quién sale de inicio; "Portero" es un botón de alternar (9.6), en tinta y con check cuando está marcado, nunca en el color del club, que es el de "Guardar convocatoria". Puede haber varios porteros convocados, pero en pista solo uno: marcar a un titular desmarca a los demás titulares, y el aviso dice cuántos hay cuando sobran.
 
+### 9.20 Recorrido guiado · `Tour`
+
+Enseña una pantalla de verdad paso a paso (ADR 0059): la pantalla en sombra y, a la luz, lo que se explica, con una tarjeta al lado. Hoy, la puesta en marcha de un club por estrenar. No sustituye a una pantalla vacía bien explicada: se usa para enseñar dónde está todo, una vez.
+
+- **Sombra:** la del fondo de los diálogos, algo más densa (60 %). El hueco iluminado lleva 6 px de aire y el radio de las tarjetas, y sigue a su elemento si la pantalla se mueve. Sin elemento, o si no está en pantalla, todo en sombra y la tarjeta al centro.
+- **Tarjeta:** `bg-surface rounded-card shadow-float`, 360 px como mucho. Arriba "Paso n de N" en `text-label` y `text-club-text`; el título en `text-title2`; el cuerpo en `text-body text-muted`, dos o tres frases que dicen para qué sirve, no cómo se usa. Va debajo de lo iluminado si cabe, si no encima, si no a su derecha (la barra lateral) y, si nada cabe, abajo. Lo iluminado se desplaza para dejarle sitio, nunca por debajo de la cabecera fija del móvil.
+- **Botones:** "Saltar" (`tertiary`; "Cerrar" en el último paso), "Volver" (`back`) desde el segundo y "Seguir" (`open`). El último paso acaba en una acción real: su botón principal es el verbo y el icono de esa acción ("Subir logo" con `upload`).
+- **Teclado y lectores:** `<dialog>` modal nativo: el resto de la página queda inerte, el foco va al botón principal y ESC cierra. Las flechas pasan de paso. El título y el cuerpo dan nombre y descripción al diálogo.
+- **Movimiento:** el hueco va de un paso a otro en 250 ms; con movimiento reducido, salta sin animar y el desplazamiento es instantáneo.
+- **Marcas:** lo que se ilumina lleva `data-tour` (`setup`, `setup-<paso>`, `settings-tabs`, `nav`, `palette`). Si hay varios, se ilumina el primero que se ve: la navegación del escritorio o la del móvil.
+
 ---
 
 ## 10. Gráficas de rendimiento
@@ -556,6 +567,7 @@ Reglas:
 | `src/icons/actions.tsx` | Catálogo de iconos de acción (8.1): `actionIcons`, `ActionIcon` |
 | `apps/web/src/ui/data-list.tsx` | Lista de datos con fila que se abre y acciones de fila (9.7 y 9.8) |
 | `apps/web/src/components/command-palette.tsx` | Paleta de mandos (9.17) |
+| `apps/web/src/ui/tour.tsx` | Recorrido guiado (9.20) |
 | `apps/web/src/routes/club/roster-board.tsx` | Tablero de plantilla (9.18) |
 | `apps/web/src/routes/club/match-live.tsx` · `apps/web/src/lib/drag.ts` | Consola del partido y arrastrar y soltar (9.19) |
 | `src/i18n/voice.ts` · `*.json` | Voz del club, textos e idiomas |
@@ -641,6 +653,7 @@ Antes de crear o cambiar cualquier interfaz:
 | 9. Plantilla | Tablero por posición con el dorsal a la vista, lista como alternativa | Solo tabla | Es como un entrenador piensa su equipo; una tabla es como lo piensa una base de datos |
 | 12. Dinero | Punto de miles, coma decimal y dos decimales en toda la app y en todos los idiomas (`formatMoney`) | Intl del idioma de cada cual | Intl no agrupa los miles de cuatro cifras en castellano; el mismo importe se lee igual en todas partes |
 | 9. Partido | Consola a pantalla completa en tres zonas (partido, nuestro equipo, rival), la zona del tiro sobre la pista y el banquillo arrastrable; la orientación decide la forma | Tarjetas apiladas dentro del espacio del club; la zona en un panel aparte | En la banda cada toque cuenta: lo nuestro y lo del rival no se mezclan y el dedo no persigue botones |
+| 9. Primera entrada | Recorrido en sombra sobre la puesta en marcha real, una vez y que se puede saltar; acaba en la primera acción pendiente | Asistente de alta a pantalla completa; librería de recorridos | Se aprende sobre las pantallas de verdad y se sale haciendo el primer paso |
 | 5. Interacción | Confirmar siempre las acciones delicadas | Deshacer siempre | Seguridad en dinero, bajas y comunicados |
 | 6. Gráficas | Evolución para familias, comparativa para entrenadores | Radar | Lectura honesta y protección del menor |
 | 6. Chat | Canales de equipo y 1:1 familia-entrenador, visibles para la coordinación | Sin chat | Comunicación real con protección del menor |
