@@ -862,6 +862,10 @@ Cuentas, con contraseña `123456`: `atleta@demo.test` (Laia Ferrer, atleta con t
 
 ![Clases en la vista de día: cada clase con sus caras y, al lado, la programación del día](escritorio-296-box-clases-programacion-del-dia.png)
 
+### Ampliar el aforo de una clase: quién entra desde la espera, por orden, antes de guardar
+
+![Ampliar el aforo de una clase: quién entra desde la espera, por orden, antes de guardar](escritorio-297-box-clase-aforo.png)
+
 ## Móvil
 
 Las mismas pantallas en un móvil, con la forma envolvente del design system: cabecera con el escudo, barra de pestañas flotante abajo con cuatro destinos y "Más", listas en filas cápsula y hojas que ocupan todo el ancho.
@@ -1153,3 +1157,5 @@ Las mismas pantallas en un móvil, con la forma envolvente del design system: ca
 ![La clase: de qué plan sale su WOD, quién hace el WOD del box y quién su plan propio, y la sesión de cada plan (móvil)](movil-295-box-clase-programacion.png)
 
 ![Clases en la vista de día: cada clase con sus caras y, al lado, la programación del día (móvil)](movil-296-box-clases-programacion-del-dia.png)
+
+![Ampliar el aforo de una clase: quién entra desde la espera, por orden, antes de guardar (móvil)](movil-297-box-clase-aforo.png)

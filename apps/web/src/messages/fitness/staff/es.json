@@ -88,8 +88,9 @@
     },
     "waitlist": {
       "title": "Lista de espera",
-      "hint": "En orden. Si se libera una plaza, entra el primero que pueda.",
-      "remove": "Sacar de la espera a {name}"
+      "hint": "En orden. Si alguien cancela, entra el primero al que le llegue su tarifa.",
+      "remove": "Sacar de la espera a {name}",
+      "hintResize": "En orden. Si alguien cancela, entra el primero al que le llegue su tarifa. Para darles plaza ya, amplía el aforo."
     },
     "add": {
       "button": "Añadir atleta",
@@ -165,6 +166,27 @@
       "notYet": "Aún no la ven: publícala desde la semana del plan.",
       "see": "Ver la sesión",
       "openWeek": "Semana del plan"
+    },
+    "fromWaitlist": "Desde la espera",
+    "removedPromoted": "Reserva quitada. Entra {name} desde la espera.",
+    "capacity": {
+      "button": "{count, plural, one {Dar plaza} other {Dar plaza a #}}",
+      "edit": "Cambiar el aforo de esta clase",
+      "title": "Aforo de esta clase",
+      "description": "Solo esta clase: el horario y el tipo de clase no cambian. Nunca por debajo de quien ya tiene plaza.",
+      "less": "Una plaza menos",
+      "more": "Una plaza más",
+      "value": "{count, plural, one {# plaza} other {# plazas}}",
+      "unit": "{count, plural, one {plaza} other {plazas}}",
+      "now": "Ahora: {capacity} · {booked} con plaza{waiting, plural, =0 {} other { · # en espera}}",
+      "all": "{count, plural, one {Dar plaza al de la espera} other {Dar plaza a los # de la espera}}",
+      "entering": "Entran desde la espera, por orden",
+      "free": "{count, plural, =0 {Sin plazas libres.} one {Queda # plaza libre para reservar.} other {Quedan # plazas libres para reservar.}}",
+      "save": "Guardar aforo",
+      "saveAdmit": "{count, plural, one {Ampliar y dar plaza a #} other {Ampliar y dar plaza a #}}",
+      "saved": "Aforo de la clase: {capacity} plazas.",
+      "admitted": "Aforo de la clase: {capacity} plazas. Entran desde la espera: {names}.",
+      "min": "Ya hay {booked} con plaza: el aforo no puede bajar de ahí."
     }
   },
   "programming": {

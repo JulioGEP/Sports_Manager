@@ -88,8 +88,9 @@
     },
     "waitlist": {
       "title": "Llista d'espera",
-      "hint": "Per ordre. Si s'allibera una plaça, entra el primer que pugui.",
-      "remove": "Treure de l'espera {name}"
+      "hint": "Per ordre. Si algú cancel·la, entra el primer a qui li arribi la tarifa.",
+      "remove": "Treure de l'espera {name}",
+      "hintResize": "Per ordre. Si algú cancel·la, entra el primer a qui li arribi la tarifa. Per donar-los plaça ara, amplia l'aforament."
     },
     "add": {
       "button": "Afegir atleta",
@@ -165,6 +166,27 @@
       "notYet": "Encara no la veuen: publica-la des de la setmana del pla.",
       "see": "Veure la sessió",
       "openWeek": "Setmana del pla"
+    },
+    "fromWaitlist": "Des de l'espera",
+    "removedPromoted": "Reserva treta. Entra {name} des de l'espera.",
+    "capacity": {
+      "button": "{count, plural, one {Donar plaça} other {Donar plaça a #}}",
+      "edit": "Canviar l'aforament d'aquesta classe",
+      "title": "Aforament d'aquesta classe",
+      "description": "Només aquesta classe: l'horari i el tipus de classe no canvien. Mai per sota de qui ja té plaça.",
+      "less": "Una plaça menys",
+      "more": "Una plaça més",
+      "value": "{count, plural, one {# plaça} other {# places}}",
+      "unit": "{count, plural, one {plaça} other {places}}",
+      "now": "Ara: {capacity} · {booked} amb plaça{waiting, plural, =0 {} other { · # en espera}}",
+      "all": "{count, plural, one {Donar plaça al de l'espera} other {Donar plaça als # de l'espera}}",
+      "entering": "Entren des de l'espera, per ordre",
+      "free": "{count, plural, =0 {Sense places lliures.} one {Queda # plaça lliure per reservar.} other {Queden # places lliures per reservar.}}",
+      "save": "Desar l'aforament",
+      "saveAdmit": "{count, plural, one {Ampliar i donar plaça a #} other {Ampliar i donar plaça a #}}",
+      "saved": "Aforament de la classe: {capacity} places.",
+      "admitted": "Aforament de la classe: {capacity} places. Entren des de l'espera: {names}.",
+      "min": "Ja hi ha {booked} amb plaça: l'aforament no pot baixar d'aquí."
     }
   },
   "programming": {

@@ -169,6 +169,8 @@ export const AttendeeSchema = z.object({
   ownPlan: z.string().nullable().optional(),
   /** Para el personal: el id de ese plan, para encontrar su sesión en `sessions` (ADR 0055). */
   ownPlanId: z.string().nullable().optional(),
+  /** Para el personal: entró desde la lista de espera (ADR 0055). */
+  fromWaitlist: z.boolean().optional(),
 });
 export type Attendee = z.infer<typeof AttendeeSchema>;
 
@@ -354,9 +356,18 @@ export const CancelResultSchema = z.object({
   status: z.enum(["cancelled", "late_cancel"]),
   /** Si alguien de la espera ha entrado. */
   promoted: z.boolean(),
+  /** Para el personal: quién ha entrado desde la espera (ADR 0055). */
+  promotedName: z.string().nullable().optional(),
   class: ClassSummarySchema,
 });
 export type CancelResult = z.infer<typeof CancelResultSchema>;
+
+/** Lo que responde cambiar el aforo de una clase: cómo queda y quién entra desde la espera. */
+export const ClassCapacityResultSchema = z.object({
+  class: ClassSummarySchema,
+  admitted: z.array(Ref),
+});
+export type ClassCapacityResult = z.infer<typeof ClassCapacityResultSchema>;
 
 export const MyBookingsResponseSchema = z.object({
   upcoming: z.array(ClassSummarySchema),

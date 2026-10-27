@@ -7,6 +7,8 @@ import {
   BookingResultSchema,
   CancelResultSchema,
   CheckInSchema,
+  ClassCapacityResultSchema,
+  ClassCapacityUpdateSchema,
   ClassDetailResponseSchema,
   ClassesResponseSchema,
   ClassTypeCreateSchema,
@@ -688,6 +690,7 @@ export function createFitnessClassRoutes(config: ApiConfig, data: DataLayer) {
       note: null,
       ownPlan: ownPlanOf(a.playerId)?.name ?? null,
       ownPlanId: ownPlanOf(a.playerId)?.id ?? null,
+      ...(staff ? { fromWaitlist: a.source === "waitlist" } : {}),
     });
     const seated = all.filter((a) => a.status === "booked" || a.status === "attended");
     // Las sesiones de ese día de sus planes propios (ADR 0055), en cualquier estado: quien tiene la
@@ -896,11 +899,32 @@ export function createFitnessClassRoutes(config: ApiConfig, data: DataLayer) {
       throw conflict("La clase ya ha empezado: no se puede cancelar.");
     const fresh = (await data.bookings.classById(tenant.scope, id, tenant.organization.timezone))!;
     const policy = await data.bookings.policy(tenant.scope);
+    // El personal ve quién ha entrado desde la espera (ADR 0055); el atleta, solo que alguien entró.
+    const promotedName =
+      byStaff && result.promoted ? ((await namesOf(c, [result.promoted]))[0]?.name ?? null) : null;
     return {
       status: result.status,
       promoted: result.promoted !== null,
+      promotedName,
       class: classDto(fresh, policy),
     };
+  }
+
+  /** Nombre de unos atletas del club, en el orden en que se piden. */
+  async function namesOf(c: Ctx, playerIds: string[]) {
+    if (playerIds.length === 0) return [];
+    const tenant = orgOf(c);
+    const rows = await data.fitness.athletes(
+      tenant.scope,
+      tenant.organization.timezone,
+      new Date(),
+      playerIds,
+    );
+    const byId = new Map(rows.map((r) => [r.playerId, personName(r)]));
+    return playerIds.flatMap((id) => {
+      const name = byId.get(id);
+      return name ? [{ id, name }] : [];
+    });
   }
 
   app.openapi(
@@ -943,6 +967,57 @@ export function createFitnessClassRoutes(config: ApiConfig, data: DataLayer) {
       const result = await cancelFor(c, id, playerId, true);
       await audit(c, "booking.cancelled", cls.title, { eventId: id, playerId });
       return c.json(result, 200);
+    },
+  );
+
+  app.openapi(
+    createRoute({
+      method: "put",
+      path: "/api/org/classes/{id}/capacity",
+      tags: ["Fitness"],
+      summary:
+        "El personal de la clase cambia su aforo (no el del tipo de clase), nunca por debajo de quien ya tiene plaza. Si sube, entran por orden los de la espera",
+      security: [{ sessionCookie: [] }],
+      request: { params: idParam, ...body(ClassCapacityUpdateSchema) },
+      responses: {
+        200: json("Aforo", ClassCapacityResultSchema),
+        409: errorResponse("La clase ya ha empezado o hay más gente con plaza"),
+        ...errors,
+      },
+    }),
+    async (c) => {
+      const tenant = orgOf(c);
+      const { id } = c.req.valid("param");
+      const { capacity } = c.req.valid("json");
+      const cls = await classFor(c, id);
+      if (!(await canManageClass(data, c, cls))) throw forbidden();
+      const result = await data.bookings.setCapacity(tenant.scope, {
+        eventId: id,
+        capacity,
+        timezone: tenant.organization.timezone,
+        now: new Date(),
+      });
+      if (result.outcome === "not_found") throw notFound("Esa clase no existe.");
+      if (result.outcome === "started")
+        throw conflict("La clase ya ha empezado: haz el check-in de quien venga de la espera.");
+      if (result.outcome === "below_booked")
+        throw conflict(`Ya hay ${result.booked} con plaza: el aforo no puede bajar de ahí.`);
+      await audit(c, "class.capacity_changed", cls.title, {
+        eventId: id,
+        from: cls.capacity,
+        to: capacity,
+        admitted: result.admitted.length,
+      });
+      const fresh = (await data.bookings.classById(
+        tenant.scope,
+        id,
+        tenant.organization.timezone,
+      ))!;
+      const policy = await data.bookings.policy(tenant.scope);
+      return c.json(
+        { class: classDto(fresh, policy), admitted: await namesOf(c, result.admitted) },
+        200,
+      );
     },
   );
 

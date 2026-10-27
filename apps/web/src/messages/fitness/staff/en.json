@@ -88,8 +88,9 @@
     },
     "waitlist": {
       "title": "Waitlist",
-      "hint": "In order. When a spot opens, the first person who can take it gets in.",
-      "remove": "Remove {name} from the waitlist"
+      "hint": "In order. When someone cancels, the first person whose plan covers it gets in.",
+      "remove": "Remove {name} from the waitlist",
+      "hintResize": "In order. When someone cancels, the first person whose plan covers it gets in. To give them a spot now, raise the capacity."
     },
     "add": {
       "button": "Add athlete",
@@ -165,6 +166,27 @@
       "notYet": "They can't see it yet: publish it from the plan week.",
       "see": "See the session",
       "openWeek": "Plan week"
+    },
+    "fromWaitlist": "From the waitlist",
+    "removedPromoted": "Booking removed. {name} gets in from the waitlist.",
+    "capacity": {
+      "button": "{count, plural, one {Give a spot} other {Give # spots}}",
+      "edit": "Change this class's capacity",
+      "title": "This class's capacity",
+      "description": "Only this class: the schedule and the class type stay the same. Never below the people who already have a spot.",
+      "less": "One spot fewer",
+      "more": "One more spot",
+      "value": "{count, plural, one {# spot} other {# spots}}",
+      "unit": "{count, plural, one {spot} other {spots}}",
+      "now": "Now: {capacity} · {booked} with a spot{waiting, plural, =0 {} other { · # waiting}}",
+      "all": "{count, plural, one {Give the waitlisted person a spot} other {Give all # on the waitlist a spot}}",
+      "entering": "Getting in from the waitlist, in order",
+      "free": "{count, plural, =0 {No free spots.} one {# spot left to book.} other {# spots left to book.}}",
+      "save": "Save capacity",
+      "saveAdmit": "{count, plural, one {Raise and give # spot} other {Raise and give # spots}}",
+      "saved": "Class capacity: {capacity} spots.",
+      "admitted": "Class capacity: {capacity} spots. In from the waitlist: {names}.",
+      "min": "{booked} already have a spot: capacity can't go below that."
     }
   },
   "programming": {

@@ -1573,7 +1573,8 @@
       "cancelled": "Reserva cancelada por el box"
     },
     "class": {
-      "closed": "Clase cerrada"
+      "closed": "Clase cerrada",
+      "capacity_changed": "Aforo de una clase cambiado"
     },
     "subscription": {
       "created": "Tarifa dada a un atleta",

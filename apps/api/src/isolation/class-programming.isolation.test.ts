@@ -2,6 +2,8 @@ import { NetlifyDB } from "@netlify/database-dev";
 import {
   addDays,
   weekStartOf,
+  type CancelResult,
+  type ClassCapacityResult,
   type ClassDetailResponse,
   type ClassesResponse,
   type PlanResponse,
@@ -18,7 +20,8 @@ import { createSeeder } from "../data/testing/seed.ts";
  * La clase sabe qué se programa y quién hace qué (ADR 0055) contra una base real: la lista de
  * clases dice al personal el WOD de cada una y quién viene, con su plan propio; la ficha enseña la
  * sesión de ese plan y saca del brief los kilos de quien no hace el WOD del box; la programación
- * pide también las sesiones propias. El atleta no ve nada de esto y otro club, tampoco.
+ * pide también las sesiones propias. La plaza que se libera pasa a la espera y el personal amplía
+ * el aforo de una clase para dar plaza por orden. El atleta no ve nada de esto y otro club, tampoco.
  */
 const BASE = "sportsmanager.test";
 const hostOf = (slug: string) => `${slug}.${BASE}`;
@@ -49,7 +52,7 @@ describe("la clase sabe qué se programa y quién hace qué", () => {
       .map((c) => c.split(";")[0] ?? "")
       .join("; ");
   const request = (
-    method: "GET" | "POST" | "PUT",
+    method: "GET" | "POST" | "PUT" | "DELETE",
     path: string,
     host: string,
     options: { cookie?: string; body?: unknown } = {},
@@ -81,6 +84,8 @@ describe("la clase sabe qué se programa y quién hace qué", () => {
   let martaPlayer = "";
   let nilPlayer = "";
   let pauPlayer = "";
+  let onaPlayer = "";
+  let bielPlayer = "";
   let groupPlan = "";
   let classId = "";
   let boxWod = "";
@@ -143,6 +148,8 @@ describe("la clase sabe qué se programa y quién hace qué", () => {
     martaPlayer = await athlete("Marta", "Roig", marta);
     nilPlayer = await athlete("Nil", "Vidal", nil);
     pauPlayer = await athlete("Pau", "Serra");
+    onaPlayer = await athlete("Ona", "Font");
+    bielPlayer = await athlete("Biel", "Mas");
     for (const u of [ownerA, coachA, marta, nil]) cookies.set(u.email, await signIn(u.email, A));
     cookies.set(ownerB.email, await signIn(ownerB.email, B));
 
@@ -365,6 +372,100 @@ describe("la clase sabe qué se programa y quién hace qué", () => {
         [session, true],
       ].sort(),
     );
+  });
+
+  it("la plaza que se libera pasa al primero de la espera que puede, y el aforo sube para dar plaza", async () => {
+    // Pau tiene tarifa; Ona y Biel, no.
+    const unlimited = (
+      await json<{ plan: { id: string } }>(
+        await request("POST", "/api/org/fees/plans", A, {
+          cookie: as(ownerA),
+          body: {
+            name: "Ilimitada",
+            amountCents: 6900,
+            period: "monthly",
+            sectionId: sectionA,
+            entitlement: "unlimited",
+          },
+        }),
+        201,
+      )
+    ).plan.id;
+    await json(
+      await request("POST", "/api/org/subscriptions", A, {
+        cookie: as(ownerA),
+        body: { playerId: pauPlayer, feePlanId: unlimited, startsOn: today, chargeNow: false },
+      }),
+      201,
+    );
+    const classes = await json<ClassesResponse>(
+      await request("GET", `/api/org/classes?${week}`, A, { cookie: as(coachA) }),
+      200,
+    );
+    const tuesday = classes.classes.find((x) => x.date === addDays(nextMonday, 1))!.id;
+    const capacity = (value: number, who = coachA, host = A) =>
+      request("PUT", `/api/org/classes/${tuesday}/capacity`, host, {
+        cookie: as(who),
+        body: { capacity: value },
+      });
+
+    // Dos plazas: Marta y Nil dentro; Ona, Pau y Biel, por ese orden, en la espera.
+    const two = await json<ClassCapacityResult>(await capacity(2), 200);
+    expect(two.class.capacity).toBe(2);
+    expect(two.admitted).toEqual([]);
+    for (const playerId of [martaPlayer, nilPlayer, onaPlayer, pauPlayer, bielPlayer])
+      await json(
+        await request("POST", `/api/org/classes/${tuesday}/bookings`, A, {
+          cookie: as(coachA),
+          body: { playerId },
+        }),
+        201,
+      );
+
+    // Marta se va: Ona va primera pero su tarifa no llega; entra Pau, y el box sabe quién.
+    const cancelled = await json<CancelResult>(
+      await request("DELETE", `/api/org/classes/${tuesday}/bookings/${martaPlayer}`, A, {
+        cookie: as(coachA),
+      }),
+      200,
+    );
+    expect(cancelled).toMatchObject({ promoted: true, promotedName: "Pau Serra" });
+    const after = await json<ClassDetailResponse>(
+      await request("GET", `/api/org/classes/${tuesday}`, A, { cookie: as(coachA) }),
+      200,
+    );
+    expect(after.waitlist.map((a) => a.name)).toEqual(["Ona Font", "Biel Mas"]);
+    expect(after.attendees.find((a) => a.playerId === pauPlayer)?.fromWaitlist).toBe(true);
+    expect(after.attendees.find((a) => a.playerId === nilPlayer)?.fromWaitlist).toBe(false);
+
+    // Nunca por debajo de quien ya tiene plaza.
+    await json(await capacity(1), 409);
+
+    // El box amplía a cuatro: entran los dos de la espera, por orden, aunque no tengan tarifa.
+    const four = await json<ClassCapacityResult>(await capacity(4), 200);
+    expect(four.class.capacity).toBe(4);
+    expect(four.class.booked).toBe(4);
+    expect(four.admitted.map((a) => a.name)).toEqual(["Ona Font", "Biel Mas"]);
+    const full = await json<ClassDetailResponse>(
+      await request("GET", `/api/org/classes/${tuesday}`, A, { cookie: as(coachA) }),
+      200,
+    );
+    expect(full.waitlist).toEqual([]);
+    expect(
+      full.attendees
+        .filter((a) => a.fromWaitlist)
+        .map((a) => a.name)
+        .sort(),
+    ).toEqual(["Biel Mas", "Ona Font", "Pau Serra"]);
+
+    // La atleta no cambia el aforo ni ve de dónde vino cada uno; otro club ni encuentra la clase.
+    await json(await capacity(6, marta), 403);
+    const seen = await json<ClassDetailResponse>(
+      await request("GET", `/api/org/classes/${tuesday}`, A, { cookie: as(marta) }),
+      200,
+    );
+    expect(seen.attendees.every((a) => a.fromWaitlist === undefined)).toBe(true);
+    await json(await capacity(6, ownerB, B), 404);
   });
 
   it("otro club no ve la clase ni sus sesiones", async () => {

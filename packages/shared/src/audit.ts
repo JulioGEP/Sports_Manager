@@ -155,6 +155,7 @@ export const AUDIT_ACTIONS = [
   "booking.created",
   "booking.cancelled",
   "class.closed",
+  "class.capacity_changed",
   "subscription.created",
   "subscription.updated",
   "subscription.charges_generated",

@@ -1,6 +1,7 @@
 import {
   BookingResultSchema,
   CancelResultSchema,
+  ClassCapacityResultSchema,
   ClassDetailResponseSchema,
   type Attendee,
   type ClassDetailResponse,
@@ -10,6 +11,7 @@ import {
 } from "@sportsmanager/shared";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { useIntl } from "react-intl";
 import {
   FacePile,
   ProgrammingSplit,
@@ -45,6 +47,7 @@ import {
   ConfirmDialog,
   EmptyState,
   Icon,
+  IconButton,
   PageHeader,
   Segmented,
   Sheet,
@@ -54,6 +57,9 @@ import {
 
 /** Qué lista enseñar: todos, quien hace el WOD del box o quien hace la sesión de su plan. */
 type Doing = "all" | "box" | "own";
+
+/** El aforo más alto de una clase, como en la API. */
+const MAX_CAPACITY = 500;
 
 /**
  * La sesión de su plan propio que hace hoy un atleta (ADR 0055): la de su plan, si ya la ve. Con
@@ -94,6 +100,7 @@ export function StaffClassPage({ id }: { id: string }) {
   const [closing, setClosing] = useState(false);
   const [board, setBoard] = useState<WorkoutBlockView | null>(null);
   const [doing, setDoing] = useState<Doing>("all");
+  const [sizing, setSizing] = useState(false);
 
   if (detail.isError) {
     return (
@@ -200,7 +207,15 @@ export function StaffClassPage({ id }: { id: string }) {
         method: "DELETE",
         schema: CancelResultSchema,
       });
-      toast("success", result.promoted ? `${t("removed")} ${c("action.promoted")}` : t("removed"));
+      // Quien entra desde la espera, con su nombre (ADR 0055).
+      toast(
+        "success",
+        result.promotedName
+          ? t("removedPromoted", { name: result.promotedName })
+          : result.promoted
+            ? `${t("removed")} ${c("action.promoted")}`
+            : t("removed"),
+      );
       setRemoving(null);
       await invalidate();
     } catch (err) {
@@ -230,6 +245,8 @@ export function StaffClassPage({ id }: { id: string }) {
   const programLink = cls.section
     ? `${paths.workoutNew}?date=${cls.date}&section=${cls.section.id}${cls.team ? `&team=${cls.team.id}` : ""}`
     : paths.programming;
+  // El aforo de esta clase se cambia antes de empezar (ADR 0055); con la clase en marcha, check-in.
+  const resizable = manage && !started && cls.capacity !== null;
 
   return (
     <div className="flex flex-col gap-6">
@@ -263,7 +280,18 @@ export function StaffClassPage({ id }: { id: string }) {
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div className="flex flex-col justify-center rounded-card bg-surface px-4 py-3 shadow-card precisa:border precisa:border-border">
-          <span className="text-secondary text-muted">{t("booked")}</span>
+          <span className="flex items-center justify-between gap-2">
+            <span className="text-secondary text-muted">{t("booked")}</span>
+            {resizable ? (
+              <IconButton
+                label={t("capacity.edit")}
+                onClick={() => setSizing(true)}
+                className="-my-2 -mr-2 text-muted hover:text-ink"
+              >
+                <Icon.Gear size={18} aria-hidden="true" />
+              </IconButton>
+            ) : null}
+          </span>
           <SpotsMeter cls={cls} />
         </div>
         <Figure value={cls.checkedIn} label={t("checkIns")} />
@@ -362,7 +390,23 @@ export function StaffClassPage({ id }: { id: string }) {
           </Card>
 
           {data.waitlist.length > 0 ? (
-            <Card padded={false} title={t("waitlist.title")} description={t("waitlist.hint")}>
+            <Card
+              padded={false}
+              title={t("waitlist.title")}
+              description={resizable ? t("waitlist.hintResize") : t("waitlist.hint")}
+              actions={
+                resizable ? (
+                  <Button
+                    action="add"
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setSizing(true)}
+                  >
+                    {t("capacity.button", { count: data.waitlist.length })}
+                  </Button>
+                ) : null
+              }
+            >
               <ol className="flex flex-col divide-y divide-line">
                 {data.waitlist.map((a, i) => (
                   <li key={a.playerId} className="flex min-h-16 items-center gap-3 px-5 py-2">
@@ -479,6 +523,16 @@ export function StaffClassPage({ id }: { id: string }) {
         ) : null}
       </Sheet>
 
+      {sizing && cls.capacity !== null ? (
+        <CapacitySheet
+          classId={id}
+          capacity={cls.capacity}
+          booked={cls.booked}
+          waitlist={data.waitlist}
+          onClose={() => setSizing(false)}
+        />
+      ) : null}
+
       <ConfirmDialog
         open={removing !== null}
         title={removing ? t("remove.title", { name: removing.name }) : ""}
@@ -517,6 +571,156 @@ export function StaffClassPage({ id }: { id: string }) {
 }
 
 /**
+ * El aforo de esta clase (ADR 0055), no el de su tipo de clase: se sube o se baja de uno en uno,
+ * nunca por debajo de quien ya tiene plaza, y se ve antes de guardar quién entra desde la espera,
+ * por orden. Entran aunque su tarifa no llegue: lo decide el box, como al reservar por un atleta.
+ */
+function CapacitySheet({
+  classId,
+  capacity,
+  booked,
+  waitlist,
+  onClose,
+}: {
+  classId: string;
+  capacity: number;
+  booked: number;
+  waitlist: readonly Attendee[];
+  onClose: () => void;
+}) {
+  const t = useT("fitness.staff.class.capacity");
+  const c = useT("fitness.common");
+  const intl = useIntl();
+  const toast = useToast();
+  const invalidate = useInvalidateFitness();
+  const errorText = useStaffError();
+  const min = Math.max(1, booked);
+  const [value, setValue] = useState(() =>
+    Math.min(MAX_CAPACITY, Math.max(min, booked + waitlist.length, capacity)),
+  );
+  const [busy, setBusy] = useState(false);
+  const entering = waitlist.slice(0, Math.max(0, value - booked));
+  const allIn = Math.min(MAX_CAPACITY, booked + waitlist.length);
+
+  async function save() {
+    setBusy(true);
+    try {
+      const result = await apiFetch(`/api/org/classes/${classId}/capacity`, {
+        method: "PUT",
+        body: { capacity: value },
+        schema: ClassCapacityResultSchema,
+      });
+      toast(
+        "success",
+        result.admitted.length > 0
+          ? t("admitted", {
+              capacity: value,
+              names: intl.formatList(
+                result.admitted.map((a) => a.name),
+                { type: "conjunction" },
+              ),
+            })
+          : t("saved", { capacity: value }),
+      );
+      await invalidate();
+      onClose();
+    } catch (err) {
+      toast("error", errorText(err, t("min", { booked })));
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Sheet
+      open
+      onClose={onClose}
+      closeLabel={c("close")}
+      title={t("title")}
+      description={t("description")}
+      footer={
+        <>
+          <Button variant="tertiary" onClick={onClose}>
+            {c("cancel")}
+          </Button>
+          {/* Con plaza libre y alguien esperando (su tarifa no llegaba), se da plaza sin ampliar. */}
+          <Button
+            action={entering.length > 0 ? "add" : "save"}
+            loading={busy}
+            disabled={value === capacity && entering.length === 0}
+            onClick={() => void save()}
+          >
+            {entering.length === 0
+              ? t("save")
+              : value > capacity
+                ? t("saveAdmit", { count: entering.length })
+                : t("button", { count: entering.length })}
+          </Button>
+        </>
+      }
+    >
+      <div className="flex flex-col gap-5">
+        <div className="flex items-center justify-center gap-4">
+          <IconButton
+            label={t("less")}
+            disabled={value <= min}
+            onClick={() => setValue((v) => Math.max(min, v - 1))}
+            className="border border-control disabled:opacity-40"
+          >
+            <Icon.Minus size={20} aria-hidden="true" />
+          </IconButton>
+          <output
+            aria-live="polite"
+            className="flex min-w-32 flex-col items-center"
+            aria-label={t("value", { count: value })}
+          >
+            <span className="font-mono text-display text-ink">{value}</span>
+            <span className="text-secondary text-muted">{t("unit", { count: value })}</span>
+          </output>
+          <IconButton
+            label={t("more")}
+            disabled={value >= MAX_CAPACITY}
+            onClick={() => setValue((v) => Math.min(MAX_CAPACITY, v + 1))}
+            className="border border-control disabled:opacity-40"
+          >
+            <Icon.Plus size={20} aria-hidden="true" />
+          </IconButton>
+        </div>
+        <p className="text-center text-secondary text-muted">
+          {t("now", { capacity, booked, waiting: waitlist.length })}
+        </p>
+        {waitlist.length > 0 && value !== allIn ? (
+          <div className="flex justify-center">
+            <Button variant="secondary" size="sm" onClick={() => setValue(allIn)}>
+              {t("all", { count: waitlist.length })}
+            </Button>
+          </div>
+        ) : null}
+        {entering.length > 0 ? (
+          <section aria-labelledby="capacity-entering" className="flex flex-col gap-2">
+            <h3 id="capacity-entering" className="text-label uppercase tracking-wide text-muted">
+              {t("entering")}
+            </h3>
+            <ol className="flex flex-col divide-y divide-line rounded-field border border-line">
+              {entering.map((a, i) => (
+                <li key={a.playerId} className="flex min-h-12 items-center gap-3 px-3 py-1.5">
+                  <span className="w-5 font-mono text-secondary text-muted">{i + 1}</span>
+                  <Avatar name={a.name} src={a.photoUrl} size="sm" />
+                  <span className="min-w-0 flex-1 truncate font-medium text-ink">{a.name}</span>
+                </li>
+              ))}
+            </ol>
+          </section>
+        ) : (
+          <p className="text-center text-secondary text-muted">
+            {t("free", { count: Math.max(0, value - booked) })}
+          </p>
+        )}
+      </div>
+    </Sheet>
+  );
+}
+
+/**
  * Un atleta de la lista: su estado y un toque grande para el check-in. Si sigue un plan propio,
  * qué hace hoy (ADR 0055): su sesión, o el WOD si su sesión aún no se ve o no tiene ese día.
  */
@@ -548,12 +752,18 @@ function AttendeeRow({
       </span>
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="truncate font-medium text-ink">{attendee.name}</span>
-        {(attendee.status && attendee.status !== "booked") || attendee.ownPlan ? (
+        {(attendee.status && attendee.status !== "booked") ||
+        attendee.ownPlan ||
+        attendee.fromWaitlist ? (
           <span className="flex flex-wrap gap-1.5">
             {attendee.status && attendee.status !== "booked" ? (
               <StatusChip kind={BOOKING_TONE[attendee.status]}>
                 {status(attendee.status)}
               </StatusChip>
+            ) : null}
+            {/* Entró al liberarse una plaza o al ampliar el aforo (ADR 0055). */}
+            {attendee.fromWaitlist ? (
+              <StatusChip kind="info">{t("fromWaitlist")}</StatusChip>
             ) : null}
             {/* Sigue un plan propio: hoy hace su sesión, no el WOD de la clase. */}
             {attendee.ownPlan ? (
