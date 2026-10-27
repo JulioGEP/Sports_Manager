@@ -2,7 +2,7 @@ import {
   ActivityResponseSchema,
   FamilyResponseSchema,
   StructureSummarySchema,
-  centsToAmount,
+  formatAmount,
   playerDisplayName,
   type EventSummary,
   type OperationsSummary,
@@ -383,7 +383,7 @@ function SportsClubHome() {
                 value={
                   data.fees ? (
                     <span className="flex items-baseline gap-1">
-                      {centsToAmount(data.fees.pendingCents)}
+                      {formatAmount(data.fees.pendingCents)}
                       <span className="text-secondary text-muted">€</span>
                     </span>
                   ) : (

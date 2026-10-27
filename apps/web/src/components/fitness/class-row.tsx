@@ -87,7 +87,7 @@ export function ClassRow({
   const status = useT("fitness.common.bookingStatus");
   const p = useT("fitness.staff.inClasses");
   const past = Date.parse(cls.endsAt) < Date.now();
-  // Para el personal (ADR 0055): su WOD, quién viene y cuántos con plan propio.
+  // Para el personal (ADR 0057): su WOD, quién viene y cuántos con plan propio.
   const programming = cls.programming;
   const own = programming ? ownPeople(programming.people).length : 0;
   const body = (

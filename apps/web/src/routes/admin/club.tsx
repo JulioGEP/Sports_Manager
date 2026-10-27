@@ -7,6 +7,7 @@ import {
   PlatformAiResponseSchema,
   PlatformOrganizationDetailSchema,
   PlatformOrganizationResponseSchema,
+  formatMoney,
   type ClubModel,
   type InvitationSentResponse,
   type Locale,
@@ -516,7 +517,7 @@ function AiCard({ base, slug }: { base: string; slug: string }) {
               term: t("cost"),
               detail: (
                 <span className="font-mono">
-                  {intl.formatNumber(last30.costUsd, { style: "currency", currency: "USD" })}
+                  {formatMoney(Math.round(last30.costUsd * 100), "$")}
                 </span>
               ),
             },

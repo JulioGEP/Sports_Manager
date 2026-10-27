@@ -62,7 +62,7 @@ type Doing = "all" | "box" | "own";
 const MAX_CAPACITY = 500;
 
 /**
- * La sesión de su plan propio que hace hoy un atleta (ADR 0055): la de su plan, si ya la ve. Con
+ * La sesión de su plan propio que hace hoy un atleta (ADR 0057): la de su plan, si ya la ve. Con
  * ella en borrador, o sin sesión ese día, hace el WOD del box.
  */
 function sessionOf(a: Attendee, sessions: readonly WorkoutView[]) {
@@ -132,7 +132,7 @@ export function StaffClassPage({ id }: { id: string }) {
   );
   const pending = active.filter((a) => a.status === "booked").length;
   const present = new Set([...active, ...data.waitlist].map((a) => a.playerId));
-  // Quién hace qué hoy (ADR 0055): el WOD del box o la sesión de su plan propio.
+  // Quién hace qué hoy (ADR 0057): el WOD del box o la sesión de su plan propio.
   const sessions = data.sessions;
   const ownToday = active.filter((a) => doesOwn(a, sessions));
   const boxToday = active.filter((a) => !doesOwn(a, sessions));
@@ -207,7 +207,7 @@ export function StaffClassPage({ id }: { id: string }) {
         method: "DELETE",
         schema: CancelResultSchema,
       });
-      // Quien entra desde la espera, con su nombre (ADR 0055).
+      // Quien entra desde la espera, con su nombre (ADR 0057).
       toast(
         "success",
         result.promotedName
@@ -245,7 +245,7 @@ export function StaffClassPage({ id }: { id: string }) {
   const programLink = cls.section
     ? `${paths.workoutNew}?date=${cls.date}&section=${cls.section.id}${cls.team ? `&team=${cls.team.id}` : ""}`
     : paths.programming;
-  // El aforo de esta clase se cambia antes de empezar (ADR 0055); con la clase en marcha, check-in.
+  // El aforo de esta clase se cambia antes de empezar (ADR 0057); con la clase en marcha, check-in.
   const resizable = manage && !started && cls.capacity !== null;
 
   return (
@@ -571,7 +571,7 @@ export function StaffClassPage({ id }: { id: string }) {
 }
 
 /**
- * El aforo de esta clase (ADR 0055), no el de su tipo de clase: se sube o se baja de uno en uno,
+ * El aforo de esta clase (ADR 0057), no el de su tipo de clase: se sube o se baja de uno en uno,
  * nunca por debajo de quien ya tiene plaza, y se ve antes de guardar quién entra desde la espera,
  * por orden. Entran aunque su tarifa no llegue: lo decide el box, como al reservar por un atleta.
  */
@@ -722,7 +722,7 @@ function CapacitySheet({
 
 /**
  * Un atleta de la lista: su estado y un toque grande para el check-in. Si sigue un plan propio,
- * qué hace hoy (ADR 0055): su sesión, o el WOD si su sesión aún no se ve o no tiene ese día.
+ * qué hace hoy (ADR 0057): su sesión, o el WOD si su sesión aún no se ve o no tiene ese día.
  */
 function AttendeeRow({
   attendee,
@@ -761,7 +761,7 @@ function AttendeeRow({
                 {status(attendee.status)}
               </StatusChip>
             ) : null}
-            {/* Entró al liberarse una plaza o al ampliar el aforo (ADR 0055). */}
+            {/* Entró al liberarse una plaza o al ampliar el aforo (ADR 0057). */}
             {attendee.fromWaitlist ? (
               <StatusChip kind="info">{t("fromWaitlist")}</StatusChip>
             ) : null}
@@ -816,7 +816,7 @@ function AttendeeRow({
 }
 
 /**
- * La programación de la clase (ADR 0055), arriba del todo: el WOD con su papel y su estado, el plan
+ * La programación de la clase (ADR 0057), arriba del todo: el WOD con su papel y su estado, el plan
  * al que sirve (semana y bloque, con su semana a un toque) y quién hace qué hoy.
  */
 function ProgrammingCard({
@@ -893,7 +893,7 @@ function ProgrammingCard({
 }
 
 /**
- * Los planes propios de quien viene (ADR 0055): cada plan con su gente en la clase y su sesión de
+ * Los planes propios de quien viene (ADR 0057): cada plan con su gente en la clase y su sesión de
  * hoy, que se despliega entera. Con la sesión en borrador o sin sesión, esa gente hace el WOD.
  */
 function OwnSessionsCard({

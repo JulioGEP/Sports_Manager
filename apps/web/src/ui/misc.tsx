@@ -34,7 +34,7 @@ export function initials(name: string): string {
 }
 
 const avatarSizes = {
-  /** Solo en pilas de caras (ADR 0055), donde el nombre va en la etiqueta. */
+  /** Solo en pilas de caras (ADR 0057), donde el nombre va en la etiqueta. */
   xs: "size-7 text-label tracking-tighter",
   sm: "size-8 text-label",
   md: "size-10 text-secondary",

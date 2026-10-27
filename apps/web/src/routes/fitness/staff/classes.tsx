@@ -51,7 +51,7 @@ type Scope = "mine" | "all";
  * columnas con cada clase en su hora, sus plazas y, cuando ya ha empezado, el check-in. El coach
  * empieza por las suyas y el dueño por todo el box. Cada clase abre su ficha para pasar lista.
  * Cada clase avisa si no tiene WOD y cuántos vienen con plan propio, y el día enseña al lado su
- * programación: el WOD, quién viene y los planes propios (ADR 0055).
+ * programación: el WOD, quién viene y los planes propios (ADR 0057).
  */
 export function StaffClassesPage() {
   const t = useT("fitness.staff.classes");
@@ -81,7 +81,7 @@ export function StaffClassesPage() {
   const shown = state.view === "week" ? week : week.filter((x) => x.date === day);
   const booked = shown.reduce((sum, x) => sum + x.booked, 0);
   const capacity = shown.reduce((sum, x) => sum + (x.capacity ?? 0), 0);
-  // La programación de la semana (ADR 0055): el WOD de cada clase y los planes propios.
+  // La programación de la semana (ADR 0057): el WOD de cada clase y los planes propios.
   const training = has("org.training.read");
   const workouts = useWorkouts(
     { from: state.monday, to: addDays(state.monday, 6), own: true },
@@ -237,7 +237,7 @@ export function StaffClassesPage() {
 }
 
 /**
- * La programación del día al lado del calendario (ADR 0055): por disciplina, su WOD con su papel,
+ * La programación del día al lado del calendario (ADR 0057): por disciplina, su WOD con su papel,
  * su estado y su plan, quién viene y cuántos con plan propio, y los planes propios con su sesión.
  * Si falta el WOD, a un toque de programarlo.
  */
@@ -383,7 +383,7 @@ function DayProgramming({
 /**
  * Una clase para el personal: antes de empezar, cómo va de plazas; en marcha o terminada, cuántos
  * han hecho check-in. Lo que ya pasó, apagado. Junto al nombre, si aún no tiene WOD y cuántos
- * vienen con plan propio; en el día, sus caras (ADR 0055).
+ * vienen con plan propio; en el día, sus caras (ADR 0057).
  */
 function StaffBlock({
   placed: { cls, past, live },

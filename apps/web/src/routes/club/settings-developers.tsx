@@ -26,7 +26,8 @@ function htmlSnippet(apiBase: string, key: string, soldOut: string): string {
 <script>
   (async () => {
     const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => "&#" + c.charCodeAt(0) + ";");
-    const euro = new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" });
+    const euro = (cents) =>
+      (cents / 100).toFixed(2).replace(".", ",").replace(/\\B(?=(\\d{3})+(?!\\d))/g, ".") + " €";
     const res = await fetch("${apiBase}/catalog?key=${key}");
     const { products } = await res.json();
     document.getElementById("club-store").innerHTML = products
@@ -34,7 +35,7 @@ function htmlSnippet(apiBase: string, key: string, soldOut: string): string {
         <a href="\${esc(p.buyUrl)}" style="display:inline-block;width:200px;margin:8px;color:inherit;text-decoration:none">
           \${p.imageUrl ? \`<img src="\${esc(p.imageUrl)}" alt="" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:12px">\` : ""}
           <strong>\${esc(p.name)}</strong><br>
-          \${euro.format(p.priceCents / 100)}\${p.inStock ? "" : " · ${soldOut}"}
+          \${euro(p.priceCents)}\${p.inStock ? "" : " · ${soldOut}"}
         </a>\`)
       .join("");
   })();

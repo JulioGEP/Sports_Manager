@@ -552,7 +552,7 @@ export function ClassBlock({
   /** En el día, arriba a la derecha (la cifra de plazas). */
   aside?: ReactNode;
   /**
-   * Junto al nombre, lo que hay que ver de un vistazo (sin WOD, cuántos con plan propio: ADR 0055).
+   * Junto al nombre, lo que hay que ver de un vistazo (sin WOD, cuántos con plan propio: ADR 0057).
    * Siempre con su texto en `label`: un icono solo no basta.
    */
   marker?: ReactNode;

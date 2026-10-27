@@ -108,7 +108,7 @@ export function WorkoutCard({
   onDuplicate: () => void;
   onMove: () => void;
   onPublish: () => void;
-  /** Debajo de los bloques: las clases en que se hace (ADR 0055). */
+  /** Debajo de los bloques: las clases en que se hace (ADR 0057). */
   footer?: ReactNode;
 }) {
   const t = useT("fitness.staff.programming");
@@ -228,7 +228,7 @@ export function EmptyDay({
   date: string;
   section: { id: string; name: string };
   classes: number;
-  /** Reservas de esas clases: la gente que espera el WOD (ADR 0055). */
+  /** Reservas de esas clases: la gente que espera el WOD (ADR 0057). */
   booked: number;
   showSection: boolean;
   onCopyFrom: () => void;

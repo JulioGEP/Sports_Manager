@@ -926,7 +926,7 @@ export function bookingsRepo(db: () => Database) {
       return (await this.attendeesOf(scope, [eventId])).get(eventId) ?? [];
     },
 
-    /** Quién viene a cada una de unas clases (ADR 0055): una consulta para toda la semana. */
+    /** Quién viene a cada una de unas clases (ADR 0057): una consulta para toda la semana. */
     async attendeesOf(scope: OrgScope, eventIds: string[]): Promise<Map<string, AttendeeRecord[]>> {
       const out = new Map<string, AttendeeRecord[]>();
       if (eventIds.length === 0) return out;
@@ -985,7 +985,7 @@ export function bookingsRepo(db: () => Database) {
     },
 
     /**
-     * Cambia el aforo de una clase concreta (ADR 0055), nunca por debajo de quien ya tiene plaza y
+     * Cambia el aforo de una clase concreta (ADR 0057), nunca por debajo de quien ya tiene plaza y
      * solo antes de empezar. Si sube, las plazas nuevas pasan a la espera por orden de cola. Lo
      * decide el personal, así que entran aunque su tarifa no llegue, como cuando reserva por un
      * atleta; si llega, la reserva gasta de la tarifa que toca.

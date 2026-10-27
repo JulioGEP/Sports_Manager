@@ -1,0 +1,234 @@
+{
+  "areas": {
+    "training": "Classes, programming, athletes, planning and exercises at a glance.",
+    "business": "Plans, payments, leads, shop and announcements: how the box is doing as a business.",
+    "box": "Messages, schedule, team, rooms and equipment: how the box runs inside."
+  },
+  "eyebrow": "Area overview",
+  "summaryOf": "{area} overview",
+  "boardTitle": "Key figures",
+  "todayTitle": "Today's figures",
+  "screensTitle": "In this area",
+  "screens": {
+    "classes": "Class calendar, bookings and check-in.",
+    "programming": "The WOD for each day and discipline.",
+    "athletes": "Profiles, plans, attendance and records.",
+    "planning": "Cycles by discipline, level, group or person.",
+    "exercises": "The box's movement library.",
+    "plans": "Plans, packs and this month's charges.",
+    "payments": "Charges, payments and what is still owed.",
+    "leads": "Prospects and trial classes.",
+    "store": "Products, stock and orders.",
+    "announcements": "What the box tells its athletes.",
+    "messages": "Conversations with athletes.",
+    "schedule": "Class types, weekly schedule and capacity.",
+    "staff": "Coaches and staff, with their permissions.",
+    "rooms": "The box's rooms.",
+    "equipment": "The equipment inventory and what is broken.",
+    "tv": "The WOD and the clock on the box TV."
+  },
+  "empty": {
+    "title": "This board has no figures",
+    "hint": "Customize it and choose the KPIs you want to see here.",
+    "readOnly": "The box admins have not chosen figures for this board."
+  },
+  "loadError": "The figures could not be loaded. Please try again.",
+  "noData": "No data yet",
+  "delta": "{delta} pts vs last week",
+  "slotOccupancy": "{percent} occupancy",
+  "dashboards": {
+    "today": "Today",
+    "training": "Training",
+    "business": "Business",
+    "box": "The box"
+  },
+  "kpi": {
+    "classes_today": {
+      "label": "Classes today",
+      "hint": "{booked, plural, one {# booking} other {# bookings}} · {free, plural, one {# spot left} other {# spots left}}",
+      "about": "Today's open classes, with what is booked and what is still free."
+    },
+    "occupancy_week": {
+      "label": "Occupancy this week",
+      "hint": "Spots taken out of spots offered",
+      "about": "Spots taken out of spots offered in this week's classes, compared with last week."
+    },
+    "programming_ready": {
+      "label": "Days with a published WOD",
+      "hint": "{drafts, plural, one {# draft} other {# drafts}} · {missing, plural, one {# without WOD} other {# without WOD}}",
+      "about": "Of the next seven days with classes, those with the WOD published for every discipline."
+    },
+    "active_athletes": {
+      "label": "Active athletes",
+      "hint": "+{joined} joined · {left} left this month",
+      "about": "Athletes with an active or paused plan, and this month's sign-ups and drop-outs."
+    },
+    "inactive_athletes": {
+      "label": "Athletes not coming",
+      "hint": "Over 14 days away and no booking",
+      "about": "Athletes with a plan who have not trained for over 14 days and have no booking."
+    },
+    "visits_per_athlete": {
+      "label": "Average attendance",
+      "hint": "Classes per active athlete in 30 days",
+      "about": "The average number of classes each active athlete has done in the last 30 days."
+    },
+    "prs_week": {
+      "label": "PRs this week",
+      "hint": "{athletes, plural, one {# athlete} other {# athletes}} in 7 days",
+      "about": "New personal records in the last seven days."
+    },
+    "active_plans": {
+      "label": "Active plans",
+      "hint": "{uncovered, plural, =0 {Every discipline has a plan} one {# discipline without a plan} other {# disciplines without a plan}}",
+      "about": "Training plans under way, and the disciplines that do not have one yet."
+    },
+    "exercises_library": {
+      "label": "Exercises in the library",
+      "hint": "{noVideo, plural, =0 {All with video} one {# without video} other {# without video}}",
+      "about": "Active exercises in the library and those still missing a video."
+    },
+    "recurring_revenue": {
+      "label": "Monthly recurring",
+      "hint": "What active plans add up to",
+      "about": "What active recurring plans add up to each month (quarterly and yearly ones, prorated)."
+    },
+    "members_net": {
+      "label": "Net sign-ups this month",
+      "hint": "+{joined} joined · {left} left",
+      "about": "Athletes starting a plan this month minus those leaving."
+    },
+    "packs_expiring": {
+      "label": "Packs to renew",
+      "hint": "Expire within 7 days or have one session left",
+      "about": "Packs that expire in the next seven days or have one session or none left."
+    },
+    "paused_plans": {
+      "label": "Paused plans",
+      "hint": "{ending, plural, =0 {None resume this week} one {# resumes this week} other {# resume this week}}",
+      "about": "Plans paused right now, and those resuming in the next seven days."
+    },
+    "overdue_charges": {
+      "label": "Overdue",
+      "hint": "{count, plural, =0 {Nothing overdue} one {# overdue charge} other {# overdue charges}}",
+      "about": "What is still owed on overdue charges."
+    },
+    "collected_month": {
+      "label": "Collected this month",
+      "hint": "{payments, plural, one {# payment} other {# payments}}",
+      "about": "Payments recorded this month, by hand or through Stripe."
+    },
+    "open_leads": {
+      "label": "Open leads",
+      "hint": "{fresh, plural, =0 {None waiting} one {# new, not contacted} other {# new, not contacted}}",
+      "about": "Leads neither converted nor lost, and the new ones nobody has contacted."
+    },
+    "trials_week": {
+      "label": "Trials this week",
+      "hint": "{converted, plural, one {# converted this month} other {# converted this month}}",
+      "about": "This week's trial classes, and the leads that became athletes this month."
+    },
+    "lead_conversion": {
+      "label": "Lead conversion",
+      "hint": "{converted} of {total} in 90 days",
+      "about": "Of the leads that came in over the last 90 days, those who are athletes now."
+    },
+    "store_sales_month": {
+      "label": "Shop sales",
+      "hint": "{orders, plural, one {# order} other {# orders}} · {toPrepare} to prepare",
+      "about": "What this month's orders add up to, cancelled ones aside."
+    },
+    "announcements_month": {
+      "label": "Announcements published",
+      "hint": "{reads, plural, one {# read} other {# reads}} this month",
+      "about": "Announcements published this month and how many times they were read."
+    },
+    "classes_week": {
+      "label": "Classes this week",
+      "hint": "{seats} spots · {booked} booked",
+      "about": "This week's open classes, the spots they offer and those booked."
+    },
+    "peak_slot": {
+      "label": "Busiest slot",
+      "hint": "{taken} of {offered} spots in 4 weeks",
+      "about": "The start time with the highest occupancy over the last four weeks: where space may run short."
+    },
+    "quiet_slot": {
+      "label": "Quietest slot",
+      "hint": "{taken} of {offered} spots in 4 weeks",
+      "about": "The start time with the lowest occupancy over the last four weeks: where there is room to spare."
+    },
+    "classes_without_coach": {
+      "label": "Classes without a coach",
+      "hint": "{count, plural, =0 {All covered for the next 7 days} other {In the next 7 days}}",
+      "about": "Open classes in the next seven days with no coach assigned."
+    },
+    "unread_messages": {
+      "label": "Conversations to answer",
+      "hint": "{messages, plural, one {# unread message} other {# unread messages}}",
+      "about": "Conversations with athletes that have messages the box has not read."
+    },
+    "equipment_out": {
+      "label": "Equipment out of service",
+      "hint": "{kinds, plural, =0 {All working · {total} kinds in the inventory} one {# kind of equipment affected} other {# kinds of equipment affected}}",
+      "about": "Pieces of equipment marked as broken or under repair."
+    }
+  },
+  "customize": "Customize",
+  "edit": {
+    "hint": "Drag each piece by its handle to reorder it. Choose how it looks and how much space it takes. It is saved for the whole team.",
+    "save": "Save board",
+    "cancel": "Cancel",
+    "restore": "Back to the defaults",
+    "saved": "Board saved. The whole team sees it now.",
+    "restored": "The default board is back.",
+    "add": "Add KPI",
+    "full": "Twelve pieces fit. Remove one to add another.",
+    "drag": "Drag {name}",
+    "moveBefore": "Move earlier",
+    "moveAfter": "Move later",
+    "remove": "Remove",
+    "options": "{name} options",
+    "view": "{name} view",
+    "size": "Size",
+    "moved": "{name}: position {position} of {total}",
+    "removed": "{name} removed from the board",
+    "unsaved": "Unsaved changes",
+    "addTitle": "Add to {dashboard}",
+    "addDescription": "Each KPI with its current figure and the views it supports. It arrives with its default view; change it on the board.",
+    "addOne": "Add {name}",
+    "addEmpty": "They are all on the board already.",
+    "now": "Now: {value}",
+    "discardTitle": "Discard your changes?",
+    "discardBody": "The board goes back to how it was before you customized it.",
+    "discard": "Discard changes",
+    "keep": "Keep editing"
+  },
+  "views": {
+    "number": "Number",
+    "line": "Line",
+    "bar": "Bars",
+    "radial": "Radial"
+  },
+  "sizes": {
+    "s": "Small · 1×1",
+    "m": "Wide · 2×1",
+    "l": "Large · 2×2",
+    "xl": "Full width"
+  },
+  "trend": {
+    "week": "Last 8 weeks",
+    "month": "Last 6 months",
+    "slot": "By slot · 4 weeks",
+    "estimated": "Earlier months estimated from plan dates"
+  },
+  "chart": {
+    "summary": "{name}, {period}: from {first} to {last}.",
+    "slotSummary": "{name}: the {hour} slot, at {value}.",
+    "radialSummary": "{name}: {value}.",
+    "weekOf": "week of {date}",
+    "sevenDaysTo": "7 days to {date}",
+    "windowTo": "30 days to {date}",
+    "slotAt": "{hour} slot"
+  }
+}

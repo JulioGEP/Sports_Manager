@@ -1,4 +1,4 @@
-import { CAPACITIES, type PlanHealthResponse } from "@sportsmanager/shared";
+import { CAPACITIES, formatMoney, type PlanHealthResponse } from "@sportsmanager/shared";
 import { useIntl } from "react-intl";
 import { useParams } from "react-router";
 import { PlanTabs } from "@/components/fitness/planning-nav";
@@ -50,12 +50,7 @@ function HealthView({ data }: { data: PlanHealthResponse }) {
   const paths = clubPaths(slug);
   const { plan, kpis } = data;
   const max = Math.max(1, ...data.heat.flatMap((h) => h.weeks));
-  const dollars = (micros: number) =>
-    intl.formatNumber(micros / 1_000_000, {
-      style: "currency",
-      currency: "USD",
-      maximumFractionDigits: 2,
-    });
+  const dollars = (micros: number) => formatMoney(Math.round(micros / 10_000), "$");
   const num = (v: number) => intl.formatNumber(v, { maximumFractionDigits: 1 });
 
   return (

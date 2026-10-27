@@ -1,10 +1,18 @@
 /**
  * Libro de Excel (.xlsx) sin dependencias: un ZIP sin compresión con las hojas en XML
  * (SpreadsheetML). Suficiente para descargar tablas de estadísticas; no pretende más.
- * Cifras como números, el resto como texto en línea.
+ * Cifras como números, el resto como texto en línea. El dinero, número con formato de euros
+ * (`#.##0,00 €`): se lee como en la app y se puede sumar.
  */
 
-export type CellValue = string | number | null | undefined;
+/** Un importe en céntimos: sale como número con formato de moneda. */
+export interface MoneyCell {
+  cents: number;
+}
+export type CellValue = string | number | MoneyCell | null | undefined;
+
+/** Una celda de dinero para `rows`. */
+export const moneyCell = (cents: number): MoneyCell => ({ cents });
 export interface Sheet {
   name: string;
   rows: CellValue[][];
@@ -33,6 +41,8 @@ function sheetXml(sheet: Sheet): string {
           const ref = `${columnName(c)}${r + 1}`;
           if (typeof value === "number" && Number.isFinite(value))
             return `<c r="${ref}"><v>${value}</v></c>`;
+          if (typeof value === "object")
+            return `<c r="${ref}" s="1"><v>${value.cents / 100}</v></c>`;
           return `<c r="${ref}" t="inlineStr"><is><t xml:space="preserve">${xml(String(value))}</t></is></c>`;
         })
         .join("");
@@ -73,6 +83,7 @@ export function buildXlsx(sheets: Sheet[]): Blob {
       `<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>` +
       `<Default Extension="xml" ContentType="application/xml"/>` +
       `<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>` +
+      `<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>` +
       sheets
         .map(
           (_, i) =>
@@ -111,7 +122,23 @@ export function buildXlsx(sheets: Sheet[]): Blob {
             `<Relationship Id="rId${i + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i + 1}.xml"/>`,
         )
         .join("") +
+      `<Relationship Id="rId${sheets.length + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>` +
       `</Relationships>`,
+  });
+  // Dos estilos: el de siempre y el del dinero, con miles, dos decimales y el euro.
+  files.push({
+    path: "xl/styles.xml",
+    content:
+      `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+      `<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">` +
+      `<numFmts count="1"><numFmt numFmtId="164" formatCode="#,##0.00 &quot;€&quot;"/></numFmts>` +
+      `<fonts count="1"><font><sz val="11"/><name val="Calibri"/></font></fonts>` +
+      `<fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills>` +
+      `<borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders>` +
+      `<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>` +
+      `<cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>` +
+      `<xf numFmtId="164" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/></cellXfs>` +
+      `</styleSheet>`,
   });
   sheets.forEach((sheet, i) =>
     files.push({ path: `xl/worksheets/sheet${i + 1}.xml`, content: sheetXml(sheet) }),

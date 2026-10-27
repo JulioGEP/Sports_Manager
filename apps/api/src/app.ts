@@ -30,6 +30,7 @@ import { createFitnessAiRoutes } from "./routes/fitness-ai.ts";
 import { createFitnessExerciseRoutes } from "./routes/fitness-exercises.ts";
 import { createFitnessClassRoutes } from "./routes/fitness-classes.ts";
 import { createFitnessCommunityRoutes } from "./routes/fitness-community.ts";
+import { createFitnessDashboardRoutes } from "./routes/fitness-dashboards.ts";
 import { createFitnessInsightRoutes } from "./routes/fitness-insights.ts";
 import { createFitnessPlanRoutes } from "./routes/fitness-plans.ts";
 import { createFitnessPlanningMeRoutes } from "./routes/fitness-planning-me.ts";
@@ -110,6 +111,7 @@ export function createApp(options: AppOptions = {}) {
   app.route("/", createFitnessWorkoutRoutes(config, data));
   app.route("/", createFitnessCommunityRoutes(config, data));
   app.route("/", createFitnessInsightRoutes(config, data));
+  app.route("/", createFitnessDashboardRoutes(config, data));
   app.route("/", createFitnessAiRoutes(config, data));
   app.route("/", createFitnessExerciseRoutes(config, data));
   app.route("/", createFitnessPlanningRoutes(config, data));

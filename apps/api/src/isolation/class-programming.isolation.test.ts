@@ -17,7 +17,7 @@ import { createDataLayer, createMemoryBlobStore, type DataLayer } from "../data/
 import { createSeeder } from "../data/testing/seed.ts";
 
 /**
- * La clase sabe qué se programa y quién hace qué (ADR 0055) contra una base real: la lista de
+ * La clase sabe qué se programa y quién hace qué (ADR 0057) contra una base real: la lista de
  * clases dice al personal el WOD de cada una y quién viene, con su plan propio; la ficha enseña la
  * sesión de ese plan y saca del brief los kilos de quien no hace el WOD del box; la programación
  * pide también las sesiones propias. La plaza que se libera pasa a la espera y el personal amplía

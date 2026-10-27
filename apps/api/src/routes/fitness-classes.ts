@@ -172,7 +172,7 @@ export function createFitnessClassRoutes(config: ApiConfig, data: DataLayer) {
   }
 
   /**
-   * Lo que se programa en cada clase y quién viene a hacerlo, para el personal (ADR 0055): el WOD
+   * Lo que se programa en cada clase y quién viene a hacerlo, para el personal (ADR 0057): el WOD
    * del box en cualquier estado (el de su tipo de clase o, si no hay, el de su disciplina) y quien
    * tiene plaza, con su plan propio si lo sigue en esa disciplina. Tres consultas para la semana.
    * `published`: las clases con algún WOD publicado, como `workoutsFor` para el personal.
@@ -693,7 +693,7 @@ export function createFitnessClassRoutes(config: ApiConfig, data: DataLayer) {
       ...(staff ? { fromWaitlist: a.source === "waitlist" } : {}),
     });
     const seated = all.filter((a) => a.status === "booked" || a.status === "attended");
-    // Las sesiones de ese día de sus planes propios (ADR 0055), en cualquier estado: quien tiene la
+    // Las sesiones de ese día de sus planes propios (ADR 0057), en cualquier estado: quien tiene la
     // suya publicada la hace en vez del WOD del box, y sus kilos del WOD no van en el brief.
     const planIds = [...new Set(all.flatMap((a) => ownPlanOf(a.playerId)?.id ?? []))];
     const sessions =
@@ -899,7 +899,7 @@ export function createFitnessClassRoutes(config: ApiConfig, data: DataLayer) {
       throw conflict("La clase ya ha empezado: no se puede cancelar.");
     const fresh = (await data.bookings.classById(tenant.scope, id, tenant.organization.timezone))!;
     const policy = await data.bookings.policy(tenant.scope);
-    // El personal ve quién ha entrado desde la espera (ADR 0055); el atleta, solo que alguien entró.
+    // El personal ve quién ha entrado desde la espera (ADR 0057); el atleta, solo que alguien entró.
     const promotedName =
       byStaff && result.promoted ? ((await namesOf(c, [result.promoted]))[0]?.name ?? null) : null;
     return {

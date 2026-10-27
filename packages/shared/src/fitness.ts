@@ -96,7 +96,7 @@ export const BookingCreateSchema = z.object({ playerId: z.string().uuid().option
 export type BookingCreate = z.infer<typeof BookingCreateSchema>;
 
 /**
- * El aforo de una clase concreta (ADR 0055), no el de su tipo de clase: nunca por debajo de quien
+ * El aforo de una clase concreta (ADR 0057), no el de su tipo de clase: nunca por debajo de quien
  * ya tiene plaza. Si sube, las plazas nuevas pasan a la espera por orden.
  */
 export const ClassCapacityUpdateSchema = z.object({ capacity: z.number().int().min(1).max(500) });

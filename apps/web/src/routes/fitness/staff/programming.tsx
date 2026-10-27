@@ -64,7 +64,7 @@ const DATE = /^\d{4}-\d{2}-\d{2}$/;
  * se ven a la primera y se programan desde ahí (en blanco, con un benchmark, con IA o copiando
  * otro día); la semana se publica de una vez y se arranca copiando la anterior. Cada WOD dice en
  * qué clases se hace y quién viene, y debajo van los planes propios del día con su sesión y su
- * gente en clase (ADR 0055).
+ * gente en clase (ADR 0057).
  */
 export function ProgrammingPage() {
   const t = useT("fitness.staff.programming");
@@ -97,7 +97,7 @@ export function ProgrammingPage() {
     );
   const goWeek = (date: string) => setParam("week", date === mondayOf(time.today) ? null : date);
 
-  // Con las sesiones de los planes propios (ADR 0055): van aparte, debajo del WOD de cada día.
+  // Con las sesiones de los planes propios (ADR 0057): van aparte, debajo del WOD de cada día.
   const workouts = useWorkouts({ from: monday, to: sunday, own: true });
   const classes = useClasses(dayRange(time.timezone, monday, 7));
   const classTypes = useClassTypes(has("org.structure.read"));
@@ -141,7 +141,7 @@ export function ProgrammingPage() {
   );
   const drafts = list.filter((w) => w.status === "draft" && writable.has(w.section.id)).length;
 
-  /** Las clases en que se hace un WOD: las que lo tienen como suyo (ADR 0055). */
+  /** Las clases en que se hace un WOD: las que lo tienen como suyo (ADR 0057). */
   const classesOfWod = (w: WorkoutView) =>
     weekClasses.filter((cl) => cl.programming?.workoutId === w.id);
   /** Los planes propios de un día: los que tienen sesión o gente en clase ese día. */

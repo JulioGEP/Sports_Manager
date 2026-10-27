@@ -3,8 +3,9 @@ import { expectLegibleButtons, login, shot, signOut } from "./helpers";
 
 /**
  * Clubs de fitness (ADR 0049) sobre el box de demostración (`/demo-box`): la atleta reserva, mira el
- * WOD, su progreso y su tarifa; el coach da sus clases y programa; la dueña lleva el horario, las
- * tarifas, los leads y las métricas, y pone la pantalla del box. Una captura de cada pantalla.
+ * WOD, su progreso y su tarifa; el coach da sus clases y programa; la dueña mira y elige las cifras
+ * de Hoy y de cada área (ADR 0055), lleva el horario, las tarifas y los leads, y pone la pantalla
+ * del box. Una captura de cada pantalla.
  */
 const BOX = "/demo-box";
 const PASSWORD = "123456";
@@ -76,12 +77,13 @@ test.describe("box de demostración", () => {
     await expect(page.getByText("Nueva clase de HYROX los sábados")).toHaveCount(0);
     await shot(page, "248-box-atleta-anuncios", info.project.name);
 
-    await open(page, "/timer", "Timer");
-    await shot(page, "249-box-atleta-timer", info.project.name);
-    await expectLegibleButtons(page);
-
-    await open(page, "/ranking", "Ranking");
-    await shot(page, "250-box-atleta-ranking", info.project.name);
+    // El timer y el ranking ya no existen (ADR 0055): sus enlaces de siempre llevan al inicio.
+    await expect(page.getByRole("link", { name: "Timer" })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Ranking" })).toHaveCount(0);
+    for (const gone of ["/timer", "/ranking"]) {
+      await page.goto(`${BOX}${gone}`);
+      await expect(page.getByRole("heading", { level: 1, name: /Laia/ })).toBeVisible();
+    }
     await signOut(page);
   });
 
@@ -118,16 +120,112 @@ test.describe("box de demostración", () => {
 
     await open(page, "/messages", "Mensajes");
     await shot(page, "262-box-coach-mensajes", info.project.name);
+
+    // El coach ve Entrenamiento con sus cifras, sin elegirlas y sin nada de dinero.
+    await open(page, "/areas/training", "Entrenamiento");
+    await expect(page.locator("[data-kpi]").first()).toBeVisible();
+    await expect(page.getByRole("button", { name: "Personalizar" })).toHaveCount(0);
+    await shot(page, "263-box-coach-area-entrenamiento", info.project.name);
     await signOut(page);
   });
 
-  test("la dueña: cifras, horario, tarifas, leads, métricas y la pantalla del box", async ({
+  test("la dueña: cifras, áreas con KPIs, horario, tarifas, leads y la pantalla del box", async ({
     page,
   }, info) => {
     await login(page, "box@demo.test", PASSWORD, BOX);
     await expect(page.getByRole("heading", { level: 1, name: /Marta/ })).toBeVisible();
+    // Hoy enseña de serie atletas, ocupación (radial), recurrente (línea), pruebas y cobrado (barras).
+    await expect(page.locator('[data-kpi="active_athletes"]')).toBeVisible();
+    await expect(page.locator('[data-kpi="occupancy_week"][data-view="radial"]')).toBeVisible();
+    await expect(page.locator('[data-kpi="recurring_revenue"][data-view="line"]')).toBeVisible();
+    // El dinero, con punto de miles y coma decimal.
+    await expect(page.locator('[data-kpi="recurring_revenue"]')).toContainText(/\d,\d{2} €/);
     await shot(page, "265-box-duena-inicio", info.project.name);
     await expectLegibleButtons(page);
+
+    // Personalizar Hoy en el propio cuadro: vista, tamaño, orden y una pieza nueva.
+    await page.getByRole("button", { name: "Personalizar" }).first().click();
+    const save = page.getByRole("button", { name: "Guardar cuadro" });
+    await expect(save).toBeDisabled();
+    await page
+      .getByRole("group", { name: "Vista de Atletas activos" })
+      .getByRole("button", { name: "Línea" })
+      .click();
+    await expect(page.locator('[data-kpi="active_athletes"][data-view="line"]')).toBeVisible();
+    await page.getByRole("button", { name: "Opciones de Pruebas esta semana" }).click();
+    await page.getByRole("menuitem", { name: "Todo el ancho" }).click();
+    // Mover desde el menú, la vía del teclado.
+    await page.getByRole("button", { name: "Opciones de Atletas activos" }).click();
+    await page.getByRole("menuitem", { name: "Mover después" }).click();
+    await page.getByRole("button", { name: "Añadir KPI" }).click();
+    await page
+      .getByRole("dialog")
+      .getByRole("button", { name: "Añadir Atletas que no vienen" })
+      .click();
+    await expect(page.locator('[data-kpi="inactive_athletes"]')).toBeVisible();
+    if (info.project.name === "escritorio") {
+      // Arrastrar y soltar: el cobrado se pone en el sitio de la ocupación.
+      const handle = page.getByRole("button", { name: "Arrastrar Cobrado este mes" });
+      const target = page.locator('[data-kpi="occupancy_week"]');
+      const from = (await handle.boundingBox())!;
+      const to = (await target.boundingBox())!;
+      await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(to.x + 20, to.y + 20, { steps: 8 });
+      await page.mouse.move(to.x + to.width / 2, to.y + to.height / 2, { steps: 8 });
+      await page.mouse.up();
+      const order = await page
+        .locator("[data-kpi]")
+        .evaluateAll((els) => els.map((el) => el.getAttribute("data-kpi")));
+      expect(order.indexOf("collected_month")).toBeLessThan(order.indexOf("occupancy_week"));
+    }
+    await shot(page, "265a-box-duena-personalizar", info.project.name);
+    await expect(save).toBeEnabled();
+    await save.click();
+    await expect(page.getByText("Cuadro guardado. Ya lo ve todo el equipo.")).toBeVisible();
+    await expect(page.locator('[data-kpi="inactive_athletes"]')).toBeVisible();
+    await expect(page.locator('[data-kpi="trials_week"][data-view="bar"]')).toBeVisible();
+    await shot(page, "265f-box-duena-inicio-personalizado", info.project.name);
+    // Y vuelta a los de serie, para que el resto de pruebas vea el cuadro de siempre.
+    await page.getByRole("button", { name: "Personalizar" }).first().click();
+    await page.getByRole("button", { name: "Volver a los de serie" }).click();
+    await expect(page.getByText("Vuelve el cuadro de serie.")).toBeVisible();
+    await expect(page.locator('[data-kpi="inactive_athletes"]')).toHaveCount(0);
+
+    // Las cabeceras de la barra abren la portada de cada área.
+    if (info.project.name === "escritorio") {
+      await page.getByRole("link", { name: "Resumen de Entrenamiento" }).click();
+      await expect(page.getByRole("heading", { level: 1, name: "Entrenamiento" })).toBeVisible();
+      for (const name of ["Clases", "Programación", "Atletas", "Planificación", "Ejercicios"])
+        await expect(page.getByRole("link", { name, exact: true }).first()).toBeVisible();
+      await expect(page.getByRole("link", { name: "Métricas" })).toHaveCount(0);
+    } else {
+      await open(page, "/areas/training", "Entrenamiento");
+    }
+    await expect(page.locator("[data-kpi]").first()).toBeVisible();
+    await shot(page, "265d-box-duena-area-entrenamiento", info.project.name);
+    await expectLegibleButtons(page);
+
+    // En el móvil, "Más" agrupa por áreas y cada cabecera abre su portada.
+    if (info.project.name === "movil") {
+      await page.getByRole("button", { name: "Más" }).click();
+      const more = page.getByRole("dialog");
+      await expect(more.getByRole("link", { name: "Resumen de Negocio" })).toBeVisible();
+      await shot(page, "265e-box-duena-mas", info.project.name);
+      await more.getByRole("link", { name: "Resumen de Negocio" }).click();
+      await expect(page.getByRole("heading", { level: 1, name: "Negocio" })).toBeVisible();
+    }
+
+    // Métricas pasa a ser la portada de Negocio.
+    await page.goto(`${BOX}/metrics`);
+    await expect(page.getByRole("heading", { level: 1, name: "Negocio" })).toBeVisible();
+    await expect(page.locator('[data-kpi="recurring_revenue"]')).toBeVisible();
+    await shot(page, "269-box-duena-area-negocio", info.project.name);
+
+    await open(page, "/areas/box", "El box");
+    // La franja más llena, a todo el ancho y en barras: la ocupación de cada hora.
+    await expect(page.locator('[data-kpi="peak_slot"][data-view="bar"]')).toBeVisible();
+    await shot(page, "269b-box-duena-area-el-box", info.project.name);
 
     // La dueña ve todo el box en el calendario; tocar un día lo abre en la vista de día.
     await open(page, "/classes", "Clases");
@@ -156,9 +254,6 @@ test.describe("box de demostración", () => {
     await open(page, "/leads", "Leads");
     await expect(page.getByText("Nora").first()).toBeVisible();
     await shot(page, "268-box-duena-leads", info.project.name);
-
-    await open(page, "/metrics", "Métricas");
-    await shot(page, "269-box-duena-metricas", info.project.name);
 
     await page.goto(`${BOX}/settings?tab=identity`);
     await expect(page.getByText("Looks de box")).toBeVisible();

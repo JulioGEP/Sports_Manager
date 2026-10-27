@@ -1,4 +1,4 @@
-import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
+import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import {
   FitnessAthleteDetailResponseSchema,
   FitnessAthletesResponseSchema,
@@ -6,7 +6,6 @@ import {
   isAdultOn,
   LibraryResponseSchema,
   planExpiresOn,
-  RankingResponseSchema,
   weeklyStreaks,
   type FitnessAthleteRow,
   type FitnessMetricsResponse,
@@ -17,11 +16,12 @@ import {
   playerPhotoUrlFor,
   type AthleteRowRecord,
   type DataLayer,
+  type OrgScope,
   type SubscriptionRecord,
 } from "../data/index.ts";
 import { requirePermission } from "../http/actor.ts";
 import type { AppEnv } from "../http/context.ts";
-import { forbidden, notFound } from "../http/errors.ts";
+import { notFound } from "../http/errors.ts";
 import { benchmarksOf, movementsOf } from "./fitness-workouts.ts";
 import {
   classDto,
@@ -32,7 +32,6 @@ import {
   localeOf,
   orgOf,
   personName,
-  selfPlayer,
   subscriptionDto,
   todayIn,
   visibleAthleteIds,
@@ -54,7 +53,7 @@ function currentOf(subs: SubscriptionRecord[]): SubscriptionRecord | null {
 }
 
 /** Lo que una tarifa recurrente suma al mes. */
-function monthlyCents(s: SubscriptionRecord): number {
+export function monthlyCents(s: SubscriptionRecord): number {
   switch (s.plan.period) {
     case "monthly":
       return s.plan.amountCents;
@@ -68,9 +67,55 @@ function monthlyCents(s: SubscriptionRecord): number {
 }
 
 /**
+ * Programación de los siete días desde hoy: qué días con clase tienen WOD publicado, en borrador o
+ * nada, y qué disciplinas con clase se quedan sin él. La usan el inicio del dueño y los KPIs.
+ */
+export async function programmingWeek(
+  data: DataLayer,
+  scope: OrgScope,
+  timezone: string,
+  today: string,
+): Promise<FitnessMetricsResponse["programming"]> {
+  const at = (date: string) => new Date(`${date}T00:00:00Z`);
+  const horizon = addDays(today, 6);
+  const [classDays, workouts, sectionNames] = await Promise.all([
+    data.fitness.classDays(scope, at(today), at(addDays(horizon, 1)), timezone),
+    data.workouts.list(scope, today, horizon),
+    data.fitness.fitnessSections(scope),
+  ]);
+  const sectionName = new Map(sectionNames.map((s) => [s.id, s.name]));
+  const programming: FitnessMetricsResponse["programming"] = [];
+  for (let i = 0; i < 7; i++) {
+    const date = addDays(today, i);
+    const daySections = classDays.filter((d) => d.date === date).map((d) => d.sectionId);
+    const dayWorkouts = workouts.filter((w) => w.onDate === date);
+    if (daySections.length === 0 && dayWorkouts.length === 0) continue;
+    const published = dayWorkouts.filter((w) => w.status === "published");
+    const missing = daySections.filter((s) => !dayWorkouts.some((w) => w.section.id === s));
+    programming.push({
+      date,
+      status:
+        dayWorkouts.length === 0
+          ? "missing"
+          : published.length < dayWorkouts.length
+            ? "draft"
+            : missing.length > 0
+              ? "partial"
+              : "published",
+      title:
+        dayWorkouts[0]?.title ??
+        dayWorkouts[0]?.blocks.find((b) => b.kind === "wod")?.title ??
+        null,
+      missing: [...new Set(missing)].map((id) => sectionName.get(id) ?? "").filter(Boolean),
+    });
+  }
+  return programming;
+}
+
+/**
  * Lo que el box mira de un vistazo (ADR 0049): sus atletas con su tarifa y su última visita
  * (`org.players.read`, en el ámbito de quien pregunta), la ficha de un atleta para su coach, las
- * cifras y avisos del negocio (`org.fees.read`), el ranking de constancia del mes y la librería.
+ * cifras y avisos del negocio (`org.fees.read`) y la librería.
  */
 export function createFitnessInsightRoutes(config: ApiConfig, data: DataLayer) {
   const app = new OpenAPIHono<AppEnv>();
@@ -245,7 +290,7 @@ export function createFitnessInsightRoutes(config: ApiConfig, data: DataLayer) {
           data.fitness.occupancy(tenant.scope, at(addDays(monday, -7)), at(monday), timezone),
           data.fitness.occupancy(tenant.scope, at(addDays(monday, -28)), at(monday), timezone),
           data.fitness.trials(tenant.scope, at(monday), at(addDays(monday, 7)), at(monthStart)),
-          data.fitness.overdueFitnessCharges(tenant.scope),
+          data.fitness.overdueCharges(tenant.scope),
         ]);
 
       const active = subs.filter((s) => s.status === "active" || s.status === "paused");
@@ -312,39 +357,7 @@ export function createFitnessInsightRoutes(config: ApiConfig, data: DataLayer) {
           date: null,
           sample: trials.pending.slice(0, 3),
         });
-      // Programación de la semana: qué días con clase tienen WOD publicado, en borrador o nada.
-      const horizon = addDays(today, 6);
-      const [classDays, workouts, sectionNames] = await Promise.all([
-        data.fitness.classDays(tenant.scope, at(today), at(addDays(horizon, 1)), timezone),
-        data.workouts.list(tenant.scope, today, horizon),
-        data.fitness.fitnessSections(tenant.scope),
-      ]);
-      const sectionName = new Map(sectionNames.map((s) => [s.id, s.name]));
-      const programming: FitnessMetricsResponse["programming"] = [];
-      for (let i = 0; i < 7; i++) {
-        const date = addDays(today, i);
-        const daySections = classDays.filter((d) => d.date === date).map((d) => d.sectionId);
-        const dayWorkouts = workouts.filter((w) => w.onDate === date);
-        if (daySections.length === 0 && dayWorkouts.length === 0) continue;
-        const published = dayWorkouts.filter((w) => w.status === "published");
-        const missing = daySections.filter((s) => !dayWorkouts.some((w) => w.section.id === s));
-        programming.push({
-          date,
-          status:
-            dayWorkouts.length === 0
-              ? "missing"
-              : published.length < dayWorkouts.length
-                ? "draft"
-                : missing.length > 0
-                  ? "partial"
-                  : "published",
-          title:
-            dayWorkouts[0]?.title ??
-            dayWorkouts[0]?.blocks.find((b) => b.kind === "wod")?.title ??
-            null,
-          missing: [...new Set(missing)].map((id) => sectionName.get(id) ?? "").filter(Boolean),
-        });
-      }
+      const programming = await programmingWeek(data, tenant.scope, timezone, today);
       const tomorrow = addDays(today, 1);
       const notReady = programming.filter(
         (p) => (p.date === today || p.date === tomorrow) && p.status !== "published",
@@ -356,12 +369,12 @@ export function createFitnessInsightRoutes(config: ApiConfig, data: DataLayer) {
           date: notReady[0]!.date,
           sample: notReady[0]!.missing.slice(0, 3),
         });
-      if (overdue.length > 0)
+      if (overdue.count > 0)
         alerts.push({
           kind: "charges_failed",
-          count: overdue.length,
+          count: overdue.count,
           date: null,
-          sample: overdue.slice(0, 3),
+          sample: overdue.names.slice(0, 3),
         });
       const pauses = active.filter(
         (s) => s.status === "paused" && s.pausedUntil && s.pausedUntil <= addDays(today, 7),
@@ -395,84 +408,6 @@ export function createFitnessInsightRoutes(config: ApiConfig, data: DataLayer) {
             .sort(([a], [b]) => a.localeCompare(b))
             .map(([hour, v]) => ({ hour, offered: v.offered, taken: v.taken })),
           programming,
-        },
-        200,
-      );
-    },
-  );
-
-  app.openapi(
-    createRoute({
-      method: "get",
-      path: "/api/org/fitness/ranking",
-      tags: ["Fitness"],
-      summary:
-        "Ranking de constancia de un mes (clases hechas), sin quien prefiere no salir. Para atletas y personal",
-      security: [{ sessionCookie: [] }],
-      request: {
-        query: z.object({
-          month: z
-            .string()
-            .regex(/^\d{4}-(0[1-9]|1[0-2])$/)
-            .optional(),
-        }),
-      },
-      responses: { 200: json("Ranking", RankingResponseSchema), ...errors },
-    }),
-    async (c) => {
-      const tenant = orgOf(c);
-      const actor = c.get("actor");
-      const player = actor.permissions.has("org.family.read") ? await selfPlayer(data, c) : null;
-      const staff = actor.permissions.has("org.events.read");
-      if (!staff && !player) throw forbidden();
-      const policy = await data.bookings.policy(tenant.scope);
-      if (!staff && !policy.showLeaderboards)
-        throw forbidden("El club no publica clasificaciones.");
-      const today = todayIn(tenant.organization.timezone);
-      const month = c.req.valid("query").month ?? today.slice(0, 7);
-      const from = new Date(`${month}-01T00:00:00Z`);
-      const to = new Date(from);
-      to.setUTCMonth(to.getUTCMonth() + 1);
-      const now = new Date();
-      const [counts, hidden] = await Promise.all([
-        data.fitness.trainedCounts(tenant.scope, from, to, now),
-        data.fitness.hiddenFromLeaderboards(tenant.scope),
-      ]);
-      const ids = [...counts.keys()];
-      const athletes = await data.fitness.athletes(
-        tenant.scope,
-        tenant.organization.timezone,
-        now,
-        ids,
-      );
-      const nameOf = new Map(athletes.map((a) => [a.playerId, personName(a)]));
-      const visible = ids.filter((id) => staff || !hidden.has(id) || id === player?.id);
-      const sorted = visible
-        .map((id) => ({ playerId: id, classes: counts.get(id) ?? 0 }))
-        .sort(
-          (a, b) =>
-            b.classes - a.classes ||
-            (nameOf.get(a.playerId) ?? "").localeCompare(nameOf.get(b.playerId) ?? ""),
-        );
-      let rank = 0;
-      let prev = -1;
-      return c.json(
-        {
-          month,
-          consistency: sorted.map((r, i) => {
-            if (r.classes !== prev) {
-              rank = i + 1;
-              prev = r.classes;
-            }
-            return {
-              rank,
-              playerId: r.playerId,
-              name: nameOf.get(r.playerId) ?? "",
-              classes: r.classes,
-              isMe: r.playerId === player?.id,
-            };
-          }),
-          hiddenCount: ids.length - visible.length,
         },
         200,
       );

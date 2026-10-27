@@ -8,7 +8,7 @@ import { useT } from "@/lib/intl";
 import { Avatar, Icon, StatusChip, type StatusKind } from "@/ui";
 
 /**
- * La programación dentro de las clases (ADR 0055): quién viene a cada clase, quién de ellos hace la
+ * La programación dentro de las clases (ADR 0057): quién viene a cada clase, quién de ellos hace la
  * sesión de su plan propio en vez del WOD del box y en qué clases se hace cada WOD. Piezas comunes
  * de Programación, Clases y la ficha de la clase.
  */
@@ -132,7 +132,7 @@ export function PeopleLine({ booked, own }: { booked: number; own: number }) {
 }
 
 /**
- * Las clases en que se hace un WOD (ADR 0055), debajo de su tarjeta en la semana: cuántas son,
+ * Las clases en que se hace un WOD (ADR 0057), debajo de su tarjeta en la semana: cuántas son,
  * cuánta gente viene, sus caras y una pastilla por clase con su hora y sus plazas que la abre.
  */
 export function WodClasses({ classes }: { classes: readonly ClassSummary[] }) {
@@ -200,7 +200,7 @@ export interface OwnPlanDay {
 }
 
 /**
- * Los planes propios de un día (ADR 0055), debajo del WOD del box: cada uno con su sesión y su
+ * Los planes propios de un día (ADR 0057), debajo del WOD del box: cada uno con su sesión y su
  * estado, y quién de su gente viene a clase ese día. La fila abre la semana del plan, donde se
  * escribe y se publica la sesión.
  */
@@ -254,7 +254,7 @@ export function OwnPlansOfDay({ date, rows }: { date: string; rows: readonly Own
 }
 
 /**
- * Quién hace qué en una clase (ADR 0055): cuántos hacen el WOD del box y cuántos la sesión de su
+ * Quién hace qué en una clase (ADR 0057): cuántos hacen el WOD del box y cuántos la sesión de su
  * plan propio, con una barra partida y las dos cifras al lado.
  */
 export function ProgrammingSplit({ box, own }: { box: number; own: number }) {

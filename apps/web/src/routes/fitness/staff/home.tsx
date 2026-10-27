@@ -1,5 +1,6 @@
 import { FacePile, ownPeople } from "@/components/fitness/class-programming";
 import { ClassRow } from "@/components/fitness/class-row";
+import { KpiBoard } from "@/components/fitness/kpi-board";
 import { useHas } from "@/components/fitness/staff-ui";
 import { clubPaths, useReadyClub } from "@/lib/club";
 import { dayRange, useClasses, useClassTime, useMessageThreads, useWorkouts } from "@/lib/fitness";
@@ -7,14 +8,16 @@ import { useT } from "@/lib/intl";
 import { Alert, ButtonLink, Card, EmptyState, Icon, PageHeader, StatusChip } from "@/ui";
 
 /**
- * El inicio del coach (ADR 0049): lo que da hoy, la clase que viene, si el WOD de hoy está
- * publicado y lo que le han escrito. Pensado para mirarlo con el móvil al llegar al box.
+ * El inicio del coach (ADR 0049): lo que da hoy, la clase que viene, las cifras de Hoy que el
+ * club ha elegido y él puede ver (ADR 0055), si el WOD de hoy está publicado y lo que le han
+ * escrito. Pensado para mirarlo con el móvil al llegar al box.
  */
 export function CoachFitnessHome() {
   const t = useT("fitness.staff.home");
   const s = useT("fitness.staff");
   const p = useT("fitness.staff.inClasses");
   const nav = useT("fitness.common.nav");
+  const k = useT("fitness.kpis");
   const status = useT("fitness.common.workoutStatus");
   const { me, slug } = useReadyClub();
   const paths = clubPaths(slug);
@@ -74,7 +77,7 @@ export function CoachFitnessHome() {
             <ButtonLink action="open" to={paths.classDetail(next.id)} variant="secondary" size="sm">
               {t("next.open")}
             </ButtonLink>
-            {/* Quién viene y cuántos hacen su plan propio (ADR 0055). */}
+            {/* Quién viene y cuántos hacen su plan propio (ADR 0057). */}
             {next.programming && next.programming.people.length > 0 ? (
               <span className="flex items-center gap-2">
                 <FacePile people={next.programming.people} max={6} />
@@ -88,6 +91,8 @@ export function CoachFitnessHome() {
           </div>
         </section>
       ) : null}
+
+      <KpiBoard dashboard="today" title={k("todayTitle")} hideWhenEmpty />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card
@@ -240,11 +245,11 @@ export function CoachFitnessHome() {
               </ButtonLink>
             ) : null}
             <ButtonLink
-              to={paths.timer}
+              to={paths.exercises}
               variant="secondary"
-              icon={<Icon.Timer size={18} aria-hidden="true" />}
+              icon={<Icon.Target size={18} aria-hidden="true" />}
             >
-              {nav("timer")}
+              {nav("library")}
             </ButtonLink>
             <ButtonLink
               to={paths.tv}

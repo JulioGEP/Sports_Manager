@@ -264,7 +264,7 @@ export function createFitnessWorkoutRoutes(config: ApiConfig, data: DataLayer) {
           from: DateOnlySchema.optional(),
           to: DateOnlySchema.optional(),
           section: z.string().uuid().optional(),
-          /** También las sesiones de los planes propios activos (ADR 0055), con `specific`. */
+          /** También las sesiones de los planes propios activos (ADR 0057), con `specific`. */
           own: z.enum(["1"]).optional(),
         }),
       },

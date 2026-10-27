@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { expectLegibleButtons, login, shot, signOut } from "./helpers";
 
 /**
- * La programación dentro de las clases (ADR 0055) en el box de demostración: cada WOD de la semana
+ * La programación dentro de las clases (ADR 0057) en el box de demostración: cada WOD de la semana
  * dice en qué clases se hace y quién viene, y debajo van los planes propios del día; una clase se
  * abre desde su WOD y enseña de qué plan sale, quién hace qué y la sesión de cada plan propio; el
  * calendario, en la vista de día, pone al lado la programación del día; y el aforo de una clase se

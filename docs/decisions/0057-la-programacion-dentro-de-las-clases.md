@@ -1,4 +1,4 @@
-# 0055. La programación dentro de las clases: qué se hace en cada clase y quién viene a hacerlo
+# 0057. La programación dentro de las clases: qué se hace en cada clase y quién viene a hacerlo
 
 Estado: aceptada. Fecha: 2026-10-27. Amplía la 0051 (clases en calendario), la 0053 (planificación del box) y la 0054 (planes para quien sea).
 

@@ -309,47 +309,5 @@
       "choose": "Tria'n una",
       "pin": "Fixar-lo a dalt"
     }
-  },
-  "timer": {
-    "title": "Timer",
-    "description": "Per entrenar al box o a casa. Deu segons de compte enrere i xiulets.",
-    "mode": "Tipus de rellotge",
-    "modes": {
-      "fortime": "For time",
-      "amrap": "AMRAP",
-      "emom": "EMOM",
-      "tabata": "Tabata"
-    },
-    "hints": {
-      "fortime": "Compta cap amunt fins que acabes o arriba el cap.",
-      "amrap": "Tantes rondes com puguis en el temps. Suma cada ronda amb el botó.",
-      "emom": "Cada interval comença una ronda nova.",
-      "tabata": "Treball i descans en bucle. El clàssic: 20 s i 10 s, 8 rondes."
-    },
-    "cap": "Time cap (minuts)",
-    "capHint": "0 per no posar cap.",
-    "minutes": "Minuts",
-    "interval": "Interval (segons)",
-    "rounds": "Rondes",
-    "work": "Treball (segons)",
-    "rest": "Descans (segons)",
-    "start": "Començar",
-    "clock": "Rellotge",
-    "phase": {
-      "prep": "Prepara't",
-      "rest": "Descans",
-      "done": "Temps",
-      "work": "Som-hi",
-      "ready": "A punt"
-    },
-    "roundOf": "Ronda {round} de {total}",
-    "capAt": "Cap als {minutes} min",
-    "roundsDone": "{count, plural, one {# ronda} other {# rondes}}",
-    "addRound": "+1 ronda",
-    "pause": "Pausa",
-    "resume": "Continuar",
-    "finish": "He acabat",
-    "reset": "Reiniciar",
-    "finalTime": "El teu temps: {time}"
   }
 }
