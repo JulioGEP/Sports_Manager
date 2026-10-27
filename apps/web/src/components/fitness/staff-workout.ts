@@ -30,7 +30,7 @@ export function blockInputOf(b: WorkoutBlockView): WorkoutBlockInput {
 
 /**
  * Lo que un WOD guarda de la planificación (ADR 0053): el plan, la semana, el papel del día, la
- * intención y el porqué. Va en cada guardado para no perderlo al editar, publicar o mover.
+ * intención, el porqué y si es una sesión de un plan propio (ADR 0054). Va en cada guardado para no perderlo al editar, publicar o mover.
  */
 export function planFieldsOf(w: WorkoutView) {
   return {
@@ -41,6 +41,7 @@ export function planFieldsOf(w: WorkoutView) {
     intentEffort: w.intent?.effort ?? null,
     intentFeel: w.intent?.feel ?? null,
     why: w.why.length > 0 ? w.why.join("\n") : null,
+    specific: w.specific,
   };
 }
 

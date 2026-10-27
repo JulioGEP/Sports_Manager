@@ -5,6 +5,9 @@ import {
   CAPACITIES,
   missingEquipment,
   normalizeEmphasis,
+  PLAN_AUDIENCES,
+  PLAN_FREQUENCY_MAX,
+  PLAN_FREQUENCY_MIN,
   PLAN_TEMPLATES,
   PLAN_TESTS,
   PlanResponseSchema,
@@ -12,16 +15,20 @@ import {
   planTemplateByCode,
   projectPlan,
   weekStartOf,
+  WORKOUT_LEVELS,
   type BoxEquipmentKind,
   type Capacity,
   type Emphasis,
   type PlanBlockKind,
   type PlanDiscipline,
+  type PlanAudience,
   type PlanTemplateCode,
+  type WorkoutLevel,
 } from "@sportsmanager/shared";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { useNavigate, useSearchParams } from "react-router";
+import { PlanMembersEditor } from "@/components/fitness/planning-members";
 import { AutoTextarea } from "@/components/fitness/programming-blocks";
 import { ProjectionView } from "@/components/fitness/planning-projection";
 import {
@@ -36,7 +43,12 @@ import { ApiClientError, apiFetch } from "@/lib/api";
 import { clubPaths, useReadyClub } from "@/lib/club";
 import { fitnessKey, useClassTime, useClassTypes, useInvalidateFitness } from "@/lib/fitness";
 import { useT } from "@/lib/intl";
-import { useAiPlanGeneration, useLevelName, usePlanningContext } from "@/lib/planning";
+import {
+  useAiPlanGeneration,
+  useLevelName,
+  usePlanningCandidates,
+  usePlanningContext,
+} from "@/lib/planning";
 import {
   Alert,
   Button,
@@ -50,7 +62,7 @@ import {
   useToast,
 } from "@/ui";
 
-const STEPS = ["goal", "calendar", "emphasis", "tests", "box", "summary"] as const;
+const STEPS = ["audience", "goal", "calendar", "emphasis", "tests", "box", "summary"] as const;
 type Step = (typeof STEPS)[number];
 
 interface WizardState {
@@ -64,8 +76,12 @@ interface WizardState {
   emphasis: Emphasis;
   tests: string[];
   closures: string[];
+  /** Días de entreno (1 = lunes … 7 = domingo); vacío, los días con clase de la disciplina. */
+  weekdays: number[];
   frequency: number;
   activate: boolean;
+  /** Todo el box con otro plan activo: terminar ese y activar este. */
+  replaceActive: boolean;
   /** Bloques del arquitecto con IA, si se aceptó su propuesta. */
   phases: { kind: PlanBlockKind; weeks: number; focus: string | null }[] | null;
   rationale: string | null;
@@ -86,12 +102,32 @@ function fromTemplate(code: PlanTemplateCode, startsOn: string, name: string): W
     emphasis: { ...t.emphasis },
     tests: [...t.tests],
     closures: [],
+    weekdays: [],
     frequency: 3,
     activate: true,
+    replaceActive: false,
     phases: null,
     rationale: null,
   };
 }
+
+/** Para quién es el plan (ADR 0054): todo el box, un nivel, un grupo o una persona. */
+interface Audience {
+  audience: PlanAudience;
+  level: WorkoutLevel | null;
+  /** El nombre del grupo. */
+  name: string;
+  members: string[];
+  /** Los que ya siguen otro plan propio y pasan a este: se les anula el suyo. */
+  replace: string[];
+}
+
+const AUDIENCE_ICON: Record<PlanAudience, ReactNode> = {
+  section: <Icon.Buildings size={20} aria-hidden="true" />,
+  level: <Icon.ChartBar size={20} aria-hidden="true" />,
+  group: <Icon.UsersThree size={20} aria-hidden="true" />,
+  athlete: <Icon.UserCircle size={20} aria-hidden="true" />,
+};
 
 /** Semanas entre el lunes de inicio y el evento (la semana del evento incluida). */
 const weeksUntil = (startsOn: string, eventDate: string) =>
@@ -100,14 +136,14 @@ const weeksUntil = (startsOn: string, eventDate: string) =>
   ) + 1;
 
 /**
- * Crear un plan (ADR 0053) en seis pasos: el objetivo (una plantilla o lo que proponga la IA), el
- * calendario, el reparto de los 100 puntos, los tests, lo que ya sabe el box y el resumen. A la
- * derecha, todo el rato, lo que se puede esperar: se mueve al tocar cualquier cosa.
+ * Crear un plan (ADR 0053) en siete pasos: para quién (todo el box, un nivel, un grupo o una persona,
+ * ADR 0054), el objetivo (una plantilla o lo que proponga la IA), el calendario con los días de
+ * entreno, el reparto de los 100 puntos, los tests, lo que ya sabe el box y el resumen. A la derecha,
+ * todo el rato, lo que se puede esperar: se mueve al tocar cualquier cosa.
  */
 export function PlanWizardPage() {
   const t = useT("fitness.planning.wizard");
   const tpl = useT("fitness.planning.templates");
-  const c = useT("fitness.common");
   const names = usePlanNames();
   const levelName = useLevelName();
   const time = useClassTime();
@@ -132,19 +168,63 @@ export function PlanWizardPage() {
     weekStartOf(time.today) === time.today ? time.today : addDays(weekStartOf(time.today), 7);
   const [state, setState] = useState<WizardState>(() => fromTemplate("continuous", nextMonday, ""));
   const [picked, setPicked] = useState(false);
-  const [step, setStep] = useState<Step>("goal");
+  const [step, setStep] = useState<Step>("audience");
+  const [who, setWho] = useState<Audience>({
+    audience: "section",
+    level: null,
+    name: "",
+    members: [],
+    replace: [],
+  });
+  const specific = who.audience !== "section";
+  const candidates = usePlanningCandidates(ctx?.section.id ?? null, undefined, specific);
+  const pool = candidates.data?.athletes ?? [];
+  const chosen = pool.filter((a) => who.members.includes(a.playerId));
+  const unresolved = chosen.filter((a) => a.plan && !who.replace.includes(a.playerId)).length;
+  const levelCount = (level: WorkoutLevel) => pool.filter((a) => a.level === level).length;
+  const chooseAudience = (audience: PlanAudience) =>
+    setWho((w) => ({ ...w, audience, members: [], replace: [], level: null }));
+  // Un nivel arranca con todos los de ese nivel: luego se quita o se añade a quien sea.
+  const chooseLevel = (level: WorkoutLevel) =>
+    setWho((w) => ({
+      ...w,
+      level,
+      members: pool.filter((a) => a.level === level).map((a) => a.playerId),
+      replace: [],
+    }));
   const [creating, setCreating] = useState(false);
   const set = <K extends keyof WizardState>(key: K, value: WizardState[K]) =>
     setState((s) => ({ ...s, [key]: value }));
 
-  // Frecuencia de referencia: la del box, redondeada entre 2 y 4.
+  // Frecuencia de referencia: la del box, redondeada entre 1 y 7. Días de entreno: los de clase.
   const frequencySet = useRef(false);
   useEffect(() => {
     if (!ctx || frequencySet.current) return;
     frequencySet.current = true;
     const avg = ctx.frequency.average;
-    if (avg !== null) set("frequency", Math.max(2, Math.min(4, Math.round(avg))));
+    setState((s) => ({
+      ...s,
+      weekdays: ctx.classWeekdays.length > 0 ? [...ctx.classWeekdays] : [1, 2, 3, 4, 5],
+      ...(avg !== null
+        ? {
+            frequency: Math.max(PLAN_FREQUENCY_MIN, Math.min(PLAN_FREQUENCY_MAX, Math.round(avg))),
+          }
+        : {}),
+    }));
   }, [ctx]);
+  // En un plan propio, los días de entreno son su frecuencia.
+  const toggleWeekday = (d: number) =>
+    setState((s) => {
+      const weekdays = s.weekdays.includes(d)
+        ? s.weekdays.filter((x) => x !== d)
+        : [...s.weekdays, d].sort((a, b) => a - b);
+      if (weekdays.length === 0) return s;
+      return {
+        ...s,
+        weekdays,
+        frequency: specific ? weekdays.length : Math.min(s.frequency, weekdays.length),
+      };
+    });
 
   const template = planTemplateByCode(state.templateCode)!;
   const inventory = useMemo(() => {
@@ -153,11 +233,23 @@ export function PlanWizardPage() {
     return m;
   }, [ctx]);
 
+  // El nombre lleva para quién es: "Carla Prieto · Base de fuerza", "RX · Camino al Open".
+  const audienceLabel =
+    who.audience === "athlete"
+      ? (chosen[0]?.name ?? "")
+      : who.audience === "level" && who.level
+        ? levelName(who.level)
+        : who.audience === "group"
+          ? who.name.trim()
+          : "";
+  const nameFor = (code: PlanTemplateCode) =>
+    audienceLabel ? `${audienceLabel} · ${tpl(`${code}.name`)}` : tpl(`${code}.name`);
   const pickTemplate = (code: PlanTemplateCode) => {
     setState((s) => ({
-      ...fromTemplate(code, s.startsOn, tpl(`${code}.name`)),
+      ...fromTemplate(code, s.startsOn, nameFor(code)),
       frequency: s.frequency,
       closures: s.closures,
+      weekdays: s.weekdays,
     }));
     setPicked(true);
   };
@@ -188,7 +280,12 @@ export function PlanWizardPage() {
         discipline,
         startsOn: state.startsOn,
         weeks,
-        classWeekdays: ctx && ctx.classWeekdays.length > 0 ? ctx.classWeekdays : [1, 2, 3, 4, 5],
+        classWeekdays:
+          state.weekdays.length > 0
+            ? state.weekdays
+            : ctx && ctx.classWeekdays.length > 0
+              ? ctx.classWeekdays
+              : [1, 2, 3, 4, 5],
         closures: state.closures,
         emphasis: total === 100 ? state.emphasis : normalizeEmphasis(state.emphasis),
         tests: state.tests,
@@ -197,17 +294,26 @@ export function PlanWizardPage() {
       }),
     [template, discipline, state, weeks, ctx, total],
   );
+  // La proyección de un plan propio se hace con los niveles de su gente; la del box, con todo el box.
+  const memberLevels = useMemo(() => {
+    const mix: Partial<Record<WorkoutLevel, number>> = {};
+    for (const a of pool)
+      if (who.members.includes(a.playerId) && a.level) mix[a.level] = (mix[a.level] ?? 0) + 1;
+    return mix;
+  }, [pool, who.members]);
+  const levelMix =
+    specific && Object.keys(memberLevels).length > 0 ? memberLevels : (ctx?.levels ?? {});
   const projection = useMemo(
     () =>
       projectPlan({
         emphasis: total === 100 ? state.emphasis : normalizeEmphasis(state.emphasis),
         weeks,
         frequency: state.frequency,
-        levelMix: ctx?.levels ?? {},
+        levelMix,
         tests: state.tests,
         ...(ctx?.calibration ? { calibration: ctx.calibration } : {}),
       }),
-    [state.emphasis, state.frequency, state.tests, weeks, ctx, total],
+    [state.emphasis, state.frequency, state.tests, weeks, ctx, total, levelMix],
   );
 
   // --- El arquitecto con IA ---
@@ -231,7 +337,10 @@ export function PlanWizardPage() {
       setState((s) => ({
         ...s,
         templateCode: p.templateCode,
-        name: p.name,
+        name:
+          audienceLabel && !p.name.includes(audienceLabel)
+            ? `${audienceLabel} · ${p.name}`
+            : p.name,
         goal: aiGoal,
         weeks: p.weeks,
         emphasis: p.emphasis,
@@ -241,7 +350,7 @@ export function PlanWizardPage() {
       }));
       setPicked(true);
     }
-  }, [aiGen, aiGoal, t]);
+  }, [aiGen, aiGoal, t, audienceLabel]);
 
   async function askArchitect(e: FormEvent) {
     e.preventDefault();
@@ -288,8 +397,20 @@ export function PlanWizardPage() {
           frequency: state.frequency,
           tests: state.tests,
           closures: state.closures,
+          weekdays: state.weekdays,
+          audience: who.audience,
+          ...(specific
+            ? {
+                audienceLevel: who.audience === "level" ? who.level : null,
+                audienceName: who.audience === "group" ? who.name.trim() || null : null,
+                members: who.members,
+                replace: who.replace,
+              }
+            : {}),
           ...(state.phases ? { phases: state.phases } : {}),
-          activate: state.activate && !ctx.active,
+          // Todo el box con otro plan activo: o se sustituye, o el nuevo va en borrador.
+          activate: specific || !ctx.active ? state.activate : state.replaceActive,
+          ...(!specific && ctx.active && state.replaceActive ? { replaceActive: true } : {}),
         },
         schema: PlanResponseSchema,
       });
@@ -299,7 +420,9 @@ export function PlanWizardPage() {
     } catch (err) {
       toast(
         "error",
-        err instanceof ApiClientError && err.status === 409 ? t("activeTaken") : errorText(err),
+        err instanceof ApiClientError && err.status === 409 && !specific
+          ? t("activeTaken")
+          : errorText(err),
       );
     } finally {
       setCreating(false);
@@ -307,15 +430,25 @@ export function PlanWizardPage() {
   }
 
   const index = STEPS.indexOf(step);
+  const audienceReady =
+    who.audience === "section" ||
+    (who.members.length > 0 &&
+      unresolved === 0 &&
+      (who.audience !== "level" || who.level !== null) &&
+      (who.audience !== "group" || who.name.trim().length > 0) &&
+      (who.audience !== "athlete" || who.members.length === 1));
   const canNext =
-    step === "goal"
-      ? picked
-      : step === "calendar"
-        ? state.name.trim().length > 0 &&
-          (!template.untilEvent || !state.eventDate || state.eventDate > state.startsOn)
-        : step === "emphasis"
-          ? total === 100
-          : true;
+    step === "audience"
+      ? audienceReady
+      : step === "goal"
+        ? picked
+        : step === "calendar"
+          ? state.name.trim().length > 0 &&
+            state.weekdays.length > 0 &&
+            (!template.untilEvent || !state.eventDate || state.eventDate > state.startsOn)
+          : step === "emphasis"
+            ? total === 100
+            : true;
 
   if (context.isError) {
     return (
@@ -349,9 +482,11 @@ export function PlanWizardPage() {
       ) : null}
 
       {ctx && !ctx.canWrite ? <Alert kind="info">{t("readOnly")}</Alert> : null}
-      {ctx?.active ? <Alert kind="info">{t("hasActive", { name: ctx.active.name })}</Alert> : null}
+      {ctx?.active && !specific ? (
+        <Alert kind="info">{t("hasActive", { name: ctx.active.name })}</Alert>
+      ) : null}
 
-      <ol className="grid grid-cols-6 gap-1.5" aria-label={t("steps")}>
+      <ol className="grid grid-cols-7 gap-1.5" aria-label={t("steps")}>
         {STEPS.map((s, i) => (
           <li key={s}>
             <button
@@ -380,6 +515,100 @@ export function PlanWizardPage() {
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
         <div className="flex min-w-0 flex-col gap-5">
+          {step === "audience" ? (
+            <Card title={t("audience.title")} description={t("audience.hint")}>
+              <div className="flex flex-col gap-5">
+                <ul className="grid gap-3 sm:grid-cols-2">
+                  {PLAN_AUDIENCES.map((a) => {
+                    const selected = who.audience === a;
+                    return (
+                      <li key={a}>
+                        <button
+                          type="button"
+                          aria-pressed={selected}
+                          onClick={() => chooseAudience(a)}
+                          className={`flex h-full w-full items-start gap-3 rounded-card border-2 bg-surface p-4 text-left transition-colors ${
+                            selected
+                              ? "border-club"
+                              : "border-transparent shadow-card hover:border-line"
+                          }`}
+                        >
+                          <span
+                            className={`grid size-10 shrink-0 place-items-center rounded-full ${
+                              selected ? "bg-club text-on-club" : "bg-raised text-ink"
+                            }`}
+                          >
+                            {AUDIENCE_ICON[a]}
+                          </span>
+                          <span className="flex min-w-0 flex-col gap-0.5">
+                            <span className="text-title3 text-ink">{t(`audience.${a}.name`)}</span>
+                            <span className="text-secondary text-muted">
+                              {t(`audience.${a}.body`, { section: ctx?.section.name ?? "" })}
+                            </span>
+                          </span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+
+                {who.audience === "level" && !candidates.data ? (
+                  <div className="h-16 animate-pulse rounded-card bg-raised" />
+                ) : null}
+                {who.audience === "level" && candidates.data ? (
+                  <div className="flex flex-col gap-2">
+                    <span className="text-secondary font-medium text-ink">
+                      {t("audience.whichLevel")}
+                    </span>
+                    <div className="max-w-full overflow-x-auto">
+                      <Segmented<string>
+                        label={t("audience.whichLevel")}
+                        value={who.level ?? ""}
+                        onChange={(l) => chooseLevel(l as WorkoutLevel)}
+                        options={WORKOUT_LEVELS.map((l) => ({
+                          key: l,
+                          label: `${levelName(l)} · ${levelCount(l)}`,
+                        }))}
+                      />
+                    </div>
+                    <span className="text-label text-muted">{t("audience.levelHint")}</span>
+                  </div>
+                ) : null}
+
+                {who.audience === "group" ? (
+                  <Field label={t("audience.groupName")} hint={t("audience.groupNameHint")}>
+                    {(id, describedBy) => (
+                      <Input
+                        id={id}
+                        maxLength={80}
+                        aria-describedby={describedBy}
+                        value={who.name}
+                        placeholder={t("audience.groupPlaceholder")}
+                        onChange={(e) => setWho((w) => ({ ...w, name: e.target.value }))}
+                      />
+                    )}
+                  </Field>
+                ) : null}
+
+                {!specific ? (
+                  <p className="rounded-control bg-raised p-3 text-secondary text-ink">
+                    {t("audience.sectionNote", { section: ctx?.section.name ?? "" })}
+                  </p>
+                ) : who.audience === "level" && who.level === null ? null : candidates.data ? (
+                  <PlanMembersEditor
+                    candidates={pool}
+                    members={who.members}
+                    replace={who.replace}
+                    single={who.audience === "athlete"}
+                    onChange={(members, replace) => setWho((w) => ({ ...w, members, replace }))}
+                  />
+                ) : (
+                  <div className="h-40 animate-pulse rounded-card bg-raised" />
+                )}
+              </div>
+            </Card>
+          ) : null}
+
           {step === "goal" ? (
             <>
               <Card title={t("ai.title")} description={t("ai.description")}>
@@ -621,6 +850,36 @@ export function PlanWizardPage() {
                   </ul>
                 </div>
               ) : null}
+              <div className="mt-5 flex flex-col gap-2">
+                <span className="text-secondary font-medium text-ink" id="training-days">
+                  {t("weekdays")}
+                </span>
+                <span className="text-secondary text-muted">
+                  {specific ? t("weekdaysHintOwn") : t("weekdaysHint")}
+                </span>
+                <ul className="flex flex-wrap gap-2" aria-labelledby="training-days">
+                  {[1, 2, 3, 4, 5, 6, 7].map((d) => {
+                    const on = state.weekdays.includes(d);
+                    return (
+                      <li key={d}>
+                        <button
+                          type="button"
+                          aria-pressed={on}
+                          aria-label={names.weekday(d)}
+                          onClick={() => toggleWeekday(d)}
+                          className={`inline-flex size-11 items-center justify-center rounded-full border text-secondary font-semibold ${
+                            on
+                              ? "border-club bg-club text-on-club"
+                              : "border-line bg-surface text-ink"
+                          }`}
+                        >
+                          {names.weekdayShort(d)}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
             </Card>
           ) : null}
 
@@ -744,6 +1003,7 @@ export function PlanWizardPage() {
             <BoxFacts
               ctx={ctx}
               frequency={state.frequency}
+              own={specific}
               onFrequency={(f) => set("frequency", f)}
               levelName={levelName}
               missing={missingEquipment(template, inventory)}
@@ -771,23 +1031,48 @@ export function PlanWizardPage() {
                 ) : null}
                 <CycleMap structure={structure} startsOn={state.startsOn} current={null} />
                 <EmphasisBar emphasis={structure.blocks[0]?.emphasis ?? state.emphasis} />
-                <label className="flex items-start gap-3 rounded-control bg-raised p-3">
-                  <input
-                    type="checkbox"
-                    checked={state.activate && !ctx?.active}
-                    disabled={Boolean(ctx?.active)}
-                    onChange={(e) => set("activate", e.target.checked)}
-                    className="mt-1 size-4"
-                  />
-                  <span className="flex flex-col">
-                    <span className="font-medium text-ink">{t("activate")}</span>
-                    <span className="text-secondary text-muted">
-                      {ctx?.active
-                        ? t("activateTaken", { name: ctx.active.name })
-                        : t("activateHint")}
+                {specific ? (
+                  <p className="text-secondary text-ink">
+                    {t("summaryWho", {
+                      who: audienceLabel || t(`audience.${who.audience}.name`),
+                      count: who.members.length,
+                      moving: who.replace.length,
+                    })}
+                  </p>
+                ) : null}
+                {!specific && ctx?.active ? (
+                  <label className="flex items-start gap-3 rounded-control bg-raised p-3">
+                    <input
+                      type="checkbox"
+                      checked={state.replaceActive}
+                      onChange={(e) => set("replaceActive", e.target.checked)}
+                      className="mt-1 size-4"
+                    />
+                    <span className="flex flex-col">
+                      <span className="font-medium text-ink">
+                        {t("replaceActive", { name: ctx.active.name })}
+                      </span>
+                      <span className="text-secondary text-muted">
+                        {t("replaceActiveHint", { name: ctx.active.name })}
+                      </span>
                     </span>
-                  </span>
-                </label>
+                  </label>
+                ) : (
+                  <label className="flex items-start gap-3 rounded-control bg-raised p-3">
+                    <input
+                      type="checkbox"
+                      checked={state.activate}
+                      onChange={(e) => set("activate", e.target.checked)}
+                      className="mt-1 size-4"
+                    />
+                    <span className="flex flex-col">
+                      <span className="font-medium text-ink">{t("activate")}</span>
+                      <span className="text-secondary text-muted">
+                        {specific ? t("activateHintOwn") : t("activateHint")}
+                      </span>
+                    </span>
+                  </label>
+                )}
               </div>
             </Card>
           ) : null}
@@ -829,7 +1114,10 @@ export function PlanWizardPage() {
                 calibrated={ctx?.calibration ?? null}
               />
             ) : (
-              <p className="text-secondary text-muted">{c("loading")}</p>
+              <div className="flex items-center gap-3 rounded-control border-2 border-dashed border-line p-4 text-secondary text-muted">
+                <Icon.ChartBar size={20} aria-hidden="true" className="shrink-0" />
+                {t("expectPending")}
+              </div>
             )}
           </Card>
         </aside>
@@ -842,12 +1130,15 @@ export function PlanWizardPage() {
 function BoxFacts({
   ctx,
   frequency,
+  own,
   onFrequency,
   levelName,
   missing,
 }: {
   ctx: ReturnType<typeof usePlanningContext>["data"] | null;
   frequency: number;
+  /** Plan propio: la frecuencia es la de su gente, no la media del box. */
+  own: boolean;
   onFrequency: (f: number) => void;
   levelName: ReturnType<typeof useLevelName>;
   missing: readonly string[];
@@ -971,13 +1262,22 @@ function BoxFacts({
       </ul>
       <div className="mt-4 flex flex-col gap-2">
         <span className="text-secondary font-medium text-ink">{t("reference")}</span>
-        <Segmented<string>
-          label={t("reference")}
-          value={String(frequency)}
-          onChange={(v) => onFrequency(Number(v))}
-          options={[2, 3, 4].map((d) => ({ key: String(d), label: t("days", { days: d }) }))}
-        />
-        <span className="text-label text-muted">{t("referenceHint")}</span>
+        <div className="max-w-full overflow-x-auto">
+          <Segmented<string>
+            label={t("reference")}
+            value={String(frequency)}
+            onChange={(v) => onFrequency(Number(v))}
+            options={Array.from(
+              { length: PLAN_FREQUENCY_MAX - PLAN_FREQUENCY_MIN + 1 },
+              (_, i) => PLAN_FREQUENCY_MIN + i,
+            ).map((d) => ({ key: String(d), label: String(d) }))}
+          />
+        </div>
+        <span className="text-label text-muted">
+          {t("referenceDays", { days: frequency })}
+          {" · "}
+          {own ? t("referenceHintOwn") : t("referenceHint")}
+        </span>
       </div>
     </Card>
   );

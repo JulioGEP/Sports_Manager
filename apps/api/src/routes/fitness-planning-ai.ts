@@ -55,6 +55,7 @@ import {
 import {
   clubToday,
   disciplineFor,
+  isSpecific,
   loadWeek,
   planSections,
   requirePlan,
@@ -286,7 +287,7 @@ export function addPlanningAiRoutes(app: OpenAPIHono<AppEnv>, config: ApiConfig,
           tenant.scope,
           addDays(plan.startsOn, (n - 2) * 7),
           addDays(plan.startsOn, (n - 1) * 7 - 1),
-          { sectionIds: [plan.section.id] },
+          { sectionIds: [plan.section.id], plan: isSpecific(plan) ? plan.id : undefined },
         ),
         n > 1 && addDays(plan.startsOn, (n - 1) * 7) <= clubToday(c)
           ? computeReview(data, tenant.scope, tz, plan, n - 1)
@@ -522,6 +523,7 @@ export function addPlanningAiRoutes(app: OpenAPIHono<AppEnv>, config: ApiConfig,
       intentEffort: info?.effort ?? null,
       intentFeel: session.intentFeel,
       why,
+      specific: isSpecific(plan),
     };
   }
 
@@ -567,6 +569,7 @@ export function addPlanningAiRoutes(app: OpenAPIHono<AppEnv>, config: ApiConfig,
         const existing = dates.length
           ? await data.workouts.list(tenant.scope, dates[0]!, dates.at(-1)!, {
               sectionIds: [plan.section.id],
+              plan: isSpecific(plan) ? plan.id : undefined,
             })
           : [];
         const onDay = (date: string) =>

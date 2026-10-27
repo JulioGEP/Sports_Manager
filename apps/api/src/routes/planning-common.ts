@@ -26,6 +26,7 @@ import {
   type Emphasis,
   type MovementPattern,
   type PlanDiscipline,
+  type PlanMember,
   type PlanSummary,
   type PlanView,
   type Prescription,
@@ -43,6 +44,7 @@ import {
   type WorkoutBlockRecord,
   type WorkoutRecord,
 } from "../data/index.ts";
+import { playerPhotoUrlFor } from "../data/player-profile.ts";
 import { accessScopeOf } from "../http/actor.ts";
 import { forbidden, notFound } from "../http/errors.ts";
 import { orgOf, todayIn, type Ctx } from "./fitness-common.ts";
@@ -104,6 +106,47 @@ export function planSummaryDto(plan: BoxPlanRecord, today: string): PlanSummary 
     endsOn: planEndsOn(plan.startsOn, plan.weeks),
     weeks: plan.weeks,
     currentWeek: currentWeekOf(plan, today),
+    audience: plan.audience,
+    audienceLevel: plan.audienceLevel,
+    audienceName: plan.audienceName,
+    members: plan.members,
+  };
+}
+
+/** Un plan propio (de un nivel, un grupo o una persona): tiene su lista y sus propias sesiones. */
+export const isSpecific = (plan: Pick<BoxPlanRecord, "audience">) => plan.audience !== "section";
+
+/** Días de entreno de un plan: los suyos o, si no los tiene, los que tienen papel en su estructura. */
+export function weekdaysOf(plan: Pick<BoxPlanRecord, "weekdays" | "structure">): number[] {
+  if (plan.weekdays.length > 0) return [...plan.weekdays].sort((a, b) => a - b);
+  const days = new Set<number>();
+  for (const w of plan.structure.weeks) w.roles.forEach((r, i) => r && days.add(i + 1));
+  return [...days].sort((a, b) => a - b);
+}
+
+/** Los atletas de un plan propio con su nivel, su foto y su cuota de programación. */
+export async function memberListOf(
+  data: DataLayer,
+  scope: OrgScope,
+  plan: BoxPlanRecord,
+  today: string,
+  slug: string,
+): Promise<{ members: PlanMember[]; feeTracking: boolean }> {
+  const rows = isSpecific(plan) ? await data.planning.plans.members(scope, plan.id) : [];
+  const ids = rows.map((r) => r.playerId);
+  const [levels, fees] = await Promise.all([
+    data.planning.primaryLevels(scope, addDays(today, -60), ids),
+    data.planning.programmingFees(scope, ids, today),
+  ]);
+  return {
+    members: rows.map((r) => ({
+      playerId: r.playerId,
+      name: `${r.firstName} ${r.lastName}`.trim(),
+      photoUrl: playerPhotoUrlFor(r.photoBlobKey, slug, r.playerId),
+      level: levels.get(r.playerId) ?? null,
+      fee: fees ? (fees.get(r.playerId) ?? "none") : null,
+    })),
+    feeTracking: fees !== null,
   };
 }
 
@@ -144,10 +187,12 @@ export async function planViewDto(
   plan: BoxPlanRecord,
   today: string,
   canWrite: boolean,
+  slug: string,
 ): Promise<PlanView> {
-  const [baselines, workouts] = await Promise.all([
+  const [baselines, workouts, list] = await Promise.all([
     baselinesOf(data, scope, plan),
     data.planning.plans.workoutCount(scope, plan.id),
+    memberListOf(data, scope, plan, today, slug),
   ]);
   return {
     ...planSummaryDto(plan, today),
@@ -162,6 +207,9 @@ export async function planViewDto(
     projection: plan.projection,
     baselines,
     workouts,
+    weekdays: weekdaysOf(plan),
+    memberList: list.members,
+    feeTracking: list.feeTracking,
     canWrite,
     createdAt: plan.createdAt.toISOString(),
   };
@@ -191,6 +239,8 @@ export interface WeekContext {
   schedule: Awaited<ReturnType<DataLayer["planning"]["schedule"]>>;
   classes: Map<string, { count: number; capacity: number }>;
   combos: DayCombo[];
+  /** Los atletas de un plan propio; en uno de todo el box, ninguno (cuenta todo el box). */
+  members: string[] | undefined;
 }
 
 /** Lo que hace falta para mirar una semana: sus WODs, la biblioteca, el material y la gente. */
@@ -204,9 +254,14 @@ export async function loadWeek(
 ): Promise<WeekContext> {
   const monday = planWeekStart(plan.startsOn, n);
   const dates = Array.from({ length: 7 }, (_, i) => addDays(monday, i));
+  // Un plan propio mira sus sesiones y a su gente; uno de todo el box, los WODs y a todo el box.
+  const members = isSpecific(plan)
+    ? (await data.planning.plans.members(scope, plan.id)).map((r) => r.playerId)
+    : undefined;
   const [list, exercises, inventory, schedule, classes, attendance] = await Promise.all([
     data.workouts.list(scope, addDays(monday, -1), addDays(monday, 6), {
       sectionIds: [plan.section.id],
+      plan: isSpecific(plan) ? plan.id : undefined,
     }),
     data.exercises.list(scope, { includeArchived: true }),
     data.planning.equipment.lines(scope),
@@ -224,6 +279,7 @@ export async function loadWeek(
       new Date(now.getTime() - 56 * DAY),
       now,
       timezone,
+      members,
     ),
   ]);
   // Un WOD por día: el de la disciplina entera antes que el de un tipo de clase.
@@ -243,6 +299,7 @@ export async function loadWeek(
     schedule,
     classes,
     combos: frequentCombos(attendance),
+    members,
   };
 }
 
@@ -478,6 +535,7 @@ export function upsertFrom(w: WorkoutRecord, patch: Partial<WorkoutUpsert> = {})
     intentEffort: w.intentEffort,
     intentFeel: w.intentFeel,
     why: w.why,
+    specific: w.specific,
     ...patch,
   };
 }

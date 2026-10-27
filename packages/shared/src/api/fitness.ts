@@ -23,7 +23,7 @@ import { STORED_AVAILABILITY_STATUSES } from "../training.ts";
 import { AI_FAILURES, AI_GENERATION_STATUSES } from "../training-ai.ts";
 import { AiQuotaSchema } from "./training-ai.ts";
 import { CAPACITIES, DAY_ROLES, TIME_DOMAINS, WORKOUT_TRACKS } from "../capacities.ts";
-import { LEVEL_CAPACITIES } from "../planning.ts";
+import { LEVEL_CAPACITIES, PLAN_AUDIENCES } from "../planning.ts";
 
 /** Contratos de los clubs de fitness (ADR 0049). */
 
@@ -142,6 +142,8 @@ export const AttendeeSchema = z.object({
   status: z.enum(BOOKING_STATUSES).nullable(),
   /** Para el personal: nivel habitual (último resultado) y una nota corta. */
   note: z.string().nullable(),
+  /** Para el personal: el plan propio que sigue (su sesión no es el WOD del box), si lo tiene. */
+  ownPlan: z.string().nullable().optional(),
 });
 export type Attendee = z.infer<typeof AttendeeSchema>;
 
@@ -245,8 +247,11 @@ export const WorkoutViewSchema = z.object({
       weeks: z.number().int(),
       blockKind: z.string(),
       blockLabel: z.string(),
+      audience: z.enum(PLAN_AUDIENCES),
     })
     .nullable(),
+  /** La sesión de un plan propio, no la del box (ADR 0054). */
+  specific: z.boolean(),
   dayRole: z.enum(DAY_ROLES).nullable(),
   intent: z
     .object({

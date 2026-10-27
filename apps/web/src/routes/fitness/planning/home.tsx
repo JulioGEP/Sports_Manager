@@ -8,6 +8,7 @@ import {
 } from "@sportsmanager/shared";
 import { useState } from "react";
 import { useNavigate } from "react-router";
+import { useAudienceLabel } from "@/components/fitness/planning-members";
 import { CycleMap, usePlanNames, WeekRoles } from "@/components/fitness/planning-ui";
 import { useHas, useStaffError } from "@/components/fitness/staff-ui";
 import { apiFetch } from "@/lib/api";
@@ -41,7 +42,8 @@ const STATUS_KIND = {
 
 /**
  * Planificación del box (ADR 0053): el plan activo de cada disciplina con su punto del ciclo, los
- * borradores y los terminados. Sin plan, cómo se empieza: una plantilla o lo que proponga la IA.
+ * planes propios activos (de un nivel, un grupo o una persona, ADR 0054), los borradores y los
+ * terminados. Sin plan, cómo se empieza: una plantilla o lo que proponga la IA.
  */
 export function PlanningHomePage() {
   const t = useT("fitness.planning.home");
@@ -52,7 +54,8 @@ export function PlanningHomePage() {
   const plans = usePlans();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const list = plans.data?.plans ?? [];
-  const active = list.filter((p) => p.status === "active");
+  const active = list.filter((p) => p.status === "active" && p.audience === "section");
+  const own = list.filter((p) => p.status === "active" && p.audience !== "section");
   const others = list.filter((p) => p.status !== "active");
   const canProgram = has("org.training.write") || has("org.training.write_own");
 
@@ -131,6 +134,16 @@ export function PlanningHomePage() {
         <ActivePlanCard key={p.id} summary={p} />
       ))}
 
+      {own.length > 0 ? (
+        <Card title={t("ownPlans")} description={t("ownPlansHint")} padded={false}>
+          <ul className="flex flex-col divide-y divide-line">
+            {own.map((p) => (
+              <PlanRow key={p.id} plan={p} />
+            ))}
+          </ul>
+        </Card>
+      ) : null}
+
       {others.length > 0 ? (
         <Card title={t("others")} padded={false}>
           <ul className="flex flex-col divide-y divide-line">
@@ -152,6 +165,8 @@ function PlanRow({ plan }: { plan: PlanSummary }) {
   const { slug } = useReadyClub();
   const paths = clubPaths(slug);
   const navigate = useNavigate();
+  const audienceLabel = useAudienceLabel();
+  const own = plan.audience !== "section";
   return (
     <li>
       <button
@@ -159,11 +174,19 @@ function PlanRow({ plan }: { plan: PlanSummary }) {
         onClick={() => void navigate(paths.planningPlan(plan.id))}
         className="flex min-h-16 w-full items-center gap-3 px-5 py-3 text-left hover:bg-raised"
       >
-        <span className="flex min-w-0 flex-1 flex-col">
+        <span className="flex min-w-0 flex-1 flex-col gap-1">
           <span className="truncate font-medium text-ink">{plan.name}</span>
           <span className="truncate text-secondary text-muted">
-            {`${plan.section.name} · ${names.shortDate(plan.startsOn)} – ${names.shortDate(plan.endsOn)} · ${t("weeks", { weeks: plan.weeks })}`}
+            {plan.status === "active" && plan.currentWeek
+              ? `${plan.section.name} · ${t("weekOf", { n: plan.currentWeek, weeks: plan.weeks })}`
+              : `${plan.section.name} · ${names.shortDate(plan.startsOn)} – ${names.shortDate(plan.endsOn)} · ${t("weeks", { weeks: plan.weeks })}`}
           </span>
+          {own ? (
+            <span className="flex flex-wrap gap-1.5">
+              <StatusChip kind="club">{audienceLabel(plan)}</StatusChip>
+              <StatusChip kind="neutral">{t("athletes", { count: plan.members })}</StatusChip>
+            </span>
+          ) : null}
         </span>
         <StatusChip kind={STATUS_KIND[plan.status]}>{t(`status.${plan.status}`)}</StatusChip>
         <Icon.CaretRight size={18} aria-hidden="true" className="text-muted" />
@@ -181,6 +204,7 @@ function ActivePlanCard({ summary }: { summary: PlanSummary }) {
   const paths = clubPaths(slug);
   const navigate = useNavigate();
   const plan = usePlan(summary.id);
+  const audienceLabel = useAudienceLabel();
   const view = plan.data?.plan;
   const n = summary.currentWeek;
   const week = view && n ? view.structure.weeks[n - 1] : undefined;
@@ -190,6 +214,7 @@ function ActivePlanCard({ summary }: { summary: PlanSummary }) {
         <span className="flex flex-wrap items-center gap-2">
           {summary.name}
           <StatusChip kind="success">{t("status.active")}</StatusChip>
+          <StatusChip kind="neutral">{audienceLabel(summary)}</StatusChip>
         </span>
       }
       description={

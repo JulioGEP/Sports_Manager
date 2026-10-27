@@ -296,8 +296,10 @@ export function workoutDto(
             weeks: w.plan.weeks,
             blockKind: week.kind,
             blockLabel: blockLabel(w.plan.structure, week.block, locale),
+            audience: w.plan.audience,
           }
         : null,
+    specific: w.specific,
     dayRole: w.dayRole,
     intent:
       w.intentDomain || w.intentEffort || w.intentFeel

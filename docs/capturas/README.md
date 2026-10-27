@@ -778,9 +778,9 @@ Cuentas, con contraseña `123456`: `atleta@demo.test` (Laia Ferrer, atleta con t
 
 ## Planificación del box (ADR 0053)
 
-### Planificación: el plan activo de cada disciplina, su punto del ciclo y el papel de cada día
+### Planificación: el plan activo de cada disciplina, su punto del ciclo, el papel de cada día y los planes propios
 
-![Planificación: el plan activo de cada disciplina, su punto del ciclo y el papel de cada día](escritorio-300-box-planificacion.png)
+![Planificación: el plan activo de cada disciplina, su punto del ciclo, el papel de cada día y los planes propios](escritorio-300-box-planificacion.png)
 
 ### El plan: dónde está el box, el mapa del ciclo, el reparto de los 100 puntos y lo que se puede esperar
 
@@ -802,21 +802,21 @@ Cuentas, con contraseña `123456`: `atleta@demo.test` (Laia Ferrer, atleta con t
 
 ![El material del box, con lo que está en reparación](escritorio-305-box-material.png)
 
-### Nuevo plan, paso 1: la IA o una plantilla, con la proyección al lado
+### Nuevo plan, paso 2: la IA o una plantilla, con la proyección al lado
 
-![Nuevo plan, paso 1: la IA o una plantilla, con la proyección al lado](escritorio-306-box-plan-nuevo-objetivo.png)
+![Nuevo plan, paso 2: la IA o una plantilla, con la proyección al lado](escritorio-306-box-plan-nuevo-objetivo.png)
 
-### Nuevo plan, paso 3: repartir 100 puntos entre seis capacidades
+### Nuevo plan, paso 4: repartir 100 puntos entre seis capacidades
 
-![Nuevo plan, paso 3: repartir 100 puntos entre seis capacidades](escritorio-307-box-plan-nuevo-enfasis.png)
+![Nuevo plan, paso 4: repartir 100 puntos entre seis capacidades](escritorio-307-box-plan-nuevo-enfasis.png)
 
-### Nuevo plan, paso 5: lo que ya sabe el box y de dónde sale cada dato
+### Nuevo plan, paso 6: lo que ya sabe el box, de dónde sale cada dato y la frecuencia de 1 a 7
 
-![Nuevo plan, paso 5: lo que ya sabe el box y de dónde sale cada dato](escritorio-308-box-plan-nuevo-tu-box.png)
+![Nuevo plan, paso 6: lo que ya sabe el box, de dónde sale cada dato y la frecuencia de 1 a 7](escritorio-308-box-plan-nuevo-tu-box.png)
 
-### Nuevo plan, paso 6: el resumen con el mapa del ciclo
+### Nuevo plan, paso 7: el resumen con el mapa del ciclo y sustituir el plan activo
 
-![Nuevo plan, paso 6: el resumen con el mapa del ciclo](escritorio-309-box-plan-nuevo-resumen.png)
+![Nuevo plan, paso 7: el resumen con el mapa del ciclo y sustituir el plan activo](escritorio-309-box-plan-nuevo-resumen.png)
 
 ### El editor del WOD con la intención del día y los campos del plan
 
@@ -833,6 +833,20 @@ Cuentas, con contraseña `123456`: `atleta@demo.test` (Laia Ferrer, atleta con t
 ### Tu ciclo en cifras, para guardar o compartir
 
 ![Tu ciclo en cifras, para guardar o compartir](escritorio-317-box-atleta-ciclo-cifras.png)
+
+## Planes para quien sea (ADR 0054)
+
+### Nuevo plan, paso 1: para quién; Carla ya sigue un plan propio y hay que decidir si se le anula
+
+![Nuevo plan, paso 1: para quién; Carla ya sigue un plan propio y hay que decidir si se le anula](escritorio-318-box-plan-nuevo-para-quien.png)
+
+### Un plan propio (grupo de competición): sus atletas con nivel y cuota de programación
+
+![Un plan propio (grupo de competición): sus atletas con nivel y cuota de programación](escritorio-319-box-plan-propio-atletas.png)
+
+### Cambiar los atletas de un plan propio: quitar, buscar y añadir
+
+![Cambiar los atletas de un plan propio: quitar, buscar y añadir](escritorio-320-box-plan-propio-cambiar-atletas.png)
 
 ## Móvil
 
@@ -1082,7 +1096,7 @@ Las mismas pantallas en un móvil, con la forma envolvente del design system: ca
 
 ### Planificación del box (móvil)
 
-![Planificación: el plan activo de cada disciplina, su punto del ciclo y el papel de cada día (móvil)](movil-300-box-planificacion.png)
+![Planificación: el plan activo de cada disciplina, su punto del ciclo, el papel de cada día y los planes propios (móvil)](movil-300-box-planificacion.png)
 
 ![El plan: dónde está el box, el mapa del ciclo, el reparto de los 100 puntos y lo que se puede esperar (móvil)](movil-301-box-plan-mapa.png)
 
@@ -1094,13 +1108,13 @@ Las mismas pantallas en un móvil, con la forma envolvente del design system: ca
 
 ![El material del box, con lo que está en reparación (móvil)](movil-305-box-material.png)
 
-![Nuevo plan, paso 1: la IA o una plantilla, con la proyección al lado (móvil)](movil-306-box-plan-nuevo-objetivo.png)
+![Nuevo plan, paso 2: la IA o una plantilla, con la proyección al lado (móvil)](movil-306-box-plan-nuevo-objetivo.png)
 
-![Nuevo plan, paso 3: repartir 100 puntos entre seis capacidades (móvil)](movil-307-box-plan-nuevo-enfasis.png)
+![Nuevo plan, paso 4: repartir 100 puntos entre seis capacidades (móvil)](movil-307-box-plan-nuevo-enfasis.png)
 
-![Nuevo plan, paso 5: lo que ya sabe el box y de dónde sale cada dato (móvil)](movil-308-box-plan-nuevo-tu-box.png)
+![Nuevo plan, paso 6: lo que ya sabe el box, de dónde sale cada dato y la frecuencia de 1 a 7 (móvil)](movil-308-box-plan-nuevo-tu-box.png)
 
-![Nuevo plan, paso 6: el resumen con el mapa del ciclo (móvil)](movil-309-box-plan-nuevo-resumen.png)
+![Nuevo plan, paso 7: el resumen con el mapa del ciclo y sustituir el plan activo (móvil)](movil-309-box-plan-nuevo-resumen.png)
 
 ![El editor del WOD con la intención del día y los campos del plan (móvil)](movil-310-box-plan-editor-intencion.png)
 
@@ -1109,3 +1123,11 @@ Las mismas pantallas en un móvil, con la forma envolvente del design system: ca
 ![Tu ciclo: dónde estás, tus marcas con su rango, tu constancia y tu nivel (móvil)](movil-316-box-atleta-ciclo.png)
 
 ![Tu ciclo en cifras, para guardar o compartir (móvil)](movil-317-box-atleta-ciclo-cifras.png)
+
+### Planes para quien sea (móvil)
+
+![Nuevo plan, paso 1: para quién; Carla ya sigue un plan propio y hay que decidir si se le anula (móvil)](movil-318-box-plan-nuevo-para-quien.png)
+
+![Un plan propio (grupo de competición): sus atletas con nivel y cuota de programación (móvil)](movil-319-box-plan-propio-atletas.png)
+
+![Cambiar los atletas de un plan propio: quitar, buscar y añadir (móvil)](movil-320-box-plan-propio-cambiar-atletas.png)

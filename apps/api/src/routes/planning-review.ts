@@ -106,6 +106,7 @@ export async function computeReview(
       instantOf(timezone, ctx.monday),
       instantOf(timezone, addDays(ctx.monday, 7)),
       timezone,
+      ctx.members,
     ),
     data.planning.attendance(
       scope,
@@ -113,8 +114,9 @@ export async function computeReview(
       instantOf(timezone, addDays(ctx.monday, -28)),
       instantOf(timezone, ctx.monday),
       timezone,
+      ctx.members,
     ),
-    data.planning.prCount(scope, ctx.monday, addDays(ctx.monday, 6)),
+    data.planning.prCount(scope, ctx.monday, addDays(ctx.monday, 6), ctx.members),
   ]);
   const byBlock = new Map<string, typeof results>();
   for (const r of results) byBlock.set(r.blockId, [...(byBlock.get(r.blockId) ?? []), r]);

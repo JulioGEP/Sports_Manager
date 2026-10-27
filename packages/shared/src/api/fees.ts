@@ -30,6 +30,8 @@ export const FeePlanSchema = z.object({
   classTeamIds: z.array(z.string()).nullable(),
   /** Incluye Clase+ (ADR 0053). */
   includesPlus: z.boolean(),
+  /** Cuota de una programación propia (ADR 0054). */
+  includesProgramming: z.boolean(),
   /** Atletas con esta tarifa activa. */
   activeAthletes: z.number().int().nonnegative(),
 });

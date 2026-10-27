@@ -258,6 +258,7 @@ function WeekView({ data }: { data: PlanWeekResponse }) {
               day={d}
               planId={plan.id}
               sectionId={plan.section.id}
+              own={plan.audience !== "section"}
               week={week.n}
               canWrite={data.canWrite}
             />
@@ -382,12 +383,15 @@ function DayRow({
   day,
   planId,
   sectionId,
+  own,
   week,
   canWrite,
 }: {
   day: PlanWeekDay;
   planId: string;
   sectionId: string;
+  /** Plan propio: lo que se escribe es una sesión suya, no el WOD del box. */
+  own: boolean;
   week: number;
   canWrite: boolean;
 }) {
@@ -537,7 +541,7 @@ function DayRow({
                 </span>
                 {canWrite && !past ? (
                   <ButtonLink
-                    to={`${paths.workoutNew}?date=${day.date}&section=${sectionId}&plan=${planId}&week=${week}&role=${role}`}
+                    to={`${paths.workoutNew}?date=${day.date}&section=${sectionId}&plan=${planId}&week=${week}&role=${role}${own ? "&own=1" : ""}`}
                     variant="tertiary"
                     size="sm"
                     action="add"

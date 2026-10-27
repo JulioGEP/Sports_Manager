@@ -165,6 +165,19 @@ export function createFitnessClassRoutes(config: ApiConfig, data: DataLayer) {
     return has;
   }
 
+  /** La sesión del plan propio de un atleta para el día y la disciplina de una clase, si la hay. */
+  async function ownSessionOf(c: Ctx, playerId: string, cls: ClassRecord) {
+    const scope = orgOf(c).scope;
+    if (!cls.section) return null;
+    const plan = await data.planning.plans.specificOf(scope, playerId);
+    if (!plan || plan.section.id !== cls.section.id) return null;
+    const list = await data.workouts.list(scope, cls.date, cls.date, {
+      sectionIds: [cls.section.id],
+      plan: plan.id,
+    });
+    return list.find((w) => workoutVisible(w, new Date())) ?? null;
+  }
+
   /** Una clase tal como la ve un atleta: su reserva y si puede reservar. */
   async function athleteView(
     c: Ctx,
@@ -582,6 +595,17 @@ export function createFitnessClassRoutes(config: ApiConfig, data: DataLayer) {
     const staff = staffScope !== null && classInStaffScope(staffScope, cls);
     const manage = staff && (await canManageClass(data, c, cls));
     const all = await data.bookings.attendees(tenant.scope, cls.id);
+    // El coach ve quién sigue un plan propio en esta disciplina: ese día hace otra sesión.
+    const ownPlans = staff
+      ? await data.planning.plans.activeOf(
+          tenant.scope,
+          all.map((a) => a.playerId),
+        )
+      : new Map<string, { name: string; sectionId: string }>();
+    const ownPlanOf = (playerId: string) => {
+      const own = ownPlans.get(playerId);
+      return own && own.sectionId === cls.section?.id ? own.name : null;
+    };
     const toAttendee = (a: (typeof all)[number]): Attendee => ({
       playerId: a.playerId,
       name: personName(a),
@@ -590,6 +614,7 @@ export function createFitnessClassRoutes(config: ApiConfig, data: DataLayer) {
       isMe: player?.id === a.playerId,
       status: staff ? a.status : null,
       note: null,
+      ownPlan: ownPlanOf(a.playerId),
     });
     const seated = all.filter((a) => a.status === "booked" || a.status === "attended");
     let attendees: Attendee[];
@@ -623,12 +648,16 @@ export function createFitnessClassRoutes(config: ApiConfig, data: DataLayer) {
 
     let workout = null;
     if (cls.section) {
-      const w = await data.workouts.forClass(
-        tenant.scope,
-        cls.section.id,
-        cls.team?.id ?? null,
-        cls.date,
-      );
+      // Quien tiene plan propio ve, en su clase, la sesión de su plan en vez del WOD del box.
+      const own = player && !staff ? await ownSessionOf(c, player.id, cls) : null;
+      const w =
+        own ??
+        (await data.workouts.forClass(
+          tenant.scope,
+          cls.section.id,
+          cls.team?.id ?? null,
+          cls.date,
+        ));
       if (w && staff) {
         workout = workoutDto(w, now, localeOf(c), {
           counts: await data.workouts.results.counts(

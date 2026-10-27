@@ -422,20 +422,43 @@ export function ProgrammingPage() {
 /**
  * El plan de cada disciplina encima de la semana (ADR 0053): en qué semana y bloque está, el papel
  * de cada día y el enlace a la semana del plan, donde se escribe con su intención y su validación.
+ * Esta semana es la del WOD del box: los planes propios (ADR 0054) van aparte, con un acceso a la
+ * semana de cada uno, donde se escriben sus sesiones.
  */
 function PlanStrips({ monday, sections }: { monday: string; sections: string[] }) {
+  const t = useT("fitness.planning.strip");
+  const { slug } = useReadyClub();
+  const paths = clubPaths(slug);
   const plans = usePlans();
   const active = (plans.data?.plans ?? []).filter(
     (p) => p.status === "active" && sections.includes(p.section.id),
   );
+  const box = active.filter((p) => p.audience === "section");
+  const own = active.filter((p) => p.audience !== "section");
   if (plans.isPending) return null;
-  return active.length === 0 ? (
-    <NoPlanHint />
-  ) : (
+  return (
     <div className="flex flex-col gap-3">
-      {active.map((p) => (
+      {box.length === 0 ? <NoPlanHint /> : null}
+      {box.map((p) => (
         <PlanStrip key={p.id} id={p.id} monday={monday} />
       ))}
+      {own.length > 0 ? (
+        <nav aria-label={t("ownPlans")} className="flex flex-wrap items-center gap-2">
+          <span className="text-secondary font-medium text-muted">{t("ownPlans")}</span>
+          {own.map((p) => (
+            <ButtonLink
+              key={p.id}
+              to={
+                p.currentWeek ? paths.planningWeek(p.id, p.currentWeek) : paths.planningPlan(p.id)
+              }
+              variant="tertiary"
+              size="sm"
+            >
+              {p.name}
+            </ButtonLink>
+          ))}
+        </nav>
+      ) : null}
     </div>
   );
 }

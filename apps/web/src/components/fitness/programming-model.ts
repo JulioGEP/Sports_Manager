@@ -310,6 +310,7 @@ export function previewOf(input: {
     createdBy: null,
     updatedAt: new Date(0).toISOString(),
     plan: null,
+    specific: false,
     dayRole: input.dayRole ?? null,
     intent: input.intent ?? null,
     why: input.why ?? [],

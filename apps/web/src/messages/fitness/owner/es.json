@@ -261,7 +261,9 @@
       "allSections": "Todas",
       "descriptionField": "Descripción",
       "plus": "Incluye Clase+",
-      "plusHint": "El extra del Open Box: el atleta ve los bloques de Clase+ de cada WOD."
+      "plusHint": "El extra del Open Box: el atleta ve los bloques de Clase+ de cada WOD.",
+      "programming": "Incluye programación propia",
+      "programmingHint": "Para quien paga un plan propio. En Planificación se ve quién la paga, quién la debe y quién no la tiene."
     },
     "kinds": {
       "none": "Sin clases",

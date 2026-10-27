@@ -10,6 +10,8 @@ import {
   MyLevelsResponseSchema,
   MyLevelUpdateSchema,
   PLAN_BLOCK_NAMES,
+  PLAN_FREQUENCY_MAX,
+  PLAN_FREQUENCY_MIN,
   planEndsOn,
   planTestByCode,
   planWeekOf,
@@ -50,6 +52,9 @@ export function createFitnessPlanningMeRoutes(config: ApiConfig, data: DataLayer
     app.use(path, ...chain);
   const audit = auditOf(data);
   const DAY = 86_400_000;
+  /** Días por semana que entrena de verdad (en 8 semanas), de 1 a 7; sin datos, 2. */
+  const usualFrequency = (sessions: number) =>
+    Math.max(PLAN_FREQUENCY_MIN, Math.min(PLAN_FREQUENCY_MAX, Math.round(sessions / 8) || 2));
 
   /** Las marcas del atleta en los tests del plan: la de partida, la última y su rango. */
   async function testsOf(
@@ -146,7 +151,7 @@ export function createFitnessPlanningMeRoutes(config: ApiConfig, data: DataLayer
         tz,
         player.id,
       );
-      const frequency = Math.max(2, Math.min(4, Math.round(recent.length / 8) || 2));
+      const frequency = usualFrequency(recent.length);
       if (!plan) {
         return c.json(
           {
@@ -347,7 +352,7 @@ export function createFitnessPlanningMeRoutes(config: ApiConfig, data: DataLayer
           player.id,
         ),
       ]);
-      const frequency = Math.max(2, Math.min(4, Math.round(recent.length / 8) || 2));
+      const frequency = usualFrequency(recent.length);
       return c.json(
         {
           plan: {

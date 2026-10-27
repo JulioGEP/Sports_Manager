@@ -19,6 +19,8 @@ import {
   planEndsOn,
   PlanCreateSchema,
   PlanDraftsResponseSchema,
+  PlanMembersUpdateSchema,
+  PlanningCandidatesResponseSchema,
   PlanningContextResponseSchema,
   PlanningSettingsResponseSchema,
   PlanningSettingsUpdateSchema,
@@ -32,13 +34,16 @@ import {
   projectPlan,
   suggestedClosures,
   weekStartOf,
+  WORKOUT_LEVELS,
   WorkoutsPublishedResponseSchema,
   type Locale,
+  type WorkoutLevel,
   type PlanStructure,
   type Projection,
 } from "@sportsmanager/shared";
 import type { ApiConfig } from "../config.ts";
-import type { DataLayer, NewBoxPlan } from "../data/index.ts";
+import type { ActivePlanRef, DataLayer, NewBoxPlan } from "../data/index.ts";
+import { playerPhotoUrlFor } from "../data/player-profile.ts";
 import { requirePermission } from "../http/actor.ts";
 import type { AppEnv } from "../http/context.ts";
 import { badRequest, conflict, forbidden, notFound } from "../http/errors.ts";
@@ -61,6 +66,7 @@ import {
   blockEmphasisOf,
   clubToday,
   disciplineFor,
+  isSpecific,
   loadWeek,
   planSections,
   planSummaryDto,
@@ -458,6 +464,85 @@ export function createFitnessPlanningRoutes(config: ApiConfig, data: DataLayer) 
     },
   );
 
+  /** Que todos sean atletas activos de este club. */
+  async function requireAthletes(c: Ctx, ids: string[]) {
+    if (ids.length === 0) return;
+    const known = new Set((await data.planning.athletes(orgOf(c).scope)).map((a) => a.playerId));
+    if (ids.some((id) => !known.has(id))) throw badRequest("Algún atleta no es de este box.");
+  }
+
+  /**
+   * Que nadie quede en dos planes propios activos: quien ya tiene otro solo entra si está en
+   * `replace` (se le anula el suyo). Si no, 409 con quién y en qué plan.
+   */
+  async function requireNoOverlap(
+    c: Ctx,
+    ids: string[],
+    replace: string[],
+    exclude: string | null,
+  ) {
+    if (ids.length === 0) return;
+    const taken = await data.planning.plans.activeOf(orgOf(c).scope, ids, exclude);
+    const blocked = [...taken.entries()].filter(([id]) => !replace.includes(id));
+    if (blocked.length === 0) return;
+    const plans = [...new Set(blocked.map(([, ref]) => ref.name))].join(", ");
+    throw conflict(
+      `${blocked.length} atleta(s) ya tienen un plan propio activo (${plans}). Anula el suyo o déjalos fuera.`,
+    );
+  }
+
+  const planRefOf = (ref: ActivePlanRef | undefined) =>
+    ref ? { id: ref.id, name: ref.name, audience: ref.audience } : null;
+
+  app.openapi(
+    createRoute({
+      method: "get",
+      path: "/api/org/planning/candidates",
+      tags: ["Planificación"],
+      summary:
+        "Atletas que pueden entrar en un plan propio: su nivel general, el plan propio que ya tienen activo y su cuota de programación",
+      security: [{ sessionCookie: [] }],
+      middleware: [read],
+      request: {
+        query: z.object({
+          section: z.string().uuid(),
+          /** El plan que se edita: no cuenta como solapamiento. */
+          plan: z.string().uuid().optional(),
+        }),
+      },
+      responses: { 200: json("Candidatos", PlanningCandidatesResponseSchema), ...errors },
+    }),
+    async (c) => {
+      const tenant = orgOf(c);
+      const query = c.req.valid("query");
+      const sections = await planSections(data, c);
+      if (!sections.visible.some((s) => s.id === query.section))
+        throw notFound("Esa disciplina no existe.");
+      const today = clubToday(c);
+      const athletes = await data.planning.athletes(tenant.scope);
+      const ids = athletes.map((a) => a.playerId);
+      const [levels, plans, fees] = await Promise.all([
+        data.planning.primaryLevels(tenant.scope, addDays(today, -60), ids),
+        data.planning.plans.activeOf(tenant.scope, ids, query.plan ?? null),
+        data.planning.programmingFees(tenant.scope, ids, today),
+      ]);
+      return c.json(
+        {
+          athletes: athletes.map((a) => ({
+            playerId: a.playerId,
+            name: `${a.firstName} ${a.lastName}`.trim(),
+            photoUrl: playerPhotoUrlFor(a.photoBlobKey, tenant.organization.slug, a.playerId),
+            level: levels.get(a.playerId) ?? null,
+            fee: fees ? (fees.get(a.playerId) ?? "none") : null,
+            plan: planRefOf(plans.get(a.playerId)),
+          })),
+          feeTracking: fees !== null,
+        },
+        200,
+      );
+    },
+  );
+
   /** La estructura y la proyección de un plan con lo que se le pide y lo que sabe el box. */
   async function buildPlan(
     c: Ctx,
@@ -474,23 +559,43 @@ export function createFitnessPlanningRoutes(config: ApiConfig, data: DataLayer) 
       phases?:
         | { kind: PlanStructure["blocks"][number]["kind"]; weeks: number; focus: string | null }[]
         | undefined;
+      /** Días de entreno; sin decir, los días con clase de la disciplina. */
+      weekdays?: number[] | undefined;
+      /** Atletas de un plan propio: su reparto de niveles mueve la proyección. */
+      members?: string[] | undefined;
     },
   ): Promise<{ structure: PlanStructure; projection: Projection }> {
     const tenant = orgOf(c);
     const template = planTemplateByCode(input.templateCode);
     if (!template) throw badRequest("Esa plantilla no existe.");
+    const since = addDays(clubToday(c), -56);
     const [schedule, discipline, levels, previous] = await Promise.all([
       data.planning.schedule(tenant.scope, input.section.id),
       disciplineFor(data, tenant.scope, input.section),
-      data.planning.levelMix(tenant.scope, input.section.id, addDays(clubToday(c), -56)),
+      input.members && input.members.length > 0
+        ? data.planning.primaryLevels(tenant.scope, since, input.members).then((map) => {
+            const mix = Object.fromEntries(WORKOUT_LEVELS.map((l) => [l, 0])) as Record<
+              WorkoutLevel,
+              number
+            >;
+            for (const l of map.values()) mix[l] += 1;
+            return mix;
+          })
+        : data.planning.levelMix(tenant.scope, input.section.id, since),
       previousPlans(c, input.section.id),
     ]);
+    const weekdays =
+      input.weekdays && input.weekdays.length > 0
+        ? input.weekdays
+        : schedule.weekdays.length > 0
+          ? schedule.weekdays
+          : [1, 2, 3, 4, 5];
     const structure = buildPlanStructure({
       template,
       discipline: template.discipline !== "crossfit" ? template.discipline : discipline.discipline,
       startsOn: weekStartOf(input.startsOn),
       weeks: input.weeks,
-      classWeekdays: schedule.weekdays.length > 0 ? schedule.weekdays : [1, 2, 3, 4, 5],
+      classWeekdays: weekdays,
       closures: input.closures,
       emphasis: input.emphasis,
       tests: input.tests,
@@ -521,13 +626,27 @@ export function createFitnessPlanningRoutes(config: ApiConfig, data: DataLayer) 
       request: body(PlanCreateSchema),
       responses: {
         201: json("Plan", PlanResponseSchema),
-        409: errorResponse("Ya hay un plan activo en esa disciplina"),
+        409: errorResponse(
+          "Ya hay un plan activo de todo el box en esa disciplina, o algún atleta ya tiene un plan propio activo",
+        ),
         ...errors,
       },
     }),
     async (c) => {
       const tenant = orgOf(c);
       const input = c.req.valid("json");
+      const audience = input.audience ?? "section";
+      const members = audience === "section" ? [] : [...new Set(input.members ?? [])];
+      if (audience !== "section" && members.length === 0)
+        throw badRequest("Un plan propio necesita al menos un atleta.");
+      if (audience === "athlete" && members.length !== 1)
+        throw badRequest("Un plan individual es para una sola persona.");
+      if (audience === "level" && !input.audienceLevel)
+        throw badRequest("Falta el nivel del grupo.");
+      await requireAthletes(c, members);
+      const activate = input.activate === true;
+      // No se solapa: quien ya tiene un plan propio activo entra solo si se le anula el suyo.
+      if (activate) await requireNoOverlap(c, members, input.replace ?? [], null);
       const sections = await planSections(data, c);
       // Que la disciplina sea del box se mira con todas; planificar en ella, con las suyas.
       const section = (await data.fitness.fitnessSections(orgOf(c).scope)).find(
@@ -548,6 +667,8 @@ export function createFitnessPlanningRoutes(config: ApiConfig, data: DataLayer) 
         closures: input.closures,
         eventDate: input.eventDate ?? null,
         phases: input.phases?.map((p) => ({ kind: p.kind, weeks: p.weeks, focus: p.focus })),
+        weekdays: input.weekdays,
+        members,
       });
       const created = await data.planning.plans.create(
         tenant.scope,
@@ -566,20 +687,43 @@ export function createFitnessPlanningRoutes(config: ApiConfig, data: DataLayer) 
           closures: [...new Set(input.closures)].sort(),
           structure,
           projection,
-          status: input.activate ? "active" : "draft",
+          status: activate ? "active" : "draft",
+          audience,
+          audienceLevel: audience === "level" ? (input.audienceLevel ?? null) : null,
+          audienceName: input.audienceName?.trim() || null,
+          weekdays: [...new Set(input.weekdays ?? [])].sort((a, b) => a - b),
         },
         c.get("sessionUser").id,
+        {
+          members,
+          replace: activate ? (input.replace ?? []) : [],
+          replaceActive: input.replaceActive === true,
+        },
       );
       if (created === "active_taken")
-        throw conflict("Ya hay un plan activo en esa disciplina. Termínalo o archívalo antes.");
+        throw conflict(
+          "Ya hay un plan activo de todo el box en esa disciplina. Termínalo o sustitúyelo.",
+        );
       await audit(c, "plan.created", created.name, {
         sectionId: section.id,
         template: created.templateCode,
         weeks: created.weeks,
         status: created.status,
+        audience,
+        members: members.length,
+        replaced: activate ? (input.replace ?? []).length : 0,
       });
       return c.json(
-        { plan: await planViewDto(data, tenant.scope, created, clubToday(c), true) },
+        {
+          plan: await planViewDto(
+            data,
+            tenant.scope,
+            created,
+            clubToday(c),
+            true,
+            tenant.organization.slug,
+          ),
+        },
         201,
       );
     },
@@ -599,7 +743,16 @@ export function createFitnessPlanningRoutes(config: ApiConfig, data: DataLayer) 
     async (c) => {
       const { plan, canWrite } = await requirePlan(data, c, c.req.valid("param").id);
       return c.json(
-        { plan: await planViewDto(data, orgOf(c).scope, plan, clubToday(c), canWrite) },
+        {
+          plan: await planViewDto(
+            data,
+            orgOf(c).scope,
+            plan,
+            clubToday(c),
+            canWrite,
+            orgOf(c).organization.slug,
+          ),
+        },
         200,
       );
     },
@@ -633,14 +786,24 @@ export function createFitnessPlanningRoutes(config: ApiConfig, data: DataLayer) 
       if (input.eventDate !== undefined) patch.eventDate = input.eventDate;
       if (input.status !== undefined) patch.status = input.status;
       if (input.frequency !== undefined) patch.frequency = input.frequency;
+      if (input.audienceName !== undefined) patch.audienceName = input.audienceName?.trim() || null;
+      if (input.weekdays !== undefined)
+        patch.weekdays = [...new Set(input.weekdays)].sort((a, b) => a - b);
+      // Activar un plan propio no puede solapar a nadie con otro plan propio activo.
+      if (input.status === "active" && plan.status !== "active" && isSpecific(plan)) {
+        const ids = (await data.planning.plans.members(tenant.scope, plan.id)).map(
+          (r) => r.playerId,
+        );
+        await requireNoOverlap(c, ids, [], plan.id);
+      }
       if (input.tests !== undefined) patch.tests = input.tests;
       if (input.emphasis !== undefined) patch.emphasis = input.emphasis;
       if (input.structure) {
         patch.structure = input.structure;
         patch.weeks = input.structure.weeks.length;
       }
-      // Cambiar el énfasis, los tests o los cierres rehace la estructura con los mismos bloques.
-      if (!input.structure && (input.emphasis || input.tests || input.closures)) {
+      // Cambiar el énfasis, los tests, los cierres o los días rehace la estructura con los mismos bloques.
+      if (!input.structure && (input.emphasis || input.tests || input.closures || input.weekdays)) {
         const phases = plan.structure.blocks.map((b) => ({
           kind: b.kind,
           weeks: b.weeks,
@@ -657,6 +820,7 @@ export function createFitnessPlanningRoutes(config: ApiConfig, data: DataLayer) 
           closures: input.closures ?? plan.closures,
           eventDate: input.eventDate !== undefined ? input.eventDate : plan.eventDate,
           phases,
+          weekdays: input.weekdays ?? (plan.weekdays.length > 0 ? plan.weekdays : undefined),
         });
         patch.structure = rebuilt.structure;
         patch.projection = rebuilt.projection;
@@ -664,14 +828,88 @@ export function createFitnessPlanningRoutes(config: ApiConfig, data: DataLayer) 
       if (input.closures !== undefined) patch.closures = [...new Set(input.closures)].sort();
       const updated = await data.planning.plans.update(tenant.scope, plan.id, patch);
       if (updated === "active_taken")
-        throw conflict("Ya hay un plan activo en esa disciplina. Termínalo o archívalo antes.");
+        throw conflict("Ya hay un plan activo de todo el box en esa disciplina. Termínalo antes.");
       if (!updated) throw notFound("Ese plan no existe.");
       await audit(c, "plan.updated", updated.name, {
         fields: Object.keys(input),
         status: updated.status,
       });
       return c.json(
-        { plan: await planViewDto(data, tenant.scope, updated, clubToday(c), true) },
+        {
+          plan: await planViewDto(
+            data,
+            tenant.scope,
+            updated,
+            clubToday(c),
+            true,
+            tenant.organization.slug,
+          ),
+        },
+        200,
+      );
+    },
+  );
+
+  app.openapi(
+    createRoute({
+      method: "put",
+      path: "/api/org/plans/{id}/members",
+      tags: ["Planificación"],
+      summary:
+        "Añade y quita atletas de un plan propio. Quien ya tiene otro plan propio activo entra solo si se le anula el suyo (`replace`)",
+      security: [{ sessionCookie: [] }],
+      middleware: [read],
+      request: { params: idParam, ...body(PlanMembersUpdateSchema) },
+      responses: {
+        200: json("Plan", PlanResponseSchema),
+        409: errorResponse("Algún atleta ya tiene un plan propio activo"),
+        ...errors,
+      },
+    }),
+    async (c) => {
+      const tenant = orgOf(c);
+      const { plan, canWrite } = await requirePlan(data, c, c.req.valid("param").id);
+      requireWritablePlan(canWrite);
+      if (!isSpecific(plan)) throw badRequest("Un plan de todo el box no tiene lista de atletas.");
+      const input = c.req.valid("json");
+      await requireAthletes(c, input.add);
+      if (plan.status === "active") await requireNoOverlap(c, input.add, input.replace, plan.id);
+      const current = (await data.planning.plans.members(tenant.scope, plan.id)).map(
+        (r) => r.playerId,
+      );
+      const after = new Set([...current, ...input.add]);
+      for (const id of input.remove) after.delete(id);
+      if (after.size === 0) throw badRequest("Un plan propio necesita al menos un atleta.");
+      if (plan.audience === "athlete" && after.size !== 1)
+        throw badRequest("Un plan individual es para una sola persona.");
+      await data.planning.plans.setMembers(
+        tenant.scope,
+        plan.id,
+        {
+          add: input.add,
+          remove: input.remove,
+          replace: plan.status === "active" ? input.replace : [],
+        },
+        c.get("sessionUser").id,
+      );
+      await audit(c, "plan.updated", plan.name, {
+        fields: ["members"],
+        added: input.add.length,
+        removed: input.remove.length,
+        replaced: input.replace.length,
+      });
+      const updated = (await data.planning.plans.byId(tenant.scope, plan.id))!;
+      return c.json(
+        {
+          plan: await planViewDto(
+            data,
+            tenant.scope,
+            updated,
+            clubToday(c),
+            true,
+            tenant.organization.slug,
+          ),
+        },
         200,
       );
     },
@@ -682,7 +920,8 @@ export function createFitnessPlanningRoutes(config: ApiConfig, data: DataLayer) 
       method: "delete",
       path: "/api/org/plans/{id}",
       tags: ["Planificación"],
-      summary: "Borra un plan. Sus WODs se quedan, fuera del plan",
+      summary:
+        "Borra un plan. Los WODs del box se quedan, fuera del plan; las sesiones de un plan propio se van con él",
       security: [{ sessionCookie: [] }],
       middleware: [read],
       request: { params: idParam },
@@ -817,7 +1056,12 @@ export function createFitnessPlanningRoutes(config: ApiConfig, data: DataLayer) 
       let created = 0;
       let skipped = 0;
       for (const d of drafts) {
-        const result = await data.workouts.upsert(tenant.scope, d, c.get("sessionUser").id);
+        // Las de un plan propio son sus sesiones, aparte del WOD del box.
+        const result = await data.workouts.upsert(
+          tenant.scope,
+          isSpecific(plan) ? { ...d, specific: true } : d,
+          c.get("sessionUser").id,
+        );
         if (result.outcome === "saved") created += 1;
         else skipped += 1;
       }
@@ -843,9 +1087,13 @@ export function createFitnessPlanningRoutes(config: ApiConfig, data: DataLayer) 
       const { plan, canWrite } = await requireWeek(c, id, n);
       requireWritablePlan(canWrite);
       const monday = planWeekStart(plan.startsOn, n);
-      const published = await data.workouts.publishRange(tenant.scope, monday, addDays(monday, 6), [
-        plan.section.id,
-      ]);
+      const published = await data.workouts.publishRange(
+        tenant.scope,
+        monday,
+        addDays(monday, 6),
+        [plan.section.id],
+        isSpecific(plan) ? plan.id : undefined,
+      );
       if (published > 0)
         await audit(c, "workout.updated", `${monday} – ${addDays(monday, 6)}`, {
           action: "publish_week",

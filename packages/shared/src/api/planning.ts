@@ -6,7 +6,10 @@ import {
   BOX_EQUIPMENT_KINDS,
   EmphasisSchema,
   LEVEL_CAPACITIES,
+  PLAN_AUDIENCES,
   PLAN_BLOCK_KINDS,
+  PLAN_FREQUENCY_MAX,
+  PLAN_FREQUENCY_MIN,
   PLAN_TEMPLATE_CODES,
   PlanStructureSchema,
   PlanTestCodeSchema,
@@ -165,9 +168,26 @@ export const PlanCreateSchema = z.object({
   weeks: z.number().int().min(3).max(52),
   emphasis: EmphasisSchema,
   /** Días por semana de referencia para la proyección. */
-  frequency: z.number().int().min(2).max(6),
+  frequency: z.number().int().min(PLAN_FREQUENCY_MIN).max(PLAN_FREQUENCY_MAX),
   tests: z.array(PlanTestCodeSchema).max(6),
   closures: z.array(DateOnlySchema).max(60),
+  /** Para quién (ADR 0054). Sin decir: todo el box. */
+  audience: z.enum(PLAN_AUDIENCES).optional(),
+  /** El nivel del grupo, si es para un nivel. */
+  audienceLevel: z.enum(WORKOUT_LEVELS).nullable().optional(),
+  /** El nombre del grupo ("Competición", "Mañanas"), si es para un grupo. */
+  audienceName: z.string().trim().max(80).nullable().optional(),
+  /** Días de entreno (1 = lunes … 7 = domingo). Sin decir: los días con clase de la disciplina. */
+  weekdays: z.array(z.number().int().min(1).max(7)).max(7).optional(),
+  /** Atletas del plan, si no es de todo el box. */
+  members: z.array(z.string().uuid()).max(500).optional(),
+  /**
+   * Atletas que ya están en otro plan propio activo y pasan a este: se les anula el suyo. Si
+   * alguno de los atletas tiene otro plan y no está aquí, no se crea (409).
+   */
+  replace: z.array(z.string().uuid()).max(500).optional(),
+  /** Todo el box: termina el plan activo de la disciplina y activa este. */
+  replaceActive: z.boolean().optional(),
   /** Bloques decididos por el arquitecto con IA; si no, los de la plantilla. */
   phases: z
     .array(
@@ -190,7 +210,10 @@ export const PlanUpdateSchema = z.object({
   eventName: z.string().trim().max(80).nullable().optional(),
   eventDate: DateOnlySchema.nullable().optional(),
   emphasis: EmphasisSchema.optional(),
-  frequency: z.number().int().min(2).max(6).optional(),
+  frequency: z.number().int().min(PLAN_FREQUENCY_MIN).max(PLAN_FREQUENCY_MAX).optional(),
+  audienceName: z.string().trim().max(80).nullable().optional(),
+  /** Cambiar los días de entreno rehace la estructura con los mismos bloques. */
+  weekdays: z.array(z.number().int().min(1).max(7)).min(1).max(7).optional(),
   tests: z.array(PlanTestCodeSchema).max(6).optional(),
   closures: z.array(DateOnlySchema).max(60).optional(),
   status: z.enum(PLAN_STATUSES).optional(),
@@ -229,8 +252,28 @@ export const PlanSummarySchema = z.object({
   endsOn: z.string(),
   weeks: z.number().int(),
   currentWeek: z.number().int().nullable(),
+  audience: z.enum(PLAN_AUDIENCES),
+  audienceLevel: z.enum(WORKOUT_LEVELS).nullable(),
+  audienceName: z.string().nullable(),
+  /** Atletas del plan (0 en uno de todo el box). */
+  members: z.number().int(),
 });
 export type PlanSummary = z.infer<typeof PlanSummarySchema>;
+
+/** Estado de la cuota de programación de un atleta (ADR 0054), si el box tiene una. */
+export const PROGRAMMING_FEE_STATUSES = ["paid", "pending", "overdue", "none"] as const;
+export type ProgrammingFeeStatus = (typeof PROGRAMMING_FEE_STATUSES)[number];
+
+export const PlanMemberSchema = z.object({
+  playerId: z.string(),
+  name: z.string(),
+  photoUrl: z.string().nullable(),
+  /** Su nivel general: el que más usa en sus resultados. */
+  level: z.enum(WORKOUT_LEVELS).nullable(),
+  /** Nulo si el box no tiene cuota de programación. */
+  fee: z.enum(PROGRAMMING_FEE_STATUSES).nullable(),
+});
+export type PlanMember = z.infer<typeof PlanMemberSchema>;
 
 export const PlanViewSchema = PlanSummarySchema.extend({
   goal: z.string().nullable(),
@@ -246,11 +289,40 @@ export const PlanViewSchema = PlanSummarySchema.extend({
   /** Mediana de los tests al empezar, por código. */
   baselines: z.record(z.string(), z.number()),
   workouts: z.number().int(),
+  /** Días de entreno (1 = lunes … 7 = domingo). */
+  weekdays: z.array(z.number().int()),
+  memberList: z.array(PlanMemberSchema),
+  /** El box tiene cuota de programación: se ve quién la paga. */
+  feeTracking: z.boolean(),
   canWrite: z.boolean(),
   createdAt: z.string(),
 });
 export type PlanView = z.infer<typeof PlanViewSchema>;
 export const PlansResponseSchema = z.object({ plans: z.array(PlanSummarySchema) });
+
+/** Añadir y quitar atletas de un plan; `replace`, los que pasan desde otro plan propio activo. */
+export const PlanMembersUpdateSchema = z.object({
+  add: z.array(z.string().uuid()).max(500).default([]),
+  remove: z.array(z.string().uuid()).max(500).default([]),
+  replace: z.array(z.string().uuid()).max(500).default([]),
+});
+export type PlanMembersUpdate = z.infer<typeof PlanMembersUpdateSchema>;
+
+/**
+ * Atletas que pueden entrar en un plan de una disciplina: su nivel, el plan propio que ya tienen
+ * activo (si lo tienen: se avisa antes de solaparlo) y su cuota de programación.
+ */
+export const PlanningCandidatesResponseSchema = z.object({
+  athletes: z.array(
+    PlanMemberSchema.extend({
+      plan: z
+        .object({ id: z.string(), name: z.string(), audience: z.enum(PLAN_AUDIENCES) })
+        .nullable(),
+    }),
+  ),
+  feeTracking: z.boolean(),
+});
+export type PlanningCandidatesResponse = z.infer<typeof PlanningCandidatesResponseSchema>;
 export const PlanResponseSchema = z.object({ plan: PlanViewSchema });
 export type PlanResponse = z.infer<typeof PlanResponseSchema>;
 

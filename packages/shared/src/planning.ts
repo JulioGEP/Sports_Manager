@@ -327,6 +327,19 @@ export type PlanBlockKind = (typeof PLAN_BLOCK_KINDS)[number];
 export const PlanBlockKindSchema = z.enum(PLAN_BLOCK_KINDS);
 
 /** Disciplinas que sabe planificar el motor: el patrón de la semana cambia con ella. */
+/**
+ * Para quién es un plan (ADR 0054): todo el box (la disciplina entera), un nivel (el grupo de RX),
+ * un grupo de personas o una sola persona. Un plan que no es de todo el box tiene su lista de
+ * atletas, y cada atleta está como mucho en uno activo: su programación manda sobre la del box.
+ */
+export const PLAN_AUDIENCES = ["section", "level", "group", "athlete"] as const;
+export type PlanAudience = (typeof PLAN_AUDIENCES)[number];
+export const PlanAudienceSchema = z.enum(PLAN_AUDIENCES);
+
+/** Días por semana que admite un plan: de uno a siete, según para quién sea. */
+export const PLAN_FREQUENCY_MIN = 1;
+export const PLAN_FREQUENCY_MAX = 7;
+
 export const PLAN_DISCIPLINES = ["crossfit", "hyrox", "weightlifting"] as const;
 export type PlanDiscipline = (typeof PLAN_DISCIPLINES)[number];
 export const PlanDisciplineSchema = z.enum(PLAN_DISCIPLINES);

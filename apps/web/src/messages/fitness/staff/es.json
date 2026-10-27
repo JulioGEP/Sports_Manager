@@ -125,7 +125,8 @@
       "results": "{count, plural, =0 {Sin resultados} one {# resultado} other {# resultados}}",
       "leaderboard": "Clasificación de la clase",
       "leaderboardEmpty": "Nadie de esta clase ha apuntado su resultado."
-    }
+    },
+    "ownPlan": "Plan propio: {plan}"
   },
   "programming": {
     "title": "Programación",

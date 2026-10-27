@@ -63,7 +63,11 @@
     "ended": "{section} · ja ha acabat",
     "thisWeek": "Aquesta setmana",
     "open": "Obrir el pla",
-    "weekRoles": "El paper de cada dia aquesta setmana"
+    "weekRoles": "El paper de cada dia aquesta setmana",
+    "ownPlans": "Plans propis",
+    "ownPlansHint": "D'un nivell, un grup o una persona: els seus atletes veuen les seves sessions en lloc del WOD del box.",
+    "weekOf": "setmana {n} de {weeks}",
+    "athletes": "{count, plural, one {# atleta} other {# atletes}}"
   },
   "settings": {
     "title": "Nivells i el que veu l'atleta",
@@ -127,11 +131,12 @@
   },
   "wizard": {
     "title": "Pla nou",
-    "description": "Sis passos. A la dreta, el que pots esperar: es mou amb cada canvi.",
+    "description": "Set passos. A la dreta, el que pots esperar: es mou amb cada canvi.",
     "back": "Planificació",
     "section": "Disciplina",
     "steps": "Passos de l'assistent",
     "step": {
+      "audience": "Per a qui",
       "goal": "Objectiu",
       "calendar": "Calendari",
       "emphasis": "Èmfasi",
@@ -233,8 +238,44 @@
       "previousSource": "Calibra la projecció d'aquest pla.",
       "reference": "Freqüència de referència",
       "referenceHint": "La projecció es calcula per a qui ve aquests dies per setmana.",
-      "days": "{days} dies"
-    }
+      "days": "{days} dies",
+      "referenceDays": "{days, plural, one {# dia per setmana} other {# dies per setmana}}",
+      "referenceHintOwn": "La de la seva gent: amb ella es calcula la projecció."
+    },
+    "audience": {
+      "title": "Per a qui és aquest pla?",
+      "hint": "Per a tot el box o per a una part: un nivell, un grup o una persona. Hi pot haver tants plans propis com vulguis; cada atleta en segueix un.",
+      "section": {
+        "name": "Tot el box",
+        "body": "El segueix tothom qui ve a classe de {section}. Un d'actiu per disciplina."
+      },
+      "level": {
+        "name": "Un nivell",
+        "body": "Els atletes d'un nivell. Comences amb tots i treus qui no encaixi."
+      },
+      "group": {
+        "name": "Un grup",
+        "body": "Un grup amb nom: competició, matins, màster… Tries cada persona."
+      },
+      "athlete": {
+        "name": "Una persona",
+        "body": "Un pla només per a un atleta. Quan reservi una classe, veurà la seva sessió."
+      },
+      "whichLevel": "Quin nivell",
+      "levelHint": "El nivell que més fa servir cada atleta en els resultats de les últimes 8 setmanes.",
+      "groupName": "Nom del grup",
+      "groupNameHint": "El veu el coach a la classe i l'atleta al seu cicle.",
+      "groupPlaceholder": "Competició",
+      "sectionNote": "El veuran tots els atletes de {section} sense pla propi. Qui en tingui un continua amb el seu."
+    },
+    "weekdays": "Dies d'entrenament",
+    "weekdaysHint": "Els dies amb classe de la disciplina. Treu els que no entrin al pla.",
+    "weekdaysHintOwn": "Els dies que entrena la seva gent. Són també la seva freqüència.",
+    "summaryWho": "Per a {who} · {count, plural, one {# atleta} other {# atletes}}{moving, plural, =0 {} one { · a # se li anul·la el seu pla} other { · a # se'ls anul·la el seu pla}}",
+    "replaceActive": "Activar-lo i acabar {name}",
+    "replaceActiveHint": "{name} passa a acabat i aquest ocupa el seu lloc. Sense marcar, es desa en esborrany.",
+    "activateHintOwn": "Actiu, els seus atletes veuen les seves sessions en lloc del WOD del box.",
+    "expectPending": "La projecció apareix quan tries l'objectiu."
   },
   "projection": {
     "forFrequency": "Per a qui ve {days} dies per setmana.",
@@ -309,7 +350,16 @@
     "name": "Nom",
     "goal": "Objectiu",
     "eventName": "Esdeveniment",
-    "status": "Estat"
+    "status": "Estat",
+    "athletes": "{count, plural, one {El seu atleta} other {Els seus # atletes}}",
+    "athletesHint": "Entrenen {days} · {frequency, plural, one {# dia per setmana} other {# dies per setmana}}. Veuen les seves sessions en lloc del WOD del box.",
+    "editAthletes": "Canviar atletes",
+    "noAthletes": "Aquest pla s'ha quedat sense atletes.",
+    "athletesSaved": "Atletes del pla desats.",
+    "weekdays": "Dies d'entrenament",
+    "weekdaysChanged": "Canviar els dies refà el paper de cada dia. Els WODs ja escrits es queden.",
+    "frequency": "Freqüència de referència",
+    "frequencyHint": "{days, plural, one {# dia per setmana} other {# dies per setmana}}: amb ella es llegeix la projecció."
   },
   "week": {
     "notFoundTitle": "Setmana del pla",
@@ -617,7 +667,8 @@
     "openPlan": "Obrir el pla",
     "noPlanTitle": "Aquesta disciplina no té pla",
     "noPlanBody": "Amb un pla, cada dia té el seu paper, la seva intenció i la seva progressió, i els esborranys s'escriuen sols.",
-    "create": "Crear un pla"
+    "create": "Crear un pla",
+    "ownPlans": "Plans propis"
   },
   "block": {
     "plus": "Classe+",
@@ -697,5 +748,48 @@
     "weeks": "setmanes",
     "finished": "{improved} de {tests} tests millorats.",
     "inProgress": "Cicle en marxa: les xifres s'actualitzen amb cada classe."
+  },
+  "members": {
+    "fee": {
+      "paid": "Quota al dia",
+      "pending": "Quota pendent",
+      "overdue": "Quota vençuda",
+      "none": "Sense quota"
+    },
+    "feeTitle": "Quota de programació",
+    "feeCount": {
+      "paid": "{count} al dia",
+      "pending": "{count, plural, one {# pendent} other {# pendents}}",
+      "overdue": "{count, plural, one {# vençuda} other {# vençudes}}",
+      "none": "{count} sense quota"
+    },
+    "leaves": "Deixa {plan}",
+    "follows": "Segueix {plan}",
+    "conflictsTitle": "{count, plural, one {# atleta ja segueix un pla propi} other {# atletes ja segueixen un pla propi}}",
+    "conflictsBody": "Ningú segueix dos plans propis alhora. Anul·la el seu per passar-lo a aquest, o deixa'l fora.",
+    "cancelTheirs": "Anul·lar el seu",
+    "leaveOut": "Deixar fora",
+    "cancelAll": "Anul·lar-los tots",
+    "leaveAllOut": "Deixar-los tots fora",
+    "person": "La persona",
+    "count": "{count, plural, =0 {Sense atletes} one {# atleta} other {# atletes}}",
+    "removeHint": "Treu qui no hi hagi de ser.",
+    "remove": "Treure {name}",
+    "empty": "Encara no hi ha ningú. Cerca i afegeix els atletes del grup.",
+    "emptyPerson": "Cerca la persona per a qui és el pla.",
+    "change": "Canviar de persona",
+    "add": "Afegir atletes",
+    "addHint": "Cerca pel nom.",
+    "searchPlaceholder": "Nom de l'atleta",
+    "results": "Resultats",
+    "noResults": "Ningú amb aquest nom.",
+    "addOne": "Afegir {name}",
+    "audience": {
+      "section": "Tot el box",
+      "level": "Nivell {level}",
+      "group": "Grup {name}",
+      "groupless": "Un grup",
+      "athlete": "Una persona"
+    }
   }
 }

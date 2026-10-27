@@ -124,6 +124,8 @@ export const PlanEntitlementFieldsSchema = z.object({
   classTeamIds: z.array(z.string().uuid()).max(50).nullable().optional(),
   /** Planificación (ADR 0053): incluye Clase+, el trabajo extra del Open Box. */
   includesPlus: z.boolean().optional(),
+  /** Es la cuota de una programación propia (individual o de grupo): se ve quién la paga. */
+  includesProgramming: z.boolean().optional(),
 });
 
 /** Necesita número de sesiones todo lo que no es ilimitado ni cuota simple. */
@@ -283,6 +285,11 @@ export const WorkoutUpsertSchema = z.object({
   intentEffort: z.number().int().min(1).max(5).nullable().optional(),
   intentFeel: z.string().trim().max(300).nullable().optional(),
   why: z.string().trim().max(1200).nullable().optional(),
+  /**
+   * La sesión de un plan propio (de un nivel, un grupo o una persona), no la del box: solo la ven
+   * los atletas del plan y va aparte del WOD de la disciplina ese día. Pide `planId`.
+   */
+  specific: z.boolean().optional(),
 });
 export type WorkoutUpsert = z.infer<typeof WorkoutUpsertSchema>;
 
