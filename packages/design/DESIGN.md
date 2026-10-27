@@ -440,31 +440,6 @@ La única pantalla a pantalla completa del producto: en la banda el partido est�
 - **Piezas.** Dorsal en círculo `bg-club` (tinta con aro blanco para el portero), nombre de pila y minutos en Geist Mono. Seleccionada: `bg-surface` con aro del club. En la pista, sobre `bg-black/35`; en el banquillo, sobre `bg-page` con borde.
 - **Convocatoria.** Tocar la fila decide quién sale de inicio; "Portero" es un botón de alternar (9.6), en tinta y con check cuando está marcado, nunca en el color del club, que es el de "Guardar convocatoria". Puede haber varios porteros convocados, pero en pista solo uno: marcar a un titular desmarca a los demás titulares, y el aviso dice cuántos hay cuando sobran.
 
-### 9.20 Cuadro de mando · `KpiBoard`
-
-Las cifras que un club mira de un vistazo: Hoy y la portada de cada área del box (ADR 0055). Vive en `apps/web/src/components/fitness/kpi-board.tsx`; las gráficas, en `kpi-charts.tsx`.
-
-- **Piezas:** cada una es un KPI con su **vista** (número, línea, barras o radial; solo las que ese KPI admite) y su **tamaño** (1×1, 2×1, 2×2 o todo el ancho). Rejilla de cuatro columnas cuando hay sitio (consulta de contenedor) y dos en el móvil, donde lo ancho ocupa la fila; las piezas se encajan sin dejar huecos. Hasta doce.
-- **La pieza:** `bg-surface rounded-card shadow-card`. Arriba, el nombre en `text-secondary text-muted` (enlace con `CaretRight` a la pantalla donde se resuelve, si quien mira la abre; hasta dos líneas) y el icono de su pantalla en un círculo `bg-club-soft` de 36 px. La cifra en Geist Mono (`text-display`; `text-title1` en el móvil; `text-display-lg` en una pieza grande). La diferencia con el periodo anterior en una `StatusChip` ("+3 pts"). Una línea que explica la cifra: si pide atención, en `text-warning` o `text-danger` con `Warning`, o en `text-success` con `CheckCircle` cuando está al día; el texto dice qué pasa y el color acompaña. Hasta tres nombres debajo, en `text-label`.
-- **Número:** la cifra; si es un porcentaje, su barra; con 2×1 o más, su tendencia en pequeño debajo.
-- **Línea y barras:** la cifra arriba con el periodo a la derecha ("Últimos 6 meses"; con asterisco si los periodos pasados son estimados, y el porqué al pasar por encima) y la gráfica en el resto. Línea de 2,5 px en `club-fill` con su área al 10 % y el punto de ahora marcado (su cifra ya está arriba, no se repite). Columnas de 24 px como mucho, punta redondeada de 4 px y pie recto; la de ahora (o, en las franjas, la del KPI) en el club con su cifra en la punta, las demás al 40 %; las negativas, en `chart-reference`. Eje con la primera y la última etiqueta (todas si caben), en `text-muted`. Cruceta y aviso al pasar el puntero o con las flechas del teclado; el aviso pone la cifra delante.
-- **Radial:** anillo con la pista en `club-soft` y el arco en `club-fill`, la cifra en el centro. Solo para proporciones.
-- **Accesibilidad de las gráficas:** se dibujan al tamaño real de su hueco (nada se estira), llevan su resumen en una frase y su tabla oculta, y el foco anuncia el punto en el que está.
-- **Vacío:** `EmptyState` con "Personalizar" para quien puede; para el resto, una frase. En el inicio del coach, sin cifras que enseñar, el cuadro no se pinta.
-- **Personalizar en el sitio:** "Personalizar" (`tertiary`, `action="edit"`) pone el cuadro en edición sin abrir paneles. Cada pieza gana un aro `club-soft` (`club` donde caería lo que se arrastra), un asa `DotsSixVertical` de 40 px para arrastrarla, la vista como `Segmented` de iconos a todo el ancho (`NumberSquareOne`, `ChartLine`, `ChartBar`, `ChartDonut`) y un menú "⋯" con el tamaño, mover antes o después y quitar. Mover desde el menú es la vía del teclado; arrastrar, el atajo (5e). La pieza "Añadir KPI", con borde discontinuo, abre la lista de lo que falta con su definición, su cifra de ahora y sus vistas. Una barra fija abajo (`shadow-float`; por encima de la barra inferior en el móvil) con "Cambios sin guardar", "Volver a los de serie" (`restore`, si el club cambió algo), "Cancelar" (con confirmación si hay cambios) y "Guardar cuadro" (`save`).
-
-### 9.21 Cabecera de área en la navegación
-
-En la navegación del personal de un box, la cabecera de cada grupo con portada (Entrenamiento, Negocio, El box) es un enlace: misma altura que un destino (`h-(--h-control)`), texto `text-label` en mayúsculas y `CaretRight` de 16 px a la derecha, que anuncia que se abre. Activa, `bg-nav-active`. Su nombre accesible es "Resumen de …", que contiene la etiqueta visible. En "Más" del móvil, las pantallas que no caben en la barra se agrupan igual, con la cabecera de su área encima. Los grupos sin portada (los del atleta) siguen siendo una etiqueta.
-
-### 9.22 Pila de caras · `FacePile`
-
-Quién viene a una clase de un vistazo (ADR 0057): las primeras caras solapadas y "+N" con el resto, en Geist Mono.
-
-- Dos tamaños: `sm` (32 px) en listas y tarjetas, `xs` (28 px) en el calendario y en filas densas. Se solapan lo justo para que las iniciales de cada cara se lean enteras.
-- Cada cara lleva un aro de 2 px del color de la superficie; quien sigue un plan propio, del color del club; quien no vino, apagada. El color nunca va solo: la pila es una imagen con etiqueta (los nombres, "y N más" y cuántos con plan propio), que es también su *tooltip*, y al lado va siempre la cifra en texto.
-- Nunca es un botón: decora la fila o la tarjeta, que es la que se abre.
-
 ---
 
 ## 10. Gráficas de rendimiento
@@ -664,7 +639,6 @@ Antes de crear o cambiar cualquier interfaz:
 | 9. Filas | La fila es el objeto: se abre tocándola; acciones `ghost` solo con icono, menú "⋯" en móvil | Botón "Abrir" por fila; "Editar" y "Quitar" con borde y texto en cada fila | El contenido manda y el cromo se aparta; nueve filas no son dieciocho botones |
 | 9. Uso | Paleta de mandos ⌘K con personas, equipos, pantallas y acciones | Solo navegación por menús | Gestionar 80 deportistas son gestos, no rutas; es lo que no tiene ninguna otra plataforma de clubes |
 | 9. Plantilla | Tablero por posición con el dorsal a la vista, lista como alternativa | Solo tabla | Es como un entrenador piensa su equipo; una tabla es como lo piensa una base de datos |
-| 9. Cuadro de mando | Catálogo cerrado de KPIs; cada club elige cuáles, su vista (solo las que el KPI admite), su tamaño y su orden, en el propio cuadro y arrastrando; cada persona ve los de su permiso | Fórmulas libres por club; cualquier vista para cualquier KPI; un panel aparte para elegir; una pantalla de métricas | Cada cifra se calcula igual en todos los boxes y se explica en una frase; cada box mira lo que le importa y ve el resultado mientras lo cambia |
 | 12. Dinero | Punto de miles, coma decimal y dos decimales en toda la app y en todos los idiomas (`formatMoney`) | Intl del idioma de cada cual | Intl no agrupa los miles de cuatro cifras en castellano; el mismo importe se lee igual en todas partes |
 | 9. Partido | Consola a pantalla completa en tres zonas (partido, nuestro equipo, rival), la zona del tiro sobre la pista y el banquillo arrastrable; la orientación decide la forma | Tarjetas apiladas dentro del espacio del club; la zona en un panel aparte | En la banda cada toque cuenta: lo nuestro y lo del rival no se mezclan y el dedo no persigue botones |
 | 5. Interacción | Confirmar siempre las acciones delicadas | Deshacer siempre | Seguridad en dinero, bajas y comunicados |

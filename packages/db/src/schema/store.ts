@@ -30,8 +30,6 @@ export const storeProducts = pgTable(
     description: text("description"),
     category: text("category").notNull(),
     priceCents: integer("price_cents").notNull(),
-    /** Precio para quien tiene tarifa activa o es socio (ADR 0049). Nulo: el mismo para todos. */
-    memberPriceCents: integer("member_price_cents"),
     /** Clave de la foto en Netlify Blobs (store `store-images`). */
     imageBlobKey: text("image_blob_key"),
     status: text("status").notNull().default("draft"),
@@ -50,10 +48,6 @@ export const storeProducts = pgTable(
     check("store_products_status_check", inList(t.status, STORE_PRODUCT_STATUSES)),
     check("store_products_visibility_check", inList(t.visibility, STORE_PRODUCT_VISIBILITIES)),
     check("store_products_price_check", sql`${t.priceCents} >= 0`),
-    check(
-      "store_products_member_price_check",
-      sql`${t.memberPriceCents} is null or ${t.memberPriceCents} between 0 and ${t.priceCents}`,
-    ),
     check("store_products_audience_check", sql`${t.sectionId} is null or ${t.teamId} is null`),
   ],
 );

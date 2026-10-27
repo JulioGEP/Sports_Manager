@@ -3,20 +3,9 @@ import {
   FEE_PERIODS,
   FEE_PLAN_STATUSES,
   PAYMENT_METHODS,
-  PLAN_ENTITLEMENTS,
 } from "@sportsmanager/shared";
 import { sql } from "drizzle-orm";
-import {
-  boolean,
-  check,
-  date,
-  index,
-  integer,
-  jsonb,
-  pgTable,
-  text,
-  uuid,
-} from "drizzle-orm/pg-core";
+import { check, date, index, integer, pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { id, inList, timestamps } from "./_shared.ts";
 import { users } from "./auth.ts";
 import { organizations } from "./organizations.ts";
@@ -43,16 +32,6 @@ export const feePlans = pgTable(
     sectionId: uuid("section_id").references(() => sections.id, { onDelete: "set null" }),
     description: text("description"),
     status: text("status").notNull().default("active"),
-    /** Derecho de uso (ADR 0049): qué clases da la tarifa. `none`: una cuota sin reservas. */
-    entitlement: text("entitlement").notNull().default("none"),
-    sessions: integer("sessions"),
-    validityDays: integer("validity_days"),
-    /** Tipos de clase que incluye. Nulo: todos. */
-    classTeamIds: jsonb("class_team_ids").$type<string[]>(),
-    /** Planificación (ADR 0053): la tarifa incluye Clase+, el trabajo extra del Open Box. */
-    includesPlus: boolean("includes_plus").notNull().default(false),
-    /** Es la cuota de una programación propia (individual o de grupo): se ve quién la paga. */
-    includesProgramming: boolean("includes_programming").notNull().default(false),
     ...timestamps,
   },
   (t) => [
@@ -60,11 +39,6 @@ export const feePlans = pgTable(
     check("fee_plans_period_check", inList(t.period, FEE_PERIODS)),
     check("fee_plans_status_check", inList(t.status, FEE_PLAN_STATUSES)),
     check("fee_plans_amount_check", sql`${t.amountCents} >= 0`),
-    check("fee_plans_entitlement_check", inList(t.entitlement, PLAN_ENTITLEMENTS)),
-    check(
-      "fee_plans_sessions_check",
-      sql`${t.entitlement} not in ('per_week', 'per_month', 'pack') or ${t.sessions} >= 1`,
-    ),
   ],
 );
 

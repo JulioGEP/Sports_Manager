@@ -34,8 +34,6 @@ import {
   type TeamRecord,
   type TrainingContentRecord,
 } from "../data/index.ts";
-import { runPlanGeneration } from "./ai-plans.ts";
-import { runWodGeneration } from "./ai-wods.ts";
 
 /**
  * Propuesta de sesión con IA (ADR 0044): reunir el contexto, generar en segundo plano y validar.
@@ -292,10 +290,6 @@ function parseOutput(text: string): AiProposalOutput | null {
 export async function runGeneration(data: DataLayer, id: string): Promise<void> {
   const claimed = await data.ai.claim(id);
   if (!claimed) return;
-  // El WOD de un box (ADR 0049) usa el mismo registro, la misma cuota y el mismo trabajo.
-  if (claimed.kind === "wod") return runWodGeneration(data, claimed.scope, claimed.record);
-  // La planificación del box (ADR 0053), también.
-  if (claimed.kind === "plan") return runPlanGeneration(data, claimed.scope, claimed.record);
   const { scope, record } = claimed;
   const started = Date.now();
   let usage = ZERO;

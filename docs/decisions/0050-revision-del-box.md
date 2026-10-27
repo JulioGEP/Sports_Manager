@@ -1,6 +1,6 @@
 # 0050. Revisión del box: sin restos de club deportivo, ejercicios propios y programación rehecha
 
-Estado: aceptada. Fecha: 2026-10-26. Revisa la 0049 tras probarla en producción.
+Estado: aceptada; trasladada a inthebox (ADR 0058). Fecha: 2026-10-26. Revisa la 0049 tras probarla en producción.
 
 ## Contexto
 

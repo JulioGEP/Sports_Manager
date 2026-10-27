@@ -713,22 +713,6 @@
         "discard": "Descartar",
         "saved": "Identitat desada. Ja la veu tot el club.",
         "discarded": "Canvis descartats."
-      },
-      "boxLooks": {
-        "title": "Looks de box",
-        "description": "Un punt de partida complet per a un club de fitness: colors, lletra, botons, icones, fons, navegació i veu. Després ajusta el que vulguis.",
-        "names": {
-          "industrial": "Industrial",
-          "hybrid": "Híbrid",
-          "night": "Nocturn",
-          "studio": "Estudi"
-        },
-        "hints": {
-          "industrial": "Negre i groc, rectes, veu de vestidor.",
-          "hybrid": "Taronja i negre, trama i ratlles.",
-          "night": "Fosc amb verd llima, degradat.",
-          "studio": "Clar i serè, veu professional."
-        }
       }
     },
     "logo": {
@@ -875,16 +859,7 @@
       "section": "Crea la primera secció",
       "sectionAction": "Crear secció",
       "invite": "Convida el primer entrenador o personal",
-      "inviteAction": "Convidar",
-      "box": {
-        "description": "{done} de {total} passos fets. Deixa el box a punt perquè els teus atletes reservin.",
-        "identity": "Tria els colors i el look del box",
-        "schedule": "Crea els tipus de classe i el seu horari",
-        "scheduleAction": "Obrir l'horari",
-        "plans": "Crea les teves tarifes i bons",
-        "plansAction": "Crear tarifa",
-        "invite": "Convida el teu primer coach"
-      }
+      "inviteAction": "Convidar"
     },
     "activity": {
       "title": "Activitat del club",
@@ -940,23 +915,7 @@
       "confirmRotateTitle": "Vols canviar la clau?",
       "confirmRotateBody": "La clau actual deixa de funcionar a l'instant: el web del club deixarà de mostrar productes fins que hi posis la nova.",
       "confirmDisableTitle": "Vols apagar el catàleg públic?",
-      "confirmDisableBody": "El web del club deixarà de mostrar productes. El pots tornar a activar amb una clau nova.",
-      "box": {
-        "title": "Horari i classe de prova a la web del box",
-        "description": "La teva web mostra les classes dels propers dies amb les places lliures i recull peticions de classe de prova, que arriben a Leads. Fa servir la mateixa clau pública que el catàleg.",
-        "endpointClasses": "Classes dels propers dies (fins a 14) amb les places lliures. Mai no diu qui hi va.",
-        "endpointTrials": "Demana una classe de prova: nom, cognoms, email, classe opcional i consentiment. Deixa un lead.",
-        "needsKey": "Activa la clau pública de sota per tenir el codi a punt per enganxar.",
-        "leads": "Veure leads",
-        "form": {
-          "firstName": "Nom",
-          "lastName": "Cognoms",
-          "email": "Email",
-          "consent": "Accepto que el box em contacti",
-          "send": "Demanar classe de prova",
-          "thanks": "Rebut. T'escrivim de seguida."
-        }
-      }
+      "confirmDisableBody": "El web del club deixarà de mostrar productes. El pots tornar a activar amb una clau nova."
     },
     "accounting": {
       "connect": {
@@ -1063,8 +1022,7 @@
         "status": "Estat",
         "members": "Membres",
         "pending": "Pendents",
-        "created": "Alta",
-        "model": "Tipus"
+        "created": "Alta"
       }
     },
     "createDrawer": {
@@ -1078,8 +1036,7 @@
       "sport": "Esport",
       "submit": "Crear club",
       "created": "{name} creat.",
-      "brandNote": "La marca i el logo els configura el club des de la seva configuració.",
-      "model": "Tipus de club"
+      "brandNote": "La marca i el logo els configura el club des de la seva configuració."
     },
     "club": {
       "eyebrow": "Clubs",
@@ -1116,10 +1073,7 @@
         "sent": "Invitació enviada a {email}."
       },
       "confirmSuspendTitle": "Suspendre {name}?",
-      "confirmArchiveTitle": "Arxivar {name}?",
-      "model": "Tipus de club",
-      "modelHint": "Canvia la manera de veure el club: navegació, inici i vocabulari. Les dades no canvien.",
-      "modelSaved": "{name} es veu ara com a {model}."
+      "confirmArchiveTitle": "Arxivar {name}?"
     },
     "audit": {
       "title": "Activitat",
@@ -1256,12 +1210,6 @@
         "responseHint": "Només la veu {club}.",
         "invalid": "Escriu un títol d'almenys 3 lletres i tria la part de l'aplicació."
       }
-    },
-    "clubModels": {
-      "sports": "Club esportiu",
-      "fitness": "Club de fitness",
-      "sportsHint": "Seccions, equips, partits i famílies. Per a clubs de futbol, bàsquet, natació…",
-      "fitnessHint": "Classes amb reserva, WOD, marques i tarifes. Per a boxes de CrossFit, HYROX i gimnasos."
     }
   },
   "apiStatus": {
@@ -1329,8 +1277,7 @@
       "logo_removed": "Logo tret",
       "payments_updated": "Ajustos de cobrament canviats",
       "stripe_onboarding_started": "Alta a Stripe iniciada",
-      "ai_updated": "Quota d'IA canviada",
-      "dashboards_updated": "KPI del club escollits"
+      "ai_updated": "Quota d'IA canviada"
     },
     "invitation": {
       "created": "Invitació enviada",
@@ -1558,73 +1505,6 @@
     "ai_draft": {
       "requested": "Proposta de sessió demanada a la IA",
       "applied": "Proposta de sessió aplicada"
-    },
-    "ai_wod": {
-      "requested": "Proposta de WOD demanada a la IA"
-    },
-    "booking_policy": {
-      "updated": "Política de reserves canviada"
-    },
-    "class_type": {
-      "created": "Tipus de classe creat",
-      "updated": "Tipus de classe editat"
-    },
-    "booking": {
-      "created": "Reserva feta pel box",
-      "cancelled": "Reserva cancel·lada pel box"
-    },
-    "class": {
-      "closed": "Classe tancada",
-      "capacity_changed": "Aforament d'una classe canviat"
-    },
-    "subscription": {
-      "created": "Tarifa donada a un atleta",
-      "updated": "Tarifa d'un atleta canviada",
-      "charges_generated": "Càrrecs de tarifes generats",
-      "subscribed": "Tarifa domiciliada"
-    },
-    "workout": {
-      "created": "WOD programat",
-      "updated": "WOD editat",
-      "removed": "WOD esborrat"
-    },
-    "announcement": {
-      "created": "Avís publicat",
-      "updated": "Avís editat",
-      "removed": "Avís retirat"
-    },
-    "lead": {
-      "created": "Lead nou",
-      "updated": "Lead actualitzat",
-      "converted": "Lead convertit en atleta"
-    },
-    "exercise": {
-      "created": "Exercici creat",
-      "updated": "Exercici editat",
-      "archived": "Exercici arxivat",
-      "restored": "Exercici recuperat"
-    },
-    "equipment": {
-      "created": "Material afegit",
-      "updated": "Material editat",
-      "removed": "Material tret"
-    },
-    "planning": {
-      "settings_updated": "Ajustos de la programació canviats"
-    },
-    "plan": {
-      "created": "Pla creat",
-      "updated": "Pla editat",
-      "removed": "Pla esborrat",
-      "drafted": "Setmana del pla preparada",
-      "adjusted": "Ajust de la revisió decidit"
-    },
-    "plan_ai": {
-      "requested": "Planificació demanada a la IA",
-      "applied": "Proposta de la IA aplicada al pla"
-    },
-    "athlete_level": {
-      "updated": "Nivell de l'atleta canviat"
     }
   },
   "team": {
@@ -3661,15 +3541,7 @@
       "counterSale": "Venda al taulell",
       "developers": "Catàleg públic per al web",
       "roadmap": "Full de ruta de la plataforma",
-      "suggest": "Suggerir una millora",
-      "newAthlete": "Nou atleta",
-      "newClassType": "Nou tipus de classe",
-      "newWorkout": "Programar un WOD",
-      "exercises": "Exercicis",
-      "newPlan": "Nova tarifa o bo",
-      "newLead": "Nou lead",
-      "newTrainingPlan": "Nou pla d'entrenament",
-      "equipment": "Material del box"
+      "suggest": "Suggerir una millora"
     },
     "keys": {
       "move": "moure's",
@@ -5275,10 +5147,7 @@
       },
       "invalid": "Revisa les dades: nom, preu i opcions (sense noms repetits).",
       "invalidStock": "L'estoc és un nombre enter, o buit si no hi ha límit.",
-      "noOptions": "Afegeix almenys una opció.",
-      "memberPrice": "Preu per a socis (opcional)",
-      "memberPriceHint": "El paguen els socis i els atletes amb tarifa activa. Buit: el mateix preu per a tothom.",
-      "memberPriceTooHigh": "El preu per a socis no pot ser més alt que el preu normal."
+      "noOptions": "Afegeix almenys una opció."
     }
   },
   "shop": {
@@ -5355,8 +5224,7 @@
     "empty": "Ara mateix no hi ha res a la venda.",
     "emptyHint": "Quan el club posi alguna cosa a la venda, la veuràs aquí.",
     "soldOut": "Esgotat",
-    "until": "Fins al {date}",
-    "memberPrice": "Socis: {price}"
+    "until": "Fins al {date}"
   },
   "storeOrder": {
     "back": "Botiga",

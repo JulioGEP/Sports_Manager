@@ -1,11 +1,7 @@
 import { z } from "zod";
 import { AUDIT_ACTIONS } from "../audit.ts";
 import { LocaleSchema, LocalizedTextSchema } from "../locales.ts";
-import {
-  ClubModelSchema,
-  ORGANIZATION_STATUSES,
-  OrganizationUpdateSchema,
-} from "../organizations.ts";
+import { ORGANIZATION_STATUSES, OrganizationUpdateSchema } from "../organizations.ts";
 import { RoleCodeSchema } from "../roles.ts";
 import { EmailSchema, PasswordSchema } from "../users.ts";
 import { InvitationSchema } from "./invitations.ts";
@@ -23,8 +19,6 @@ export const PlatformOrganizationSchema = z.object({
   status: z.enum(ORGANIZATION_STATUSES),
   defaultLocale: LocaleSchema,
   sport: SportSchema,
-  /** Club deportivo o de fitness (ADR 0049). */
-  clubModel: ClubModelSchema,
   brandPrimaryColor: z.string(),
   brandSecondaryColor: z.string(),
   /** Absoluta, en el host del club. */
@@ -58,8 +52,6 @@ export type PlatformOrganizationDetail = z.infer<typeof PlatformOrganizationDeta
 
 export const PlatformOrganizationUpdateSchema = OrganizationUpdateSchema.extend({
   status: z.enum(ORGANIZATION_STATUSES).optional(),
-  /** Solo la plataforma cambia el modelo del club (ADR 0049). */
-  clubModel: ClubModelSchema.optional(),
 });
 export type PlatformOrganizationUpdate = z.infer<typeof PlatformOrganizationUpdateSchema>;
 

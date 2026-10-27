@@ -118,11 +118,6 @@ export type CategoryUpdate = z.infer<typeof CategoryUpdateSchema>;
 export const TEAM_STATUSES = ["active", "archived"] as const;
 export type TeamStatus = (typeof TEAM_STATUSES)[number];
 
-/** Cómo se llena un equipo o grupo: con su plantilla fija, o abierto a quien reserve (una clase). */
-export const TEAM_BOOKING_MODES = ["roster", "open"] as const;
-export type TeamBookingMode = (typeof TEAM_BOOKING_MODES)[number];
-export const TeamBookingModeSchema = z.enum(TEAM_BOOKING_MODES);
-
 /** Un equipo (o grupo, en una sección de actividad) vive en una sección, una categoría y una temporada. */
 export const TeamCreateSchema = z.object({
   sectionId: z.string().uuid(),
@@ -131,7 +126,6 @@ export const TeamCreateSchema = z.object({
   name: ShortName,
   /** Aforo del grupo (secciones de actividad). Sin aforo, no hay límite. */
   capacity: z.number().int().min(1).max(999).nullable().optional(),
-  bookingMode: TeamBookingModeSchema.optional(),
 });
 export type TeamCreate = z.infer<typeof TeamCreateSchema>;
 export const TeamUpdateSchema = z.object({
@@ -139,7 +133,6 @@ export const TeamUpdateSchema = z.object({
   categoryId: z.string().uuid().optional(),
   name: ShortName.optional(),
   capacity: z.number().int().min(1).max(999).nullable().optional(),
-  bookingMode: TeamBookingModeSchema.optional(),
   status: z.enum(TEAM_STATUSES).optional(),
 });
 export type TeamUpdate = z.infer<typeof TeamUpdateSchema>;

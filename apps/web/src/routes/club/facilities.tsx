@@ -11,7 +11,6 @@ import { useState, type FormEvent, type ReactNode } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
 import { apiFetch, errorKey } from "@/lib/api";
 import { clubPaths, useReadyClub } from "@/lib/club";
-import { useClubModel } from "@/lib/fitness";
 import { useT } from "@/lib/intl";
 import {
   Alert,
@@ -204,10 +203,7 @@ export function FacilitySheet({
   const { slug } = useReadyClub();
   const paths = clubPaths(slug);
   const [name, setName] = useState(facility?.name ?? "");
-  // En un box (ADR 0050) las salas son de gimnasio: ni pistas, ni piscinas, ni campos.
-  const fitness = useClubModel() === "fitness";
-  const kindOptions: readonly FacilityKind[] = fitness ? ["gym", "room", "other"] : FACILITY_KINDS;
-  const [kind, setKind] = useState<FacilityKind>(facility?.kind ?? (fitness ? "gym" : "court"));
+  const [kind, setKind] = useState<FacilityKind>(facility?.kind ?? "court");
   const [capacity, setCapacity] = useState(facility?.capacity ? String(facility.capacity) : "");
   const [description, setDescription] = useState(facility?.description ?? "");
   const [busy, setBusy] = useState(false);
@@ -301,7 +297,7 @@ export function FacilitySheet({
                 value={kind}
                 onChange={(e) => setKind(e.target.value as FacilityKind)}
               >
-                {[...new Set([...kindOptions, kind])].map((k) => (
+                {FACILITY_KINDS.map((k) => (
                   <option key={k} value={k}>
                     {kinds(k)}
                   </option>
