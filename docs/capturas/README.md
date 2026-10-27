@@ -698,13 +698,17 @@ Cuentas, con contraseña `123456`: `atleta@demo.test` (Laia Ferrer, atleta con t
 
 ![Entrenamiento para el coach: sus cifras, sin elegirlas y sin nada de dinero](escritorio-263-box-coach-area-entrenamiento.png)
 
-### Inicio de la dueña: lo que pide atención, las cifras de hoy que elige el club, clases de hoy y programación de la semana
+### Inicio de la dueña: lo que pide atención, las cifras de hoy (número, anillo, línea y barras), clases de hoy y programación
 
-![Inicio de la dueña: lo que pide atención, las cifras de hoy que elige el club, clases de hoy y programación de la semana](escritorio-265-box-duena-inicio.png)
+![Inicio de la dueña: lo que pide atención, las cifras de hoy (número, anillo, línea y barras), clases de hoy y programación](escritorio-265-box-duena-inicio.png)
 
-### Elegir los KPIs de Hoy: los que salen, en orden, y los que se pueden añadir con su cifra de ahora
+### Personalizar Hoy en el propio cuadro: arrastrar, vista, tamaño, añadir y guardar
 
-![Elegir los KPIs de Hoy: los que salen, en orden, y los que se pueden añadir con su cifra de ahora](escritorio-265a-box-duena-elegir-kpis.png)
+![Personalizar Hoy en el propio cuadro: arrastrar, vista, tamaño, añadir y guardar](escritorio-265a-box-duena-personalizar.png)
+
+### Hoy personalizado: cobrado en barras, ocupación en anillo, atletas en línea y pruebas a todo el ancho
+
+![Hoy personalizado: cobrado en barras, ocupación en anillo, atletas en línea y pruebas a todo el ancho](escritorio-265f-box-duena-inicio-personalizado.png)
 
 ### Entrenamiento: la cabecera de la barra abre la portada del área, con sus KPIs y sus pantallas
 
@@ -734,9 +738,9 @@ Cuentas, con contraseña `123456`: `atleta@demo.test` (Laia Ferrer, atleta con t
 
 ![Negocio: la portada del área con sus KPIs (sustituye a Métricas, ADR 0055)](escritorio-269-box-duena-area-negocio.png)
 
-### El box: KPIs del horario, el equipo y el material, y la ocupación por franja
+### El box: la franja más llena a todo el ancho (la ocupación de cada hora), clases en línea y la franja con más hueco en anillo
 
-![El box: KPIs del horario, el equipo y el material, y la ocupación por franja](escritorio-269b-box-duena-area-el-box.png)
+![El box: la franja más llena a todo el ancho (la ocupación de cada hora), clases en línea y la franja con más hueco en anillo](escritorio-269b-box-duena-area-el-box.png)
 
 ### Identidad: looks de box
 
@@ -1084,7 +1088,7 @@ Las mismas pantallas en un móvil, con la forma envolvente del design system: ca
 
 ![Inicio de la dueña: lo que pide atención, las cifras de hoy de dos en dos, clases y programación (móvil)](movil-265-box-duena-inicio.png)
 
-![Elegir los KPIs de Hoy (móvil)](movil-265a-box-duena-elegir-kpis.png)
+![Personalizar Hoy en el propio cuadro (móvil)](movil-265a-box-duena-personalizar.png)
 
 ![Más, agrupado por áreas: cada cabecera abre la portada de su área (móvil)](movil-265e-box-duena-mas.png)
 

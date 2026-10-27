@@ -1,9 +1,11 @@
 import {
-  centsToAmount,
   FeeChargeResponseSchema,
   FeePlansResponseSchema,
   MANUAL_PAYMENT_METHODS,
   PeopleResponseSchema,
+  formatAmount,
+  formatMoney,
+  parseMoney,
   personDisplayName,
   type FeeCharge,
   type FeeChargeStatus,
@@ -34,9 +36,9 @@ export const feeStatusKind: Record<FeeChargeStatus, StatusKind> = {
   cancelled: "neutral",
 };
 
-/** Importe en euros con el formato del idioma. */
+/** Importe en euros como en toda la app: `1.234,56 €` (punto de miles, coma decimal). */
 export function money(cents: number): string {
-  return `${centsToAmount(cents).replace(".", ",")} €`;
+  return formatMoney(cents);
 }
 
 export function FeeStatusChip({ status }: { status: FeeChargeStatus }) {
@@ -71,7 +73,7 @@ export function PaymentSheet({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const pendingCents = charge ? charge.amountCents - charge.paidCents : 0;
-  const amountCents = Math.round(Number(amount.replace(",", ".")) * 100);
+  const amountCents = parseMoney(amount) ?? Number.NaN;
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -137,7 +139,7 @@ export function PaymentSheet({
               <Input
                 id={id}
                 inputMode="decimal"
-                placeholder={centsToAmount(pendingCents)}
+                placeholder={formatAmount(pendingCents)}
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
               />
@@ -231,14 +233,14 @@ export function ChargeSheet({
     const plan = plans.data?.plans.find((p) => p.id === id);
     if (plan) {
       if (!concept.trim()) setConcept(plan.name);
-      setAmount(centsToAmount(plan.amountCents));
+      setAmount(formatAmount(plan.amountCents));
     }
   }
 
   async function submit(e: FormEvent) {
     e.preventDefault();
     setError(null);
-    const amountCents = Math.round(Number(amount.replace(",", ".")) * 100);
+    const amountCents = parseMoney(amount) ?? Number.NaN;
     const target = person?.id ?? personId;
     if (!target || !Number.isFinite(amountCents) || amountCents <= 0) {
       setError(errors("bad_request"));

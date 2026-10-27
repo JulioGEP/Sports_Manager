@@ -1,20 +1,25 @@
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 import {
   addDays,
-  BOX_DASHBOARD_MAX_KPIS,
+  BOX_DASHBOARD_MAX_WIDGETS,
+  BOX_DASHBOARDS,
+  BOX_KPIS,
   BoxDashboardResponseSchema,
   BoxDashboardSchema,
   BoxDashboardUpdateSchema,
-  dashboardKpis,
+  canSeeKpi,
+  dashboardWidgets,
   eligibleKpis,
   planExpiresOn,
   readDashboardsConfig,
-  visibleKpis,
+  visibleWidgets,
+  widgetNeedsTrend,
+  type BoxDashboardsConfig,
   type BoxKpi,
   type BoxKpiValue,
 } from "@sportsmanager/shared";
 import type { ApiConfig } from "../config.ts";
-import { entitlementOf, type DataLayer } from "../data/index.ts";
+import { entitlementOf, type DataLayer, type SubscriptionRecord } from "../data/index.ts";
 import { requirePermission } from "../http/actor.ts";
 import type { AppEnv } from "../http/context.ts";
 import {
@@ -34,7 +39,8 @@ import { monthlyCents, programmingWeek } from "./fitness-insights.ts";
 const DAY = 86_400_000;
 const at = (date: string) => new Date(`${date}T00:00:00Z`);
 
-type Figure = Omit<BoxKpiValue, "id">;
+type Figure = Omit<BoxKpiValue, "id" | "series">;
+type Series = NonNullable<BoxKpiValue["series"]>;
 const figure = (f: Partial<Figure> & Pick<Figure, "value">): Figure => ({
   total: null,
   delta: null,
@@ -99,24 +105,57 @@ function sourcesOf(data: DataLayer, c: Ctx) {
     return { active, activePlayers, joined, left };
   });
   const athletes = once(async () => data.fitness.athletes(scope, timezone, now, await visible()));
+  /** Los lunes de las ocho últimas semanas, del más antiguo a esta. */
+  const weeks = Array.from({ length: 8 }, (_, i) => addDays(monday, (i - 7) * 7));
+  /** Los seis últimos meses (`AAAA-MM`), del más antiguo a este. */
+  const months = Array.from({ length: 6 }, (_, i) => {
+    const d = new Date(`${monthStart}T00:00:00Z`);
+    d.setUTCMonth(d.getUTCMonth() + i - 5);
+    return d.toISOString().slice(0, 7);
+  });
+  /** El último día de un mes, o hoy si es el mes en curso. */
+  const monthEnd = (month: string) => {
+    if (month === today.slice(0, 7)) return today;
+    const d = new Date(`${month}-01T00:00:00Z`);
+    d.setUTCMonth(d.getUTCMonth() + 1);
+    d.setUTCDate(0);
+    return d.toISOString().slice(0, 10);
+  };
+  const weekOf = (date: string) =>
+    addDays(date, -((new Date(`${date}T00:00:00Z`).getUTCDay() + 6) % 7));
   const occupancy = (from: string, to: string) =>
     data.fitness.occupancy(scope, at(from), at(to), timezone);
   const leads = once(() => data.community.leads.list(scope));
 
   return {
     scope,
+    timezone,
     today,
     now,
     monthStart,
+    weeks,
+    months,
+    monthEnd,
+    weekOf,
     visible,
+    subscriptions,
     members,
     athletes,
     leads,
+    /** Las clases de las ocho últimas semanas, con la semana local a la que pertenecen. */
+    classWeeks: once(async () =>
+      (await data.fitness.classLoad(scope, at(weeks[0]!), at(addDays(monday, 7)))).map((r) => ({
+        ...r,
+        week: weekOf(todayIn(timezone, r.startsAt)),
+      })),
+    ),
+    announcements: once(() =>
+      data.community.announcements.list(scope, c.get("actor").userId, { all: true }),
+    ),
     upcoming: once(() => data.fitness.withUpcoming(scope, now)),
     classesToday: once(() => occupancy(today, addDays(today, 1))),
     thisWeek: once(() => occupancy(monday, addDays(monday, 7))),
     lastWeek: once(() => occupancy(addDays(monday, -7), monday)),
-    fourWeeks: once(() => occupancy(addDays(monday, -28), monday)),
     trials: once(() =>
       data.fitness.trials(scope, at(monday), at(addDays(monday, 7)), at(monthStart)),
     ),
@@ -139,7 +178,7 @@ const sampleOf = (names: string[]) => names.slice(0, 3);
  * Cómo se calcula cada KPI del catálogo (`BOX_KPIS`). La fórmula es del producto, no del club: así
  * dos boxes que miran "Ocupación" miran lo mismo.
  */
-function calculators(data: DataLayer, c: Ctx): Record<BoxKpi, (s: Sources) => Promise<Figure>> {
+function calculators(data: DataLayer): Record<BoxKpi, (s: Sources) => Promise<Figure>> {
   return {
     // --- Entrenamiento ---
     classes_today: async (s) => {
@@ -350,11 +389,12 @@ function calculators(data: DataLayer, c: Ctx): Record<BoxKpi, (s: Sources) => Pr
       });
     },
     announcements_month: async (s) => {
-      const since = new Date(s.now.getTime() - 30 * DAY);
-      const list = await data.community.announcements.list(s.scope, c.get("actor").userId, {
-        all: true,
-      });
-      const recent = list.filter((a) => a.publishedAt >= since && a.publishedAt <= s.now);
+      const list = await s.announcements();
+      const recent = list.filter(
+        (a) =>
+          todayIn(s.timezone, a.publishedAt).slice(0, 7) === s.today.slice(0, 7) &&
+          a.publishedAt <= s.now,
+      );
       return figure({
         value: recent.length,
         params: { reads: recent.reduce((sum, a) => sum + (a.readCount ?? 0), 0) },
@@ -421,6 +461,194 @@ function calculators(data: DataLayer, c: Ctx): Record<BoxKpi, (s: Sources) => Pr
   };
 }
 
+/**
+ * Si una tarifa estaba en vigor un día: empezada y sin terminar. Sin fecha de fin, la que sigue
+ * activa o en pausa lo está; la cancelada o caducada, solo hasta que caduca su bono, si tiene. Es
+ * la reconstrucción de los meses pasados: por eso esos históricos se marcan como estimados.
+ */
+function inForceOn(s: SubscriptionRecord, date: string): boolean {
+  if (s.startsOn > date) return false;
+  if (s.endsOn) return s.endsOn >= date;
+  if (s.status === "active" || s.status === "paused") return true;
+  const expires = planExpiresOn(entitlementOf(s));
+  return expires !== null && expires >= date;
+}
+
+/** Cuándo dejó de estar en vigor una tarifa, si se sabe. */
+function endOf(s: SubscriptionRecord): string | null {
+  if (s.status === "active" || s.status === "paused") return null;
+  return s.endsOn ?? planExpiresOn(entitlementOf(s));
+}
+
+const ratioOf = (o: { offered: number; taken: number }) =>
+  o.offered > 0 ? Math.min(1, o.taken / o.offered) : null;
+
+/**
+ * El histórico de los KPIs que lo tienen (`BOX_KPIS[id].trend`), del más antiguo al de ahora. El
+ * último punto es el periodo en curso y, salvo la conversión de leads (que va por mes de entrada),
+ * coincide con la cifra principal.
+ */
+function trendCalculators(
+  data: DataLayer,
+  current: (id: BoxKpi) => Promise<number | null>,
+): Partial<Record<BoxKpi, (s: Sources) => Promise<Series>>> {
+  /** Cambia el último punto por la cifra principal, que es la exacta. */
+  const closeWith = async (id: BoxKpi, series: Series): Promise<Series> => {
+    const last = series[series.length - 1];
+    if (last) last.value = await current(id);
+    return series;
+  };
+  const byWeek = async (
+    s: Sources,
+    value: (rows: Awaited<ReturnType<Sources["classWeeks"]>>) => number | null,
+  ) => {
+    const rows = await s.classWeeks();
+    return s.weeks.map((week) => ({
+      label: week,
+      value: value(rows.filter((r) => r.week === week)),
+    }));
+  };
+  const load = (rows: { capacity: number | null; taken: number }[]) =>
+    rows.reduce(
+      (acc, r) =>
+        r.capacity === null
+          ? acc
+          : { offered: acc.offered + r.capacity, taken: acc.taken + Math.min(r.taken, r.capacity) },
+      { offered: 0, taken: 0 },
+    );
+  const activeAt = async (s: Sources) => {
+    const subs = await s.subscriptions();
+    return (date: string) => subs.filter((x) => inForceOn(x, date));
+  };
+
+  return {
+    occupancy_week: async (s) =>
+      closeWith("occupancy_week", await byWeek(s, (rows) => ratioOf(load(rows)))),
+    classes_week: async (s) => closeWith("classes_week", await byWeek(s, (rows) => rows.length)),
+    prs_week: async (s) => {
+      // Semanas de siete días que acaban hoy, como la cifra: la última son los siete últimos días.
+      const ends = Array.from({ length: 8 }, (_, i) => addDays(s.today, (i - 7) * 7));
+      const dates = await data.fitness.prDates(
+        s.scope,
+        addDays(ends[0]!, -6),
+        s.today,
+        await s.visible(),
+      );
+      return ends.map((end) => ({
+        label: end,
+        value: dates.filter((d) => d <= end && d > addDays(end, -7)).length,
+      }));
+    },
+    trials_week: async (s) => {
+      const starts = await data.fitness.trialStarts(
+        s.scope,
+        at(s.weeks[0]!),
+        at(addDays(s.weeks[s.weeks.length - 1]!, 7)),
+      );
+      const weeks = starts.map((d) => s.weekOf(todayIn(s.timezone, d)));
+      return closeWith(
+        "trials_week",
+        s.weeks.map((week) => ({ label: week, value: weeks.filter((w) => w === week).length })),
+      );
+    },
+    active_athletes: async (s) => {
+      const at = await activeAt(s);
+      return closeWith(
+        "active_athletes",
+        s.months.map((month) => ({
+          label: month,
+          value: new Set(at(s.monthEnd(month)).map((x) => x.playerId)).size,
+        })),
+      );
+    },
+    recurring_revenue: async (s) => {
+      const at = await activeAt(s);
+      return closeWith(
+        "recurring_revenue",
+        s.months.map((month) => ({
+          label: month,
+          value: at(s.monthEnd(month)).reduce((sum, x) => sum + monthlyCents(x), 0),
+        })),
+      );
+    },
+    members_net: async (s) => {
+      const subs = await s.subscriptions();
+      const first = new Map<string, string>();
+      const last = new Map<string, string | null>();
+      for (const x of subs) {
+        const start = first.get(x.playerId);
+        if (!start || x.startsOn < start) first.set(x.playerId, x.startsOn);
+        const end = endOf(x);
+        const prev = last.get(x.playerId);
+        // Quien tiene alguna en vigor no se ha ido: su fin es nulo.
+        last.set(
+          x.playerId,
+          prev === null || end === null ? null : prev && prev > end ? prev : end,
+        );
+      }
+      return closeWith(
+        "members_net",
+        s.months.map((month) => ({
+          label: month,
+          value:
+            [...first.values()].filter((d) => d.slice(0, 7) === month).length -
+            [...last.values()].filter((d) => d !== null && d.slice(0, 7) === month).length,
+        })),
+      );
+    },
+    visits_per_athlete: async (s) => {
+      // Ventanas de 30 días hacia atrás, como la cifra; cada una con los atletas en vigor al final.
+      const windows = await data.fitness.trainedWindows(s.scope, s.now, 6, 30, await s.visible());
+      const at = await activeAt(s);
+      const series = windows
+        .map((n, i) => {
+          const end = addDays(s.today, -30 * i);
+          const athletes = new Set(at(end).map((x) => x.playerId)).size;
+          return { label: end, value: athletes > 0 ? Math.round((n / athletes) * 10) / 10 : null };
+        })
+        .reverse();
+      return closeWith("visits_per_athlete", series);
+    },
+    collected_month: async (s) => {
+      const byMonth = await data.fitness.collectedByMonth(s.scope, `${s.months[0]!}-01`);
+      return s.months.map((month) => ({ label: month, value: byMonth.get(month) ?? 0 }));
+    },
+    store_sales_month: async (s) => {
+      const byMonth = await data.fitness.storeSalesByMonth(
+        s.scope,
+        at(`${s.months[0]!}-01`),
+        s.timezone,
+      );
+      return closeWith(
+        "store_sales_month",
+        s.months.map((month) => ({ label: month, value: byMonth.get(month) ?? 0 })),
+      );
+    },
+    lead_conversion: async (s) => {
+      const leads = await s.leads();
+      return s.months.map((month) => {
+        const cohort = leads.filter((l) => todayIn(s.timezone, l.createdAt).slice(0, 7) === month);
+        const converted = cohort.filter((l) => l.status === "converted").length;
+        return { label: month, value: cohort.length > 0 ? converted / cohort.length : null };
+      });
+    },
+    announcements_month: async (s) => {
+      const list = await s.announcements();
+      const months = list
+        .filter((a) => a.publishedAt <= s.now)
+        .map((a) => todayIn(s.timezone, a.publishedAt).slice(0, 7));
+      return s.months.map((month) => ({
+        label: month,
+        value: months.filter((m) => m === month).length,
+      }));
+    },
+    peak_slot: async (s) =>
+      (await s.slots()).map((x) => ({ label: x.hour, value: Math.min(1, x.ratio) })),
+    quiet_slot: async (s) =>
+      (await s.slots()).map((x) => ({ label: x.hour, value: Math.min(1, x.ratio) })),
+  };
+}
+
 const dashboardParam = z.object({ dashboard: BoxDashboardSchema });
 
 /**
@@ -438,28 +666,43 @@ export function createFitnessDashboardRoutes(config: ApiConfig, data: DataLayer)
     const tenant = orgOf(c);
     const actor = c.get("actor");
     const saved = readDashboardsConfig(tenant.organization.dashboards);
-    const kpis = visibleKpis(dashboardKpis(saved, dashboard), actor.permissions);
-    const available = visibleKpis(eligibleKpis(dashboard), actor.permissions);
+    const widgets = visibleWidgets(dashboardWidgets(saved, dashboard), actor.permissions);
+    const available = eligibleKpis(dashboard).filter((id) => canSeeKpi(id, actor.permissions));
     const sources = sourcesOf(data, c);
-    const calc = calculators(data, c);
-    const values = await Promise.all(
-      (preview ? available : kpis).map(async (id) => ({ id, ...(await calc[id](sources)) })),
+    const calc = calculators(data);
+    const figures = new Map<BoxKpi, Promise<Figure>>();
+    const figureOf = (id: BoxKpi) => {
+      let f = figures.get(id);
+      if (!f) figures.set(id, (f = calc[id](sources)));
+      return f;
+    };
+    const trends = trendCalculators(data, async (id) => (await figureOf(id)).value);
+    // Al personalizar, todo lo que se puede elegir y con su histórico, para cambiar de vista al
+    // momento; si no, solo lo que se enseña y el histórico de las piezas que lo dibujan.
+    const ids = preview ? available : widgets.map((x) => x.kpi);
+    const withTrend = new Set(
+      preview
+        ? available.filter((id) => BOX_KPIS[id].trend !== null)
+        : widgets.filter(widgetNeedsTrend).map((x) => x.kpi),
     );
-    const byHour =
-      dashboard === "box"
-        ? [...(await sources.fourWeeks()).byHour.entries()]
-            .sort(([a], [b]) => a.localeCompare(b))
-            .map(([hour, v]) => ({ hour, offered: v.offered, taken: v.taken }))
-        : null;
+    const values = await Promise.all(
+      ids.map(async (id) => {
+        const trend = withTrend.has(id) ? trends[id] : undefined;
+        const [figure, series] = await Promise.all([
+          figureOf(id),
+          trend ? trend(sources) : Promise.resolve(null),
+        ]);
+        return { id, ...figure, series };
+      }),
+    );
     return c.json(
       {
         dashboard,
-        kpis,
+        widgets,
         values,
         available,
         custom: saved[dashboard] !== undefined,
         canEdit: actor.permissions.has("org.settings.write"),
-        byHour,
       },
       200,
     );
@@ -471,7 +714,7 @@ export function createFitnessDashboardRoutes(config: ApiConfig, data: DataLayer)
       path: "/api/org/dashboards/{dashboard}",
       tags: ["Fitness"],
       summary:
-        "Un cuadro de mando del box (Hoy o la portada de un área): los KPIs que el club ha elegido y sus cifras, solo con lo que quien pregunta puede ver. Con `preview=all`, las cifras de todos los que se pueden elegir",
+        "Un cuadro de mando del box (Hoy o la portada de un área): las piezas que el club ha elegido (KPI, vista y tamaño) y sus cifras con su histórico, solo con lo que quien pregunta puede ver. Con `preview=all`, las cifras e históricos de todos los KPIs que se pueden elegir",
       security: [{ sessionCookie: [] }],
       middleware: [requirePermission("org.events.read")],
       request: {
@@ -492,7 +735,7 @@ export function createFitnessDashboardRoutes(config: ApiConfig, data: DataLayer)
       path: "/api/org/dashboards/{dashboard}",
       tags: ["Fitness"],
       summary:
-        "Elegir los KPIs de un cuadro de mando para todo el club, en orden (como mucho ocho). Nulo vuelve a los de serie",
+        "Personalizar un cuadro de mando para todo el club: sus piezas en orden, cada una con su KPI, su vista y su tamaño (como mucho doce). Nulo vuelve a las de serie",
       security: [{ sessionCookie: [] }],
       middleware: [requirePermission("org.settings.write")],
       request: { params: dashboardParam, ...body(BoxDashboardUpdateSchema) },
@@ -502,25 +745,25 @@ export function createFitnessDashboardRoutes(config: ApiConfig, data: DataLayer)
       const tenant = orgOf(c);
       const actor = c.get("actor");
       const { dashboard } = c.req.valid("param");
-      const { kpis } = c.req.valid("json");
+      const { widgets } = c.req.valid("json");
       const saved = readDashboardsConfig(tenant.organization.dashboards);
-      const next = { ...saved };
-      if (kpis === null) {
-        delete next[dashboard];
-      } else {
-        const eligible = new Set<BoxKpi>(eligibleKpis(dashboard));
-        const chosen = [...new Set(kpis)].filter((id) => eligible.has(id));
+      const next: BoxDashboardsConfig = {};
+      for (const d of BOX_DASHBOARDS)
+        if (saved[d] !== undefined && d !== dashboard) next[d] = dashboardWidgets(saved, d);
+      if (widgets !== null) {
+        // Sin repetir, solo los del cuadro y con una vista que el KPI admite.
+        const chosen = dashboardWidgets({ [dashboard]: widgets }, dashboard);
         // Lo que quien guarda no puede ver se queda como estaba: no lo ha quitado él.
-        const unseen = dashboardKpis(saved, dashboard).filter(
-          (id) => !visibleKpis([id], actor.permissions).length && !chosen.includes(id),
+        const unseen = dashboardWidgets(saved, dashboard).filter(
+          (x) => !canSeeKpi(x.kpi, actor.permissions) && !chosen.some((y) => y.kpi === x.kpi),
         );
-        next[dashboard] = [...chosen, ...unseen].slice(0, BOX_DASHBOARD_MAX_KPIS);
+        next[dashboard] = [...chosen, ...unseen].slice(0, BOX_DASHBOARD_MAX_WIDGETS);
       }
       await data.organizations.setDashboards(tenant.scope, next);
       tenant.organization.dashboards = next;
       await audit(c, "organization.dashboards_updated", tenant.organization.name, {
         dashboard,
-        kpis: next[dashboard] ?? null,
+        widgets: next[dashboard] ?? null,
       });
       return respond(c, dashboard, false);
     },

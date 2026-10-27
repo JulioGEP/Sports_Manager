@@ -2,7 +2,7 @@ import { schema, type Database } from "@sportsmanager/db";
 import type { STORED_AVAILABILITY_STATUSES } from "@sportsmanager/shared";
 
 type StoredAvailabilityStatus = (typeof STORED_AVAILABILITY_STATUSES)[number];
-import { and, asc, desc, eq, gte, inArray, isNull, lt, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, inArray, isNull, lt, lte, or, sql } from "drizzle-orm";
 import { localDate } from "./training.ts";
 import { localParts } from "./events.ts";
 import type { OrgScope } from "./scope.ts";
@@ -381,6 +381,152 @@ export function fitnessInsightsRepo(db: () => Database) {
           ),
         );
       return Number(rows[0]?.n ?? 0);
+    },
+
+    /**
+     * Las clases abiertas de un rango, una a una: cuándo empiezan, su aforo (nulo si no tiene) y
+     * las plazas ocupadas. Para los históricos por semana de los cuadros de mando (ADR 0055).
+     */
+    async classLoad(
+      scope: OrgScope,
+      from: Date,
+      to: Date,
+    ): Promise<{ startsAt: Date; capacity: number | null; taken: number }[]> {
+      const rows = await db()
+        .select({
+          startsAt: schema.events.startsAt,
+          capacity: sql<
+            number | null
+          >`coalesce(${schema.events.capacity}, ${schema.teams.capacity})`,
+          taken: sql<number>`(select count(*) from ${schema.bookings} b where b.event_id = ${schema.events.id} and b.status in ('booked', 'attended', 'no_show'))`,
+        })
+        .from(schema.events)
+        .innerJoin(schema.teams, eq(schema.teams.id, schema.events.teamId))
+        .where(
+          and(
+            eq(schema.events.organizationId, scope.organizationId),
+            eq(schema.teams.bookingMode, "open"),
+            gte(schema.events.startsAt, from),
+            lt(schema.events.startsAt, to),
+          ),
+        );
+      return rows.map((r) => ({
+        startsAt: r.startsAt,
+        capacity: r.capacity === null ? null : Number(r.capacity),
+        taken: Number(r.taken),
+      }));
+    },
+
+    /** Lo cobrado por mes (`AAAA-MM`) desde una fecha. */
+    async collectedByMonth(scope: OrgScope, from: string): Promise<Map<string, number>> {
+      const month = sql<string>`to_char(${schema.payments.paidOn}, 'YYYY-MM')`;
+      const rows = await db()
+        .select({ month, cents: sql<number>`sum(${schema.payments.amountCents})` })
+        .from(schema.payments)
+        .where(
+          and(
+            eq(schema.payments.organizationId, scope.organizationId),
+            gte(schema.payments.paidOn, from),
+          ),
+        )
+        .groupBy(month);
+      return new Map(rows.map((r) => [r.month, Number(r.cents)]));
+    },
+
+    /** Lo vendido en la tienda por mes (`AAAA-MM`, en la zona del club), sin cancelados. */
+    async storeSalesByMonth(
+      scope: OrgScope,
+      from: Date,
+      timezone: string,
+    ): Promise<Map<string, number>> {
+      const month = sql<string>`to_char(${schema.storeOrders.createdAt} at time zone ${timezone}, 'YYYY-MM')`;
+      const rows = await db()
+        .select({ month, cents: sql<number>`sum(${schema.storeOrders.totalCents})` })
+        .from(schema.storeOrders)
+        .where(
+          and(
+            eq(schema.storeOrders.organizationId, scope.organizationId),
+            gte(schema.storeOrders.createdAt, from),
+            sql`${schema.storeOrders.status} <> 'cancelled'`,
+          ),
+        )
+        .groupBy(sql`1`);
+      return new Map(rows.map((r) => [r.month, Number(r.cents)]));
+    },
+
+    /** Cuándo empiezan las clases de prueba de los leads de un rango. */
+    async trialStarts(scope: OrgScope, from: Date, to: Date): Promise<Date[]> {
+      const rows = await db()
+        .select({ startsAt: schema.events.startsAt })
+        .from(schema.leads)
+        .innerJoin(schema.events, eq(schema.events.id, schema.leads.trialEventId))
+        .where(
+          and(
+            eq(schema.leads.organizationId, scope.organizationId),
+            gte(schema.events.startsAt, from),
+            lt(schema.events.startsAt, to),
+          ),
+        );
+      return rows.map((r) => r.startsAt);
+    },
+
+    /** Las fechas de las marcas personales de un rango (de unos atletas, o de todos). */
+    async prDates(
+      scope: OrgScope,
+      from: string,
+      to: string,
+      players: string[] | null,
+    ): Promise<string[]> {
+      if (players && players.length === 0) return [];
+      const rows = await db()
+        .select({ onDate: schema.personalRecords.onDate })
+        .from(schema.personalRecords)
+        .where(
+          and(
+            eq(schema.personalRecords.organizationId, scope.organizationId),
+            gte(schema.personalRecords.onDate, from),
+            lte(schema.personalRecords.onDate, to),
+            players ? inArray(schema.personalRecords.playerId, players) : undefined,
+          ),
+        );
+      return rows.map((r) => r.onDate);
+    },
+
+    /**
+     * Entrenamientos hechos en ventanas de `days` días hacia atrás desde `now`: el primero es la
+     * ventana que acaba ahora. De unos atletas, o de todos.
+     */
+    async trainedWindows(
+      scope: OrgScope,
+      now: Date,
+      windows: number,
+      days: number,
+      players: string[] | null,
+    ): Promise<number[]> {
+      const out = Array.from({ length: windows }, () => 0);
+      if (players && players.length === 0) return out;
+      const from = new Date(now.getTime() - windows * days * 86_400_000);
+      const bucket = sql<number>`floor(extract(epoch from (${now}::timestamptz - ${schema.events.startsAt})) / ${days * 86_400})`;
+      const rows = await db()
+        .select({ bucket, n: sql<number>`count(*)` })
+        .from(schema.bookings)
+        .innerJoin(schema.events, eq(schema.events.id, schema.bookings.eventId))
+        .where(
+          and(
+            eq(schema.bookings.organizationId, scope.organizationId),
+            gte(schema.events.startsAt, from),
+            lt(schema.events.startsAt, now),
+            trained(now),
+            players ? inArray(schema.bookings.playerId, players) : undefined,
+          ),
+        )
+        // Por la posición: la expresión lleva parámetros y Postgres no la reconocería repetida.
+        .groupBy(sql`1`);
+      for (const r of rows) {
+        const i = Number(r.bucket);
+        if (i >= 0 && i < windows) out[i] = Number(r.n);
+      }
+      return out;
     },
 
     /** Días con clase abierta en un rango, por disciplina (para saber qué WOD falta). */

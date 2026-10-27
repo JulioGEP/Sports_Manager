@@ -1,13 +1,12 @@
 import { BOX_AREAS, type BoxArea } from "@sportsmanager/shared";
 import { Link, Navigate, useParams } from "react-router";
 import { KpiBoard } from "@/components/fitness/kpi-board";
-import { MeterBar, usePercent } from "@/components/fitness/owner-ui";
 import { useHas } from "@/components/fitness/staff-ui";
 import { AREA_LABEL_KEYS, boxAreaScreens } from "@/lib/box-areas";
 import { clubPaths, useReadyClub } from "@/lib/club";
-import { useClubModel, useDashboard } from "@/lib/fitness";
+import { useClubModel } from "@/lib/fitness";
 import { useT } from "@/lib/intl";
-import { Card, EmptyState, Icon, PageHeader } from "@/ui";
+import { Icon, PageHeader } from "@/ui";
 
 const isArea = (value: string | undefined): value is BoxArea =>
   (BOX_AREAS as readonly string[]).includes(value ?? "");
@@ -42,7 +41,6 @@ function AreaOverview({ area }: { area: BoxArea }) {
         description={k(`areas.${area}`)}
       />
       <KpiBoard dashboard={area} title={k("boardTitle")} />
-      {area === "box" ? <OccupancyBySlot /> : null}
       {screens.length > 0 ? (
         <section aria-labelledby="area-screens" className="flex flex-col gap-3">
           <h2 id="area-screens" className="text-title2 text-ink">
@@ -73,69 +71,5 @@ function AreaOverview({ area }: { area: BoxArea }) {
         </section>
       ) : null}
     </div>
-  );
-}
-
-/**
- * Ocupación por franja de las últimas cuatro semanas (antes en Métricas): dónde sobra sitio y
- * dónde falta, para decidir el horario. Cada barra lleva su cifra al lado.
- */
-function OccupancyBySlot() {
-  const k = useT("fitness.kpis.byHour");
-  const percent = usePercent();
-  const board = useDashboard("box");
-  const rows = board.data?.byHour ?? [];
-  const ratio = (taken: number, offered: number) => (offered > 0 ? taken / offered : 0);
-  if (!board.data) return null;
-  return (
-    <Card title={k("title")} description={k("hint")}>
-      {rows.length === 0 ? (
-        <EmptyState
-          icon={<Icon.ChartBar weight="duotone" />}
-          title={k("empty")}
-          description={k("emptyHint")}
-        />
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[22rem] text-body">
-            <caption className="sr-only">{k("title")}</caption>
-            <thead>
-              <tr className="text-left text-label uppercase tracking-wide text-muted">
-                <th scope="col" className="w-20 pb-2 font-medium">
-                  {k("hour")}
-                </th>
-                <th scope="col" className="pb-2 font-medium">
-                  <span className="sr-only">{k("bar")}</span>
-                </th>
-                <th scope="col" className="w-28 pb-2 text-right font-medium">
-                  {k("taken")}
-                </th>
-                <th scope="col" className="w-20 pb-2 text-right font-medium">
-                  {k("occupancy")}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => (
-                <tr key={row.hour} className="border-t border-line">
-                  <th scope="row" className="py-2 pr-3 text-left font-mono text-ink">
-                    {row.hour}
-                  </th>
-                  <td className="py-2">
-                    <MeterBar ratio={ratio(row.taken, row.offered)} />
-                  </td>
-                  <td className="py-2 pl-3 text-right font-mono text-muted">
-                    {k("takenOf", { taken: row.taken, offered: row.offered })}
-                  </td>
-                  <td className="py-2 pl-3 text-right font-mono text-ink">
-                    {percent(ratio(row.taken, row.offered))}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </Card>
   );
 }

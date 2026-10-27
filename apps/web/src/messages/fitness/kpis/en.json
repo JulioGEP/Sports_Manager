@@ -8,7 +8,6 @@
   "summaryOf": "{area} overview",
   "boardTitle": "Key figures",
   "todayTitle": "Today's figures",
-  "choose": "Choose KPIs",
   "screensTitle": "In this area",
   "screens": {
     "classes": "Class calendar, bookings and check-in.",
@@ -30,32 +29,13 @@
   },
   "empty": {
     "title": "This board has no figures",
-    "hint": "Choose the KPIs you want to see here.",
+    "hint": "Customize it and choose the KPIs you want to see here.",
     "readOnly": "The box admins have not chosen figures for this board."
   },
   "loadError": "The figures could not be loaded. Please try again.",
   "noData": "No data yet",
   "delta": "{delta} pts vs last week",
   "slotOccupancy": "{percent} occupancy",
-  "editor": {
-    "title": "{dashboard} KPIs",
-    "description": "The whole box team will see what you choose; each person, only what their role allows.",
-    "chosen": "On the board · {count} of {max}",
-    "chosenEmpty": "None: the board will be empty.",
-    "available": "To add",
-    "availableEmpty": "They are all on the board already.",
-    "full": "Eight fit. Remove one to add another.",
-    "up": "Move {name} up",
-    "down": "Move {name} down",
-    "remove": "Remove {name}",
-    "add": "Add {name}",
-    "restore": "Back to the defaults",
-    "cancel": "Cancel",
-    "save": "Save KPIs",
-    "saved": "KPIs saved. The whole team sees them now.",
-    "restored": "The default KPIs are back.",
-    "now": "Now: {value}"
-  },
   "dashboards": {
     "today": "Today",
     "training": "Training",
@@ -160,8 +140,8 @@
     },
     "announcements_month": {
       "label": "Announcements published",
-      "hint": "{reads, plural, one {# read} other {# reads}} in 30 days",
-      "about": "Announcements published in the last 30 days and how many times they were read."
+      "hint": "{reads, plural, one {# read} other {# reads}} this month",
+      "about": "Announcements published this month and how many times they were read."
     },
     "classes_week": {
       "label": "Classes this week",
@@ -194,15 +174,61 @@
       "about": "Pieces of equipment marked as broken or under repair."
     }
   },
-  "byHour": {
-    "title": "Occupancy by slot",
-    "hint": "The last four weeks: where there is room to spare and where it runs short.",
-    "empty": "No data yet",
-    "emptyHint": "It shows up once there are classes with capacity and bookings.",
-    "hour": "Slot",
-    "bar": "Chart",
-    "taken": "Taken",
-    "occupancy": "Occupancy",
-    "takenOf": "{taken} of {offered}"
+  "customize": "Customize",
+  "edit": {
+    "hint": "Drag each piece by its handle to reorder it. Choose how it looks and how much space it takes. It is saved for the whole team.",
+    "save": "Save board",
+    "cancel": "Cancel",
+    "restore": "Back to the defaults",
+    "saved": "Board saved. The whole team sees it now.",
+    "restored": "The default board is back.",
+    "add": "Add KPI",
+    "full": "Twelve pieces fit. Remove one to add another.",
+    "drag": "Drag {name}",
+    "moveBefore": "Move earlier",
+    "moveAfter": "Move later",
+    "remove": "Remove",
+    "options": "{name} options",
+    "view": "{name} view",
+    "size": "Size",
+    "moved": "{name}: position {position} of {total}",
+    "removed": "{name} removed from the board",
+    "unsaved": "Unsaved changes",
+    "addTitle": "Add to {dashboard}",
+    "addDescription": "Each KPI with its current figure and the views it supports. It arrives with its default view; change it on the board.",
+    "addOne": "Add {name}",
+    "addEmpty": "They are all on the board already.",
+    "now": "Now: {value}",
+    "discardTitle": "Discard your changes?",
+    "discardBody": "The board goes back to how it was before you customized it.",
+    "discard": "Discard changes",
+    "keep": "Keep editing"
+  },
+  "views": {
+    "number": "Number",
+    "line": "Line",
+    "bar": "Bars",
+    "radial": "Radial"
+  },
+  "sizes": {
+    "s": "Small · 1×1",
+    "m": "Wide · 2×1",
+    "l": "Large · 2×2",
+    "xl": "Full width"
+  },
+  "trend": {
+    "week": "Last 8 weeks",
+    "month": "Last 6 months",
+    "slot": "By slot · 4 weeks",
+    "estimated": "Earlier months estimated from plan dates"
+  },
+  "chart": {
+    "summary": "{name}, {period}: from {first} to {last}.",
+    "slotSummary": "{name}: the {hour} slot, at {value}.",
+    "radialSummary": "{name}: {value}.",
+    "weekOf": "week of {date}",
+    "sevenDaysTo": "7 days to {date}",
+    "windowTo": "30 days to {date}",
+    "slotAt": "{hour} slot"
   }
 }

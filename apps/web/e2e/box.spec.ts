@@ -124,7 +124,7 @@ test.describe("box de demostración", () => {
     // El coach ve Entrenamiento con sus cifras, sin elegirlas y sin nada de dinero.
     await open(page, "/areas/training", "Entrenamiento");
     await expect(page.locator("[data-kpi]").first()).toBeVisible();
-    await expect(page.getByRole("button", { name: "Elegir KPIs" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Personalizar" })).toHaveCount(0);
     await shot(page, "263-box-coach-area-entrenamiento", info.project.name);
     await signOut(page);
   });
@@ -134,19 +134,63 @@ test.describe("box de demostración", () => {
   }, info) => {
     await login(page, "box@demo.test", PASSWORD, BOX);
     await expect(page.getByRole("heading", { level: 1, name: /Marta/ })).toBeVisible();
-    // Hoy enseña de serie atletas, ocupación, recurrente y pruebas (ADR 0055).
+    // Hoy enseña de serie atletas, ocupación (radial), recurrente (línea), pruebas y cobrado (barras).
     await expect(page.locator('[data-kpi="active_athletes"]')).toBeVisible();
-    await expect(page.locator('[data-kpi="recurring_revenue"]')).toBeVisible();
+    await expect(page.locator('[data-kpi="occupancy_week"][data-view="radial"]')).toBeVisible();
+    await expect(page.locator('[data-kpi="recurring_revenue"][data-view="line"]')).toBeVisible();
+    // El dinero, con punto de miles y coma decimal.
+    await expect(page.locator('[data-kpi="recurring_revenue"]')).toContainText(/\d,\d{2} €/);
     await shot(page, "265-box-duena-inicio", info.project.name);
     await expectLegibleButtons(page);
 
-    // Elegir los KPIs de Hoy: los que salen, en orden, y los que se pueden añadir con su cifra.
-    await page.getByRole("button", { name: "Elegir KPIs" }).first().click();
-    const editor = page.getByRole("dialog");
-    await expect(editor.getByRole("heading", { name: "KPIs de Hoy" })).toBeVisible();
-    await expect(editor.getByRole("button", { name: /^Añadir / }).first()).toBeVisible();
-    await shot(page, "265a-box-duena-elegir-kpis", info.project.name);
-    await editor.getByRole("button", { name: "Cancelar" }).last().click();
+    // Personalizar Hoy en el propio cuadro: vista, tamaño, orden y una pieza nueva.
+    await page.getByRole("button", { name: "Personalizar" }).first().click();
+    const save = page.getByRole("button", { name: "Guardar cuadro" });
+    await expect(save).toBeDisabled();
+    await page
+      .getByRole("group", { name: "Vista de Atletas activos" })
+      .getByRole("button", { name: "Línea" })
+      .click();
+    await expect(page.locator('[data-kpi="active_athletes"][data-view="line"]')).toBeVisible();
+    await page.getByRole("button", { name: "Opciones de Pruebas esta semana" }).click();
+    await page.getByRole("menuitem", { name: "Todo el ancho" }).click();
+    // Mover desde el menú, la vía del teclado.
+    await page.getByRole("button", { name: "Opciones de Atletas activos" }).click();
+    await page.getByRole("menuitem", { name: "Mover después" }).click();
+    await page.getByRole("button", { name: "Añadir KPI" }).click();
+    await page
+      .getByRole("dialog")
+      .getByRole("button", { name: "Añadir Atletas que no vienen" })
+      .click();
+    await expect(page.locator('[data-kpi="inactive_athletes"]')).toBeVisible();
+    if (info.project.name === "escritorio") {
+      // Arrastrar y soltar: el cobrado se pone en el sitio de la ocupación.
+      const handle = page.getByRole("button", { name: "Arrastrar Cobrado este mes" });
+      const target = page.locator('[data-kpi="occupancy_week"]');
+      const from = (await handle.boundingBox())!;
+      const to = (await target.boundingBox())!;
+      await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(to.x + 20, to.y + 20, { steps: 8 });
+      await page.mouse.move(to.x + to.width / 2, to.y + to.height / 2, { steps: 8 });
+      await page.mouse.up();
+      const order = await page
+        .locator("[data-kpi]")
+        .evaluateAll((els) => els.map((el) => el.getAttribute("data-kpi")));
+      expect(order.indexOf("collected_month")).toBeLessThan(order.indexOf("occupancy_week"));
+    }
+    await shot(page, "265a-box-duena-personalizar", info.project.name);
+    await expect(save).toBeEnabled();
+    await save.click();
+    await expect(page.getByText("Cuadro guardado. Ya lo ve todo el equipo.")).toBeVisible();
+    await expect(page.locator('[data-kpi="inactive_athletes"]')).toBeVisible();
+    await expect(page.locator('[data-kpi="trials_week"][data-view="bar"]')).toBeVisible();
+    await shot(page, "265f-box-duena-inicio-personalizado", info.project.name);
+    // Y vuelta a los de serie, para que el resto de pruebas vea el cuadro de siempre.
+    await page.getByRole("button", { name: "Personalizar" }).first().click();
+    await page.getByRole("button", { name: "Volver a los de serie" }).click();
+    await expect(page.getByText("Vuelve el cuadro de serie.")).toBeVisible();
+    await expect(page.locator('[data-kpi="inactive_athletes"]')).toHaveCount(0);
 
     // Las cabeceras de la barra abren la portada de cada área.
     if (info.project.name === "escritorio") {
@@ -179,7 +223,8 @@ test.describe("box de demostración", () => {
     await shot(page, "269-box-duena-area-negocio", info.project.name);
 
     await open(page, "/areas/box", "El box");
-    await expect(page.getByRole("heading", { name: "Ocupación por franja" })).toBeVisible();
+    // La franja más llena, a todo el ancho y en barras: la ocupación de cada hora.
+    await expect(page.locator('[data-kpi="peak_slot"][data-view="bar"]')).toBeVisible();
     await shot(page, "269b-box-duena-area-el-box", info.project.name);
 
     // La dueña ve todo el box en el calendario; tocar un día lo abre en la vista de día.

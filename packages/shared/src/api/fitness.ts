@@ -24,7 +24,12 @@ import { AI_FAILURES, AI_GENERATION_STATUSES } from "../training-ai.ts";
 import { AiQuotaSchema } from "./training-ai.ts";
 import { CAPACITIES, DAY_ROLES, TIME_DOMAINS, WORKOUT_TRACKS } from "../capacities.ts";
 import { LEVEL_CAPACITIES, PLAN_AUDIENCES } from "../planning.ts";
-import { BOX_DASHBOARD_MAX_KPIS, BoxDashboardSchema, BoxKpiSchema } from "../box-dashboards.ts";
+import {
+  BOX_DASHBOARD_MAX_WIDGETS,
+  BoxDashboardSchema,
+  BoxKpiSchema,
+  BoxWidgetSchema,
+} from "../box-dashboards.ts";
 
 /** Contratos de los clubs de fitness (ADR 0049). */
 
@@ -677,31 +682,33 @@ export const BoxKpiValueSchema = z.object({
   /** Hasta tres nombres para que se entienda sin abrirlo. */
   sample: z.array(z.string()),
   tone: z.enum(BOX_KPI_TONES),
+  /**
+   * El histórico, del más antiguo al de ahora, cuando alguna pieza lo enseña: el lunes de cada
+   * semana (`AAAA-MM-DD`), el mes (`AAAA-MM`) o la franja (`HH:00`). El último punto es la cifra
+   * principal. Nulo si no se ha pedido o el KPI no tiene.
+   */
+  series: z.array(z.object({ label: z.string(), value: z.number().nullable() })).nullable(),
 });
 export type BoxKpiValue = z.infer<typeof BoxKpiValueSchema>;
 
 export const BoxDashboardResponseSchema = z.object({
   dashboard: BoxDashboardSchema,
-  /** La elección del club, solo con lo que esta persona puede ver, en su orden. */
-  kpis: z.array(BoxKpiSchema),
-  /** Las cifras de esos KPIs o, al elegir, las de todos los disponibles. */
+  /** Las piezas que el club ha elegido, solo con lo que esta persona puede ver, en su orden. */
+  widgets: z.array(BoxWidgetSchema),
+  /** Las cifras de esas piezas o, al personalizar, las de todos los KPIs disponibles. */
   values: z.array(BoxKpiValueSchema),
-  /** Lo que cabe en este cuadro y esta persona puede ver. */
+  /** Los KPIs que caben en este cuadro y esta persona puede ver. */
   available: z.array(BoxKpiSchema),
   /** El club ha cambiado los de serie. */
   custom: z.boolean(),
-  /** Elige los KPIs del club (`org.settings.write`). */
+  /** Personaliza el cuadro para todo el club (`org.settings.write`). */
   canEdit: z.boolean(),
-  /** Solo en El box: la ocupación por franja de las últimas cuatro semanas. */
-  byHour: z
-    .array(z.object({ hour: z.string(), offered: z.number().int(), taken: z.number().int() }))
-    .nullable(),
 });
 export type BoxDashboardResponse = z.infer<typeof BoxDashboardResponseSchema>;
 
 export const BoxDashboardUpdateSchema = z.object({
-  /** Los KPIs, en orden; nulo vuelve a los de serie. */
-  kpis: z.array(BoxKpiSchema).max(BOX_DASHBOARD_MAX_KPIS).nullable(),
+  /** Las piezas, en orden (como mucho doce); nulo vuelve a las de serie. */
+  widgets: z.array(BoxWidgetSchema).max(BOX_DASHBOARD_MAX_WIDGETS).nullable(),
 });
 export type BoxDashboardUpdate = z.infer<typeof BoxDashboardUpdateSchema>;
 

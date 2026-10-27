@@ -21,7 +21,7 @@ import {
   WorkoutsResponseSchema,
   addDays,
   type BoxDashboard,
-  type BoxKpi,
+  type BoxWidget,
   type ClubModel,
   type WorkoutLevel,
 } from "@sportsmanager/shared";
@@ -335,15 +335,15 @@ export function useDashboard(
   });
 }
 
-/** Guarda los KPIs de un cuadro para todo el club (nulo: los de serie) y refresca los cuadros. */
+/** Guarda las piezas de un cuadro para todo el club (nulo: las de serie) y refresca los cuadros. */
 export function useSaveDashboard(dashboard: BoxDashboard) {
   const client = useQueryClient();
   const { slug } = useReadyClub();
   return useCallback(
-    async (kpis: BoxKpi[] | null) => {
+    async (widgets: BoxWidget[] | null) => {
       const saved = await apiFetch(`/api/org/dashboards/${dashboard}`, {
         method: "PUT",
-        body: { kpis },
+        body: { widgets },
         schema: BoxDashboardResponseSchema,
       });
       await client.invalidateQueries({ queryKey: fitnessKey(slug, "dashboard") });

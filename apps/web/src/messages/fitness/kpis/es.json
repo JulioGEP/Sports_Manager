@@ -8,7 +8,6 @@
   "summaryOf": "Resumen de {area}",
   "boardTitle": "Cifras clave",
   "todayTitle": "Las cifras de hoy",
-  "choose": "Elegir KPIs",
   "screensTitle": "En esta área",
   "screens": {
     "classes": "Calendario de clases, reservas y check-in.",
@@ -30,32 +29,13 @@
   },
   "empty": {
     "title": "Este cuadro no tiene cifras",
-    "hint": "Elige los KPIs que quieres ver aquí.",
+    "hint": "Personalízalo y elige los KPIs que quieres ver aquí.",
     "readOnly": "La administración del box no ha elegido cifras para este cuadro."
   },
   "loadError": "No se han podido cargar las cifras. Inténtalo de nuevo.",
   "noData": "Sin datos todavía",
   "delta": "{delta} pts frente a la semana pasada",
   "slotOccupancy": "{percent} de ocupación",
-  "editor": {
-    "title": "KPIs de {dashboard}",
-    "description": "Lo que elijas lo verá todo el equipo del box; cada persona, solo lo que su rol le deja ver.",
-    "chosen": "En el cuadro · {count} de {max}",
-    "chosenEmpty": "Ninguno: el cuadro quedará vacío.",
-    "available": "Para añadir",
-    "availableEmpty": "Ya están todos en el cuadro.",
-    "full": "Caben ocho. Quita uno para añadir otro.",
-    "up": "Subir {name}",
-    "down": "Bajar {name}",
-    "remove": "Quitar {name}",
-    "add": "Añadir {name}",
-    "restore": "Volver a los de serie",
-    "cancel": "Cancelar",
-    "save": "Guardar KPIs",
-    "saved": "KPIs guardados. Ya los ve todo el equipo.",
-    "restored": "Vuelven los KPIs de serie.",
-    "now": "Ahora: {value}"
-  },
   "dashboards": {
     "today": "Hoy",
     "training": "Entrenamiento",
@@ -160,8 +140,8 @@
     },
     "announcements_month": {
       "label": "Anuncios publicados",
-      "hint": "{reads, plural, one {# lectura} other {# lecturas}} en 30 días",
-      "about": "Anuncios publicados en los últimos 30 días y cuántas veces se han leído."
+      "hint": "{reads, plural, one {# lectura} other {# lecturas}} este mes",
+      "about": "Anuncios publicados este mes y cuántas veces se han leído."
     },
     "classes_week": {
       "label": "Clases esta semana",
@@ -194,15 +174,61 @@
       "about": "Piezas de material marcadas como rotas o en reparación."
     }
   },
-  "byHour": {
-    "title": "Ocupación por franja",
-    "hint": "Las últimas cuatro semanas: dónde sobra sitio y dónde falta.",
-    "empty": "Sin datos todavía",
-    "emptyHint": "Sale en cuanto haya clases con aforo y reservas.",
-    "hour": "Franja",
-    "bar": "Gráfico",
-    "taken": "Ocupadas",
-    "occupancy": "Ocupación",
-    "takenOf": "{taken} de {offered}"
+  "customize": "Personalizar",
+  "edit": {
+    "hint": "Arrastra cada pieza por su asa para ordenarla. Elige cómo se ve y qué sitio ocupa. Se guarda para todo el equipo.",
+    "save": "Guardar cuadro",
+    "cancel": "Cancelar",
+    "restore": "Volver a los de serie",
+    "saved": "Cuadro guardado. Ya lo ve todo el equipo.",
+    "restored": "Vuelve el cuadro de serie.",
+    "add": "Añadir KPI",
+    "full": "Caben doce piezas. Quita una para añadir otra.",
+    "drag": "Arrastrar {name}",
+    "moveBefore": "Mover antes",
+    "moveAfter": "Mover después",
+    "remove": "Quitar",
+    "options": "Opciones de {name}",
+    "view": "Vista de {name}",
+    "size": "Tamaño",
+    "moved": "{name}: posición {position} de {total}",
+    "removed": "{name} quitado del cuadro",
+    "unsaved": "Cambios sin guardar",
+    "addTitle": "Añadir a {dashboard}",
+    "addDescription": "Cada KPI con su cifra de ahora y las vistas que admite. Llega con su vista de serie; luego la cambias en el cuadro.",
+    "addOne": "Añadir {name}",
+    "addEmpty": "Ya están todos en el cuadro.",
+    "now": "Ahora: {value}",
+    "discardTitle": "¿Descartar los cambios?",
+    "discardBody": "El cuadro vuelve a como estaba antes de personalizarlo.",
+    "discard": "Descartar cambios",
+    "keep": "Seguir editando"
+  },
+  "views": {
+    "number": "Número",
+    "line": "Línea",
+    "bar": "Barras",
+    "radial": "Radial"
+  },
+  "sizes": {
+    "s": "Pequeño · 1×1",
+    "m": "Ancho · 2×1",
+    "l": "Grande · 2×2",
+    "xl": "Todo el ancho"
+  },
+  "trend": {
+    "week": "Últimas 8 semanas",
+    "month": "Últimos 6 meses",
+    "slot": "Por franja · 4 semanas",
+    "estimated": "Meses anteriores estimados con las fechas de las tarifas"
+  },
+  "chart": {
+    "summary": "{name}, {period}: de {first} a {last}.",
+    "slotSummary": "{name}: la franja de las {hour}, con {value}.",
+    "radialSummary": "{name}: {value}.",
+    "weekOf": "semana del {date}",
+    "sevenDaysTo": "7 días hasta el {date}",
+    "windowTo": "30 días hasta el {date}",
+    "slotAt": "franja de las {hour}"
   }
 }

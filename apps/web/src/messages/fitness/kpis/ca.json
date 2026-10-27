@@ -8,7 +8,6 @@
   "summaryOf": "Resum de {area}",
   "boardTitle": "Xifres clau",
   "todayTitle": "Les xifres d'avui",
-  "choose": "Triar KPI",
   "screensTitle": "En aquesta àrea",
   "screens": {
     "classes": "Calendari de classes, reserves i check-in.",
@@ -30,32 +29,13 @@
   },
   "empty": {
     "title": "Aquest quadre no té xifres",
-    "hint": "Tria els KPI que vols veure aquí.",
+    "hint": "Personalitza-ho i tria els KPI que vols veure aquí.",
     "readOnly": "L'administració del box no ha triat xifres per a aquest quadre."
   },
   "loadError": "No s'han pogut carregar les xifres. Torna-ho a provar.",
   "noData": "Encara sense dades",
   "delta": "{delta} pts respecte de la setmana passada",
   "slotOccupancy": "{percent} d'ocupació",
-  "editor": {
-    "title": "KPI de {dashboard}",
-    "description": "El que triïs ho veurà tot l'equip del box; cada persona, només el que el seu rol li deixa veure.",
-    "chosen": "Al quadre · {count} de {max}",
-    "chosenEmpty": "Cap: el quadre quedarà buit.",
-    "available": "Per afegir",
-    "availableEmpty": "Ja hi són tots al quadre.",
-    "full": "N'hi caben vuit. Treu-ne un per afegir-ne un altre.",
-    "up": "Pujar {name}",
-    "down": "Baixar {name}",
-    "remove": "Treure {name}",
-    "add": "Afegir {name}",
-    "restore": "Tornar als de sèrie",
-    "cancel": "Cancel·lar",
-    "save": "Desar KPI",
-    "saved": "KPI desats. Ja els veu tot l'equip.",
-    "restored": "Tornen els KPI de sèrie.",
-    "now": "Ara: {value}"
-  },
   "dashboards": {
     "today": "Avui",
     "training": "Entrenament",
@@ -160,8 +140,8 @@
     },
     "announcements_month": {
       "label": "Avisos publicats",
-      "hint": "{reads, plural, one {# lectura} other {# lectures}} en 30 dies",
-      "about": "Avisos publicats els últims 30 dies i quantes vegades s'han llegit."
+      "hint": "{reads, plural, one {# lectura} other {# lectures}} aquest mes",
+      "about": "Avisos publicats aquest mes i quantes vegades s'han llegit."
     },
     "classes_week": {
       "label": "Classes aquesta setmana",
@@ -194,15 +174,61 @@
       "about": "Peces de material marcades com a trencades o en reparació."
     }
   },
-  "byHour": {
-    "title": "Ocupació per franja",
-    "hint": "Les últimes quatre setmanes: on sobra lloc i on en falta.",
-    "empty": "Encara sense dades",
-    "emptyHint": "Surt quan hi ha classes amb aforament i reserves.",
-    "hour": "Franja",
-    "bar": "Gràfic",
-    "taken": "Ocupades",
-    "occupancy": "Ocupació",
-    "takenOf": "{taken} de {offered}"
+  "customize": "Personalitzar",
+  "edit": {
+    "hint": "Arrossega cada peça per la seva nansa per ordenar-la. Tria com es veu i quin espai ocupa. Es desa per a tot l'equip.",
+    "save": "Desar quadre",
+    "cancel": "Cancel·lar",
+    "restore": "Tornar als de sèrie",
+    "saved": "Quadre desat. Ja el veu tot l'equip.",
+    "restored": "Torna el quadre de sèrie.",
+    "add": "Afegir KPI",
+    "full": "Hi caben dotze peces. Treu-ne una per afegir-ne una altra.",
+    "drag": "Arrossegar {name}",
+    "moveBefore": "Moure abans",
+    "moveAfter": "Moure després",
+    "remove": "Treure",
+    "options": "Opcions de {name}",
+    "view": "Vista de {name}",
+    "size": "Mida",
+    "moved": "{name}: posició {position} de {total}",
+    "removed": "{name} tret del quadre",
+    "unsaved": "Canvis sense desar",
+    "addTitle": "Afegir a {dashboard}",
+    "addDescription": "Cada KPI amb la xifra d'ara i les vistes que admet. Arriba amb la vista de sèrie; després la canvies al quadre.",
+    "addOne": "Afegir {name}",
+    "addEmpty": "Ja hi són tots al quadre.",
+    "now": "Ara: {value}",
+    "discardTitle": "Descartar els canvis?",
+    "discardBody": "El quadre torna a com era abans de personalitzar-lo.",
+    "discard": "Descartar canvis",
+    "keep": "Continuar editant"
+  },
+  "views": {
+    "number": "Número",
+    "line": "Línia",
+    "bar": "Barres",
+    "radial": "Radial"
+  },
+  "sizes": {
+    "s": "Petit · 1×1",
+    "m": "Ample · 2×1",
+    "l": "Gran · 2×2",
+    "xl": "Tota l'amplada"
+  },
+  "trend": {
+    "week": "Últimes 8 setmanes",
+    "month": "Últims 6 mesos",
+    "slot": "Per franja · 4 setmanes",
+    "estimated": "Mesos anteriors estimats amb les dates de les tarifes"
+  },
+  "chart": {
+    "summary": "{name}, {period}: de {first} a {last}.",
+    "slotSummary": "{name}: la franja de les {hour}, amb {value}.",
+    "radialSummary": "{name}: {value}.",
+    "weekOf": "setmana del {date}",
+    "sevenDaysTo": "7 dies fins al {date}",
+    "windowTo": "30 dies fins al {date}",
+    "slotAt": "franja de les {hour}"
   }
 }

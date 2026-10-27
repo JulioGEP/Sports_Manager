@@ -59,9 +59,22 @@ export function createCopy(catalogs: Partial<Record<Locale, CopyFile>>, fallback
   };
 }
 
-/** Formatos locales: fechas, horas y moneda siempre con Intl, nunca a mano. */
+/**
+ * Dinero igual en toda la app y en todos los idiomas: punto de miles, coma decimal y siempre dos
+ * decimales (`1.234,56 €`). Intl no sirve: en castellano no agrupa los miles de cuatro cifras.
+ */
+const money = {
+  format(euros: number): string {
+    const cents = Math.round(euros * 100);
+    const abs = Math.abs(cents);
+    const units = String(Math.floor(abs / 100)).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    return `${cents < 0 ? "-" : ""}${units},${String(abs % 100).padStart(2, "0")} €`;
+  },
+};
+
+/** Formatos: fechas y horas con Intl en el idioma de cada cual; el dinero, con el de la app. */
 export const formatters = (locale: Locale) => ({
   date: new Intl.DateTimeFormat(locale, { weekday: "short", day: "numeric", month: "short" }),
   time: new Intl.DateTimeFormat(locale, { hour: "2-digit", minute: "2-digit" }),
-  money: new Intl.NumberFormat(locale, { style: "currency", currency: "EUR" }),
+  money,
 });
