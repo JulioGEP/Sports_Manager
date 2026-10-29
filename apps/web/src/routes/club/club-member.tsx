@@ -2,7 +2,6 @@ import {
   CLUB_MEMBER_STATUSES,
   ClubMemberResponseSchema,
   FeeChargesResponseSchema,
-  MemberTypesResponseSchema,
   PERSON_GENDERS,
   PersonResponseSchema,
   personDisplayName,
@@ -20,6 +19,7 @@ import { ApiClientError, apiFetch, errorKey } from "@/lib/api";
 import { clubPaths, useReadyClub } from "@/lib/club";
 import { useDates } from "@/lib/dates";
 import { useT } from "@/lib/intl";
+import { orgQueries } from "@/lib/queries";
 import {
   Alert,
   Avatar,
@@ -588,8 +588,7 @@ function MemberSheet({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const types = useQuery({
-    queryKey: ["org", slug, "member-types"],
-    queryFn: () => apiFetch("/api/org/member-types", { schema: MemberTypesResponseSchema }),
+    ...orgQueries.memberTypes(slug),
     enabled: open,
   });
 

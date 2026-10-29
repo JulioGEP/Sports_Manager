@@ -2,7 +2,6 @@ import {
   CLUB_MEMBER_STATUSES,
   ClubMemberResponseSchema,
   ClubMembersResponseSchema,
-  MemberTypesResponseSchema,
   PERSON_GENDERS,
   PeopleResponseSchema,
   personDisplayName,
@@ -18,6 +17,7 @@ import { apiFetch, errorKey } from "@/lib/api";
 import { clubPaths, useReadyClub } from "@/lib/club";
 import { useDates } from "@/lib/dates";
 import { useT } from "@/lib/intl";
+import { orgQueries } from "@/lib/queries";
 import {
   Alert,
   Avatar,
@@ -76,10 +76,7 @@ export function ClubMembersPage() {
       });
     },
   });
-  const types = useQuery({
-    queryKey: ["org", slug, "member-types"],
-    queryFn: () => apiFetch("/api/org/member-types", { schema: MemberTypesResponseSchema }),
-  });
+  const types = useQuery(orgQueries.memberTypes(slug));
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();

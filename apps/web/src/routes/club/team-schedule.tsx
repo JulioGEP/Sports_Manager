@@ -1,5 +1,4 @@
 import {
-  FacilitiesResponseSchema,
   TeamScheduleResponseSchema,
   WEEKDAYS,
   type TeamScheduleSlotResponse,
@@ -10,6 +9,7 @@ import { apiFetch, errorKey } from "@/lib/api";
 import { useReadyClub } from "@/lib/club";
 import { useT } from "@/lib/intl";
 import { Alert, Button, Input, Select, Sheet, useToast } from "@/ui";
+import { orgQueries } from "@/lib/queries";
 
 type Slot = { weekday: number; startsAt: string; endsAt: string; facilityId: string };
 
@@ -42,8 +42,7 @@ export function ScheduleSheet({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const facilities = useQuery({
-    queryKey: ["org", slug, "facilities"],
-    queryFn: () => apiFetch("/api/org/facilities", { schema: FacilitiesResponseSchema }),
+    ...orgQueries.facilities(slug),
     enabled: open,
   });
 

@@ -1,11 +1,7 @@
 import {
-  CategoriesResponseSchema,
-  MembersResponseSchema,
   PLAYER_MISSING_FILTERS,
   PlayerDetailResponseSchema,
   PlayersResponseSchema,
-  SectionsResponseSchema,
-  TeamsResponseSchema,
   playerDisplayName,
   type PlayerMissingFilter,
   type PlayerSummary,
@@ -17,6 +13,7 @@ import { apiFetch, errorKey } from "@/lib/api";
 import { clubPaths, useReadyClub } from "@/lib/club";
 import { useDates } from "@/lib/dates";
 import { useT } from "@/lib/intl";
+import { orgQueries } from "@/lib/queries";
 import {
   Alert,
   Avatar,
@@ -72,24 +69,11 @@ export function PlayersPage() {
         schema: PlayersResponseSchema,
       }),
   });
-  const teams = useQuery({
-    queryKey: ["org", slug, "teams", null],
-    queryFn: () => apiFetch("/api/org/teams", { schema: TeamsResponseSchema }),
-  });
-  const sections = useQuery({
-    queryKey: ["org", slug, "sections", null],
-    queryFn: () => apiFetch("/api/org/sections", { schema: SectionsResponseSchema }),
-  });
-  const categories = useQuery({
-    queryKey: ["org", slug, "categories", sectionFilter || "all"],
-    queryFn: () =>
-      apiFetch(`/api/org/categories${sectionFilter ? `?section=${sectionFilter}` : ""}`, {
-        schema: CategoriesResponseSchema,
-      }),
-  });
+  const teams = useQuery(orgQueries.teams(slug));
+  const sections = useQuery(orgQueries.sections(slug));
+  const categories = useQuery(orgQueries.categories(slug, sectionFilter || null));
   const members = useQuery({
-    queryKey: ["org", slug, "members"],
-    queryFn: () => apiFetch("/api/org/members", { schema: MembersResponseSchema }),
+    ...orgQueries.members(slug),
     enabled: tab === "families",
   });
   const reload = () => client.invalidateQueries({ queryKey: ["org", slug] });

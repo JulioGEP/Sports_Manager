@@ -3,12 +3,8 @@ import {
   EVENT_KINDS,
   EventResponseSchema,
   EventSessionResponseSchema,
-  EventsResponseSchema,
-  FacilitiesResponseSchema,
   HOME_AWAY,
-  SectionsResponseSchema,
   SessionDetailResponseSchema,
-  TeamsResponseSchema,
   type AttendanceStatus,
   type EventKind,
   type EventSummary,
@@ -33,6 +29,7 @@ import { clubPaths, useReadyClub } from "@/lib/club";
 import { useT } from "@/lib/intl";
 import { useMediaQuery } from "@/lib/media";
 import { DESKTOP_QUERY } from "@/lib/theme";
+import { orgQueries } from "@/lib/queries";
 import {
   Alert,
   Avatar,
@@ -106,26 +103,19 @@ export function AgendaPage() {
   if (teamFilter) query.set("team", teamFilter);
   if (facilityFilter) query.set("facility", facilityFilter);
   const events = useQuery({
-    queryKey: ["agenda", slug, familyOnly ? "family" : "club", query.toString()],
-    queryFn: () =>
-      apiFetch(`${familyOnly ? "/api/org/family/agenda" : "/api/org/events"}?${query.toString()}`, {
-        schema: EventsResponseSchema,
-      }),
+    ...orgQueries.agenda(slug, familyOnly, query.toString()),
     enabled: canRead || familyOnly,
   });
   const sections = useQuery({
-    queryKey: ["org", slug, "sections", "all"],
-    queryFn: () => apiFetch("/api/org/sections", { schema: SectionsResponseSchema }),
+    ...orgQueries.sections(slug),
     enabled: permissions.includes("org.structure.read"),
   });
   const teams = useQuery({
-    queryKey: ["org", slug, "teams", null],
-    queryFn: () => apiFetch("/api/org/teams", { schema: TeamsResponseSchema }),
+    ...orgQueries.teams(slug),
     enabled: permissions.includes("org.structure.read"),
   });
   const facilities = useQuery({
-    queryKey: ["org", slug, "facilities"],
-    queryFn: () => apiFetch("/api/org/facilities", { schema: FacilitiesResponseSchema }),
+    ...orgQueries.facilities(slug),
     enabled: permissions.includes("org.facilities.read"),
   });
   const reload = () => client.invalidateQueries({ queryKey: ["agenda", slug] });

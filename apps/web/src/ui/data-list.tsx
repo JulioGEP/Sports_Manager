@@ -1,5 +1,12 @@
 import { ActionIcon, type ActionKind } from "@sportsmanager/design";
-import type { MouseEvent, ReactNode } from "react";
+import {
+  startTransition,
+  useDeferredValue,
+  useEffect,
+  useState,
+  type MouseEvent,
+  type ReactNode,
+} from "react";
 import { useNavigate } from "react-router";
 import { useT } from "@/lib/intl";
 import { DESKTOP_QUERY } from "@/lib/theme";
@@ -44,6 +51,12 @@ export interface RowAction {
 const interactive = "a, button, input, select, textarea, label, [role='menu'], [role='dialog']";
 
 /**
+ * Filas de la primera pintura (ADR 0060). Una lista de 450 personas se pinta en dos tiempos: lo que
+ * cabe en pantalla y algo más, al momento, y el resto justo después, sin bloquear la página.
+ */
+const FIRST_ROWS = 60;
+
+/**
  * Lista de datos con dos formas (DESIGN.md 9.7 y 9.8): tabla de filas de 52 px en escritorio,
  * filas cápsula de 64 px en móvil. La fila es el objeto: si tiene `href`, se abre tocándola en
  * cualquier punto (el enlace del título sigue ahí para el teclado y el lector de pantalla) y lo dice
@@ -75,6 +88,15 @@ export function DataList<T>({
   const desktop = useMediaQuery(DESKTOP_QUERY);
   const navigate = useNavigate();
   const c = useT("common");
+  // Al escribir en un buscador, el campo responde primero y la lista se repinta después.
+  const deferred = useDeferredValue(rows);
+  const [limit, setLimit] = useState(FIRST_ROWS);
+  useEffect(() => {
+    if (deferred.length <= limit) return;
+    const handle = setTimeout(() => startTransition(() => setLimit(Infinity)), 0);
+    return () => clearTimeout(handle);
+  }, [deferred.length, limit]);
+  const shown = deferred.length > limit ? deferred.slice(0, limit) : deferred;
   if (rows.length === 0) return <>{empty}</>;
 
   function open(e: MouseEvent, to: string) {
@@ -91,7 +113,7 @@ export function DataList<T>({
   if (!desktop) {
     return (
       <ul className="flex flex-col gap-2.5" aria-label={caption}>
-        {rows.map((row) => {
+        {shown.map((row) => {
           const item = mobileRow(row);
           const to = href?.(row);
           const acts = rowActions?.(row).filter(Boolean) ?? [];
@@ -104,6 +126,7 @@ export function DataList<T>({
             <li
               key={getKey(row)}
               onClick={to ? (e) => open(e, to) : undefined}
+              data-prefetch={to}
               className={`relative flex min-h-16 flex-wrap items-center gap-3 rounded-row bg-surface px-4 py-2.5 shadow-row transition-colors precisa:border precisa:border-border ${
                 to ? "cursor-pointer active:bg-page" : ""
               }`}
@@ -173,7 +196,7 @@ export function DataList<T>({
           </tr>
         </thead>
         <tbody>
-          {rows.map((row) => {
+          {shown.map((row) => {
             const to = href?.(row);
             const acts = rowActions?.(row).filter(Boolean) ?? [];
             const custom = actions?.(row);
@@ -181,6 +204,7 @@ export function DataList<T>({
               <tr
                 key={getKey(row)}
                 onClick={to ? (e) => open(e, to) : undefined}
+                data-prefetch={to}
                 className={`group h-13 border-b border-line transition-colors last:border-b-0 hover:bg-page ${
                   to ? "cursor-pointer" : ""
                 }`}

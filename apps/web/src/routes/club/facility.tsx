@@ -1,6 +1,5 @@
 import {
   EventsResponseSchema,
-  FacilitiesResponseSchema,
   FacilityHoursSetSchema,
   FacilityResponseSchema,
   WEEKDAYS,
@@ -22,6 +21,7 @@ import {
 import { apiFetch, errorKey } from "@/lib/api";
 import { clubPaths, useReadyClub } from "@/lib/club";
 import { useT } from "@/lib/intl";
+import { orgQueries } from "@/lib/queries";
 import {
   Alert,
   Button,
@@ -60,10 +60,7 @@ export function FacilityPage() {
   const [confirmArchive, setConfirmArchive] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  const facilities = useQuery({
-    queryKey: ["org", slug, "facilities"],
-    queryFn: () => apiFetch("/api/org/facilities", { schema: FacilitiesResponseSchema }),
-  });
+  const facilities = useQuery(orgQueries.facilities(slug));
   const facility = facilities.data?.facilities.find((f) => f.id === id) ?? null;
 
   async function setStatus(status: "active" | "archived") {

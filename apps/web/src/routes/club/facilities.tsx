@@ -1,6 +1,5 @@
 import {
   FACILITY_KINDS,
-  FacilitiesResponseSchema,
   FacilityCreateSchema,
   FacilityResponseSchema,
   type Facility,
@@ -12,6 +11,7 @@ import { Link, useNavigate, useSearchParams } from "react-router";
 import { apiFetch, errorKey } from "@/lib/api";
 import { clubPaths, useReadyClub } from "@/lib/club";
 import { useT } from "@/lib/intl";
+import { orgQueries } from "@/lib/queries";
 import {
   Alert,
   Button,
@@ -60,10 +60,7 @@ export function FacilitiesPage() {
   const creating = canWrite && params.get("new") === "1";
   const [showArchived, setShowArchived] = useState(false);
 
-  const facilities = useQuery({
-    queryKey: ["org", slug, "facilities"],
-    queryFn: () => apiFetch("/api/org/facilities", { schema: FacilitiesResponseSchema }),
-  });
+  const facilities = useQuery(orgQueries.facilities(slug));
   const all = facilities.data?.facilities ?? [];
   const archived = all.filter((f) => f.status === "archived").length;
   const list = all.filter((f) => showArchived || f.status === "active");

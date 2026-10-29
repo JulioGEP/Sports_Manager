@@ -10,7 +10,7 @@ import {
   type OrganizationBranding,
   type OrganizationResponse,
 } from "@sportsmanager/shared";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryOptions, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import {
   createContext,
   useCallback,
@@ -23,7 +23,10 @@ import {
 } from "react";
 import { useParams } from "react-router";
 import { ApiClientError, apiFetch, setCurrentClub, setCurrentViewAs } from "./api";
-import { ME_QUERY, fetchMe } from "./session";
+import { useLocale } from "./intl";
+import { isLocale } from "./locale";
+import { prefetchHref } from "./prefetch";
+import { meQuery } from "./session";
 import { applyClubLook } from "./theme";
 
 export type ClubState =
@@ -96,6 +99,67 @@ function readViewAs(slug: string | null): string | null {
   }
 }
 
+/** Lo que el espacio de un club necesita para pintarse: marca, club (con el actor) y pertenencias. */
+export const clubQueries = {
+  branding: (slug: string | null) =>
+    queryOptions({
+      queryKey: ["branding", slug],
+      queryFn: () =>
+        apiFetch("/api/org/branding", { schema: OrganizationBrandingSchema, club: slug }),
+      enabled: slug !== null,
+      retry: false,
+      staleTime: 60_000,
+    }),
+  org: (slug: string | null, viewAs: string | null) =>
+    queryOptions({
+      queryKey: ["org", slug, "self", viewAs],
+      queryFn: () => apiFetch("/api/org", { schema: OrganizationResponseSchema, club: slug }),
+      enabled: slug !== null,
+      retry: false,
+    }),
+  memberships: () =>
+    queryOptions({
+      queryKey: ["memberships"],
+      queryFn: () =>
+        apiFetch("/api/me/memberships", { schema: MyMembershipsResponseSchema, club: null }),
+      retry: false,
+    }),
+};
+
+/**
+ * Arranque de un club sin esperas (ADR 0060): marca, sesión, club y pertenencias salen a la vez y
+ * en un solo lote, antes incluso de pintar nada. Antes iban en cascada: primero marca y sesión, y
+ * solo con la sesión, el club y las pertenencias. Sin sesión, el club y las pertenencias responden
+ * 401 y la pantalla manda al login como siempre.
+ */
+export function prefetchClub(client: QueryClient, pathname: string): void {
+  const [, club, area] = pathname.split("/");
+  // La aceptación de una invitación vive fuera del espacio del club y pide lo suyo.
+  if (!isValidClubSlug(club) || area === "invitations") return;
+  const viewAs = readViewAs(club);
+  // "Ver como" viaja en la cabecera: la consulta del club tiene que salir ya con la persona elegida.
+  setCurrentViewAs(viewAs);
+  void client.prefetchQuery(clubQueries.branding(club));
+  void client.prefetchQuery(meQuery);
+  void client.prefetchQuery(clubQueries.memberships());
+  // Con el club (y sus permisos) ya se sabe qué pide la pantalla: sale sin esperar a pintarla.
+  client
+    .fetchQuery(clubQueries.org(club, viewAs))
+    .then((org) => {
+      const granted = new Set<string>(org.actor.permissions);
+      prefetchHref(
+        {
+          client,
+          slug: club,
+          can: (permission) => granted.has(permission),
+          timezone: org.organization.view === "full" ? org.organization.timezone : "Europe/Madrid",
+        },
+        pathname,
+      );
+    })
+    .catch(() => undefined);
+}
+
 export function ClubProvider({ children }: { children: ReactNode }) {
   const { club } = useParams();
   const slug = isValidClubSlug(club) ? club : null;
@@ -134,29 +198,18 @@ export function ClubProvider({ children }: { children: ReactNode }) {
     [slug, queryClient],
   );
 
-  const branding = useQuery({
-    queryKey: ["branding", slug],
-    queryFn: () =>
-      apiFetch("/api/org/branding", { schema: OrganizationBrandingSchema, club: slug }),
-    enabled: slug !== null,
-    retry: false,
-    staleTime: 60_000,
-  });
-  const me = useQuery({ queryKey: ME_QUERY, queryFn: fetchMe, retry: false, staleTime: 60_000 });
-  const authenticated = me.data !== null && me.data !== undefined;
-  const org = useQuery({
-    queryKey: ["org", slug, "self", viewAs],
-    queryFn: () => apiFetch("/api/org", { schema: OrganizationResponseSchema, club: slug }),
-    enabled: slug !== null && authenticated,
-    retry: false,
-  });
-  const memberships = useQuery({
-    queryKey: ["memberships"],
-    queryFn: () =>
-      apiFetch("/api/me/memberships", { schema: MyMembershipsResponseSchema, club: null }),
-    enabled: authenticated,
-    retry: false,
-  });
+  const branding = useQuery(clubQueries.branding(slug));
+  const me = useQuery(meQuery);
+  // El club y las pertenencias no esperan a la sesión: van en el mismo lote que ella.
+  const org = useQuery(clubQueries.org(slug, viewAs));
+  const memberships = useQuery(clubQueries.memberships());
+
+  // El idioma del perfil manda sobre la cookie (Bloque 7), también si se entra directo a un club.
+  const { locale, setLocale } = useLocale();
+  const profileLocale = me.data?.user.locale;
+  useEffect(() => {
+    if (isLocale(profileLocale) && profileLocale !== locale) setLocale(profileLocale);
+  }, [profileLocale, locale, setLocale]);
 
   const look = useMemo(
     () => (branding.data ? withDraft(branding.data, draft) : null),
@@ -169,39 +222,65 @@ export function ClubProvider({ children }: { children: ReactNode }) {
     if (branding.data) document.title = branding.data.name;
   }, [branding.data]);
 
+  // El estado depende de los datos, no de los objetos de resultado de las consultas, que cambian en
+  // cada render: así el contexto no obliga a repintar todo el árbol en cada navegación (ADR 0060).
+  const brandingData = branding.data;
+  const brandingError = branding.error;
+  const meData = me.data;
+  const meError = me.isError;
+  const mePending = me.isPending;
+  const orgData = org.data;
+  const orgError = org.error;
+  const orgPending = org.isPending;
+  const membershipsData = memberships.data;
+  const membershipsError = memberships.isError;
+  const membershipsPending = memberships.isPending;
   const state = useMemo<ClubState>(() => {
     if (!slug) return { kind: "not_found" };
-    if (branding.isError) {
-      const err = branding.error;
-      return err instanceof ApiClientError && (err.status === 404 || err.status === 403)
+    if (brandingError) {
+      return brandingError instanceof ApiClientError &&
+        (brandingError.status === 404 || brandingError.status === 403)
         ? { kind: "not_found" }
         : { kind: "error" };
     }
-    if (!branding.data || me.isPending) return { kind: "loading" };
-    if (me.isError) return { kind: "error" };
-    if (me.data === null) return { kind: "anonymous", branding: branding.data };
-    if (org.isPending || memberships.isPending) return { kind: "loading" };
-    if (memberships.isError) return { kind: "error" };
-    if (org.isError) {
-      const err = org.error;
-      if (err instanceof ApiClientError && err.status === 403) {
+    if (!brandingData || mePending) return { kind: "loading" };
+    if (meError) return { kind: "error" };
+    if (meData === null || meData === undefined)
+      return { kind: "anonymous", branding: brandingData };
+    if (orgPending || membershipsPending) return { kind: "loading" };
+    if (membershipsError || !membershipsData) return { kind: "error" };
+    if (orgError || !orgData) {
+      if (orgError instanceof ApiClientError && orgError.status === 403) {
         return {
           kind: "no_membership",
-          branding: branding.data,
-          me: me.data,
-          memberships: memberships.data.memberships,
+          branding: brandingData,
+          me: meData,
+          memberships: membershipsData.memberships,
         };
       }
       return { kind: "error" };
     }
     return {
       kind: "ready",
-      branding: branding.data,
-      me: me.data,
-      org: org.data,
-      memberships: memberships.data.memberships,
+      branding: brandingData,
+      me: meData,
+      org: orgData,
+      memberships: membershipsData.memberships,
     };
-  }, [slug, branding, me, org, memberships]);
+  }, [
+    slug,
+    brandingData,
+    brandingError,
+    meData,
+    meError,
+    mePending,
+    orgData,
+    orgError,
+    orgPending,
+    membershipsData,
+    membershipsError,
+    membershipsPending,
+  ]);
 
   const value = useMemo<ClubContextValue>(
     () => ({

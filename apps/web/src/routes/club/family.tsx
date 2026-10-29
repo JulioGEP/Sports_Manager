@@ -1,11 +1,12 @@
-import { FamilyResponseSchema, playerDisplayName } from "@sportsmanager/shared";
+import { playerDisplayName } from "@sportsmanager/shared";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router";
-import { apiFetch, errorKey } from "@/lib/api";
+import { errorKey } from "@/lib/api";
 import { clubPaths, useReadyClub } from "@/lib/club";
 import { useDates } from "@/lib/dates";
 import { useT } from "@/lib/intl";
 import { Alert, Avatar, ButtonLink, Card, EmptyState, Icon, PageHeader, StatusChip } from "@/ui";
+import { orgQueries } from "@/lib/queries";
 import { StoreSpotlight } from "./shop";
 
 /** Lo que ve una familia: sus jugadores, su equipo de esta temporada y quién lo entrena. */
@@ -18,10 +19,7 @@ export function FamilyPage() {
   const dates = useDates();
   const { slug } = useReadyClub();
   const paths = clubPaths(slug);
-  const family = useQuery({
-    queryKey: ["org", slug, "family"],
-    queryFn: () => apiFetch("/api/org/family", { schema: FamilyResponseSchema }),
-  });
+  const family = useQuery(orgQueries.family(slug));
 
   return (
     <div className="flex flex-col gap-5">

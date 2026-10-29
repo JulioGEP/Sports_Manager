@@ -1,9 +1,7 @@
 import {
   EligibleMembersResponseSchema,
-  SeasonsResponseSchema,
   SectionResponseSchema,
   SectionsResponseSchema,
-  SportCatalogResponseSchema,
   defaultSectionKind,
   type Section,
   type SectionKind,
@@ -15,6 +13,7 @@ import { Link, useNavigate, useSearchParams } from "react-router";
 import { apiFetch, errorKey } from "@/lib/api";
 import { clubPaths, useReadyClub } from "@/lib/club";
 import { useLocale, useT } from "@/lib/intl";
+import { orgQueries } from "@/lib/queries";
 import {
   Alert,
   Avatar,
@@ -118,10 +117,7 @@ export function SectionsPage() {
   const creating = params.get("new") === "1";
   const seasonParam = params.get("season");
 
-  const seasons = useQuery({
-    queryKey: ["org", slug, "seasons"],
-    queryFn: () => apiFetch("/api/org/seasons", { schema: SeasonsResponseSchema }),
-  });
+  const seasons = useQuery(orgQueries.seasons(slug));
   const sections = useQuery({
     queryKey: ["org", slug, "sections", seasonParam],
     queryFn: () =>
@@ -272,8 +268,7 @@ export function SectionSheet({
   const { locale } = useLocale();
   const { slug } = useReadyClub();
   const sports = useQuery({
-    queryKey: ["org", slug, "sports"],
-    queryFn: () => apiFetch("/api/org/sports", { schema: SportCatalogResponseSchema }),
+    ...orgQueries.sports(slug),
     enabled: open,
     staleTime: 300_000,
   });
@@ -285,8 +280,7 @@ export function SectionSheet({
     enabled: open,
   });
   const seasons = useQuery({
-    queryKey: ["org", slug, "seasons"],
-    queryFn: () => apiFetch("/api/org/seasons", { schema: SeasonsResponseSchema }),
+    ...orgQueries.seasons(slug),
     enabled: open,
   });
   const [name, setName] = useState(section?.name ?? "");

@@ -5,14 +5,9 @@ import {
   FeeChargeGenerateSchema,
   FeeChargeResponseSchema,
   FeeChargesGeneratedResponseSchema,
-  FeeChargesResponseSchema,
   FeePlanCreateSchema,
   FeePlanResponseSchema,
   FeePlansResponseSchema,
-  MemberTypesResponseSchema,
-  MyFeesResponseSchema,
-  PaymentsSettingsResponseSchema,
-  SectionsResponseSchema,
   formatAmount,
   personDisplayName,
   parseMoney,
@@ -31,6 +26,7 @@ import { apiFetch, errorKey } from "@/lib/api";
 import { clubPaths, useReadyClub } from "@/lib/club";
 import { useDates } from "@/lib/dates";
 import { useT } from "@/lib/intl";
+import { orgQueries } from "@/lib/queries";
 import {
   Alert,
   Button,
@@ -147,13 +143,7 @@ function ChargesTab({ canWrite }: { canWrite: boolean }) {
   const [paying, setPaying] = useState<FeeCharge | null>(null);
   const [cancelling, setCancelling] = useState<FeeCharge | null>(null);
 
-  const charges = useQuery({
-    queryKey: ["org", slug, "fees", "charges", status],
-    queryFn: () =>
-      apiFetch(`/api/org/fees/charges${status ? `?status=${status}` : ""}`, {
-        schema: FeeChargesResponseSchema,
-      }),
-  });
+  const charges = useQuery(orgQueries.feeCharges(slug, status));
   const reload = () => client.invalidateQueries({ queryKey: ["org", slug, "fees"] });
 
   const rows = useMemo(() => {
@@ -380,8 +370,7 @@ function ManualCollectionNotice() {
   const { slug, org } = useReadyClub();
   const [, setParams] = useSearchParams();
   const settings = useQuery({
-    queryKey: ["org", slug, "fees", "settings"],
-    queryFn: () => apiFetch("/api/org/fees/settings", { schema: PaymentsSettingsResponseSchema }),
+    ...orgQueries.feesSettings(slug),
     enabled: org.actor.permissions.includes("org.settings.read"),
     retry: false,
   });
@@ -714,14 +703,8 @@ function PlanSheet({
   const [description, setDescription] = useState(plan?.description ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const memberTypes = useQuery({
-    queryKey: ["org", slug, "member-types"],
-    queryFn: () => apiFetch("/api/org/member-types", { schema: MemberTypesResponseSchema }),
-  });
-  const sections = useQuery({
-    queryKey: ["org", slug, "sections", "all"],
-    queryFn: () => apiFetch("/api/org/sections", { schema: SectionsResponseSchema }),
-  });
+  const memberTypes = useQuery(orgQueries.memberTypes(slug));
+  const sections = useQuery(orgQueries.sections(slug));
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -874,10 +857,7 @@ function MyFees() {
   const [params, setParams] = useSearchParams();
   const checkout = params.get("checkout");
   const [paying, setPaying] = useState<string | null>(null);
-  const mine = useQuery({
-    queryKey: ["org", slug, "fees", "mine"],
-    queryFn: () => apiFetch("/api/org/fees/mine", { schema: MyFeesResponseSchema }),
-  });
+  const mine = useQuery(orgQueries.myFees(slug));
   const charges = mine.data?.charges ?? [];
   const open = charges.filter((ch) => ch.status === "pending" || ch.status === "overdue");
   const owed = open.reduce((sum, ch) => sum + (ch.amountCents - ch.paidCents), 0);

@@ -1,7 +1,4 @@
 import {
-  ActivityResponseSchema,
-  FamilyResponseSchema,
-  StructureSummarySchema,
   formatAmount,
   playerDisplayName,
   type EventSummary,
@@ -12,10 +9,10 @@ import { brandTokens } from "@sportsmanager/shared/design";
 import { useQuery } from "@tanstack/react-query";
 import { useIntl } from "react-intl";
 import { Link, Navigate, useNavigate } from "react-router";
-import { apiFetch } from "@/lib/api";
 import { clubPaths, useReadyClub } from "@/lib/club";
 import { useT } from "@/lib/intl";
 import { useSetupTour } from "@/lib/setup";
+import { orgQueries } from "@/lib/queries";
 import {
   Alert,
   Avatar,
@@ -99,13 +96,11 @@ function ClubOverview() {
   const timezone = org.organization.view === "full" ? org.organization.timezone : undefined;
 
   const summary = useQuery({
-    queryKey: ["org", slug, "summary"],
-    queryFn: () => apiFetch("/api/org/summary", { schema: StructureSummarySchema }),
+    ...orgQueries.summary(slug),
     enabled: canStructure || support || canEvents,
   });
   const family = useQuery({
-    queryKey: ["org", slug, "family"],
-    queryFn: () => apiFetch("/api/org/family", { schema: FamilyResponseSchema }),
+    ...orgQueries.family(slug),
     enabled: canFamily,
   });
   const athletePlan = useAthletePlan(athletePlayerId !== null);
@@ -608,10 +603,7 @@ function RecentActivity() {
   const intl = useIntl();
   const { slug } = useReadyClub();
   const paths = clubPaths(slug);
-  const activity = useQuery({
-    queryKey: ["org", slug, "activity", 5],
-    queryFn: () => apiFetch("/api/org/activity?limit=5", { schema: ActivityResponseSchema }),
-  });
+  const activity = useQuery(orgQueries.activity(slug, 5));
   const entries = activity.data?.entries ?? [];
   return (
     <details className="group rounded-card border border-border bg-surface">
