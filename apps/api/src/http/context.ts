@@ -7,6 +7,7 @@ import type {
   StaffPosition,
 } from "@sportsmanager/shared";
 import type { OrganizationRow, OrgScope } from "../data/index.ts";
+import type { BatchMemo } from "./memo.ts";
 
 /** Contexto que Netlify pasa a la función. En tests puede no existir. */
 export interface NetlifyContext {
@@ -18,6 +19,8 @@ export interface NetlifyContext {
 
 export interface NetlifyEnv {
   context?: NetlifyContext;
+  /** Solo dentro de `POST /api/batch` (ADR 0060): lo que las peticiones del lote resuelven una vez. */
+  memo?: BatchMemo;
 }
 
 /** Resultado de la etapa 1 de la cadena: qué dice el host. */
@@ -63,6 +66,11 @@ export interface AppVariables {
   sessionUser: SessionUser;
   /** Sesión si la hay, en rutas que funcionan con y sin ella (aceptar invitación). */
   optionalSessionUser: SessionUser | null;
+  /**
+   * Búsqueda de la sesión ya en marcha (ADR 0060): la arranca la resolución del club para que las
+   * dos consultas vayan a la vez, y la recogen `requireSession` y `optionalSession`.
+   */
+  sessionLookup: Promise<SessionUser | null>;
   actor: Actor;
   /** Ámbito del actor (Bloque 19), resuelto una vez por petición cuando una ruta lo pide. */
   accessScope: AccessScope | undefined;

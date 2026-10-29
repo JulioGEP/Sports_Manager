@@ -14,7 +14,10 @@ import { brandingDto } from "./org.ts";
  */
 export function createBrandingRoutes(config: ApiConfig, data: DataLayer) {
   const app = new OpenAPIHono<AppEnv>();
-  const publicChain = [resolveTenant(config, data), requireOrganizationHost] as const;
+  const publicChain = [
+    resolveTenant(config, data, { prefetchSession: false }),
+    requireOrganizationHost,
+  ] as const;
 
   app.openapi(
     createRoute({

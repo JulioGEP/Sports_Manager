@@ -1,5 +1,5 @@
 import { LOCALES } from "@sportsmanager/shared";
-import { sql } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import { boolean, check, index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { id, inList, timestamps } from "./_shared.ts";
 
@@ -73,3 +73,20 @@ export const verifications = pgTable(
   },
   (t) => [index("verifications_identifier_idx").on(t.identifier)],
 );
+
+/**
+ * Relaciones para Better Auth con `joins` (ADR 0060): la sesión y su usuario salen en una sola
+ * consulta en cada petición, en vez de dos seguidas. No cambian el esquema ni las migraciones.
+ */
+export const usersRelations = relations(users, ({ many }) => ({
+  sessions: many(sessions),
+  accounts: many(accounts),
+}));
+
+export const sessionsRelations = relations(sessions, ({ one }) => ({
+  user: one(users, { fields: [sessions.userId], references: [users.id] }),
+}));
+
+export const accountsRelations = relations(accounts, ({ one }) => ({
+  user: one(users, { fields: [accounts.userId], references: [users.id] }),
+}));

@@ -271,39 +271,6 @@ export function sectionsRepo(db: () => Database) {
     filter: { sectionIds?: string[] | undefined } = {},
   ): Promise<SectionRecord[]> {
     if (filter.sectionIds && filter.sectionIds.length === 0) return [];
-    const rows = await db()
-      .select({
-        id: schema.sections.id,
-        name: schema.sections.name,
-        status: schema.sections.status,
-        sortOrder: schema.sections.sortOrder,
-        kind: schema.sections.kind,
-        description: schema.sections.description,
-        sportCode: schema.sports.code,
-        sportName: schema.sports.name,
-        coordinatorId: schema.users.id,
-        coordinatorName: schema.users.name,
-      })
-      .from(schema.sections)
-      .innerJoin(schema.sports, eq(schema.sports.id, schema.sections.sportId))
-      .leftJoin(schema.users, eq(schema.users.id, schema.sections.coordinatorUserId))
-      .where(
-        and(
-          eq(schema.sections.organizationId, scope.organizationId),
-          ...(filter.sectionIds ? [inArray(schema.sections.id, filter.sectionIds)] : []),
-        ),
-      )
-      .orderBy(asc(schema.sections.sortOrder), asc(schema.sections.name));
-    const categories = await db()
-      .select({ sectionId: schema.categories.sectionId, total: count() })
-      .from(schema.categories)
-      .where(
-        and(
-          eq(schema.categories.organizationId, scope.organizationId),
-          eq(schema.categories.status, "active"),
-        ),
-      )
-      .groupBy(schema.categories.sectionId);
     const teamsWhere = seasonId
       ? and(
           eq(schema.teams.organizationId, scope.organizationId),
@@ -311,28 +278,64 @@ export function sectionsRepo(db: () => Database) {
           eq(schema.teams.status, "active"),
         )
       : sql`false`;
-    const teams = seasonId
-      ? await db()
-          .select({
-            sectionId: schema.teams.sectionId,
-            total: count(),
-            withoutStaff: sql<number>`count(*) filter (where not exists (select 1 from ${schema.teamStaff} ts where ts.team_id = ${schema.teams.id}))`,
-          })
-          .from(schema.teams)
-          .where(teamsWhere)
-          .groupBy(schema.teams.sectionId)
-      : [];
-    const players = seasonId
-      ? await db()
-          .select({
-            sectionId: schema.teams.sectionId,
-            total: countDistinct(schema.teamPlayers.playerId),
-          })
-          .from(schema.teamPlayers)
-          .innerJoin(schema.teams, eq(schema.teams.id, schema.teamPlayers.teamId))
-          .where(teamsWhere)
-          .groupBy(schema.teams.sectionId)
-      : [];
+    // Las secciones y sus tres recuentos no dependen entre sí: salen a la vez (ADR 0060).
+    const [rows, categories, teams, players] = await Promise.all([
+      db()
+        .select({
+          id: schema.sections.id,
+          name: schema.sections.name,
+          status: schema.sections.status,
+          sortOrder: schema.sections.sortOrder,
+          kind: schema.sections.kind,
+          description: schema.sections.description,
+          sportCode: schema.sports.code,
+          sportName: schema.sports.name,
+          coordinatorId: schema.users.id,
+          coordinatorName: schema.users.name,
+        })
+        .from(schema.sections)
+        .innerJoin(schema.sports, eq(schema.sports.id, schema.sections.sportId))
+        .leftJoin(schema.users, eq(schema.users.id, schema.sections.coordinatorUserId))
+        .where(
+          and(
+            eq(schema.sections.organizationId, scope.organizationId),
+            ...(filter.sectionIds ? [inArray(schema.sections.id, filter.sectionIds)] : []),
+          ),
+        )
+        .orderBy(asc(schema.sections.sortOrder), asc(schema.sections.name)),
+      db()
+        .select({ sectionId: schema.categories.sectionId, total: count() })
+        .from(schema.categories)
+        .where(
+          and(
+            eq(schema.categories.organizationId, scope.organizationId),
+            eq(schema.categories.status, "active"),
+          ),
+        )
+        .groupBy(schema.categories.sectionId),
+      seasonId
+        ? db()
+            .select({
+              sectionId: schema.teams.sectionId,
+              total: count(),
+              withoutStaff: sql<number>`count(*) filter (where not exists (select 1 from ${schema.teamStaff} ts where ts.team_id = ${schema.teams.id}))`,
+            })
+            .from(schema.teams)
+            .where(teamsWhere)
+            .groupBy(schema.teams.sectionId)
+        : Promise.resolve([]),
+      seasonId
+        ? db()
+            .select({
+              sectionId: schema.teams.sectionId,
+              total: countDistinct(schema.teamPlayers.playerId),
+            })
+            .from(schema.teamPlayers)
+            .innerJoin(schema.teams, eq(schema.teams.id, schema.teamPlayers.teamId))
+            .where(teamsWhere)
+            .groupBy(schema.teams.sectionId)
+        : Promise.resolve([]),
+    ]);
     const categoriesBy = new Map(categories.map((c) => [c.sectionId, c.total]));
     const teamsBy = new Map(teams.map((t) => [t.sectionId, t]));
     const playersBy = new Map(players.map((p) => [p.sectionId, p.total]));
@@ -360,8 +363,8 @@ export function sectionsRepo(db: () => Database) {
     id: string,
     seasonId: string | null = null,
   ): Promise<SectionRecord | null> {
-    const all = await list(scope, seasonId);
-    return all.find((s) => s.id === id) ?? null;
+    const [section] = await list(scope, seasonId, { sectionIds: [id] });
+    return section ?? null;
   }
 
   return {
@@ -1189,40 +1192,6 @@ export function teamsRepo(db: () => Database) {
     ): Promise<StructureCounts> {
       const idsOrNone = (column: AnyPgColumn, ids: string[]) =>
         ids.length > 0 ? inArray(column, ids) : sql`false`;
-      const current = await db()
-        .select({ id: schema.seasons.id, name: schema.seasons.name })
-        .from(schema.seasons)
-        .where(
-          and(
-            eq(schema.seasons.organizationId, scope.organizationId),
-            eq(schema.seasons.isCurrent, true),
-          ),
-        )
-        .limit(1);
-      const currentSeason = current[0] ?? null;
-      const sections = await db()
-        .select({ total: count() })
-        .from(schema.sections)
-        .where(
-          and(
-            eq(schema.sections.organizationId, scope.organizationId),
-            eq(schema.sections.status, "active"),
-            ...(visible ? [idsOrNone(schema.sections.id, visible.sectionIds)] : []),
-          ),
-        );
-      const teams = currentSeason
-        ? await db()
-            .select({ total: count() })
-            .from(schema.teams)
-            .where(
-              and(
-                eq(schema.teams.organizationId, scope.organizationId),
-                eq(schema.teams.seasonId, currentSeason.id),
-                eq(schema.teams.status, "active"),
-                ...(visible ? [idsOrNone(schema.teams.id, visible.teamIds)] : []),
-              ),
-            )
-        : [];
       /** Deportistas visibles: en plantilla de un equipo del ámbito esta temporada, o en la lista. */
       const visiblePlayers = visible
         ? or(
@@ -1246,40 +1215,77 @@ export function teamsRepo(db: () => Database) {
             idsOrNone(schema.players.id, visible.playerIds),
           )!
         : undefined;
-      const players = await db()
-        .select({ total: count() })
-        .from(schema.players)
-        .where(
-          and(
-            eq(schema.players.organizationId, scope.organizationId),
-            eq(schema.players.status, "active"),
-            visiblePlayers,
+      // Cinco cifras independientes: salen a la vez (ADR 0060). Los equipos se cuentan contra la
+      // temporada actual con un join, sin esperar a saber cuál es.
+      const [current, sections, teams, players, guardians] = await Promise.all([
+        db()
+          .select({ id: schema.seasons.id, name: schema.seasons.name })
+          .from(schema.seasons)
+          .where(
+            and(
+              eq(schema.seasons.organizationId, scope.organizationId),
+              eq(schema.seasons.isCurrent, true),
+            ),
+          )
+          .limit(1),
+        db()
+          .select({ total: count() })
+          .from(schema.sections)
+          .where(
+            and(
+              eq(schema.sections.organizationId, scope.organizationId),
+              eq(schema.sections.status, "active"),
+              ...(visible ? [idsOrNone(schema.sections.id, visible.sectionIds)] : []),
+            ),
           ),
-        );
-      const guardians = await db()
-        .select({ total: countDistinct(schema.playerGuardians.userId) })
-        .from(schema.playerGuardians)
-        .where(
-          and(
-            eq(schema.playerGuardians.organizationId, scope.organizationId),
-            ...(visiblePlayers
-              ? [
-                  inArray(
-                    schema.playerGuardians.playerId,
-                    db()
-                      .select({ id: schema.players.id })
-                      .from(schema.players)
-                      .where(
-                        and(
-                          eq(schema.players.organizationId, scope.organizationId),
-                          visiblePlayers,
+        db()
+          .select({ total: count() })
+          .from(schema.teams)
+          .innerJoin(schema.seasons, eq(schema.seasons.id, schema.teams.seasonId))
+          .where(
+            and(
+              eq(schema.teams.organizationId, scope.organizationId),
+              eq(schema.seasons.isCurrent, true),
+              eq(schema.teams.status, "active"),
+              ...(visible ? [idsOrNone(schema.teams.id, visible.teamIds)] : []),
+            ),
+          ),
+        db()
+          .select({ total: count() })
+          .from(schema.players)
+          .where(
+            and(
+              eq(schema.players.organizationId, scope.organizationId),
+              eq(schema.players.status, "active"),
+              visiblePlayers,
+            ),
+          ),
+        db()
+          .select({ total: countDistinct(schema.playerGuardians.userId) })
+          .from(schema.playerGuardians)
+          .where(
+            and(
+              eq(schema.playerGuardians.organizationId, scope.organizationId),
+              ...(visiblePlayers
+                ? [
+                    inArray(
+                      schema.playerGuardians.playerId,
+                      db()
+                        .select({ id: schema.players.id })
+                        .from(schema.players)
+                        .where(
+                          and(
+                            eq(schema.players.organizationId, scope.organizationId),
+                            visiblePlayers,
+                          ),
                         ),
-                      ),
-                  ),
-                ]
-              : []),
+                    ),
+                  ]
+                : []),
+            ),
           ),
-        );
+      ]);
+      const currentSeason = current[0] ?? null;
       return {
         currentSeason,
         sections: sections[0]?.total ?? 0,
