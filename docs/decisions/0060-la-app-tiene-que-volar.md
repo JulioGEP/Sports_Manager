@@ -51,6 +51,8 @@ Medido con la misma latencia simulada:
 | Consultas de `GET /api/org/seasons` | 16 | 5 |
 | Consultas del inicio (`/api/org/summary`) | 45 en 3 oleadas | 29 en 1 oleada |
 | Recorrido por las 13 pantallas de la navegación y una recarga | 4,6 s | 1,7 s |
+| El mismo recorrido con el club a escala (455 deportistas, agenda y cuotas de una temporada) | 8,2 s | 1,9 s |
+| Cuotas con el club a escala | 2,9 s | 0,08 s |
 | Peticiones al pulsar una pantalla de la navegación | 1 a 4 | 0 (ya precargada) |
 | Entrar en el club | 9 peticiones en cascada, 0,8 s | 2 lotes, 0,4 s |
 | Cuotas de un club de 450 personas | 1,8 MB, 0,3 s | 35 KB, 0,12 s |
