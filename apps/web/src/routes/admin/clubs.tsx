@@ -72,6 +72,7 @@ export function PlatformClubsPage() {
       <Alert kind="info">{t("domainNote")}</Alert>
       <Card padded={false}>
         <DataList<PlatformOrganization>
+          loading={organizations.isLoading}
           caption={t("title")}
           rows={organizations.data?.organizations ?? []}
           getKey={(o) => o.id}

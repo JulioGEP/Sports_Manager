@@ -145,6 +145,7 @@ function StaffChallengesPage() {
       ) : null}
       <Card padded={false}>
         <DataList<ChallengeSummary>
+          loading={challenges.isLoading}
           caption={t("title")}
           rows={rows}
           getKey={(ch) => ch.id}

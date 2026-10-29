@@ -22,7 +22,7 @@ async function sessionUserOf(data: DataLayer, headers: Headers): Promise<Session
  */
 export function sessionLookup(data: DataLayer, c: Context<AppEnv>): Promise<SessionUser | null> {
   const started = c.get("sessionLookup");
-  if (started) return started;
+  if (started !== undefined) return started;
   const cookie = c.req.header("cookie");
   const lookup = cookie
     ? shared(c, "session", () => sessionUserOf(data, c.req.raw.headers))

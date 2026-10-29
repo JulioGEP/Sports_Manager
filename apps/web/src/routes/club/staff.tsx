@@ -229,6 +229,7 @@ export function StaffPage() {
           </div>
           <Card padded={false}>
             <DataList<Member>
+              loading={members.isLoading}
               caption={t("title")}
               rows={filtered}
               getKey={(m) => m.userId}
@@ -337,6 +338,7 @@ export function StaffPage() {
           ) : null}
           <Card padded={false}>
             <DataList<Invitation>
+              loading={invitations.isLoading}
               caption={t("tabs.invitations")}
               rows={visibleInvitations}
               getKey={(i) => i.id}

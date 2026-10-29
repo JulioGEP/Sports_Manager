@@ -501,6 +501,7 @@ function ReviewTab({
       ) : null}
       <Card padded={false}>
         <DataList<ChallengeSubmission>
+          loading={submissions.isLoading}
           caption={t("title")}
           rows={submissions.data?.submissions ?? []}
           getKey={(s) => s.id}
@@ -692,6 +693,7 @@ function StandingsTab({
       {standings.isError ? <Alert kind="error">{errors(errorKey(standings.error))}</Alert> : null}
       <Card padded={false}>
         <DataList<ChallengeStanding>
+          loading={standings.isLoading}
           caption={t("title")}
           rows={standings.data?.standings ?? []}
           getKey={(s) => s.player.id}

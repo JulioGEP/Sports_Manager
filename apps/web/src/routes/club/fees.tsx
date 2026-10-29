@@ -241,6 +241,7 @@ function ChargesTab({ canWrite }: { canWrite: boolean }) {
       </div>
       {charges.isError ? <Alert kind="error">{t("loadError")}</Alert> : null}
       <DataList<FeeCharge>
+        loading={charges.isLoading}
         caption={t("caption")}
         columns={[
           {

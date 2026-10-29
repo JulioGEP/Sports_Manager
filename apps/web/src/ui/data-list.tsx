@@ -72,6 +72,7 @@ export function DataList<T>({
   actions,
   empty,
   caption,
+  loading,
 }: {
   columns: Column<T>[];
   rows: T[];
@@ -84,6 +85,8 @@ export function DataList<T>({
   actions?: ((row: T) => ReactNode) | undefined;
   empty: ReactNode;
   caption: string;
+  /** Mientras llegan las filas: la forma de la lista en vez de un texto (ADR 0060). */
+  loading?: boolean | undefined;
 }) {
   const desktop = useMediaQuery(DESKTOP_QUERY);
   const navigate = useNavigate();
@@ -97,7 +100,8 @@ export function DataList<T>({
     return () => clearTimeout(handle);
   }, [deferred.length, limit]);
   const shown = deferred.length > limit ? deferred.slice(0, limit) : deferred;
-  if (rows.length === 0) return <>{empty}</>;
+  if (rows.length === 0)
+    return loading ? <DataListSkeleton desktop={desktop} label={c("loading")} /> : <>{empty}</>;
 
   function open(e: MouseEvent, to: string) {
     if ((e.target as HTMLElement).closest(interactive)) return;
@@ -245,6 +249,44 @@ export function DataList<T>({
           })}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+/** Filas en gris que laten: la pantalla tiene su forma desde el primer momento y no salta al llegar. */
+function DataListSkeleton({ desktop, label }: { desktop: boolean; label: string }) {
+  const rows = [0, 1, 2, 3, 4, 5];
+  if (!desktop) {
+    return (
+      <ul className="flex flex-col gap-2.5" aria-busy="true" aria-label={label}>
+        {rows.map((i) => (
+          <li
+            key={i}
+            className="flex min-h-16 items-center gap-3 rounded-row bg-surface px-4 py-2.5 shadow-row precisa:border precisa:border-border"
+          >
+            <span className="size-10 shrink-0 animate-pulse rounded-full bg-raised" />
+            <span className="flex flex-1 flex-col gap-2">
+              <span className="h-3.5 w-2/5 animate-pulse rounded-chip bg-raised" />
+              <span className="h-3 w-3/5 animate-pulse rounded-chip bg-raised" />
+            </span>
+          </li>
+        ))}
+      </ul>
+    );
+  }
+  return (
+    <div className="flex flex-col" aria-busy="true" aria-label={label}>
+      {rows.map((i) => (
+        <div
+          key={i}
+          className="flex h-13 items-center gap-4 border-b border-line px-5 last:border-b-0"
+        >
+          <span className="size-8 shrink-0 animate-pulse rounded-full bg-raised" />
+          <span className="h-3.5 w-1/4 animate-pulse rounded-chip bg-raised" />
+          <span className="h-3.5 w-1/6 animate-pulse rounded-chip bg-raised" />
+          <span className="ml-auto h-3.5 w-16 animate-pulse rounded-chip bg-raised" />
+        </div>
+      ))}
     </div>
   );
 }

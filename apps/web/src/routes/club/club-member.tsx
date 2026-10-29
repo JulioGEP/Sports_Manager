@@ -275,6 +275,7 @@ export function ClubMemberPage() {
             }
           >
             <DataList<FeeCharge>
+              loading={charges.isLoading}
               caption={t("fees.title")}
               rows={charges.data?.charges ?? []}
               getKey={(ch) => ch.id}

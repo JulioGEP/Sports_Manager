@@ -176,6 +176,7 @@ export function ClubMembersPage() {
       </div>
       <Card padded={false}>
         <DataList<ClubMember>
+          loading={members.isLoading}
           caption={t("title")}
           rows={filtered}
           getKey={(m) => m.id}

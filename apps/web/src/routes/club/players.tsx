@@ -142,6 +142,7 @@ export function PlayersPage() {
       {tab === "families" ? (
         <Card padded={false}>
           <DataList<(typeof families)[number]>
+            loading={members.isLoading}
             caption={t("tabs.families")}
             rows={families}
             getKey={(m) => m.userId}
@@ -263,6 +264,7 @@ export function PlayersPage() {
       </div>
       <Card padded={false} className={tab === "families" ? "hidden" : ""}>
         <DataList<PlayerSummary>
+          loading={players.isLoading}
           caption={t("title")}
           rows={filtered}
           getKey={(p) => p.id}
