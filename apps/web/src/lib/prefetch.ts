@@ -195,39 +195,66 @@ export function prefetchHref(ctx: Context, href: string, withData = true): void 
 /**
  * Engancha la precarga a toda la página del club: cualquier `<a>` (la navegación, los títulos de
  * las listas, los botones-enlace) y cualquier fila con `data-prefetch`. Con ratón, tras un instante
- * encima (barrer el menú no dispara nada); con teclado o dedo, al momento. Devuelve cómo soltarla.
+ * encima; con teclado, al enfocar; con el dedo, al tocar sin arrastrar. Devuelve cómo soltarla.
  */
 export function installPrefetch(ctx: Context): () => void {
   let timer: ReturnType<typeof setTimeout> | null = null;
+  let pending: string | null = null;
   const hrefOf = (target: EventTarget | null): string | null => {
     if (!(target instanceof Element)) return null;
     const el = target.closest<HTMLElement>("a[href], [data-prefetch]");
     if (!el) return null;
     return el.dataset["prefetch"] ?? el.getAttribute("href");
   };
-  const now = (event: Event) => {
+  const cancel = () => {
+    if (timer) clearTimeout(timer);
+    timer = null;
+    pending = null;
+  };
+  const fire = () => {
+    const href = pending;
+    cancel();
+    if (href) prefetchHref(ctx, href);
+  };
+  const schedule = (href: string | null, ms: number) => {
+    cancel();
+    if (!href) return;
+    pending = href;
+    timer = setTimeout(fire, ms);
+  };
+  // Ratón o lápiz: tras un instante encima. Barrer el menú no dispara nada.
+  const over = (event: PointerEvent) => {
+    if (event.pointerType !== "touch") schedule(hrefOf(event.target), 60);
+  };
+  const out = (event: PointerEvent) => {
+    if (event.pointerType !== "touch") cancel();
+  };
+  // Dedo: solo un toque de verdad. Si el dedo se arrastra (scroll por una lista larga), el
+  // navegador cancela el puntero y no se pide nada; al levantarlo, sale ya.
+  const down = (event: PointerEvent) => {
+    if (event.pointerType === "touch") schedule(hrefOf(event.target), 80);
+  };
+  const up = (event: PointerEvent) => {
+    if (event.pointerType === "touch" && pending) fire();
+  };
+  const now = (event: FocusEvent) => {
     const href = hrefOf(event.target);
     if (href) prefetchHref(ctx, href);
   };
-  const hover = (event: Event) => {
-    if (timer) clearTimeout(timer);
-    const href = hrefOf(event.target);
-    if (href) timer = setTimeout(() => prefetchHref(ctx, href), 60);
-  };
-  const leave = () => {
-    if (timer) clearTimeout(timer);
-    timer = null;
-  };
-  document.addEventListener("pointerover", hover, { passive: true });
-  document.addEventListener("pointerout", leave, { passive: true });
+  document.addEventListener("pointerover", over, { passive: true });
+  document.addEventListener("pointerout", out, { passive: true });
+  document.addEventListener("pointerdown", down, { passive: true });
+  document.addEventListener("pointerup", up, { passive: true });
+  document.addEventListener("pointercancel", cancel, { passive: true });
   document.addEventListener("focusin", now, { passive: true });
-  document.addEventListener("touchstart", now, { passive: true });
   return () => {
-    leave();
-    document.removeEventListener("pointerover", hover);
-    document.removeEventListener("pointerout", leave);
+    cancel();
+    document.removeEventListener("pointerover", over);
+    document.removeEventListener("pointerout", out);
+    document.removeEventListener("pointerdown", down);
+    document.removeEventListener("pointerup", up);
+    document.removeEventListener("pointercancel", cancel);
     document.removeEventListener("focusin", now);
-    document.removeEventListener("touchstart", now);
   };
 }
 
