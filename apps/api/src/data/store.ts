@@ -1022,15 +1022,18 @@ export function storeRepo(db: () => Database, images: BlobStore) {
 
     /** Si una cuenta tiene tienda: alguien para quien comprar y algo a la venta para esa persona. */
     async canShop(scope: OrgScope, userId: string): Promise<boolean> {
-      const beneficiaries = await beneficiariesFor(scope, userId);
+      // Para quién compra y qué hay a la venta no dependen entre sí: a la vez (ADR 0060).
+      const [beneficiaries, rows] = await Promise.all([
+        beneficiariesFor(scope, userId),
+        db()
+          .select({
+            sectionId: schema.storeProducts.sectionId,
+            teamId: schema.storeProducts.teamId,
+          })
+          .from(schema.storeProducts)
+          .where(and(eq(schema.storeProducts.organizationId, scope.organizationId), onSale())),
+      ]);
       if (beneficiaries.length === 0) return false;
-      const rows = await db()
-        .select({
-          sectionId: schema.storeProducts.sectionId,
-          teamId: schema.storeProducts.teamId,
-        })
-        .from(schema.storeProducts)
-        .where(and(eq(schema.storeProducts.organizationId, scope.organizationId), onSale()));
       return rows.some((p) => beneficiaries.some((b) => audienceMatches(p, b)));
     },
 

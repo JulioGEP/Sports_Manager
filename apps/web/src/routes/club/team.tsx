@@ -85,11 +85,7 @@ export function TeamPage() {
   const canSeeTraining = permissions.includes("org.training.read");
   const canSeeLoad = permissions.includes("org.load.read");
 
-  const detail = useQuery({
-    queryKey: ["org", slug, "team", id],
-    queryFn: () => apiFetch(`/api/org/teams/${id}`, { schema: TeamDetailResponseSchema }),
-    retry: false,
-  });
+  const detail = useQuery(orgQueries.team(slug, id));
   const sectionId = detail.data?.team.section.id;
   const categories = useQuery({
     queryKey: ["org", slug, "categories", sectionId],

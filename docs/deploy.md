@@ -120,6 +120,13 @@ Si cualquiera de las dos no es UE, se para el trabajo y se revisa la configuraci
 
 Verificado el 20 de octubre de 2026 en producción tras mezclar la PR 6: `region` y `db.region` devuelven `eu-central-1` (Frankfurt).
 
+## Rendimiento (ADR 0060)
+
+- Cada pantalla pide sus datos en un solo `POST /api/batch`. En las herramientas del navegador, pestaña Red, se ve una petición por pantalla (o ninguna si se precargó al pasar por el enlace).
+- `/api/health` trae `db.latencyMs`: la ida y vuelta de la función a la base. En Frankfurt, unos pocos milisegundos. Si sube a cientos, la base estaba suspendida.
+- Netlify Database es Neon. En los planes pequeños la base se suspende tras unos minutos sin uso y la primera consulta paga su arranque (medio segundo o más). Con tráfico real no pasa; si molesta antes, se quita la suspensión en el plan de la base.
+- `/assets/*` se sirve con `Cache-Control: public, max-age=31536000, immutable` (`netlify.toml`). Si algún día deja de verse en las cabeceras de un fichero de `/assets`, el navegador vuelve a preguntar por cada uno en cada visita.
+
 ## Emails (Bloque 4)
 
 Hoy ningún email sale de la plataforma: el transporte es `outbox` (ADR 0018) y cada email queda guardado en la tabla `email_outbox`. Para probar:

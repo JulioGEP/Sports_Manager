@@ -39,6 +39,7 @@ import { clubPaths, useReadyClub } from "@/lib/club";
 import { useDates } from "@/lib/dates";
 import { shrinkImage } from "@/lib/images";
 import { useT } from "@/lib/intl";
+import { orgQueries } from "@/lib/queries";
 import { useVoice } from "@/lib/voice";
 import { PlayerMatchesCard } from "@/components/player-matches";
 import {
@@ -162,11 +163,9 @@ export function PlayerPage() {
   const canSeePerformance =
     permissions.includes("org.load.read") || permissions.includes("org.health.read");
 
-  const detail = useQuery({
-    queryKey: ["org", slug, "player", id],
-    queryFn: () => apiFetch(`/api/org/players/${id}`, { schema: PlayerDetailResponseSchema }),
-    retry: false,
-  });
+  const detail = useQuery(orgQueries.player(slug, id));
+  // Los partidos salen con la ficha, no después de pintarla (ADR 0060): la tarjeta los lee de la caché.
+  useQuery({ ...orgQueries.playerMatches(slug, id), enabled: canSeeMatches });
   const reload = () => client.invalidateQueries({ queryKey: ["org", slug] });
 
   const [sheet, setSheet] = useState<SheetName | null>(null);

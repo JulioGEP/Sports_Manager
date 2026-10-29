@@ -16,7 +16,12 @@ import {
   type FeePeriod,
   type FeePlan,
 } from "@sportsmanager/shared";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useInfiniteQuery,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { useMemo, useState, type FormEvent } from "react";
 import { useSearchParams } from "react-router";
 import { FeesConnections } from "./fees-connections";
@@ -25,8 +30,9 @@ import { ChargeSheet, FeeStatusChip, PaymentSheet, money } from "@/components/fe
 import { apiFetch, errorKey } from "@/lib/api";
 import { clubPaths, useReadyClub } from "@/lib/club";
 import { useDates } from "@/lib/dates";
+import { useDebouncedValue } from "@/lib/debounce";
 import { useT } from "@/lib/intl";
-import { orgQueries } from "@/lib/queries";
+import { CHARGES_PAGE, orgQueries } from "@/lib/queries";
 import {
   Alert,
   Button,
@@ -143,20 +149,20 @@ function ChargesTab({ canWrite }: { canWrite: boolean }) {
   const [paying, setPaying] = useState<FeeCharge | null>(null);
   const [cancelling, setCancelling] = useState<FeeCharge | null>(null);
 
-  const charges = useQuery(orgQueries.feeCharges(slug, status));
+  // Por tramos y con la búsqueda en la API (ADR 0060): mientras llega el resultado de una
+  // búsqueda o de otro estado, se sigue viendo la lista anterior.
+  const query = useDebouncedValue(search.trim());
+  const charges = useInfiniteQuery({
+    ...orgQueries.feeCharges(slug, status, query),
+    placeholderData: keepPreviousData,
+  });
   const reload = () => client.invalidateQueries({ queryKey: ["org", slug, "fees"] });
 
-  const rows = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    const list = charges.data?.charges ?? [];
-    if (!q) return list;
-    return list.filter((ch) =>
-      [personDisplayName(ch.person), ch.concept, ch.periodLabel ?? "", ch.plan?.name ?? ""]
-        .join(" ")
-        .toLowerCase()
-        .includes(q),
-    );
-  }, [charges.data, search]);
+  const rows = useMemo(
+    () => charges.data?.pages.flatMap((page) => page.charges) ?? [],
+    [charges.data],
+  );
+  const matching = charges.data?.pages[0]?.total ?? 0;
 
   function setStatus(next: string) {
     const sp = new URLSearchParams(params);
@@ -180,7 +186,7 @@ function ChargesTab({ canWrite }: { canWrite: boolean }) {
     }
   }
 
-  const totals = charges.data?.totals;
+  const totals = charges.data?.pages[0]?.totals;
 
   return (
     <div className="flex flex-col gap-5">
@@ -332,11 +338,24 @@ function ChargesTab({ canWrite }: { canWrite: boolean }) {
         empty={
           <EmptyState
             icon={<Icon.Coins weight="duotone" />}
-            title={status || search ? t("emptyFiltered") : t("empty")}
-            description={status || search ? undefined : t("emptyHint")}
+            title={
+              charges.isPending ? c("loading") : status || search ? t("emptyFiltered") : t("empty")
+            }
+            description={charges.isPending || status || search ? undefined : t("emptyHint")}
           />
         }
       />
+      {charges.hasNextPage ? (
+        <div className="flex justify-center">
+          <Button
+            variant="secondary"
+            loading={charges.isFetchingNextPage}
+            onClick={() => void charges.fetchNextPage()}
+          >
+            {t("loadMore", { count: Math.min(CHARGES_PAGE, matching - rows.length) })}
+          </Button>
+        </div>
+      ) : null}
       {canWrite ? (
         <PaymentSheet
           charge={paying}

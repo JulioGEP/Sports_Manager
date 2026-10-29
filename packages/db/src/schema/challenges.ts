@@ -126,6 +126,8 @@ export const challengeSubmissions = pgTable(
     index("challenge_submissions_challenge_player_idx").on(t.challengeId, t.playerId),
     index("challenge_submissions_challenge_status_idx").on(t.challengeId, t.status),
     index("challenge_submissions_organization_id_idx").on(t.organizationId),
+    // Las pruebas de un reto suman lo registrado en cada una (ADR 0060).
+    index("challenge_submissions_task_player_idx").on(t.taskId, t.playerId),
     check("challenge_submissions_status_check", inList(t.status, SUBMISSION_STATUSES)),
     check("challenge_submissions_quantity_check", sql`${t.quantity} >= 1`),
     check("challenge_submissions_points_check", sql`${t.points} >= 0`),

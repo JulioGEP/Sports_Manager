@@ -539,34 +539,49 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
       const { id } = c.req.valid("param");
       const { season: requested } = c.req.valid("query");
       const season = await seasonOf(tenant, requested);
-      await requireSectionVisible(c, id);
-      const section = await data.sections.byId(tenant.scope, id, season?.id ?? null);
-      if (!section) throw notFound("Esa sección no existe.");
       const seasonId = season?.id ?? null;
-      const restricted = await restrictedOf(c);
-      const [categories, teams] = await Promise.all([
-        data.categories.list(tenant.scope, { sectionId: id, seasonId }),
-        seasonId
-          ? data.teams.list(tenant.scope, seasonId, id, restricted?.teamIds)
-          : Promise.resolve([]),
+      // La visibilidad, la sección y el ámbito no dependen entre sí (ADR 0060).
+      const [, section, restricted] = await Promise.all([
+        requireSectionVisible(c, id),
+        data.sections.byId(tenant.scope, id, seasonId),
+        restrictedOf(c),
       ]);
-      const nextByTeam = await data.events.nextByTeam(
-        tenant.scope,
-        teams.map((t) => t.id),
-      );
+      if (!section) throw notFound("Esa sección no existe.");
+      const canSeePlayers = c.get("actor").permissions.has("org.players.read");
+      const canWrite = c.get("actor").permissions.has("org.structure.write");
       const week = weekRange(tenant.organization.timezone);
-      const [counts, allStaff, eventsThisWeek] = await Promise.all([
-        seasonId
-          ? data.sections.counts(tenant.scope, id, seasonId)
-          : Promise.resolve({ players: 0, guardians: 0, playerIds: [] }),
-        seasonId ? data.sections.staff(tenant.scope, id, seasonId) : Promise.resolve([]),
-        data.events.countBetween(tenant.scope, week.from, week.to, {
-          sectionId: id,
-          ...(restricted
-            ? { visible: { teamIds: restricted.teamIds, sectionIds: restricted.sectionIds } }
-            : {}),
-        }),
-      ]);
+      // El resto sale en una sola oleada; lo que depende de otra cosa se encadena a ella.
+      const teamsP = seasonId
+        ? data.teams.list(tenant.scope, seasonId, id, restricted?.teamIds)
+        : Promise.resolve([]);
+      const countsP = seasonId
+        ? data.sections.counts(tenant.scope, id, seasonId)
+        : Promise.resolve({ players: 0, guardians: 0, playerIds: [] as string[] });
+      const [categories, teams, nextByTeam, counts, allStaff, eventsThisWeek, readiness, hasTeams] =
+        await Promise.all([
+          data.categories.list(tenant.scope, { sectionId: id, seasonId }),
+          teamsP,
+          teamsP.then((list) =>
+            data.events.nextByTeam(
+              tenant.scope,
+              list.map((t) => t.id),
+            ),
+          ),
+          countsP,
+          seasonId ? data.sections.staff(tenant.scope, id, seasonId) : Promise.resolve([]),
+          data.events.countBetween(tenant.scope, week.from, week.to, {
+            sectionId: id,
+            ...(restricted
+              ? { visible: { teamIds: restricted.teamIds, sectionIds: restricted.sectionIds } }
+              : {}),
+          }),
+          countsP.then((found) =>
+            canSeePlayers && found.playerIds.length > 0
+              ? data.players.readinessFor(tenant.scope, found.playerIds)
+              : null,
+          ),
+          canWrite ? data.sections.hasTeams(tenant.scope, id) : Promise.resolve(true),
+        ]);
       // Con ámbito restringido, el personal de la sección se reduce al de los equipos visibles.
       const staff = restricted
         ? allStaff
@@ -576,14 +591,6 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
             }))
             .filter((s) => s.teams.length > 0)
         : allStaff;
-      const canSeePlayers = c.get("actor").permissions.has("org.players.read");
-      const canWrite = c.get("actor").permissions.has("org.structure.write");
-      const [readiness, hasTeams] = await Promise.all([
-        canSeePlayers && counts.playerIds.length > 0
-          ? data.players.readinessFor(tenant.scope, counts.playerIds)
-          : Promise.resolve(null),
-        canWrite ? data.sections.hasTeams(tenant.scope, id) : Promise.resolve(true),
-      ]);
       return c.json(
         {
           section,

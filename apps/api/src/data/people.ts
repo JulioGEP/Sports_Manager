@@ -414,13 +414,26 @@ export function clubMembersRepo(db: () => Database) {
     ]);
     const staffUsers = new Set(staff.map((s) => s.userId));
     const playerBy = new Map(players.map((p) => [p.personId, p.id]));
+    // Los vínculos de cada persona por su ficha o por su cuenta, indexados una vez (ADR 0060):
+    // antes se recorría la lista entera de vínculos por cada persona del club.
+    const byGuardianPerson = new Map<string, number[]>();
+    const byGuardianUser = new Map<string, number[]>();
+    guardians.forEach((g, i) => {
+      if (g.guardianPersonId)
+        byGuardianPerson.set(g.guardianPersonId, [
+          ...(byGuardianPerson.get(g.guardianPersonId) ?? []),
+          i,
+        ]);
+      if (g.userId) byGuardianUser.set(g.userId, [...(byGuardianUser.get(g.userId) ?? []), i]);
+    });
     for (const person of persons) {
-      const guardianOf = guardians
-        .filter(
-          (g) =>
-            g.guardianPersonId === person.id ||
-            (person.userId !== null && g.userId === person.userId),
-        )
+      const indexes = new Set([
+        ...(byGuardianPerson.get(person.id) ?? []),
+        ...(person.userId !== null ? (byGuardianUser.get(person.userId) ?? []) : []),
+      ]);
+      const guardianOf = [...indexes]
+        .sort((a, b) => a - b)
+        .map((i) => guardians[i]!)
         .map((g) => ({ playerId: g.playerId, name: `${g.firstName} ${g.lastName}`.trim() }));
       const seen = new Set<string>();
       map.set(person.id, {

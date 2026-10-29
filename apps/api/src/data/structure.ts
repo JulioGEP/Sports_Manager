@@ -856,6 +856,21 @@ export function teamsRepo(db: () => Database) {
       return rows.map((row) => toRecord(row, staff.get(row.id) ?? []));
     },
 
+    /** Quién está en la plantilla de unos equipos, en una consulta (ADR 0060). */
+    async rosterPlayerIds(scope: OrgScope, teamIds: string[]): Promise<string[]> {
+      if (teamIds.length === 0) return [];
+      const rows = await db()
+        .selectDistinct({ playerId: schema.teamPlayers.playerId })
+        .from(schema.teamPlayers)
+        .where(
+          and(
+            eq(schema.teamPlayers.organizationId, scope.organizationId),
+            inArray(schema.teamPlayers.teamId, teamIds),
+          ),
+        );
+      return rows.map((row) => row.playerId);
+    },
+
     async roster(scope: OrgScope, teamId: string): Promise<RosterRecord[]> {
       const rows = await db()
         .select({

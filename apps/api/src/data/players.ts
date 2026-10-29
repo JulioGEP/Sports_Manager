@@ -439,6 +439,19 @@ export function playersRepo(db: () => Database) {
     byId,
     guardiansOf,
     teamsOf,
+    currentTeamsFor,
+
+    /** Varios jugadores en una consulta (ADR 0060), para no buscarlos de uno en uno. */
+    async byIds(scope: OrgScope, ids: string[]): Promise<PlayerRow[]> {
+      if (ids.length === 0) return [];
+      const rows = await playersQuery().where(
+        and(
+          eq(schema.players.organizationId, scope.organizationId),
+          inArray(schema.players.id, ids),
+        ),
+      );
+      return rows.map(toRow);
+    },
 
     /**
      * Jugadores del club con sus equipos de la temporada actual. Búsqueda por nombre, filtro por

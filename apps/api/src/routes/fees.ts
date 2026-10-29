@@ -318,22 +318,31 @@ export function createFeeRoutes(
           status: z.enum(FEE_CHARGE_STATUSES).optional(),
           person: z.string().uuid().optional(),
           plan: z.string().uuid().optional(),
+          /** Búsqueda por persona, concepto, periodo o plan (ADR 0060). */
+          q: z.string().max(100).optional(),
+          /** Un tramo de la lista; sin `limit`, la lista entera. */
+          limit: z.coerce.number().int().min(1).max(500).optional(),
+          offset: z.coerce.number().int().min(0).optional(),
         }),
       },
       responses: { 200: json("Cargos", FeeChargesResponseSchema), ...errors },
     }),
     async (c) => {
       const tenant = scopeOf(c);
-      const { status, person, plan } = c.req.valid("query");
+      const { status, person, plan, q, limit, offset } = c.req.valid("query");
       const result = await data.fees.charges.list(tenant.scope, {
         status,
         personId: person,
         planId: plan,
+        q,
+        limit,
+        offset,
       });
       return c.json(
         {
           charges: await adminDtos(tenant.scope, tenant.organization, result.charges),
           totals: result.totals,
+          total: result.total,
         },
         200,
       );

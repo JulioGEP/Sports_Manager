@@ -457,6 +457,99 @@ export function matchesRepo(db: () => Database) {
     return rows.map(toEvent);
   }
 
+  /**
+   * Convocatorias, eventos y catálogos de muchos partidos de una vez (ADR 0060): el histórico de un
+   * equipo o de un jugador eran dos o tres consultas por partido. Mismo orden que de uno en uno.
+   */
+  async function squadsOf(
+    scope: OrgScope,
+    matchIds: string[],
+  ): Promise<Map<string, MatchSquadRecord[]>> {
+    const map = new Map<string, MatchSquadRecord[]>();
+    if (matchIds.length === 0) return map;
+    const rows = await db()
+      .select({
+        matchId: schema.matchPlayers.matchId,
+        playerId: schema.matchPlayers.playerId,
+        firstName: schema.people.firstName,
+        lastName: schema.people.lastName,
+        photoBlobKey: schema.people.photoBlobKey,
+        shirtNumber: schema.matchPlayers.shirtNumber,
+        position: schema.matchPlayers.position,
+        isGoalkeeper: schema.matchPlayers.isGoalkeeper,
+        starter: schema.matchPlayers.starter,
+        slot: schema.matchPlayers.slot,
+      })
+      .from(schema.matchPlayers)
+      .innerJoin(schema.players, eq(schema.players.id, schema.matchPlayers.playerId))
+      .innerJoin(schema.people, eq(schema.people.id, schema.players.personId))
+      .where(
+        and(
+          eq(schema.matchPlayers.organizationId, scope.organizationId),
+          inArray(schema.matchPlayers.matchId, matchIds),
+        ),
+      )
+      .orderBy(
+        asc(schema.matchPlayers.sortOrder),
+        sql`${schema.matchPlayers.shirtNumber} nulls last`,
+        asc(schema.people.lastName),
+      );
+    for (const { matchId, ...row } of rows) {
+      const list = map.get(matchId) ?? [];
+      list.push(row);
+      map.set(matchId, list);
+    }
+    return map;
+  }
+
+  async function eventsOfMatches(
+    scope: OrgScope,
+    matchIds: string[],
+  ): Promise<Map<string, MatchEventRecord[]>> {
+    const map = new Map<string, MatchEventRecord[]>();
+    if (matchIds.length === 0) return map;
+    const rows = await db()
+      .select({ matchId: schema.matchEvents.matchId, ...eventSelection })
+      .from(schema.matchEvents)
+      .where(
+        and(
+          eq(schema.matchEvents.organizationId, scope.organizationId),
+          inArray(schema.matchEvents.matchId, matchIds),
+        ),
+      )
+      .orderBy(asc(schema.matchEvents.seq));
+    for (const { matchId, ...row } of rows) {
+      const list = map.get(matchId) ?? [];
+      list.push(toEvent(row));
+      map.set(matchId, list);
+    }
+    return map;
+  }
+
+  async function typesOfSections(
+    scope: OrgScope,
+    sectionIds: string[],
+  ): Promise<Map<string, MatchActionTypeRecord[]>> {
+    const map = new Map<string, MatchActionTypeRecord[]>();
+    if (sectionIds.length === 0) return map;
+    const rows = await db()
+      .select({ sectionId: schema.matchActionTypes.sectionId, ...typeSelection })
+      .from(schema.matchActionTypes)
+      .where(
+        and(
+          eq(schema.matchActionTypes.organizationId, scope.organizationId),
+          inArray(schema.matchActionTypes.sectionId, sectionIds),
+        ),
+      )
+      .orderBy(asc(schema.matchActionTypes.sortOrder), asc(schema.matchActionTypes.createdAt));
+    for (const { sectionId, ...row } of rows) {
+      const list = map.get(sectionId) ?? [];
+      list.push(toType(row));
+      map.set(sectionId, list);
+    }
+    return map;
+  }
+
   /** El marcador se recalcula de los eventos cada vez que cambian. */
   async function recomputeScore(scope: OrgScope, matchId: string): Promise<void> {
     const rows = await db()
@@ -1022,13 +1115,16 @@ export function matchesRepo(db: () => Database) {
           )
           .orderBy(asc(schema.matches.playedOn), asc(schema.matches.createdAt))
       ).map(toMatch);
-      return Promise.all(
-        matches.map(async (match) => ({
-          match,
-          squad: await squadOf(scope, match.id),
-          events: await eventsOf(scope, match.id),
-        })),
-      );
+      const ids = matches.map((m) => m.id);
+      const [squads, events] = await Promise.all([
+        squadsOf(scope, ids),
+        eventsOfMatches(scope, ids),
+      ]);
+      return matches.map((match) => ({
+        match,
+        squad: squads.get(match.id) ?? [],
+        events: events.get(match.id) ?? [],
+      }));
     },
 
     /** Partidos en los que un jugador fue convocado, con todo lo necesario para calcular su línea. */
@@ -1066,22 +1162,18 @@ export function matchesRepo(db: () => Database) {
           )
           .orderBy(desc(schema.matches.playedOn), desc(schema.matches.createdAt))
       ).map(toMatch);
-      const typesBySection = new Map<string, MatchActionTypeRecord[]>();
-      return Promise.all(
-        matches.map(async (match) => {
-          let actionTypes = typesBySection.get(match.section.id);
-          if (!actionTypes) {
-            actionTypes = await listTypes(scope, match.section.id);
-            typesBySection.set(match.section.id, actionTypes);
-          }
-          return {
-            match,
-            squad: await squadOf(scope, match.id),
-            events: await eventsOf(scope, match.id),
-            actionTypes,
-          };
-        }),
-      );
+      const matchIds = matches.map((m) => m.id);
+      const [squads, events, types] = await Promise.all([
+        squadsOf(scope, matchIds),
+        eventsOfMatches(scope, matchIds),
+        typesOfSections(scope, [...new Set(matches.map((m) => m.section.id))]),
+      ]);
+      return matches.map((match) => ({
+        match,
+        squad: squads.get(match.id) ?? [],
+        events: events.get(match.id) ?? [],
+        actionTypes: types.get(match.section.id) ?? [],
+      }));
     },
 
     /** Para proponer ajustes y catálogo del deporte en la configuración. */

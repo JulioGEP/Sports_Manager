@@ -20,14 +20,16 @@ export interface PrefetchContext {
 
 type Context = PrefetchContext;
 
+type Options = FetchQueryOptions<unknown, Error, unknown, readonly unknown[]>;
+/** Una consulta normal, o una precarga a medida (las listas por tramos). */
+type Prefetch = Options | ((client: QueryClient) => Promise<void>);
+const opts = (o: unknown) => o as Options;
+
 interface Target {
   page: PageKey;
   /** Lo que pide la pantalla al abrirse, con las mismas claves que ella. */
-  data?: (ctx: Context) => FetchQueryOptions<unknown, Error, unknown, readonly unknown[]>[];
+  data?: (ctx: Context) => Prefetch[];
 }
-
-type Options = FetchQueryOptions<unknown, Error, unknown, readonly unknown[]>;
-const opts = (o: unknown) => o as Options;
 
 /** Qué pantalla abre una ruta del club (lo que va tras `/<club>`) y qué datos pide. */
 function targetOf(rest: string[]): Target | null {
@@ -66,11 +68,20 @@ function targetOf(rest: string[]): Target | null {
         if (subsub === "tests") return { page: "teamTests" };
         return { page: "teamTraining" };
       }
-      return { page: "team" };
+      return { page: "team", data: ({ slug }) => [opts(orgQueries.team(slug, id))] };
     case "matches":
       return id ? { page: sub === "stats" ? "matchStats" : "match" } : null;
     case "players":
-      if (id) return { page: sub === "performance" ? "playerPerformance" : "player" };
+      if (id && sub === "performance") return { page: "playerPerformance" };
+      if (id)
+        return {
+          page: "player",
+          // La ficha y sus partidos a la vez: antes, los partidos esperaban a la ficha.
+          data: ({ slug, can }) => [
+            opts(orgQueries.player(slug, id)),
+            ...(can("org.matches.read") ? [opts(orgQueries.playerMatches(slug, id))] : []),
+          ],
+        };
       return {
         page: "players",
         data: ({ slug }) => [
@@ -122,7 +133,7 @@ function targetOf(rest: string[]): Target | null {
         data: ({ slug, can }) =>
           can("org.fees.read")
             ? [
-                opts(orgQueries.feeCharges(slug, null)),
+                (client) => client.prefetchInfiniteQuery(orgQueries.feeCharges(slug, null)),
                 ...(can("org.settings.read") ? [opts(orgQueries.feesSettings(slug))] : []),
               ]
             : can("org.family.read")
@@ -176,7 +187,9 @@ export function prefetchHref(ctx: Context, href: string, withData = true): void 
   if (!target) return;
   void pages[target.page]().catch(() => undefined);
   if (!withData || !target.data) return;
-  for (const options of target.data(ctx)) void ctx.client.prefetchQuery(options);
+  for (const item of target.data(ctx)) {
+    void (typeof item === "function" ? item(ctx.client) : ctx.client.prefetchQuery(item));
+  }
 }
 
 /**

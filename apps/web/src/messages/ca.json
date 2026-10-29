@@ -2960,6 +2960,7 @@
       "caption": "Càrrecs del club",
       "search": "Cerca",
       "searchPlaceholder": "Persona, concepte o període",
+      "loadMore": "Veure'n {count} més",
       "status": "Estat",
       "allStatuses": "Tots els estats",
       "loadError": "No s'han pogut carregar els càrrecs.",

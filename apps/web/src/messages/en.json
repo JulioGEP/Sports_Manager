@@ -2960,6 +2960,7 @@
       "caption": "Club charges",
       "search": "Search",
       "searchPlaceholder": "Person, concept or period",
+      "loadMore": "Show {count} more",
       "status": "Status",
       "allStatuses": "All statuses",
       "loadError": "Charges could not be loaded.",
