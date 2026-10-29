@@ -187,15 +187,17 @@ export function createLoadRoutes(config: ApiConfig, data: DataLayer) {
 
   async function performance(c: RouteCtx, tenant: Tenant, playerId: string) {
     const today = todayOf(tenant);
-    const player = await data.players.byId(tenant.scope, playerId);
+    // Por oleadas (ADR 0060): la ficha y sus equipos a la vez; el equipo, con todo lo demás.
+    const [player, allTeams] = await Promise.all([
+      data.players.byId(tenant.scope, playerId),
+      data.players.teamsOf(tenant.scope, playerId),
+    ]);
     if (!player) throw notFound("Ese jugador no existe.");
-    const teams = (await data.players.teamsOf(tenant.scope, playerId)).filter(
-      (t) => t.seasonIsCurrent,
-    );
-    const team = teams[0] ? await data.teams.byId(tenant.scope, teams[0].teamId) : null;
+    const teams = allTeams.filter((t) => t.seasonIsCurrent);
     const from = addDays(today, -55);
-    const [loads, entries, current, periods, wellness, focus, objectives, tests] =
+    const [team, loads, entries, current, periods, wellness, focus, objectives, tests] =
       await Promise.all([
+        teams[0] ? data.teams.byId(tenant.scope, teams[0].teamId) : Promise.resolve(null),
         data.load.loadsFor(tenant.scope, [playerId], from, today),
         data.matches.matchesOfPlayer(tenant.scope, playerId),
         data.load.currentFor(tenant.scope, [playerId]),
@@ -774,14 +776,15 @@ export function createLoadRoutes(config: ApiConfig, data: DataLayer) {
       const today = todayOf(tenant);
       const restricted = await restrictedOf(data, c);
       const open = await data.load.openPeriods(tenant.scope);
-      const visible = await Promise.all(
-        open.map(async (p) =>
-          !restricted || (await data.access.isPlayerVisible(tenant.scope, restricted, p.playerId))
-            ? p
-            : null,
-        ),
-      );
-      const periods = visible.filter((p): p is NonNullable<typeof p> => p !== null);
+      // Todo por lotes (ADR 0060): antes, una consulta por periodo, por equipo y por jugador.
+      const visibleIds = restricted
+        ? await data.access.visiblePlayerIds(
+            tenant.scope,
+            restricted,
+            open.map((p) => p.playerId),
+          )
+        : null;
+      const periods = open.filter((p) => !visibleIds || visibleIds.has(p.playerId));
       const ids = periods.map((p) => p.playerId);
       const [injuries, wellness] = await Promise.all([
         healthRead ? data.health.openInjuries(tenant.scope, ids) : Promise.resolve([]),
@@ -793,26 +796,31 @@ export function createLoadRoutes(config: ApiConfig, data: DataLayer) {
                     (t) => !restricted || restricted.teamIds.includes(t.id),
                   )
                 : [];
-              const players = new Set<string>();
-              for (const t of teams)
-                for (const r of await data.teams.roster(tenant.scope, t.id))
-                  players.add(r.playerId);
+              const players = new Set(
+                await data.teams.rosterPlayerIds(
+                  tenant.scope,
+                  teams.map((t) => t.id),
+                ),
+              );
               if (restricted) for (const p of restricted.playerIds) players.add(p);
               return data.load.wellnessFor(tenant.scope, [...players], addDays(today, -1), today);
             })()
           : Promise.resolve([]),
       ]);
+      const named = [...new Set([...ids, ...wellness.map((w) => w.playerId)])];
+      const [rows, currentTeams] = await Promise.all([
+        data.players.byIds(tenant.scope, named),
+        data.players.currentTeamsFor(tenant.scope, named),
+      ]);
       const names = new Map<
         string,
         { name: string; photoUrl: string | null; team: { id: string; name: string } | null }
       >();
-      for (const id of new Set([...ids, ...wellness.map((w) => w.playerId)])) {
-        const player = await data.players.byId(tenant.scope, id);
-        if (!player) continue;
-        const team = (await data.players.teamsOf(tenant.scope, id)).find((t) => t.seasonIsCurrent);
-        names.set(id, {
+      for (const player of rows) {
+        const team = currentTeams.get(player.id)?.[0];
+        names.set(player.id, {
           name: playerDisplayName(player),
-          photoUrl: playerPhotoUrlFor(player.photoBlobKey, tenant.organization.slug, id),
+          photoUrl: playerPhotoUrlFor(player.photoBlobKey, tenant.organization.slug, player.id),
           team: team ? { id: team.teamId, name: team.teamName } : null,
         });
       }

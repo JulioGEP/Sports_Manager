@@ -1,5 +1,6 @@
 import { DEFAULT_CLUB_STYLE, DEFAULT_CLUB_VOICE } from "@sportsmanager/shared";
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router";
 import { CommandPalette, PaletteButton, usePaletteShortcut } from "@/components/command-palette";
 import { LanguageSwitcher } from "@/components/language-switcher";
@@ -7,6 +8,7 @@ import { ViewAsBanner, ViewAsSheet } from "@/components/view-as";
 import { ClubProvider, clubPaths, useClub, type ClubState } from "@/lib/club";
 import { useT, VoiceProvider } from "@/lib/intl";
 import { useMediaQuery } from "@/lib/media";
+import { installPrefetch, preloadPages } from "@/lib/prefetch";
 import { useSignOut } from "@/lib/session";
 import { DESKTOP_QUERY, setShape } from "@/lib/theme";
 import {
@@ -21,12 +23,14 @@ import {
   MenuItem,
   MenuSection,
   Sheet,
+  TopProgress,
 } from "@/ui";
 
 /** Espacio de un club (ADR 0027): `/<slug>/...`. Móvil envolvente con barra inferior; escritorio preciso con navegación lateral. */
 export function ClubShell() {
   return (
     <ClubProvider>
+      <TopProgress />
       <ClubLook>
         <ClubFrame>
           <Outlet />
@@ -67,6 +71,7 @@ function ClubFrame({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
   const signOut = useSignOut();
+  const queryClient = useQueryClient();
   const paths = clubPaths(slug);
 
   useEffect(() => {
@@ -215,14 +220,52 @@ function ClubFrame({ children }: { children: ReactNode }) {
   const moreGroups = groups
     .map((g) => ({ ...g, links: g.links.filter((l) => moreTargets.has(l.to)) }))
     .filter((g) => g.links.length > 0);
+  /** Destinos de la navegación como texto: la misma lista no cambia de identidad entre renders. */
+  const linksKey = links.map((l) => `${l.to}\u0000${l.label}`).join("\u0001");
+  const paletteLinks = useMemo(
+    () =>
+      linksKey
+        .split("\u0001")
+        .filter(Boolean)
+        .map((entry) => {
+          const [to = "", label = ""] = entry.split("\u0000");
+          return { to, label };
+        }),
+    [linksKey],
+  );
   const palette =
     state.kind === "ready" ? (
       <CommandPalette
         open={paletteOpen}
         onClose={() => setPaletteOpen(false)}
-        links={links.map((l) => ({ to: l.to, label: l.label }))}
+        links={paletteLinks}
       />
     ) : null;
+
+  /**
+   * Precarga (ADR 0060): con el club listo, cualquier enlace descarga su pantalla y sus datos al
+   * acercarse a él, y en el primer rato libre se descargan las pantallas de la navegación.
+   */
+  const ready = state.kind === "ready";
+  const timezone =
+    state.kind === "ready" && state.org.organization.view === "full"
+      ? state.org.organization.timezone
+      : "Europe/Madrid";
+  const permissionsKey = permissions.join(",");
+  useEffect(() => {
+    if (!ready) return;
+    const granted = new Set(permissionsKey.split(","));
+    const ctx = { client: queryClient, slug, can: (p: string) => granted.has(p), timezone };
+    const release = installPrefetch(ctx);
+    const cancelIdle = preloadPages(
+      ctx,
+      paletteLinks.map((l) => l.to),
+    );
+    return () => {
+      release();
+      cancelIdle();
+    };
+  }, [ready, queryClient, slug, permissionsKey, paletteLinks, timezone]);
 
   async function onSignOut() {
     await signOut();

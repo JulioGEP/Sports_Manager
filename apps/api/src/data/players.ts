@@ -24,6 +24,7 @@ import {
   notInArray,
   or,
   sql,
+  type SQL,
 } from "drizzle-orm";
 import { isUniqueViolation } from "./db.ts";
 import { today } from "./player-profile.ts";
@@ -438,6 +439,19 @@ export function playersRepo(db: () => Database) {
     byId,
     guardiansOf,
     teamsOf,
+    currentTeamsFor,
+
+    /** Varios jugadores en una consulta (ADR 0060), para no buscarlos de uno en uno. */
+    async byIds(scope: OrgScope, ids: string[]): Promise<PlayerRow[]> {
+      if (ids.length === 0) return [];
+      const rows = await playersQuery().where(
+        and(
+          eq(schema.players.organizationId, scope.organizationId),
+          inArray(schema.players.id, ids),
+        ),
+      );
+      return rows.map(toRow);
+    },
 
     /**
      * Jugadores del club con sus equipos de la temporada actual. Búsqueda por nombre, filtro por
@@ -682,14 +696,9 @@ export function playersRepo(db: () => Database) {
         eq(schema.players.status, "active"),
         ...(visible ? [visibleCondition(scope, visible)] : []),
       );
-      const countWhere = async (...conditions: Parameters<typeof and>) => {
-        const rows = await db()
-          .select({ total: count() })
-          .from(schema.players)
-          .innerJoin(schema.people, eq(schema.people.id, schema.players.personId))
-          .where(and(active, ...conditions));
-        return rows[0]?.total ?? 0;
-      };
+      /** Cuántos de los activos cumplen la condición: una columna más de la misma consulta. */
+      const having = (condition: SQL | undefined) =>
+        sql<number>`count(*) filter (where ${condition})`.mapWith(Number);
       /** Equipos activos de la temporada actual sin nadie en el cuerpo técnico (Bloque 14). */
       const teamsWithoutStaffQuery = async () => {
         const rows = await db()
@@ -720,47 +729,70 @@ export function playersRepo(db: () => Database) {
         return rows[0]?.total ?? 0;
       };
       const todayIso = today();
-      const [
-        total,
-        withPhoto,
-        withBirthDate,
-        withTeam,
-        withFamily,
-        withObjective,
-        withIndicators,
-        withPlan,
-        pendingInvitations,
-        objectivesOverdue,
-        plansOverdue,
-        teamsWithoutStaff,
-        withMembership,
-      ] = await Promise.all([
-        countWhere(),
-        countWhere(isNotNull(schema.people.photoBlobKey)),
-        countWhere(isNotNull(schema.people.birthDate)),
-        countWhere(inArray(schema.players.id, inCurrentRoster(scope))),
-        countWhere(inArray(schema.players.id, withGuardianQuery(scope))),
-        countWhere(inArray(schema.players.id, withObjectiveQuery(scope))),
-        countWhere(
-          inArray(
-            schema.players.id,
-            db()
-              .select({ id: schema.playerIndicators.playerId })
-              .from(schema.playerIndicators)
-              .where(eq(schema.playerIndicators.organizationId, scope.organizationId))
-              .groupBy(schema.playerIndicators.playerId)
-              .having(sql`count(*) >= 4`),
-          ),
-        ),
-        countWhere(
-          inArray(
-            schema.players.id,
-            db()
-              .select({ id: schema.playerDevelopmentPlans.playerId })
-              .from(schema.playerDevelopmentPlans)
-              .where(eq(schema.playerDevelopmentPlans.organizationId, scope.organizationId)),
-          ),
-        ),
+      // Las once comprobaciones de las fichas en una sola pasada sobre los activos (ADR 0060), y a
+      // la vez las invitaciones pendientes y los equipos sin cuerpo técnico.
+      const [readinessRows, pendingInvitations, teamsWithoutStaff] = await Promise.all([
+        db()
+          .select({
+            total: count(),
+            withPhoto: having(isNotNull(schema.people.photoBlobKey)),
+            withBirthDate: having(isNotNull(schema.people.birthDate)),
+            withTeam: having(inArray(schema.players.id, inCurrentRoster(scope))),
+            withFamily: having(inArray(schema.players.id, withGuardianQuery(scope))),
+            withObjective: having(inArray(schema.players.id, withObjectiveQuery(scope))),
+            withIndicators: having(
+              inArray(
+                schema.players.id,
+                db()
+                  .select({ id: schema.playerIndicators.playerId })
+                  .from(schema.playerIndicators)
+                  .where(eq(schema.playerIndicators.organizationId, scope.organizationId))
+                  .groupBy(schema.playerIndicators.playerId)
+                  .having(sql`count(*) >= 4`),
+              ),
+            ),
+            withPlan: having(
+              inArray(
+                schema.players.id,
+                db()
+                  .select({ id: schema.playerDevelopmentPlans.playerId })
+                  .from(schema.playerDevelopmentPlans)
+                  .where(eq(schema.playerDevelopmentPlans.organizationId, scope.organizationId)),
+              ),
+            ),
+            objectivesOverdue: having(
+              inArray(
+                schema.players.id,
+                db()
+                  .select({ id: schema.playerObjectives.playerId })
+                  .from(schema.playerObjectives)
+                  .where(
+                    and(
+                      eq(schema.playerObjectives.organizationId, scope.organizationId),
+                      lt(schema.playerObjectives.reviewOn, todayIso),
+                    ),
+                  ),
+              ),
+            ),
+            plansOverdue: having(
+              inArray(
+                schema.players.id,
+                db()
+                  .select({ id: schema.playerDevelopmentPlans.playerId })
+                  .from(schema.playerDevelopmentPlans)
+                  .where(
+                    and(
+                      eq(schema.playerDevelopmentPlans.organizationId, scope.organizationId),
+                      lt(schema.playerDevelopmentPlans.nextReviewOn, todayIso),
+                    ),
+                  ),
+              ),
+            ),
+            withMembership: having(inArray(schema.players.personId, withMembershipQuery(scope))),
+          })
+          .from(schema.players)
+          .innerJoin(schema.people, eq(schema.people.id, schema.players.personId))
+          .where(active),
         db()
           .select({ total: count() })
           .from(schema.invitations)
@@ -772,37 +804,20 @@ export function playersRepo(db: () => Database) {
             ),
           )
           .then((rows) => rows[0]?.total ?? 0),
-        countWhere(
-          inArray(
-            schema.players.id,
-            db()
-              .select({ id: schema.playerObjectives.playerId })
-              .from(schema.playerObjectives)
-              .where(
-                and(
-                  eq(schema.playerObjectives.organizationId, scope.organizationId),
-                  lt(schema.playerObjectives.reviewOn, todayIso),
-                ),
-              ),
-          ),
-        ),
-        countWhere(
-          inArray(
-            schema.players.id,
-            db()
-              .select({ id: schema.playerDevelopmentPlans.playerId })
-              .from(schema.playerDevelopmentPlans)
-              .where(
-                and(
-                  eq(schema.playerDevelopmentPlans.organizationId, scope.organizationId),
-                  lt(schema.playerDevelopmentPlans.nextReviewOn, todayIso),
-                ),
-              ),
-          ),
-        ),
         teamsWithoutStaffQuery(),
-        countWhere(inArray(schema.players.personId, withMembershipQuery(scope))),
       ]);
+      const counts = readinessRows[0];
+      const total = counts?.total ?? 0;
+      const withPhoto = counts?.withPhoto ?? 0;
+      const withBirthDate = counts?.withBirthDate ?? 0;
+      const withTeam = counts?.withTeam ?? 0;
+      const withFamily = counts?.withFamily ?? 0;
+      const withObjective = counts?.withObjective ?? 0;
+      const withIndicators = counts?.withIndicators ?? 0;
+      const withPlan = counts?.withPlan ?? 0;
+      const objectivesOverdue = counts?.objectivesOverdue ?? 0;
+      const plansOverdue = counts?.plansOverdue ?? 0;
+      const withMembership = counts?.withMembership ?? 0;
       const checks = [
         withPhoto,
         withBirthDate,

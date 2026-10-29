@@ -242,50 +242,88 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
       const timezone = tenant.organization.timezone;
       // Ámbito restringido (Bloque 19): cifras, tarjetas, agenda y alertas solo de lo suyo.
       const restricted = await restrictedOf(c);
-      const [counts, clubMembers, staff, facilities] = await Promise.all([
-        data.teams.counts(tenant.scope, restricted ?? undefined),
-        data.clubMembers.counts(tenant.scope),
-        data.clubMembers.staffCount(tenant.scope),
-        data.facilities.counts(
-          tenant.scope,
-          restricted
-            ? await data.access.facilityIdsForTeams(tenant.scope, restricted.teamIds)
-            : null,
-        ),
-      ]);
       const canStructure = actor.permissions.has("org.structure.read");
       const canEvents = actor.permissions.has("org.events.read");
+      const canPlayers = actor.permissions.has("org.players.read");
+      // Todo lo que no depende de otra cosa sale a la vez (ADR 0060): antes eran tres oleadas
+      // seguidas, y dentro de cada una varias consultas en fila.
+      const countsP = data.teams.counts(tenant.scope, restricted ?? undefined);
       // Quien no lee la estructura (familias, cuerpo técnico sin más) ve en el inicio solo la
       // agenda de lo suyo: los equipos de sus deportistas o los que lleva.
-      const scopedTeams: string[] | undefined =
+      const scopedTeamsP: Promise<string[] | undefined> =
         canEvents && !canStructure
-          ? [
-              ...new Set([
-                ...(await data.events.teamIdsForGuardian(tenant.scope, actor.userId)),
-                ...(await data.memberships.ownTeamIds(tenant.scope, actor.userId)),
-              ]),
-            ]
-          : undefined;
-      const eventFilter: EventFilter = scopedTeams
-        ? { teamIds: scopedTeams }
-        : restricted
-          ? { visible: { teamIds: restricted.teamIds, sectionIds: restricted.sectionIds } }
-          : {};
-      const [sectionCards, today, nextEvent, fees] = await Promise.all([
+          ? Promise.all([
+              data.events.teamIdsForGuardian(tenant.scope, actor.userId),
+              data.memberships.ownTeamIds(tenant.scope, actor.userId),
+            ]).then(([guardian, own]) => [...new Set([...guardian, ...own])])
+          : Promise.resolve(undefined);
+      const eventFilterP: Promise<EventFilter> = scopedTeamsP.then((scopedTeams) =>
+        scopedTeams
+          ? { teamIds: scopedTeams }
+          : restricted
+            ? { visible: { teamIds: restricted.teamIds, sectionIds: restricted.sectionIds } }
+            : {},
+      );
+      const [
+        counts,
+        clubMembers,
+        staff,
+        facilities,
+        sectionCards,
+        today,
+        nextEvent,
+        fees,
+        readiness,
+        challengeSubmissionsPending,
+        store,
+      ] = await Promise.all([
+        countsP,
+        data.clubMembers.counts(tenant.scope),
+        data.clubMembers.staffCount(tenant.scope),
+        (restricted
+          ? data.access.facilityIdsForTeams(tenant.scope, restricted.teamIds)
+          : Promise.resolve(null)
+        ).then((ids) => data.facilities.counts(tenant.scope, ids)),
         canStructure
-          ? data.sections.list(
-              tenant.scope,
-              counts.currentSeason?.id ?? null,
-              restricted ? { sectionIds: restricted.sectionIds } : {},
+          ? countsP.then((counts) =>
+              data.sections.list(
+                tenant.scope,
+                counts.currentSeason?.id ?? null,
+                restricted ? { sectionIds: restricted.sectionIds } : {},
+              ),
             )
           : Promise.resolve([]),
         canEvents
-          ? data.events.today(tenant.scope, timezone, new Date(), eventFilter)
+          ? eventFilterP.then((filter) =>
+              data.events.today(tenant.scope, timezone, new Date(), filter),
+            )
           : Promise.resolve([]),
-        canEvents ? data.events.next(tenant.scope, new Date(), eventFilter) : Promise.resolve(null),
+        canEvents
+          ? eventFilterP.then((filter) => data.events.next(tenant.scope, new Date(), filter))
+          : Promise.resolve(null),
         actor.permissions.has("org.fees.read")
           ? data.fees.summary(tenant.scope)
           : Promise.resolve(null),
+        canPlayers
+          ? data.players.operations(
+              tenant.scope,
+              restricted
+                ? { teamIds: restricted.teamIds, playerIds: restricted.playerIds }
+                : undefined,
+            )
+          : Promise.resolve(null),
+        !canPlayers
+          ? Promise.resolve(0)
+          : actor.permissions.has("org.challenges.review")
+            ? data.challenges.pendingCount(tenant.scope)
+            : actor.permissions.has("org.challenges.review_own")
+              ? data.memberships
+                  .ownTeamIds(tenant.scope, actorId(c))
+                  .then((teamIds) => data.challenges.pendingCount(tenant.scope, teamIds))
+              : Promise.resolve(0),
+        canPlayers && actor.permissions.has("org.store.read")
+          ? data.store.alerts(tenant.scope)
+          : Promise.resolve({ ordersToPrepare: 0, variantsOutOfStock: 0 }),
       ]);
       const base = {
         ...counts,
@@ -298,38 +336,21 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
         today: today.map(eventDto),
         nextEvent: nextEvent ? eventDto(nextEvent) : null,
       };
-      if (!actor.permissions.has("org.players.read")) {
+      if (!readiness) {
         return c.json({ ...base, operations: null, readiness: null }, 200);
       }
-      const [{ operations, readiness }, challengeSubmissionsPending, store] = await Promise.all([
-        data.players.operations(
-          tenant.scope,
-          restricted ? { teamIds: restricted.teamIds, playerIds: restricted.playerIds } : undefined,
-        ),
-        actor.permissions.has("org.challenges.review")
-          ? data.challenges.pendingCount(tenant.scope)
-          : actor.permissions.has("org.challenges.review_own")
-            ? data.challenges.pendingCount(
-                tenant.scope,
-                await data.memberships.ownTeamIds(tenant.scope, actorId(c)),
-              )
-            : Promise.resolve(0),
-        actor.permissions.has("org.store.read")
-          ? data.store.alerts(tenant.scope)
-          : Promise.resolve({ ordersToPrepare: 0, variantsOutOfStock: 0 }),
-      ]);
       return c.json(
         {
           ...base,
           operations: {
-            ...operations,
+            ...readiness.operations,
             challengeSubmissionsPending,
             facilitiesWithoutHours: facilities.withoutHours,
             feesOverdue: fees?.overdueCount ?? 0,
             storeOrdersToPrepare: store.ordersToPrepare,
             storeOutOfStock: store.variantsOutOfStock,
           },
-          readiness,
+          readiness: readiness.readiness,
         },
         200,
       );
@@ -518,34 +539,49 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
       const { id } = c.req.valid("param");
       const { season: requested } = c.req.valid("query");
       const season = await seasonOf(tenant, requested);
-      await requireSectionVisible(c, id);
-      const section = await data.sections.byId(tenant.scope, id, season?.id ?? null);
-      if (!section) throw notFound("Esa sección no existe.");
       const seasonId = season?.id ?? null;
-      const restricted = await restrictedOf(c);
-      const [categories, teams] = await Promise.all([
-        data.categories.list(tenant.scope, { sectionId: id, seasonId }),
-        seasonId
-          ? data.teams.list(tenant.scope, seasonId, id, restricted?.teamIds)
-          : Promise.resolve([]),
+      // La visibilidad, la sección y el ámbito no dependen entre sí (ADR 0060).
+      const [, section, restricted] = await Promise.all([
+        requireSectionVisible(c, id),
+        data.sections.byId(tenant.scope, id, seasonId),
+        restrictedOf(c),
       ]);
-      const nextByTeam = await data.events.nextByTeam(
-        tenant.scope,
-        teams.map((t) => t.id),
-      );
+      if (!section) throw notFound("Esa sección no existe.");
+      const canSeePlayers = c.get("actor").permissions.has("org.players.read");
+      const canWrite = c.get("actor").permissions.has("org.structure.write");
       const week = weekRange(tenant.organization.timezone);
-      const [counts, allStaff, eventsThisWeek] = await Promise.all([
-        seasonId
-          ? data.sections.counts(tenant.scope, id, seasonId)
-          : Promise.resolve({ players: 0, guardians: 0, playerIds: [] }),
-        seasonId ? data.sections.staff(tenant.scope, id, seasonId) : Promise.resolve([]),
-        data.events.countBetween(tenant.scope, week.from, week.to, {
-          sectionId: id,
-          ...(restricted
-            ? { visible: { teamIds: restricted.teamIds, sectionIds: restricted.sectionIds } }
-            : {}),
-        }),
-      ]);
+      // El resto sale en una sola oleada; lo que depende de otra cosa se encadena a ella.
+      const teamsP = seasonId
+        ? data.teams.list(tenant.scope, seasonId, id, restricted?.teamIds)
+        : Promise.resolve([]);
+      const countsP = seasonId
+        ? data.sections.counts(tenant.scope, id, seasonId)
+        : Promise.resolve({ players: 0, guardians: 0, playerIds: [] as string[] });
+      const [categories, teams, nextByTeam, counts, allStaff, eventsThisWeek, readiness, hasTeams] =
+        await Promise.all([
+          data.categories.list(tenant.scope, { sectionId: id, seasonId }),
+          teamsP,
+          teamsP.then((list) =>
+            data.events.nextByTeam(
+              tenant.scope,
+              list.map((t) => t.id),
+            ),
+          ),
+          countsP,
+          seasonId ? data.sections.staff(tenant.scope, id, seasonId) : Promise.resolve([]),
+          data.events.countBetween(tenant.scope, week.from, week.to, {
+            sectionId: id,
+            ...(restricted
+              ? { visible: { teamIds: restricted.teamIds, sectionIds: restricted.sectionIds } }
+              : {}),
+          }),
+          countsP.then((found) =>
+            canSeePlayers && found.playerIds.length > 0
+              ? data.players.readinessFor(tenant.scope, found.playerIds)
+              : null,
+          ),
+          canWrite ? data.sections.hasTeams(tenant.scope, id) : Promise.resolve(true),
+        ]);
       // Con ámbito restringido, el personal de la sección se reduce al de los equipos visibles.
       const staff = restricted
         ? allStaff
@@ -555,14 +591,6 @@ export function createStructureRoutes(config: ApiConfig, data: DataLayer) {
             }))
             .filter((s) => s.teams.length > 0)
         : allStaff;
-      const canSeePlayers = c.get("actor").permissions.has("org.players.read");
-      const canWrite = c.get("actor").permissions.has("org.structure.write");
-      const [readiness, hasTeams] = await Promise.all([
-        canSeePlayers && counts.playerIds.length > 0
-          ? data.players.readinessFor(tenant.scope, counts.playerIds)
-          : Promise.resolve(null),
-        canWrite ? data.sections.hasTeams(tenant.scope, id) : Promise.resolve(true),
-      ]);
       return c.json(
         {
           section,

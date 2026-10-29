@@ -1,14 +1,10 @@
-import {
-  PlayerMatchesResponseSchema,
-  formatClock,
-  type PlayerMatchLine,
-} from "@sportsmanager/shared";
+import { formatClock, type PlayerMatchLine } from "@sportsmanager/shared";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router";
-import { apiFetch } from "@/lib/api";
 import { clubPaths, useReadyClub } from "@/lib/club";
 import { useDates } from "@/lib/dates";
 import { useT } from "@/lib/intl";
+import { orgQueries } from "@/lib/queries";
 import { formatRating, signed } from "@/lib/matches";
 import { Card, EmptyState, Icon, StatusChip } from "@/ui";
 
@@ -29,19 +25,7 @@ export function PlayerMatchesCard({
   const { slug, org } = useReadyClub();
   const paths = clubPaths(slug);
   const canOpenStats = !family && org.actor.permissions.includes("org.matches.read");
-  const data = useQuery({
-    queryKey: ["org", slug, family ? "family" : "players", playerId, "matches"],
-    queryFn: () =>
-      apiFetch(
-        family
-          ? `/api/org/family/players/${playerId}/matches`
-          : `/api/org/players/${playerId}/matches`,
-        {
-          schema: PlayerMatchesResponseSchema,
-        },
-      ),
-    retry: false,
-  });
+  const data = useQuery(orgQueries.playerMatches(slug, playerId, family));
   const lines = data.data?.lines ?? [];
   const totals = data.data?.totals;
   const types = data.data?.actionTypes ?? [];

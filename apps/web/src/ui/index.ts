@@ -19,6 +19,7 @@ export { Menu, MenuItem, MenuSection, MenuDivider } from "./menu";
 export { CopyLink } from "./copy-link";
 export { DataList, type Column, type MobileRow, type RowAction } from "./data-list";
 export { Segmented } from "./segmented";
+export { TopProgress } from "./top-progress";
 export {
   StatusChip,
   ConfirmDialog,

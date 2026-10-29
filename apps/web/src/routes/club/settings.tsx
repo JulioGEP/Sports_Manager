@@ -2,7 +2,6 @@ import {
   ActivityResponseSchema,
   LOCALES,
   MemberTypeResponseSchema,
-  MemberTypesResponseSchema,
   OrganizationUpdateResponseSchema,
   OrganizationUpdateSchema,
   PAYMENT_PROVIDERS,
@@ -11,7 +10,6 @@ import {
   StripeOnboardingResponseSchema,
   SeasonResponseSchema,
   SeasonUpdateSchema,
-  SeasonsResponseSchema,
   type Locale,
   type MemberType,
   type PaymentProvider,
@@ -27,6 +25,7 @@ import { ApiClientError, apiFetch, errorKey } from "@/lib/api";
 import { useReadyClub } from "@/lib/club";
 import { useDates } from "@/lib/dates";
 import { useT } from "@/lib/intl";
+import { orgQueries } from "@/lib/queries";
 import { AccountingSection } from "./settings-accounting";
 import { DevelopersTab } from "./settings-developers";
 import { SettingsGroup } from "./settings-group";
@@ -313,10 +312,7 @@ function SeasonsCard() {
   const [params, setParams] = useSearchParams();
   const creating = params.get("new") === "1";
   const [editing, setEditing] = useState<Season | null>(null);
-  const seasons = useQuery({
-    queryKey: ["org", slug, "seasons"],
-    queryFn: () => apiFetch("/api/org/seasons", { schema: SeasonsResponseSchema }),
-  });
+  const seasons = useQuery(orgQueries.seasons(slug));
   const reload = () => client.invalidateQueries({ queryKey: ["org", slug] });
 
   function setCreating(open: boolean) {
@@ -577,10 +573,7 @@ function MemberTypesCard() {
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
   const [renaming, setRenaming] = useState<MemberType | null>(null);
-  const types = useQuery({
-    queryKey: ["org", slug, "member-types"],
-    queryFn: () => apiFetch("/api/org/member-types", { schema: MemberTypesResponseSchema }),
-  });
+  const types = useQuery(orgQueries.memberTypes(slug));
   const reload = () => client.invalidateQueries({ queryKey: ["org", slug, "member-types"] });
 
   async function create(e: FormEvent) {
@@ -815,8 +808,7 @@ function PaymentsTab({ section }: { section: string | undefined }) {
   const [params, setParams] = useSearchParams();
   const canWrite = org.actor.permissions.includes("org.settings.write");
   const settings = useQuery({
-    queryKey: ["org", slug, "fees", "settings"],
-    queryFn: () => apiFetch("/api/org/fees/settings", { schema: PaymentsSettingsResponseSchema }),
+    ...orgQueries.feesSettings(slug),
   });
   // La misma consulta que pinta la contabilidad: con las dos cargadas, la pasarela ya no crece.
   const accounting = useAccountingStatus();

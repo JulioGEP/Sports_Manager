@@ -435,15 +435,18 @@ export async function buildTeamInsights(
 ): Promise<{ insights: Insight[]; contents: TrainingContentRecord[]; settings: TrainingSettings }> {
   const scope = tenant.scope;
   const tz = tenant.organization.timezone;
-  const section = await data.training.sectionTraining(scope, team.section.id);
+  // Por oleadas, no en fila (ADR 0060): la sección y la plantilla a la vez; el catálogo con todo
+  // lo demás; las tareas y las cargas de las sesiones, juntas.
+  const [section, fullRoster] = await Promise.all([
+    data.training.sectionTraining(scope, team.section.id),
+    data.teams.roster(scope, team.id),
+  ]);
   const settings = section?.settings ?? resolveTrainingSettings(null);
-  const contents = section
-    ? await data.training.ensureCatalog(scope, section.id, section.sportCode, localeOf(c, tenant))
-    : [];
-  const roster = (await data.teams.roster(scope, team.id)).filter((r) => r.status === "active");
+  const roster = fullRoster.filter((r) => r.status === "active");
   const ids = roster.map((r) => r.playerId);
   const from = addDays(date, -56);
   const [
+    contents,
     stats,
     sessions,
     availability,
@@ -457,6 +460,9 @@ export async function buildTeamInsights(
     events,
     loads,
   ] = await Promise.all([
+    section
+      ? data.training.ensureCatalog(scope, section.id, section.sportCode, localeOf(c, tenant))
+      : Promise.resolve([]),
     teamMatchStats(data, tenant, team),
     data.training.teamSessions(
       scope,
@@ -485,14 +491,16 @@ export async function buildTeamInsights(
     ),
     data.load.loadsFor(scope, ids, from, date),
   ]);
-  const items = await data.training.itemsOf(
-    scope,
-    sessions.map((s) => s.id),
-  );
-  const sessionLoads = await data.load.loadsForEvents(
-    scope,
-    sessions.map((s) => s.eventId),
-  );
+  const [items, sessionLoads] = await Promise.all([
+    data.training.itemsOf(
+      scope,
+      sessions.map((s) => s.id),
+    ),
+    data.load.loadsForEvents(
+      scope,
+      sessions.map((s) => s.eventId),
+    ),
+  ]);
   const itemsBySession = new Map<string, SessionItemRecord[]>();
   for (const i of items)
     itemsBySession.set(i.sessionId, [...(itemsBySession.get(i.sessionId) ?? []), i]);

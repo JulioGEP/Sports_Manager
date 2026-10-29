@@ -1,13 +1,9 @@
 import {
   InvitationSentResponseSchema,
-  InvitationsResponseSchema,
   LOCALES,
   MemberSectionsResponseSchema,
-  MembersResponseSchema,
   ROLE_CODES,
-  SectionsResponseSchema,
   STAFF_POSITIONS,
-  TeamsResponseSchema,
   type Invitation,
   type InvitationSentResponse,
   type Locale,
@@ -23,6 +19,7 @@ import { Link } from "react-router";
 import { apiFetch, errorKey } from "@/lib/api";
 import { clubPaths, useReadyClub } from "@/lib/club";
 import { useT } from "@/lib/intl";
+import { orgQueries } from "@/lib/queries";
 import { AccessMatrix } from "./staff-access";
 import {
   Alert,
@@ -91,18 +88,13 @@ export function StaffPage() {
   const [revoking, setRevoking] = useState<Invitation | null>(null);
   const [lastLink, setLastLink] = useState<{ email: string; url: string } | null>(null);
 
-  const members = useQuery({
-    queryKey: ["org", slug, "members"],
-    queryFn: () => apiFetch("/api/org/members", { schema: MembersResponseSchema }),
-  });
+  const members = useQuery(orgQueries.members(slug));
   const invitations = useQuery({
-    queryKey: ["org", slug, "invitations"],
-    queryFn: () => apiFetch("/api/org/invitations", { schema: InvitationsResponseSchema }),
+    ...orgQueries.invitations(slug),
     enabled: canInvite,
   });
   const teams = useQuery({
-    queryKey: ["org", slug, "teams", null],
-    queryFn: () => apiFetch("/api/org/teams", { schema: TeamsResponseSchema }),
+    ...orgQueries.teams(slug),
     enabled: canInvite,
   });
   const reload = () => client.invalidateQueries({ queryKey: ["org", slug] });
@@ -237,6 +229,7 @@ export function StaffPage() {
           </div>
           <Card padded={false}>
             <DataList<Member>
+              loading={members.isLoading}
               caption={t("title")}
               rows={filtered}
               getKey={(m) => m.userId}
@@ -345,6 +338,7 @@ export function StaffPage() {
           ) : null}
           <Card padded={false}>
             <DataList<Invitation>
+              loading={invitations.isLoading}
               caption={t("tabs.invitations")}
               rows={visibleInvitations}
               getKey={(i) => i.id}
@@ -638,8 +632,7 @@ function RolesSheet({
   const withSections =
     current.includes("staff") && (position === "director" || position === "coordinator");
   const sections = useQuery({
-    queryKey: ["org", slug, "sections", null],
-    queryFn: () => apiFetch("/api/org/sections", { schema: SectionsResponseSchema }),
+    ...orgQueries.sections(slug),
     enabled: withSections,
   });
   const coordinated = new Set(

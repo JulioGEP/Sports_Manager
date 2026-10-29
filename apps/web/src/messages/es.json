@@ -2960,6 +2960,7 @@
       "caption": "Cargos del club",
       "search": "Buscar",
       "searchPlaceholder": "Persona, concepto o periodo",
+      "loadMore": "Ver {count} más",
       "status": "Estado",
       "allStatuses": "Todos los estados",
       "loadError": "No se han podido cargar los cargos.",

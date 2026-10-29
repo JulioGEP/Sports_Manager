@@ -58,7 +58,14 @@ export function Avatar({
       <span
         className={`inline-grid shrink-0 place-items-center overflow-hidden rounded-full bg-raised ${avatarSizes[size]}`}
       >
-        <img src={src} alt={alt ?? ""} className="size-full object-cover" />
+        {/* En una lista larga, solo se descargan las fotos que se ven (ADR 0060). */}
+        <img
+          src={src}
+          alt={alt ?? ""}
+          loading="lazy"
+          decoding="async"
+          className="size-full object-cover"
+        />
       </span>
     );
   }

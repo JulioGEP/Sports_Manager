@@ -3,9 +3,7 @@ import {
   CATEGORY_GENDERS,
   CategoriesResponseSchema,
   CategoryResponseSchema,
-  SeasonsResponseSchema,
   SectionDetailResponseSchema,
-  SectionsResponseSchema,
   TeamResponseSchema,
   type Category,
   type CategoryGender,
@@ -20,6 +18,7 @@ import { useIntl } from "react-intl";
 import { ApiClientError, apiFetch, errorKey } from "@/lib/api";
 import { clubPaths, useReadyClub } from "@/lib/club";
 import { useLocale, useT } from "@/lib/intl";
+import { orgQueries } from "@/lib/queries";
 import {
   Alert,
   Avatar,
@@ -78,10 +77,7 @@ export function SectionPage() {
       }),
     retry: false,
   });
-  const seasons = useQuery({
-    queryKey: ["org", slug, "seasons"],
-    queryFn: () => apiFetch("/api/org/seasons", { schema: SeasonsResponseSchema }),
-  });
+  const seasons = useQuery(orgQueries.seasons(slug));
   // Los retos de la sección (ADR 0032): los de toda la sección y los de cada equipo.
   const challenges = useChallengesOf({ sectionId: id }, canSeeChallenges);
   const reload = () => client.invalidateQueries({ queryKey: ["org", slug] });
@@ -794,8 +790,7 @@ export function TeamSheet({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const sections = useQuery({
-    queryKey: ["org", slug, "sections", null],
-    queryFn: () => apiFetch("/api/org/sections", { schema: SectionsResponseSchema }),
+    ...orgQueries.sections(slug),
     enabled: open && team !== null,
   });
   const otherCategories = useQuery({

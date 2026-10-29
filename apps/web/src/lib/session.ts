@@ -1,5 +1,5 @@
 import { MeResponseSchema, type MeResponse } from "@sportsmanager/shared";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { ApiClientError, apiFetch } from "./api";
@@ -23,10 +23,18 @@ export async function fetchMe(): Promise<MeResponse | null> {
   }
 }
 
+/** La sesión, igual en todas partes: la comparten el espacio del club, el acceso y el admin. */
+export const meQuery = queryOptions({
+  queryKey: ME_QUERY,
+  queryFn: fetchMe,
+  staleTime: 60_000,
+  retry: false,
+});
+
 /** Sesión actual según `/api/me`. El idioma del perfil manda sobre la cookie. */
 export function useSession(): SessionState {
   const { locale, setLocale } = useLocale();
-  const query = useQuery({ queryKey: ME_QUERY, queryFn: fetchMe, staleTime: 60_000, retry: false });
+  const query = useQuery(meQuery);
   const profileLocale = query.data?.user.locale;
   useEffect(() => {
     if (isLocale(profileLocale) && profileLocale !== locale) setLocale(profileLocale);

@@ -1,19 +1,16 @@
 import {
   personDisplayName,
-  SectionsResponseSchema,
   STORE_IMAGE_MAX_BYTES,
   STORE_IMAGE_MAX_SIDE_PX,
   STORE_LOW_STOCK,
   STORE_ORDER_STATUSES,
   STORE_PRODUCT_CATEGORIES,
   StoreOrderResponseSchema,
-  StoreOrdersResponseSchema,
   StorePeopleResponseSchema,
   StoreProductCreateSchema,
   StoreProductResponseSchema,
   StoreProductsResponseSchema,
   StoreProductUpdateSchema,
-  TeamsResponseSchema,
   formatAmount,
   parseMoney,
   type StoreOrder,
@@ -33,6 +30,7 @@ import { useDates } from "@/lib/dates";
 import { shrinkImage } from "@/lib/images";
 import { useT } from "@/lib/intl";
 import { downloadXlsx, moneyCell } from "@/lib/xlsx";
+import { orgQueries } from "@/lib/queries";
 import {
   Alert,
   Button,
@@ -157,13 +155,7 @@ function OrdersTab({ canWrite }: { canWrite: boolean }) {
     ? (statusParam as StoreOrderStatus)
     : null;
   const [search, setSearch] = useState("");
-  const orders = useQuery({
-    queryKey: ["org", slug, "store", "orders", status],
-    queryFn: () =>
-      apiFetch(`/api/org/store/orders${status ? `?status=${status}` : ""}`, {
-        schema: StoreOrdersResponseSchema,
-      }),
-  });
+  const orders = useQuery(orgQueries.storeOrders(slug, status));
   const reload = () => client.invalidateQueries({ queryKey: ["org", slug, "store"] });
 
   const rows = useMemo(() => {
@@ -710,13 +702,11 @@ function ProductSheet({
   const [error, setError] = useState<string | null>(null);
 
   const sections = useQuery({
-    queryKey: ["org", slug, "sections", "all"],
-    queryFn: () => apiFetch("/api/org/sections", { schema: SectionsResponseSchema }),
+    ...orgQueries.sections(slug),
     retry: false,
   });
   const teams = useQuery({
-    queryKey: ["org", slug, "teams"],
-    queryFn: () => apiFetch("/api/org/teams", { schema: TeamsResponseSchema }),
+    ...orgQueries.teams(slug),
     retry: false,
   });
 

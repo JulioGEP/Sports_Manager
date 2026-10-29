@@ -520,6 +520,33 @@ export function accessRepo(
     },
 
     /** Si un deportista cae dentro de un ámbito: en uno de sus equipos esta temporada o en la lista. */
+    /** `isPlayerVisible` para una lista entera en una consulta (ADR 0060): los que se ven. */
+    async visiblePlayerIds(
+      scope: OrgScope,
+      access: AccessScope,
+      playerIds: string[],
+    ): Promise<Set<string>> {
+      if (access.kind === "club") return new Set(playerIds);
+      const visible = new Set(playerIds.filter((id) => access.playerIds.includes(id)));
+      const rest = playerIds.filter((id) => !visible.has(id));
+      if (access.teamIds.length === 0 || rest.length === 0) return visible;
+      const rows = await db()
+        .selectDistinct({ playerId: schema.teamPlayers.playerId })
+        .from(schema.teamPlayers)
+        .innerJoin(schema.teams, eq(schema.teams.id, schema.teamPlayers.teamId))
+        .innerJoin(schema.seasons, eq(schema.seasons.id, schema.teams.seasonId))
+        .where(
+          and(
+            eq(schema.teamPlayers.organizationId, scope.organizationId),
+            inArray(schema.teamPlayers.playerId, rest),
+            inArray(schema.teamPlayers.teamId, access.teamIds),
+            eq(schema.seasons.isCurrent, true),
+          ),
+        );
+      for (const row of rows) visible.add(row.playerId);
+      return visible;
+    },
+
     async isPlayerVisible(
       scope: OrgScope,
       access: AccessScope,

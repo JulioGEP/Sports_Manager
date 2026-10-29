@@ -1,8 +1,4 @@
-import {
-  PaymentsSettingsResponseSchema,
-  StripeOnboardingResponseSchema,
-  type PaymentsSettings,
-} from "@sportsmanager/shared";
+import { StripeOnboardingResponseSchema, type PaymentsSettings } from "@sportsmanager/shared";
 import { useQuery } from "@tanstack/react-query";
 import { useState, type ReactNode } from "react";
 import {
@@ -14,6 +10,7 @@ import {
 import { apiFetch, errorKey } from "@/lib/api";
 import { clubPaths, useReadyClub } from "@/lib/club";
 import { useT } from "@/lib/intl";
+import { orgQueries } from "@/lib/queries";
 import {
   Alert,
   Button,
@@ -36,8 +33,7 @@ export function FeesConnections() {
   const { org, slug } = useReadyClub();
   const permissions = org.actor.permissions;
   const payments = useQuery({
-    queryKey: ["org", slug, "fees", "settings"],
-    queryFn: () => apiFetch("/api/org/fees/settings", { schema: PaymentsSettingsResponseSchema }),
+    ...orgQueries.feesSettings(slug),
     enabled: permissions.includes("org.settings.read"),
     retry: false,
   });

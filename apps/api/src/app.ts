@@ -5,6 +5,7 @@ import { createDataLayer, type DataLayer } from "./data/index.ts";
 import type { AppEnv } from "./http/context.ts";
 import { ApiError, badRequest, notFound } from "./http/errors.ts";
 import { createAccountingRoutes } from "./routes/accounting.ts";
+import { registerBatchRoute } from "./routes/batch.ts";
 import { createBrandingRoutes } from "./routes/branding.ts";
 import { createChallengeRoutes } from "./routes/challenges.ts";
 import { createEventRoutes } from "./routes/events.ts";
@@ -98,6 +99,8 @@ export function createApp(options: AppOptions = {}) {
   app.route("/", createSuggestionRoutes(config, data));
   app.route("/", createPlatformRoutes(config, data));
   app.route("/", createPlatformSetupRoutes(config, data));
+  // Lote de lecturas (ADR 0060): varias GET de una pantalla en una sola invocación de la función.
+  registerBatchRoute(app);
 
   app.openAPIRegistry.registerComponent("securitySchemes", "sessionCookie", {
     type: "apiKey",

@@ -1,21 +1,12 @@
-import {
-  ClubMembersResponseSchema,
-  FacilitiesResponseSchema,
-  FamilyResponseSchema,
-  MembersResponseSchema,
-  PlayersResponseSchema,
-  SectionsResponseSchema,
-  TeamsResponseSchema,
-  personDisplayName,
-  playerDisplayName,
-} from "@sportsmanager/shared";
+import { personDisplayName, playerDisplayName } from "@sportsmanager/shared";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { useNavigate } from "react-router";
-import { apiFetch } from "@/lib/api";
+
 import { clubPaths, useReadyClub } from "@/lib/club";
 import { useLocale, useT } from "@/lib/intl";
 import { Icon } from "@/ui";
+import { orgQueries } from "@/lib/queries";
 
 /**
  * Paleta de mandos (DESIGN.md 9.17): "Buscar o hacer". Desde cualquier pantalla, con ⌘K (Ctrl K) o
@@ -245,44 +236,37 @@ export function CommandPalette({
 
   const enabled = (p: (typeof permissions)[number]) => open && has(p);
   const players = useQuery({
-    queryKey: ["org", slug, "players"],
-    queryFn: () => apiFetch("/api/org/players", { schema: PlayersResponseSchema }),
+    ...orgQueries.players(slug),
     enabled: enabled("org.players.read"),
     staleTime: 60_000,
   });
   const teams = useQuery({
-    queryKey: ["org", slug, "teams"],
-    queryFn: () => apiFetch("/api/org/teams", { schema: TeamsResponseSchema }),
+    ...orgQueries.teams(slug),
     enabled: enabled("org.structure.read"),
     staleTime: 60_000,
   });
   const sections = useQuery({
-    queryKey: ["org", slug, "sections"],
-    queryFn: () => apiFetch("/api/org/sections", { schema: SectionsResponseSchema }),
+    ...orgQueries.sections(slug),
     enabled: enabled("org.structure.read"),
     staleTime: 60_000,
   });
   const members = useQuery({
-    queryKey: ["org", slug, "members"],
-    queryFn: () => apiFetch("/api/org/members", { schema: MembersResponseSchema }),
+    ...orgQueries.members(slug),
     enabled: enabled("org.members.read"),
     staleTime: 60_000,
   });
   const clubMembers = useQuery({
-    queryKey: ["org", slug, "club-members"],
-    queryFn: () => apiFetch("/api/org/club-members", { schema: ClubMembersResponseSchema }),
+    ...orgQueries.clubMembers(slug),
     enabled: enabled("org.club_members.read"),
     staleTime: 60_000,
   });
   const facilities = useQuery({
-    queryKey: ["org", slug, "facilities"],
-    queryFn: () => apiFetch("/api/org/facilities", { schema: FacilitiesResponseSchema }),
+    ...orgQueries.facilities(slug),
     enabled: enabled("org.facilities.read"),
     staleTime: 60_000,
   });
   const family = useQuery({
-    queryKey: ["org", slug, "family"],
-    queryFn: () => apiFetch("/api/org/family", { schema: FamilyResponseSchema }),
+    ...orgQueries.family(slug),
     enabled: enabled("org.family.read"),
     staleTime: 60_000,
   });

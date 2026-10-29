@@ -101,6 +101,9 @@ export const events = pgTable(
   },
   (t) => [
     index("events_org_starts_idx").on(t.organizationId, t.startsAt),
+    // Agenda, inicio y ficha de sección piden lo que termina después de un instante (ADR 0060):
+    // sin este índice, cada consulta recorría todos los eventos pasados del club.
+    index("events_org_ends_idx").on(t.organizationId, t.endsAt),
     index("events_team_id_idx").on(t.teamId),
     index("events_facility_id_idx").on(t.facilityId),
     index("events_series_id_idx").on(t.seriesId),

@@ -7,9 +7,10 @@ import {
   type Permission,
 } from "@sportsmanager/shared";
 import type { Context, MiddlewareHandler } from "hono";
-import type { DataLayer } from "../data/index.ts";
-import type { AppEnv } from "./context.ts";
+import type { DataLayer, OrgScope } from "../data/index.ts";
+import type { Actor, AppEnv, SessionUser } from "./context.ts";
 import { forbidden, notFound } from "./errors.ts";
+import { shared } from "./memo.ts";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -27,64 +28,78 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
  */
 export function requireActor(data: DataLayer): MiddlewareHandler<AppEnv> {
   return async (c, next) => {
+    // Varias cadenas pueden cubrir la misma ruta: el actor se resuelve una vez.
+    if (c.get("actor")) return next();
     const tenant = c.get("tenant");
     if (tenant?.kind !== "organization") throw notFound();
     const user = c.get("sessionUser");
-    const [memberships, rules] = await Promise.all([
-      data.memberships.membershipsFor(tenant.scope, user.id),
-      data.access.rulesFor(tenant.scope, user.id),
-    ]);
-    if (memberships.length > 0) {
-      const own = effectivePermissions(memberships, rules);
-      const viewAs = c.req.header(VIEW_AS_HEADER)?.trim() ?? "";
-      if (own.has("org.view_as") && UUID.test(viewAs) && viewAs !== user.id) {
-        const [target, targetMemberships, targetRules] = await Promise.all([
-          data.users.byId(viewAs),
-          data.memberships.membershipsFor(tenant.scope, viewAs),
-          data.access.rulesFor(tenant.scope, viewAs),
-        ]);
-        if (target && targetMemberships.length > 0) {
-          const roles = targetMemberships.map((m) => m.roleCode);
-          const permissions = effectivePermissions(targetMemberships, targetRules);
-          permissions.delete("org.view_as");
-          c.set("actor", {
-            kind: "member",
-            userId: target.id,
-            roles,
-            position: targetMemberships.find((m) => m.roleCode === "staff")?.position ?? null,
-            memberships: targetMemberships,
-            permissions,
-            viewingAs: { userId: target.id, name: target.name, roles },
-            // Quien mira sigue siendo la administración: puede cambiar de persona sin salir.
-            canViewAs: true,
-          });
-          return next();
-        }
-      }
-      c.set("actor", {
-        kind: "member",
-        userId: user.id,
-        roles: memberships.map((m) => m.roleCode),
-        position: memberships.find((m) => m.roleCode === "staff")?.position ?? null,
-        memberships,
-        permissions: own,
-        viewingAs: null,
-        canViewAs: own.has("org.view_as"),
-      });
-      return next();
-    }
-    if (await data.platform.isPlatformAdmin(user)) {
-      const hasGrant = await data.platform.hasActiveSupportGrant(tenant.scope, user.id);
-      c.set("actor", {
-        kind: "platform_support",
-        userId: user.id,
-        hasGrant,
-        permissions: new Set(hasGrant ? SUPPORT_GRANT_PERMISSIONS : PLATFORM_SUPPORT_PERMISSIONS),
-      });
-      return next();
-    }
-    throw forbidden("No perteneces a este club.");
+    const viewAs = c.req.header(VIEW_AS_HEADER)?.trim() ?? "";
+    const actor = await shared(c, `actor:${tenant.scope.organizationId}:${user.id}:${viewAs}`, () =>
+      actorOf(data, tenant.scope, user, viewAs),
+    );
+    if (!actor) throw forbidden("No perteneces a este club.");
+    c.set("actor", actor);
+    return next();
   };
+}
+
+/** Quién actúa en el club, o null si no pertenece a él ni es soporte de plataforma. */
+async function actorOf(
+  data: DataLayer,
+  scope: OrgScope,
+  user: SessionUser,
+  viewAs: string,
+): Promise<Actor | null> {
+  const [memberships, rules] = await Promise.all([
+    data.memberships.membershipsFor(scope, user.id),
+    data.access.rulesFor(scope, user.id),
+  ]);
+  if (memberships.length > 0) {
+    const own = effectivePermissions(memberships, rules);
+    if (own.has("org.view_as") && UUID.test(viewAs) && viewAs !== user.id) {
+      const [target, targetMemberships, targetRules] = await Promise.all([
+        data.users.byId(viewAs),
+        data.memberships.membershipsFor(scope, viewAs),
+        data.access.rulesFor(scope, viewAs),
+      ]);
+      if (target && targetMemberships.length > 0) {
+        const roles = targetMemberships.map((m) => m.roleCode);
+        const permissions = effectivePermissions(targetMemberships, targetRules);
+        permissions.delete("org.view_as");
+        return {
+          kind: "member",
+          userId: target.id,
+          roles,
+          position: targetMemberships.find((m) => m.roleCode === "staff")?.position ?? null,
+          memberships: targetMemberships,
+          permissions,
+          viewingAs: { userId: target.id, name: target.name, roles },
+          // Quien mira sigue siendo la administración: puede cambiar de persona sin salir.
+          canViewAs: true,
+        };
+      }
+    }
+    return {
+      kind: "member",
+      userId: user.id,
+      roles: memberships.map((m) => m.roleCode),
+      position: memberships.find((m) => m.roleCode === "staff")?.position ?? null,
+      memberships,
+      permissions: own,
+      viewingAs: null,
+      canViewAs: own.has("org.view_as"),
+    };
+  }
+  if (await data.platform.isPlatformAdmin(user)) {
+    const hasGrant = await data.platform.hasActiveSupportGrant(scope, user.id);
+    return {
+      kind: "platform_support",
+      userId: user.id,
+      hasGrant,
+      permissions: new Set(hasGrant ? SUPPORT_GRANT_PERMISSIONS : PLATFORM_SUPPORT_PERMISSIONS),
+    };
+  }
+  return null;
 }
 
 /**
@@ -98,7 +113,9 @@ export async function accessScopeOf(data: DataLayer, c: Context<AppEnv>): Promis
   const tenant = c.get("tenant");
   const scope: AccessScope =
     actor.kind === "member" && tenant.kind === "organization"
-      ? await data.access.scopeFor(tenant.scope, actor.userId, actor.memberships)
+      ? await shared(c, `scope:${tenant.scope.organizationId}:${actor.userId}`, () =>
+          data.access.scopeFor(tenant.scope, actor.userId, actor.memberships),
+        )
       : { kind: "club" };
   c.set("accessScope", scope);
   return scope;

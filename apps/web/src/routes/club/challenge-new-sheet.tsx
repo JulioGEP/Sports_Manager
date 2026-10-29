@@ -2,7 +2,6 @@ import {
   CHALLENGE_DESCRIPTION_MAX,
   CHALLENGE_NAME_MAX,
   ChallengeResponseSchema,
-  SeasonsResponseSchema,
   type ChallengeManageScope,
 } from "@sportsmanager/shared";
 import { useQuery } from "@tanstack/react-query";
@@ -11,6 +10,7 @@ import { apiFetch, errorKey } from "@/lib/api";
 import { useReadyClub } from "@/lib/club";
 import { useT } from "@/lib/intl";
 import { Alert, Button, Field, Input, Select, Sheet, useToast } from "@/ui";
+import { orgQueries } from "@/lib/queries";
 import {
   ScopeFields,
   resolveScope,
@@ -51,8 +51,7 @@ export function NewChallengeSheet({
   const toast = useToast();
   const { slug } = useReadyClub();
   const seasons = useQuery({
-    queryKey: ["org", slug, "seasons"],
-    queryFn: () => apiFetch("/api/org/seasons", { schema: SeasonsResponseSchema }),
+    ...orgQueries.seasons(slug),
     enabled: open,
   });
   const currentSeason = seasons.data?.seasons.find((s) => s.isCurrent) ?? null;

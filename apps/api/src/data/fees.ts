@@ -11,7 +11,20 @@ import type {
   PaymentCreate,
   PaymentMethod,
 } from "@sportsmanager/shared";
-import { and, asc, desc, eq, inArray, lt, or, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  countDistinct,
+  desc,
+  eq,
+  ilike,
+  inArray,
+  lt,
+  or,
+  sql,
+  type SQL,
+} from "drizzle-orm";
 import { isUniqueViolation } from "./db.ts";
 import { mintOrgScope, type OrgScope } from "./scope.ts";
 
@@ -82,6 +95,11 @@ export interface ChargeFilter {
   status?: FeeChargeStatus | undefined;
   personId?: string | undefined;
   planId?: string | undefined;
+  /** Búsqueda por nombre, concepto, periodo o plan. No cambia los totales. */
+  q?: string | undefined;
+  /** Un tramo de la lista (ADR 0060). Sin `limit`, la lista entera, como antes. */
+  limit?: number | undefined;
+  offset?: number | undefined;
 }
 
 const OPEN: readonly FeeChargeStatus[] = ["pending", "overdue"];
@@ -149,6 +167,48 @@ export function feesRepo(db: () => Database) {
     return [...(members ?? athletes ?? new Set<string>())];
   }
 
+  /**
+   * Cuántas personas abarca un plan, contado en la base (ADR 0060): el mismo criterio que
+   * `appliesTo`, sin traer a la API la lista entera de cada plan solo para contarla.
+   */
+  async function appliesToCount(scope: OrgScope, plan: PlanRow): Promise<number> {
+    const athletes = plan.sectionId
+      ? db()
+          .selectDistinct({ personId: schema.players.personId })
+          .from(schema.teamPlayers)
+          .innerJoin(schema.teams, eq(schema.teams.id, schema.teamPlayers.teamId))
+          .innerJoin(schema.seasons, eq(schema.seasons.id, schema.teams.seasonId))
+          .innerJoin(schema.players, eq(schema.players.id, schema.teamPlayers.playerId))
+          .where(
+            and(
+              eq(schema.teamPlayers.organizationId, scope.organizationId),
+              eq(schema.teams.sectionId, plan.sectionId),
+              eq(schema.teams.status, "active"),
+              eq(schema.seasons.isCurrent, true),
+              eq(schema.players.status, "active"),
+            ),
+          )
+      : null;
+    if (plan.memberTypeId || !plan.sectionId) {
+      const rows = await db()
+        .select({ total: countDistinct(schema.clubMembers.personId) })
+        .from(schema.clubMembers)
+        .where(
+          and(
+            eq(schema.clubMembers.organizationId, scope.organizationId),
+            eq(schema.clubMembers.status, "active"),
+            ...(plan.memberTypeId ? [eq(schema.clubMembers.memberTypeId, plan.memberTypeId)] : []),
+            ...(athletes ? [inArray(schema.clubMembers.personId, athletes)] : []),
+          ),
+        );
+      return rows[0]?.total ?? 0;
+    }
+    const rows = await db()
+      .select({ total: sql<number>`count(*)`.mapWith(Number) })
+      .from(athletes!.as("athletes"));
+    return rows[0]?.total ?? 0;
+  }
+
   async function planRows(scope: OrgScope, id?: string) {
     return db()
       .select({
@@ -186,7 +246,7 @@ export function feesRepo(db: () => Database) {
         plan.sectionId && row.sectionName ? { id: plan.sectionId, name: row.sectionName } : null,
       description: plan.description,
       status: plan.status as FeePlanStatus,
-      appliesTo: (await appliesTo(scope, plan)).length,
+      appliesTo: await appliesToCount(scope, plan),
     };
   }
 
@@ -314,27 +374,37 @@ export function feesRepo(db: () => Database) {
     return (await toChargeRecords(rows))[0] ?? null;
   }
 
-  function totalsOf(charges: FeeChargeRecord[]): FeeChargeTotals {
-    const totals: FeeChargeTotals = {
-      pendingCents: 0,
-      overdueCents: 0,
-      paidCents: 0,
-      pendingCount: 0,
-      overdueCount: 0,
-    };
-    for (const c of charges) {
-      totals.paidCents += c.paidCents;
-      if (c.status === "pending" || c.status === "overdue") {
-        const remaining = Math.max(0, c.amountCents - c.paidCents);
-        totals.pendingCents += remaining;
-        totals.pendingCount += 1;
-        if (c.status === "overdue") {
-          totals.overdueCents += remaining;
-          totals.overdueCount += 1;
-        }
+  /** Los totales de `totalsOf`, calculados en la base sobre todos los cargos del filtro. */
+  async function totalsWhere(where: SQL | undefined): Promise<FeeChargeTotals> {
+    const open = sql`${schema.feeCharges.status} in ('pending', 'overdue')`;
+    const remaining = sql`greatest(${schema.feeCharges.amountCents} - ${schema.feeCharges.paidCents}, 0)`;
+    const rows = await db()
+      .select({
+        paidCents: sql<number>`coalesce(sum(${schema.feeCharges.paidCents}), 0)`.mapWith(Number),
+        pendingCents: sql<number>`coalesce(sum(${remaining}) filter (where ${open}), 0)`.mapWith(
+          Number,
+        ),
+        pendingCount: sql<number>`count(*) filter (where ${open})`.mapWith(Number),
+        overdueCents:
+          sql<number>`coalesce(sum(${remaining}) filter (where ${schema.feeCharges.status} = 'overdue'), 0)`.mapWith(
+            Number,
+          ),
+        overdueCount:
+          sql<number>`count(*) filter (where ${schema.feeCharges.status} = 'overdue')`.mapWith(
+            Number,
+          ),
+      })
+      .from(schema.feeCharges)
+      .where(where);
+    return (
+      rows[0] ?? {
+        pendingCents: 0,
+        overdueCents: 0,
+        paidCents: 0,
+        pendingCount: 0,
+        overdueCount: 0,
       }
-    }
-    return totals;
+    );
   }
 
   /** Personas de una cuenta en el club: la suya y las de los jugadores de los que es familia. */
@@ -488,9 +558,7 @@ export function feesRepo(db: () => Database) {
     plans: {
       async list(scope: OrgScope): Promise<FeePlanRecord[]> {
         const rows = await planRows(scope);
-        const out: FeePlanRecord[] = [];
-        for (const row of rows) out.push(await toPlanRecord(scope, row));
-        return out;
+        return Promise.all(rows.map((row) => toPlanRecord(scope, row)));
       },
       byId: planById,
       async create(
@@ -565,24 +633,56 @@ export function feesRepo(db: () => Database) {
       async list(
         scope: OrgScope,
         filter: ChargeFilter = {},
-      ): Promise<{ charges: FeeChargeRecord[]; totals: FeeChargeTotals }> {
+      ): Promise<{ charges: FeeChargeRecord[]; totals: FeeChargeTotals; total: number }> {
         await markOverdue(scope);
-        const rows = await chargeQuery()
-          .where(
-            and(
-              eq(schema.feeCharges.organizationId, scope.organizationId),
-              ...(filter.status ? [eq(schema.feeCharges.status, filter.status)] : []),
-              ...(filter.personId ? [eq(schema.feeCharges.personId, filter.personId)] : []),
-              ...(filter.planId ? [eq(schema.feeCharges.feePlanId, filter.planId)] : []),
-            ),
-          )
-          .orderBy(
-            desc(schema.feeCharges.dueOn),
-            asc(schema.people.lastName),
-            asc(schema.people.firstName),
-          );
+        const base = and(
+          eq(schema.feeCharges.organizationId, scope.organizationId),
+          ...(filter.status ? [eq(schema.feeCharges.status, filter.status)] : []),
+          ...(filter.personId ? [eq(schema.feeCharges.personId, filter.personId)] : []),
+          ...(filter.planId ? [eq(schema.feeCharges.feePlanId, filter.planId)] : []),
+        );
+        const q = filter.q?.trim();
+        const pattern = q ? `%${q.replace(/[\\%_]/g, (ch) => `\\${ch}`)}%` : null;
+        const where = pattern
+          ? and(
+              base,
+              or(
+                ilike(sql`${schema.people.firstName} || ' ' || ${schema.people.lastName}`, pattern),
+                ilike(schema.feeCharges.concept, pattern),
+                ilike(schema.feeCharges.periodLabel, pattern),
+                ilike(schema.feePlans.name, pattern),
+              ),
+            )
+          : base;
+        // Una temporada de un club de 450 personas son ~4.500 cargos (1,8 MB): la pantalla pide
+        // un tramo, y los totales y el recuento salen de la base, no de la lista (ADR 0060).
+        const [rows, totals, counted] = await Promise.all([
+          (() => {
+            const page = chargeQuery()
+              .where(where)
+              .orderBy(
+                desc(schema.feeCharges.dueOn),
+                asc(schema.people.lastName),
+                asc(schema.people.firstName),
+                asc(schema.feeCharges.id),
+              )
+              .$dynamic();
+            return filter.limit === undefined
+              ? page
+              : page.limit(filter.limit).offset(filter.offset ?? 0);
+          })(),
+          totalsWhere(base),
+          filter.limit === undefined
+            ? Promise.resolve(null)
+            : db()
+                .select({ total: count() })
+                .from(schema.feeCharges)
+                .innerJoin(schema.people, eq(schema.people.id, schema.feeCharges.personId))
+                .leftJoin(schema.feePlans, eq(schema.feePlans.id, schema.feeCharges.feePlanId))
+                .where(where),
+        ]);
         const charges = await toChargeRecords(rows);
-        return { charges, totals: totalsOf(charges) };
+        return { charges, totals, total: counted?.[0]?.total ?? charges.length };
       },
 
       byId: chargeById,

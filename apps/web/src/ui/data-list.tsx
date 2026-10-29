@@ -1,5 +1,12 @@
 import { ActionIcon, type ActionKind } from "@sportsmanager/design";
-import type { MouseEvent, ReactNode } from "react";
+import {
+  startTransition,
+  useDeferredValue,
+  useEffect,
+  useState,
+  type MouseEvent,
+  type ReactNode,
+} from "react";
 import { useNavigate } from "react-router";
 import { useT } from "@/lib/intl";
 import { DESKTOP_QUERY } from "@/lib/theme";
@@ -44,6 +51,12 @@ export interface RowAction {
 const interactive = "a, button, input, select, textarea, label, [role='menu'], [role='dialog']";
 
 /**
+ * Filas de la primera pintura (ADR 0060). Una lista de 450 personas se pinta en dos tiempos: lo que
+ * cabe en pantalla y algo más, al momento, y el resto justo después, sin bloquear la página.
+ */
+const FIRST_ROWS = 60;
+
+/**
  * Lista de datos con dos formas (DESIGN.md 9.7 y 9.8): tabla de filas de 52 px en escritorio,
  * filas cápsula de 64 px en móvil. La fila es el objeto: si tiene `href`, se abre tocándola en
  * cualquier punto (el enlace del título sigue ahí para el teclado y el lector de pantalla) y lo dice
@@ -59,6 +72,7 @@ export function DataList<T>({
   actions,
   empty,
   caption,
+  loading,
 }: {
   columns: Column<T>[];
   rows: T[];
@@ -71,11 +85,23 @@ export function DataList<T>({
   actions?: ((row: T) => ReactNode) | undefined;
   empty: ReactNode;
   caption: string;
+  /** Mientras llegan las filas: la forma de la lista en vez de un texto (ADR 0060). */
+  loading?: boolean | undefined;
 }) {
   const desktop = useMediaQuery(DESKTOP_QUERY);
   const navigate = useNavigate();
   const c = useT("common");
-  if (rows.length === 0) return <>{empty}</>;
+  // Al escribir en un buscador, el campo responde primero y la lista se repinta después.
+  const deferred = useDeferredValue(rows);
+  const [limit, setLimit] = useState(FIRST_ROWS);
+  useEffect(() => {
+    if (deferred.length <= limit) return;
+    const handle = setTimeout(() => startTransition(() => setLimit(Infinity)), 0);
+    return () => clearTimeout(handle);
+  }, [deferred.length, limit]);
+  const shown = deferred.length > limit ? deferred.slice(0, limit) : deferred;
+  if (rows.length === 0)
+    return loading ? <DataListSkeleton desktop={desktop} label={c("loading")} /> : <>{empty}</>;
 
   function open(e: MouseEvent, to: string) {
     if ((e.target as HTMLElement).closest(interactive)) return;
@@ -91,7 +117,7 @@ export function DataList<T>({
   if (!desktop) {
     return (
       <ul className="flex flex-col gap-2.5" aria-label={caption}>
-        {rows.map((row) => {
+        {shown.map((row) => {
           const item = mobileRow(row);
           const to = href?.(row);
           const acts = rowActions?.(row).filter(Boolean) ?? [];
@@ -104,6 +130,7 @@ export function DataList<T>({
             <li
               key={getKey(row)}
               onClick={to ? (e) => open(e, to) : undefined}
+              data-prefetch={to}
               className={`relative flex min-h-16 flex-wrap items-center gap-3 rounded-row bg-surface px-4 py-2.5 shadow-row transition-colors precisa:border precisa:border-border ${
                 to ? "cursor-pointer active:bg-page" : ""
               }`}
@@ -173,7 +200,7 @@ export function DataList<T>({
           </tr>
         </thead>
         <tbody>
-          {rows.map((row) => {
+          {shown.map((row) => {
             const to = href?.(row);
             const acts = rowActions?.(row).filter(Boolean) ?? [];
             const custom = actions?.(row);
@@ -181,6 +208,7 @@ export function DataList<T>({
               <tr
                 key={getKey(row)}
                 onClick={to ? (e) => open(e, to) : undefined}
+                data-prefetch={to}
                 className={`group h-13 border-b border-line transition-colors last:border-b-0 hover:bg-page ${
                   to ? "cursor-pointer" : ""
                 }`}
@@ -221,6 +249,44 @@ export function DataList<T>({
           })}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+/** Filas en gris que laten: la pantalla tiene su forma desde el primer momento y no salta al llegar. */
+function DataListSkeleton({ desktop, label }: { desktop: boolean; label: string }) {
+  const rows = [0, 1, 2, 3, 4, 5];
+  if (!desktop) {
+    return (
+      <ul className="flex flex-col gap-2.5" aria-busy="true" aria-label={label}>
+        {rows.map((i) => (
+          <li
+            key={i}
+            className="flex min-h-16 items-center gap-3 rounded-row bg-surface px-4 py-2.5 shadow-row precisa:border precisa:border-border"
+          >
+            <span className="size-10 shrink-0 animate-pulse rounded-full bg-raised" />
+            <span className="flex flex-1 flex-col gap-2">
+              <span className="h-3.5 w-2/5 animate-pulse rounded-chip bg-raised" />
+              <span className="h-3 w-3/5 animate-pulse rounded-chip bg-raised" />
+            </span>
+          </li>
+        ))}
+      </ul>
+    );
+  }
+  return (
+    <div className="flex flex-col" aria-busy="true" aria-label={label}>
+      {rows.map((i) => (
+        <div
+          key={i}
+          className="flex h-13 items-center gap-4 border-b border-line px-5 last:border-b-0"
+        >
+          <span className="size-8 shrink-0 animate-pulse rounded-full bg-raised" />
+          <span className="h-3.5 w-1/4 animate-pulse rounded-chip bg-raised" />
+          <span className="h-3.5 w-1/6 animate-pulse rounded-chip bg-raised" />
+          <span className="ml-auto h-3.5 w-16 animate-pulse rounded-chip bg-raised" />
+        </div>
+      ))}
     </div>
   );
 }

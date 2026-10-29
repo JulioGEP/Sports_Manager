@@ -1,10 +1,11 @@
-import { TeamsResponseSchema, type TeamSummary } from "@sportsmanager/shared";
+import { type TeamSummary } from "@sportsmanager/shared";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router";
-import { apiFetch, errorKey } from "@/lib/api";
+import { errorKey } from "@/lib/api";
 import { clubPaths, useReadyClub } from "@/lib/club";
 import { useT } from "@/lib/intl";
 import { Alert, ButtonLink, Card, DataList, EmptyState, Icon, PageHeader } from "@/ui";
+import { orgQueries } from "@/lib/queries";
 
 /**
  * Portada de entrenamiento (ADR 0039): los equipos de su ámbito con la entrada a la semana de
@@ -26,8 +27,7 @@ export function TrainingHubPage() {
     permissions.includes("org.health.read") || permissions.includes("org.availability.write");
 
   const teams = useQuery({
-    queryKey: ["org", slug, "teams", "training"],
-    queryFn: () => apiFetch("/api/org/teams", { schema: TeamsResponseSchema }),
+    ...orgQueries.teams(slug),
     retry: false,
   });
 

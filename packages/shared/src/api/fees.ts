@@ -76,6 +76,8 @@ export const FeeChargesResponseSchema = z.object({
     pendingCount: z.number().int().nonnegative(),
     overdueCount: z.number().int().nonnegative(),
   }),
+  /** Cargos que cumplen el filtro y la búsqueda, también los que no van en este tramo (ADR 0060). */
+  total: z.number().int().nonnegative(),
 });
 export type FeeChargesResponse = z.infer<typeof FeeChargesResponseSchema>;
 export const FeeChargeResponseSchema = z.object({ charge: FeeChargeSchema });

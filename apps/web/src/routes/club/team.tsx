@@ -2,9 +2,6 @@ import {
   CategoriesResponseSchema,
   EligibleMembersResponseSchema,
   MatchesResponseSchema,
-  PlayersResponseSchema,
-  SectionsResponseSchema,
-  SportCatalogResponseSchema,
   TEAM_STAFF_ROLES,
   TeamDetailResponseSchema,
   playerDisplayName,
@@ -19,6 +16,7 @@ import { ApiClientError, apiFetch, errorKey } from "@/lib/api";
 import { clubPaths, useReadyClub } from "@/lib/club";
 import { useDates } from "@/lib/dates";
 import { useLocale, useT } from "@/lib/intl";
+import { orgQueries } from "@/lib/queries";
 import {
   Alert,
   Avatar,
@@ -87,11 +85,7 @@ export function TeamPage() {
   const canSeeTraining = permissions.includes("org.training.read");
   const canSeeLoad = permissions.includes("org.load.read");
 
-  const detail = useQuery({
-    queryKey: ["org", slug, "team", id],
-    queryFn: () => apiFetch(`/api/org/teams/${id}`, { schema: TeamDetailResponseSchema }),
-    retry: false,
-  });
+  const detail = useQuery(orgQueries.team(slug, id));
   const sectionId = detail.data?.team.section.id;
   const categories = useQuery({
     queryKey: ["org", slug, "categories", sectionId],
@@ -106,14 +100,12 @@ export function TeamPage() {
   }
   /** El orden de las posiciones lo da el deporte de la sección (portero, cierre, ala, pívot). */
   const sections = useQuery({
-    queryKey: ["org", slug, "sections"],
-    queryFn: () => apiFetch("/api/org/sections", { schema: SectionsResponseSchema }),
+    ...orgQueries.sections(slug),
     enabled: canSeePlayers && view === "board",
     retry: false,
   });
   const sports = useQuery({
-    queryKey: ["org", slug, "sports"],
-    queryFn: () => apiFetch("/api/org/sports", { schema: SportCatalogResponseSchema }),
+    ...orgQueries.sports(slug),
     enabled: canSeePlayers && view === "board",
     retry: false,
   });
@@ -659,8 +651,7 @@ function AddPlayerSheet({
   const [error, setError] = useState<string | null>(null);
 
   const players = useQuery({
-    queryKey: ["org", slug, "players", "all"],
-    queryFn: () => apiFetch("/api/org/players", { schema: PlayersResponseSchema }),
+    ...orgQueries.players(slug),
     enabled: open,
   });
   const candidates = useMemo(() => {

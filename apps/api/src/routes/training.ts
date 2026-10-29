@@ -364,13 +364,19 @@ export function createTrainingRoutes(config: ApiConfig, data: DataLayer) {
   // --- Biblioteca ---
 
   /** Editar una tarea: la biblioteca del club y de la sección, con `library`; la del equipo, quien planifica en él; la personal, quien la creó. */
-  async function canEditDrill(c: RouteCtx, tenant: Tenant, drill: DrillRecord): Promise<boolean> {
+  async function canEditDrill(
+    c: RouteCtx,
+    tenant: Tenant,
+    drill: DrillRecord,
+    teamOf: (id: string) => ReturnType<typeof data.teams.byId> = (id) =>
+      data.teams.byId(tenant.scope, id),
+  ): Promise<boolean> {
     const actor = c.get("actor");
     if (actor.kind !== "member") return false;
     if (drill.scope === "personal") return drill.owner?.userId === actor.userId;
     if (actor.permissions.has("org.training.library")) return true;
     if (drill.scope === "team" && drill.team) {
-      const team = await data.teams.byId(tenant.scope, drill.team.id);
+      const team = await teamOf(drill.team.id);
       return team ? canPlan(actor, team) || blocksFor(actor, team).length > 0 : false;
     }
     return false;
@@ -445,22 +451,22 @@ export function createTrainingRoutes(config: ApiConfig, data: DataLayer) {
         data.seasons.current(tenant.scope),
       ]);
       const visibleSections = sections.filter((s) => !visible || visible.sectionIds.includes(s.id));
-      // Cada sección visible nace con su catálogo y su biblioteca de arranque.
-      for (const s of visibleSections) {
-        const section = await data.training.sectionTraining(tenant.scope, s.id);
-        if (section)
-          await data.training.ensureCatalog(
-            tenant.scope,
-            s.id,
-            section.sportCode,
-            localeOf(c, tenant),
-          );
-      }
-      const teams = seasons
-        ? (await data.teams.list(tenant.scope, seasons.id)).filter(
-            (t) => !visible || visible.teamIds.includes(t.id),
-          )
-        : [];
+      // Cada sección visible nace con su catálogo y su biblioteca de arranque. Las secciones son
+      // independientes: se comprueban a la vez, y a la vez que los equipos (ADR 0060).
+      const [teamList] = await Promise.all([
+        seasons ? data.teams.list(tenant.scope, seasons.id) : Promise.resolve([]),
+        ...visibleSections.map(async (s) => {
+          const section = await data.training.sectionTraining(tenant.scope, s.id);
+          if (section)
+            await data.training.ensureCatalog(
+              tenant.scope,
+              s.id,
+              section.sportCode,
+              localeOf(c, tenant),
+            );
+        }),
+      ]);
+      const teams = teamList.filter((t) => !visible || visible.teamIds.includes(t.id));
       const drills = await data.training.listDrills(tenant.scope, {
         visible,
         userId: actor.userId,
@@ -470,11 +476,23 @@ export function createTrainingRoutes(config: ApiConfig, data: DataLayer) {
         q: query.q,
         includeArchived: query.archived === "1",
       });
-      const contents = await data.training.contentsOf(
-        tenant.scope,
-        visibleSections.map((s) => s.id),
-      );
-      const editable = await Promise.all(drills.map((d) => canEditDrill(c, tenant, d)));
+      // Un mismo equipo se busca una vez aunque tenga muchas tareas.
+      const teamsById = new Map<string, ReturnType<typeof data.teams.byId>>();
+      const teamOf = (id: string) => {
+        let team = teamsById.get(id);
+        if (!team) {
+          team = data.teams.byId(tenant.scope, id);
+          teamsById.set(id, team);
+        }
+        return team;
+      };
+      const [contents, editable] = await Promise.all([
+        data.training.contentsOf(
+          tenant.scope,
+          visibleSections.map((s) => s.id),
+        ),
+        Promise.all(drills.map((d) => canEditDrill(c, tenant, d, teamOf))),
+      ]);
       const create =
         actor.permissions.has("org.training.library") ||
         actor.permissions.has("org.training.write") ||

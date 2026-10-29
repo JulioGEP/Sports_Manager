@@ -198,40 +198,42 @@ export function createOrgRoutes(config: ApiConfig, data: DataLayer) {
       const status = org.status as "active" | "suspended" | "archived";
       const defaultLocale = org.defaultLocale as Locale;
 
-      if (actor.kind === "member" && actor.viewingAs) {
-        await data.audit.record({
-          actorUserId: c.get("sessionUser").id,
-          organizationId: org.id,
-          action: "view_as.started",
-          target: actor.viewingAs.userId,
-          details: { name: actor.viewingAs.name, roles: actor.viewingAs.roles },
-        });
-      }
-      let organization: OrganizationResponse["organization"];
-      if (actor.permissions.has("org.settings.read")) {
-        organization = await fullView(org, tenant.scope);
-      } else {
-        const counts = await data.organizations.supportCounts(tenant.scope);
-        organization = {
-          view: "support",
-          slug: org.slug,
-          name: org.name,
-          status,
-          defaultLocale,
-          counts,
-        };
-      }
-      const [athlete, canShop] =
+      // Lo que pinta el espacio del club sale a la vez (ADR 0060): es la primera petición de cada
+      // entrada y antes iba en cinco pasos seguidos.
+      const [, organization, athlete, canShop, scope] = await Promise.all([
+        actor.kind === "member" && actor.viewingAs
+          ? data.audit.record({
+              actorUserId: c.get("sessionUser").id,
+              organizationId: org.id,
+              action: "view_as.started",
+              target: actor.viewingAs.userId,
+              details: { name: actor.viewingAs.name, roles: actor.viewingAs.roles },
+            })
+          : Promise.resolve(),
+        actor.permissions.has("org.settings.read")
+          ? fullView(org, tenant.scope)
+          : data.organizations
+              .supportCounts(tenant.scope)
+              .then((counts): OrganizationResponse["organization"] => ({
+                view: "support",
+                slug: org.slug,
+                name: org.name,
+                status,
+                defaultLocale,
+                counts,
+              })),
         actor.kind === "member"
-          ? await Promise.all([
-              data.load.athleteOf(tenant.scope, actor.userId),
-              data.store.canShop(tenant.scope, actor.userId),
-            ])
-          : [null, false];
+          ? data.load.athleteOf(tenant.scope, actor.userId)
+          : Promise.resolve(null),
+        actor.kind === "member"
+          ? data.store.canShop(tenant.scope, actor.userId)
+          : Promise.resolve(false),
+        accessScopeOf(data, c),
+      ]);
       return c.json(
         {
           organization,
-          actor: actorDto(actor, await accessScopeOf(data, c), athlete?.id ?? null, canShop),
+          actor: actorDto(actor, scope, athlete?.id ?? null, canShop),
         },
         200,
       );

@@ -88,7 +88,11 @@ export function createAuth(db: Database, config: ApiConfig, hooks: AuthHooks) {
       storage: "database",
     },
     advanced: {
-      database: { generateId: "uuid" },
+      /**
+       * Sesión y usuario en una sola consulta (ADR 0060): con las relaciones del esquema, Better
+       * Auth los busca con un join. Es lo primero que hace cada petición con sesión.
+       */
+      database: { generateId: "uuid", joins: true },
       cookiePrefix: "sm",
       useSecureCookies: config.secureCookies,
       /** Netlify entrega la IP del cliente en esta cabecera; la segunda es la convención general. */

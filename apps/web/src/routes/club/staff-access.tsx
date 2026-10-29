@@ -5,7 +5,6 @@ import {
   defaultPermissionsOf,
   isAreaVisible,
   MemberAccessResponseSchema,
-  MembersResponseSchema,
   overridableAreas,
   overridesFor,
   profileOf,
@@ -22,6 +21,7 @@ import { useState, type FormEvent } from "react";
 import { apiFetch, errorKey } from "@/lib/api";
 import { useReadyClub } from "@/lib/club";
 import { useT } from "@/lib/intl";
+import { orgQueries } from "@/lib/queries";
 import {
   Alert,
   Avatar,
@@ -90,10 +90,7 @@ export function AccessMatrix() {
     queryFn: () => apiFetch("/api/org/access", { schema: AccessOverviewResponseSchema }),
   });
   /** Para decir el rol de cada persona con excepciones (y lo que ve por él, en la hoja). */
-  const members = useQuery({
-    queryKey: ["org", slug, "members"],
-    queryFn: () => apiFetch("/api/org/members", { schema: MembersResponseSchema }),
-  });
+  const members = useQuery(orgQueries.members(slug));
   const roleOf = (userId: string) => {
     const m = members.data?.members.find((x) => x.userId === userId);
     return m
@@ -343,10 +340,7 @@ function OverrideSheet({
   const errors = useT("errors");
   const toast = useToast();
   const { slug } = useReadyClub();
-  const members = useQuery({
-    queryKey: ["org", slug, "members"],
-    queryFn: () => apiFetch("/api/org/members", { schema: MembersResponseSchema }),
-  });
+  const members = useQuery(orgQueries.members(slug));
   // El personal y el cuerpo técnico admiten excepciones en todo; la administración, solo en Salud.
   const candidates = (members.data?.members ?? []).filter(
     (m) => overridableAreas(m.roles).length > 0,

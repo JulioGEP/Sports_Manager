@@ -1,4 +1,4 @@
-import Anthropic from "@anthropic-ai/sdk";
+import type Anthropic from "@anthropic-ai/sdk";
 import type { AiUsage } from "@sportsmanager/shared";
 
 /**
@@ -49,9 +49,16 @@ const NO_USAGE: AiUsage = {
 };
 
 export function createAnthropicModel(apiKey: string): AiModelClient {
-  const client = new Anthropic({ apiKey, timeout: TIMEOUT_MS, maxRetries: 2 });
+  /**
+   * El SDK se carga con la primera propuesta, no al arrancar la función (ADR 0060): la API lo
+   * empaqueta, pero casi ninguna petición lo usa y su carga se notaba en cada arranque en frío.
+   */
+  let sdk: Promise<typeof Anthropic> | null = null;
+  let client: Anthropic | null = null;
   return {
     async generate(request) {
+      const Sdk = await (sdk ??= import("@anthropic-ai/sdk").then((module) => module.default));
+      client ??= new Sdk({ apiKey, timeout: TIMEOUT_MS, maxRetries: 2 });
       try {
         const fallback = SERVER_FALLBACK_MODELS.has(request.model);
         const stream = client.beta.messages.stream({
@@ -83,9 +90,9 @@ export function createAnthropicModel(apiKey: string): AiModelClient {
           .join("");
         return { kind: "ok", model: message.model, text, usage };
       } catch (error) {
-        if (error instanceof Anthropic.APIConnectionTimeoutError)
+        if (error instanceof Sdk.APIConnectionTimeoutError)
           return { kind: "error", failure: "timeout", message: error.message };
-        if (error instanceof Anthropic.APIError) {
+        if (error instanceof Sdk.APIError) {
           console.error("[ai] model error", error.status, error.message);
           return { kind: "error", failure: "model_error", message: error.message };
         }

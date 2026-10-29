@@ -241,16 +241,49 @@ export function organizationsRepo(db: () => Database) {
 
     /** Agregados para la vista de soporte (ADR 0017). Nunca datos personales. */
     async supportCounts(scope: OrgScope): Promise<SupportCounts> {
-      const byRole = await db()
-        .select({ roleCode: schema.memberships.roleCode, total: count() })
-        .from(schema.memberships)
-        .where(
-          and(
-            eq(schema.memberships.organizationId, scope.organizationId),
-            eq(schema.memberships.status, "active"),
+      // Cuatro recuentos independientes, a la vez (ADR 0060): lo ve cada familia al entrar.
+      const [byRole, pending, teams, players] = await Promise.all([
+        db()
+          .select({ roleCode: schema.memberships.roleCode, total: count() })
+          .from(schema.memberships)
+          .where(
+            and(
+              eq(schema.memberships.organizationId, scope.organizationId),
+              eq(schema.memberships.status, "active"),
+            ),
+          )
+          .groupBy(schema.memberships.roleCode),
+        db()
+          .select({ total: count() })
+          .from(schema.invitations)
+          .where(
+            and(
+              eq(schema.invitations.organizationId, scope.organizationId),
+              eq(schema.invitations.status, "pending"),
+              sql`${schema.invitations.expiresAt} > now()`,
+            ),
           ),
-        )
-        .groupBy(schema.memberships.roleCode);
+        db()
+          .select({ total: count() })
+          .from(schema.teams)
+          .innerJoin(schema.seasons, eq(schema.seasons.id, schema.teams.seasonId))
+          .where(
+            and(
+              eq(schema.teams.organizationId, scope.organizationId),
+              eq(schema.teams.status, "active"),
+              eq(schema.seasons.isCurrent, true),
+            ),
+          ),
+        db()
+          .select({ total: count() })
+          .from(schema.players)
+          .where(
+            and(
+              eq(schema.players.organizationId, scope.organizationId),
+              eq(schema.players.status, "active"),
+            ),
+          ),
+      ]);
       const membersByRole = Object.fromEntries(ROLE_CODES.map((code) => [code, 0])) as Record<
         RoleCode,
         number
@@ -259,36 +292,6 @@ export function organizationsRepo(db: () => Database) {
         if ((ROLE_CODES as readonly string[]).includes(row.roleCode))
           membersByRole[row.roleCode as RoleCode] = row.total;
       }
-      const pending = await db()
-        .select({ total: count() })
-        .from(schema.invitations)
-        .where(
-          and(
-            eq(schema.invitations.organizationId, scope.organizationId),
-            eq(schema.invitations.status, "pending"),
-            sql`${schema.invitations.expiresAt} > now()`,
-          ),
-        );
-      const teams = await db()
-        .select({ total: count() })
-        .from(schema.teams)
-        .innerJoin(schema.seasons, eq(schema.seasons.id, schema.teams.seasonId))
-        .where(
-          and(
-            eq(schema.teams.organizationId, scope.organizationId),
-            eq(schema.teams.status, "active"),
-            eq(schema.seasons.isCurrent, true),
-          ),
-        );
-      const players = await db()
-        .select({ total: count() })
-        .from(schema.players)
-        .where(
-          and(
-            eq(schema.players.organizationId, scope.organizationId),
-            eq(schema.players.status, "active"),
-          ),
-        );
       return {
         membersByRole,
         pendingInvitations: pending[0]?.total ?? 0,

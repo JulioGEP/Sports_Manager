@@ -92,3 +92,27 @@ dialog::backdrop {
 .tour-shade {
   background: rgba(11, 13, 18, 0.6);
 }
+
+/*
+ * Barra de progreso de la navegación (ADR 0060): un hilo en el color del club arriba del todo
+ * mientras llega una pantalla o se refrescan sus datos. Avanza deprisa al principio y se frena,
+ * sin llegar nunca al final; desaparece cuando todo ha llegado.
+ */
+@keyframes top-progress {
+  from {
+    transform: scaleX(0.05);
+  }
+  to {
+    transform: scaleX(0.9);
+  }
+}
+.top-progress {
+  transform-origin: left;
+  animation: top-progress 8s cubic-bezier(0.08, 0.82, 0.17, 1) forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .top-progress {
+    animation: none;
+    transform: scaleX(0.6);
+  }
+}

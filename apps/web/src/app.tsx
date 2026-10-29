@@ -1,68 +1,17 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { createBrowserRouter, Navigate, RouterProvider, useParams } from "react-router";
+import { QueryClientProvider } from "@tanstack/react-query";
+import {
+  createBrowserRouter,
+  Navigate,
+  RouterProvider,
+  useParams,
+  type RouteObject,
+} from "react-router";
 import { ClubShell } from "@/layouts/club-shell";
-import { PlatformShell } from "@/layouts/platform-shell";
 import { isValidClubSlug } from "@/lib/club";
 import { LocaleProvider } from "@/lib/intl";
-import { PlatformAuditPage } from "@/routes/admin/audit";
-import { PlatformClubPage } from "@/routes/admin/club";
-import { PlatformClubsPage } from "@/routes/admin/clubs";
-import { PlatformSetupPage } from "@/routes/admin/setup";
-import { PlatformSuggestionsPage } from "@/routes/admin/suggestions";
-import { PlatformSystemPage } from "@/routes/admin/system";
-import { ForgotPasswordPage } from "@/routes/auth/forgot";
-import { LoginPage } from "@/routes/auth/login";
-import { ResetPasswordPage } from "@/routes/auth/reset";
-import { AgendaPage } from "@/routes/club/agenda";
-import { AthletePage } from "@/routes/club/athlete";
-import { AthleteTrainingPage } from "@/routes/club/athlete-training";
-import { ChallengePage } from "@/routes/club/challenge";
-import { ChallengesPage, FamilyPlayerChallengesPage } from "@/routes/club/challenges";
-import { ClubMemberPage } from "@/routes/club/club-member";
-import { ClubMembersPage } from "@/routes/club/club-members";
-import { DrillPage } from "@/routes/club/drill";
-import { DrillsPage } from "@/routes/club/drills";
-import { FacilitiesPage } from "@/routes/club/facilities";
-import { FacilityPage } from "@/routes/club/facility";
-import { FamilyPage } from "@/routes/club/family";
-import { FamilyPlayerPage } from "@/routes/club/family-player";
-import { FeesPage } from "@/routes/club/fees";
-import { ClubHome } from "@/routes/club/home";
-import { InfirmaryPage } from "@/routes/club/infirmary";
-import { InvitationPage } from "@/routes/club/invitation";
-import { MatchLivePage } from "@/routes/club/match-live";
-import { MatchStatsPage } from "@/routes/club/match-stats";
-import { PlayerPage } from "@/routes/club/player";
-import { PlayerPerformancePage } from "@/routes/club/player-performance";
-import { PlayersPage } from "@/routes/club/players";
-import { SectionPage } from "@/routes/club/section";
-import { SectionMatchConfigPage } from "@/routes/club/section-match-config";
-import { SectionMethodologyPage } from "@/routes/club/section-methodology";
-import { SectionTrainingConfigPage } from "@/routes/club/section-training-config";
-import { SectionsPage } from "@/routes/club/sections";
-import { SessionPage } from "@/routes/club/session";
-import { SessionCourtPage } from "@/routes/club/session-court";
-import { SessionPrintPage } from "@/routes/club/session-print";
-import { SettingsPage } from "@/routes/club/settings";
-import { StorePage } from "@/routes/club/store";
-import { StoreOrderPage } from "@/routes/club/store-order";
-import { StaffPage } from "@/routes/club/staff";
-import { TeamPage } from "@/routes/club/team";
-import { TeamLoadPage } from "@/routes/club/team-load";
-import { TeamMatchHistoryPage } from "@/routes/club/team-match-history";
-import { TeamMatchesPage } from "@/routes/club/team-matches";
-import { TeamTestsPage } from "@/routes/club/team-tests";
-import { TeamTrainingPage } from "@/routes/club/team-training";
-import { TeamTrainingHistoryPage } from "@/routes/club/team-training-history";
-import { TeamTrainingSeasonPage } from "@/routes/club/team-training-season";
-import { TrainingHubPage } from "@/routes/club/training-hub";
-import { ClubsPage } from "@/routes/clubs";
-import { Landing } from "@/routes/landing";
+import { queryClient } from "@/lib/query-client";
+import { lazyPage } from "@/pages";
 import { ToastProvider } from "@/ui";
-
-const queryClient = new QueryClient({
-  defaultOptions: { queries: { refetchOnWindowFocus: false, retry: 1 } },
-});
 
 /** Rutas antiguas del club en la raíz: ahora viven en `/<club>/...`. Sin club conocido, al selector. */
 function LegacyRedirect({ to }: { to: string }) {
@@ -99,93 +48,107 @@ function RoadmapRedirect() {
  * Las rutas fijas van antes que `/:club` y los nombres reservados nunca son un club.
  */
 export const router = createBrowserRouter([
-  { path: "/", element: <Landing /> },
-  { path: "/login", element: <LoginPage /> },
-  { path: "/forgot-password", element: <ForgotPasswordPage /> },
-  { path: "/reset-password", element: <ResetPasswordPage /> },
-  { path: "/clubs", element: <ClubsPage /> },
-  { path: "/members", element: <LegacyRedirect to="/members" /> },
-  { path: "/settings", element: <LegacyRedirect to="/settings" /> },
-  { path: "/admin/login", element: <LoginPage platform /> },
-  { path: "/admin/setup", element: <PlatformSetupPage /> },
   {
-    path: "/admin",
-    element: <PlatformShell />,
-    children: [
-      { index: true, element: <PlatformClubsPage /> },
-      { path: "clubs/:slug", element: <PlatformClubPage /> },
-      // Mejoras de la plataforma (ADR 0047): la bandeja y la hoja de ruta.
-      { path: "suggestions", element: <PlatformSuggestionsPage /> },
-      { path: "audit", element: <PlatformAuditPage /> },
-      { path: "system", element: <PlatformSystemPage /> },
-    ],
+    // Mientras llega el fichero de la primera pantalla (ADR 0060): el fondo de la app, sin saltos.
+    HydrateFallback: InitialLoading,
+    children: routes(),
   },
-  { path: "/:club/invitations/:token", element: <InvitationPage /> },
-  {
-    path: "/:club",
-    element: <ClubShell />,
-    children: [
-      { index: true, element: <ClubHome /> },
-      { path: "sections", element: <SectionsPage /> },
-      { path: "sections/:id", element: <SectionPage /> },
-      { path: "sections/:id/match-config", element: <SectionMatchConfigPage /> },
-      // Las secciones sustituyen a la lista de equipos (Bloque 14); la ficha de equipo sigue aquí.
-      { path: "teams", element: <ClubRedirect to="/sections" /> },
-      { path: "teams/:id", element: <TeamPage /> },
-      // Partido en directo (Bloque 20): partidos del equipo, histórico, consola y estadísticas.
-      { path: "teams/:id/matches", element: <TeamMatchesPage /> },
-      { path: "teams/:id/matches/history", element: <TeamMatchHistoryPage /> },
-      { path: "matches/:id", element: <MatchLivePage /> },
-      { path: "matches/:id/stats", element: <MatchStatsPage /> },
-      { path: "players", element: <PlayersPage /> },
-      { path: "players/:id", element: <PlayerPage /> },
-      { path: "club-members", element: <ClubMembersPage /> },
-      { path: "club-members/:id", element: <ClubMemberPage /> },
-      { path: "staff", element: <StaffPage /> },
-      { path: "members", element: <ClubRedirect to="/staff" /> },
-      { path: "agenda", element: <AgendaPage /> },
-      { path: "facilities", element: <FacilitiesPage /> },
-      { path: "facilities/:id", element: <FacilityPage /> },
-      { path: "fees", element: <FeesPage /> },
-      // Tienda (ADR 0041): productos, stock y pedidos, y la compra de familias y deportistas.
-      { path: "store", element: <StorePage /> },
-      { path: "store/orders/:id", element: <StoreOrderPage /> },
-      { path: "family", element: <FamilyPage /> },
-      { path: "family/:id", element: <FamilyPlayerPage /> },
-      { path: "family/:id/challenges", element: <FamilyPlayerChallengesPage /> },
-      { path: "challenges", element: <ChallengesPage /> },
-      { path: "challenges/:id", element: <ChallengePage /> },
-      { path: "settings", element: <SettingsPage /> },
-      // Entrenamiento, carga y salud (ADR 0039): portada, semana y temporada de cada equipo,
-      // sesión con modo pista e impresión, biblioteca, rendimiento del jugador, enfermería,
-      // ajustes y metodología de la sección y el bienestar del deportista adulto.
-      { path: "training", element: <TrainingHubPage /> },
-      { path: "teams/:id/training", element: <TeamTrainingPage /> },
-      { path: "teams/:id/training/season", element: <TeamTrainingSeasonPage /> },
-      { path: "teams/:id/training/history", element: <TeamTrainingHistoryPage /> },
-      { path: "teams/:id/training/load", element: <TeamLoadPage /> },
-      { path: "teams/:id/training/tests", element: <TeamTestsPage /> },
-      { path: "sessions/:id", element: <SessionPage /> },
-      { path: "sessions/:id/court", element: <SessionCourtPage /> },
-      { path: "sessions/:id/print", element: <SessionPrintPage /> },
-      { path: "drills", element: <DrillsPage /> },
-      { path: "drills/new", element: <DrillPage /> },
-      { path: "drills/:id", element: <DrillPage /> },
-      { path: "players/:id/performance", element: <PlayerPerformancePage /> },
-      { path: "infirmary", element: <InfirmaryPage /> },
-      { path: "sections/:id/training-config", element: <SectionTrainingConfigPage /> },
-      { path: "sections/:id/methodology", element: <SectionMethodologyPage /> },
-      { path: "me", element: <AthletePage /> },
-      { path: "me/training", element: <AthleteTrainingPage /> },
-      // Mejoras de la plataforma: vivían en `/roadmap` (ADR 0047); ahora son una pestaña de Ajustes (ADR 0048).
-      { path: "roadmap", element: <RoadmapRedirect /> },
-      // Una pantalla que ya no existe o una ruta mal escrita: al inicio del club, no a la portada
-      // del producto.
-      { path: "*", element: <ClubFallback /> },
-    ],
-  },
-  { path: "*", element: <Navigate to="/" replace /> },
 ]);
+
+function InitialLoading() {
+  return <div className="min-h-dvh bg-page" aria-busy="true" />;
+}
+
+function routes(): RouteObject[] {
+  return [
+    { path: "/", ...lazyPage("landing") },
+    { path: "/login", ...lazyPage("login") },
+    { path: "/forgot-password", ...lazyPage("forgotPassword") },
+    { path: "/reset-password", ...lazyPage("resetPassword") },
+    { path: "/clubs", ...lazyPage("clubs") },
+    { path: "/members", element: <LegacyRedirect to="/members" /> },
+    { path: "/settings", element: <LegacyRedirect to="/settings" /> },
+    { path: "/admin/login", ...lazyPage("platformLogin") },
+    { path: "/admin/setup", ...lazyPage("platformSetup") },
+    {
+      path: "/admin",
+      ...lazyPage("platformShell"),
+      children: [
+        { index: true, ...lazyPage("platformClubs") },
+        { path: "clubs/:slug", ...lazyPage("platformClub") },
+        // Mejoras de la plataforma (ADR 0047): la bandeja y la hoja de ruta.
+        { path: "suggestions", ...lazyPage("platformSuggestions") },
+        { path: "audit", ...lazyPage("platformAudit") },
+        { path: "system", ...lazyPage("platformSystem") },
+      ],
+    },
+    { path: "/:club/invitations/:token", ...lazyPage("invitation") },
+    {
+      path: "/:club",
+      element: <ClubShell />,
+      children: [
+        { index: true, ...lazyPage("home") },
+        { path: "sections", ...lazyPage("sections") },
+        { path: "sections/:id", ...lazyPage("section") },
+        { path: "sections/:id/match-config", ...lazyPage("sectionMatchConfig") },
+        // Las secciones sustituyen a la lista de equipos (Bloque 14); la ficha de equipo sigue aquí.
+        { path: "teams", element: <ClubRedirect to="/sections" /> },
+        { path: "teams/:id", ...lazyPage("team") },
+        // Partido en directo (Bloque 20): partidos del equipo, histórico, consola y estadísticas.
+        { path: "teams/:id/matches", ...lazyPage("teamMatches") },
+        { path: "teams/:id/matches/history", ...lazyPage("teamMatchHistory") },
+        { path: "matches/:id", ...lazyPage("match") },
+        { path: "matches/:id/stats", ...lazyPage("matchStats") },
+        { path: "players", ...lazyPage("players") },
+        { path: "players/:id", ...lazyPage("player") },
+        { path: "club-members", ...lazyPage("clubMembers") },
+        { path: "club-members/:id", ...lazyPage("clubMember") },
+        { path: "staff", ...lazyPage("staff") },
+        { path: "members", element: <ClubRedirect to="/staff" /> },
+        { path: "agenda", ...lazyPage("agenda") },
+        { path: "facilities", ...lazyPage("facilities") },
+        { path: "facilities/:id", ...lazyPage("facility") },
+        { path: "fees", ...lazyPage("fees") },
+        // Tienda (ADR 0041): productos, stock y pedidos, y la compra de familias y deportistas.
+        { path: "store", ...lazyPage("store") },
+        { path: "store/orders/:id", ...lazyPage("storeOrder") },
+        { path: "family", ...lazyPage("family") },
+        { path: "family/:id", ...lazyPage("familyPlayer") },
+        { path: "family/:id/challenges", ...lazyPage("familyPlayerChallenges") },
+        { path: "challenges", ...lazyPage("challenges") },
+        { path: "challenges/:id", ...lazyPage("challenge") },
+        { path: "settings", ...lazyPage("settings") },
+        // Entrenamiento, carga y salud (ADR 0039): portada, semana y temporada de cada equipo,
+        // sesión con modo pista e impresión, biblioteca, rendimiento del jugador, enfermería,
+        // ajustes y metodología de la sección y el bienestar del deportista adulto.
+        { path: "training", ...lazyPage("training") },
+        { path: "teams/:id/training", ...lazyPage("teamTraining") },
+        { path: "teams/:id/training/season", ...lazyPage("teamTrainingSeason") },
+        { path: "teams/:id/training/history", ...lazyPage("teamTrainingHistory") },
+        { path: "teams/:id/training/load", ...lazyPage("teamLoad") },
+        { path: "teams/:id/training/tests", ...lazyPage("teamTests") },
+        { path: "sessions/:id", ...lazyPage("session") },
+        { path: "sessions/:id/court", ...lazyPage("sessionCourt") },
+        { path: "sessions/:id/print", ...lazyPage("sessionPrint") },
+        { path: "drills", ...lazyPage("drills") },
+        { path: "drills/new", ...lazyPage("drill") },
+        { path: "drills/:id", ...lazyPage("drill") },
+        { path: "players/:id/performance", ...lazyPage("playerPerformance") },
+        { path: "infirmary", ...lazyPage("infirmary") },
+        { path: "sections/:id/training-config", ...lazyPage("sectionTrainingConfig") },
+        { path: "sections/:id/methodology", ...lazyPage("sectionMethodology") },
+        { path: "me", ...lazyPage("athlete") },
+        { path: "me/training", ...lazyPage("athleteTraining") },
+        // Mejoras de la plataforma: vivían en `/roadmap` (ADR 0047); ahora son una pestaña de Ajustes (ADR 0048).
+        { path: "roadmap", element: <RoadmapRedirect /> },
+        // Una pantalla que ya no existe o una ruta mal escrita: al inicio del club, no a la portada
+        // del producto.
+        { path: "*", element: <ClubFallback /> },
+      ],
+    },
+    { path: "*", element: <Navigate to="/" replace /> },
+  ];
+}
 
 export function App() {
   return (

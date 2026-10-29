@@ -1,6 +1,4 @@
 import {
-  SectionsResponseSchema,
-  TeamsResponseSchema,
   type ChallengeManageScope,
   type ChallengeStatus,
   type ChallengeSummary,
@@ -8,11 +6,11 @@ import {
 } from "@sportsmanager/shared";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { apiFetch } from "@/lib/api";
 import { useReadyClub } from "@/lib/club";
 import { useDates } from "@/lib/dates";
 import { useT } from "@/lib/intl";
 import { Field, Select, type StatusKind } from "@/ui";
+import { orgQueries } from "@/lib/queries";
 
 export const challengeKind: Record<ChallengeStatus, StatusKind> = {
   draft: "warning",
@@ -51,13 +49,11 @@ export interface ScopeOptions {
 export function useScopeOptions(manage: ChallengeManageScope, enabled: boolean): ScopeOptions {
   const { slug } = useReadyClub();
   const sections = useQuery({
-    queryKey: ["org", slug, "sections", null],
-    queryFn: () => apiFetch("/api/org/sections", { schema: SectionsResponseSchema }),
+    ...orgQueries.sections(slug),
     enabled,
   });
   const teams = useQuery({
-    queryKey: ["org", slug, "teams", null],
-    queryFn: () => apiFetch("/api/org/teams", { schema: TeamsResponseSchema }),
+    ...orgQueries.teams(slug),
     enabled,
   });
   const sectionRows = sections.data?.sections;

@@ -188,6 +188,7 @@ export function PlatformClubPage() {
           }
         >
           <DataList<Admin>
+            loading={admins.isLoading}
             caption={t("admins")}
             rows={admins.data?.admins ?? []}
             getKey={(a) => a.userId}

@@ -25,6 +25,7 @@ export function PlatformAuditPage() {
       {entries.isError ? <Alert kind="error">{errors(errorKey(entries.error))}</Alert> : null}
       <Card padded={false}>
         <DataList<AuditEntry>
+          loading={entries.isLoading}
           caption={t("title")}
           rows={entries.data?.entries ?? []}
           getKey={(e) => e.id}

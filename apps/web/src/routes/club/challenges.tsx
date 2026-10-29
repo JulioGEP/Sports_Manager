@@ -3,7 +3,6 @@ import {
   CHALLENGE_NOTE_MAX,
   ChallengesResponseSchema,
   FamilyChallengesResponseSchema,
-  FamilyResponseSchema,
   RATING_MAX,
   SUBMISSION_MAX_QUANTITY,
   playerDisplayName,
@@ -20,6 +19,7 @@ import { apiFetch, errorKey } from "@/lib/api";
 import { clubPaths, useReadyClub } from "@/lib/club";
 import { useDates } from "@/lib/dates";
 import { useT } from "@/lib/intl";
+import { orgQueries } from "@/lib/queries";
 import {
   Alert,
   Avatar,
@@ -145,6 +145,7 @@ function StaffChallengesPage() {
       ) : null}
       <Card padded={false}>
         <DataList<ChallengeSummary>
+          loading={challenges.isLoading}
           caption={t("title")}
           rows={rows}
           getKey={(ch) => ch.id}
@@ -259,10 +260,7 @@ export function FamilyPlayerChallengesPage() {
   const scopeLabel = useScopeLabel();
   const canWrite = org.actor.permissions.includes("org.family.write");
 
-  const family = useQuery({
-    queryKey: ["org", slug, "family"],
-    queryFn: () => apiFetch("/api/org/family", { schema: FamilyResponseSchema }),
-  });
+  const family = useQuery(orgQueries.family(slug));
   const players = family.data?.players ?? [];
   const player = players.find((p) => p.id === playerId) ?? null;
 

@@ -5,14 +5,9 @@ import {
   FeeChargeGenerateSchema,
   FeeChargeResponseSchema,
   FeeChargesGeneratedResponseSchema,
-  FeeChargesResponseSchema,
   FeePlanCreateSchema,
   FeePlanResponseSchema,
   FeePlansResponseSchema,
-  MemberTypesResponseSchema,
-  MyFeesResponseSchema,
-  PaymentsSettingsResponseSchema,
-  SectionsResponseSchema,
   formatAmount,
   personDisplayName,
   parseMoney,
@@ -21,7 +16,12 @@ import {
   type FeePeriod,
   type FeePlan,
 } from "@sportsmanager/shared";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useInfiniteQuery,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { useMemo, useState, type FormEvent } from "react";
 import { useSearchParams } from "react-router";
 import { FeesConnections } from "./fees-connections";
@@ -30,7 +30,9 @@ import { ChargeSheet, FeeStatusChip, PaymentSheet, money } from "@/components/fe
 import { apiFetch, errorKey } from "@/lib/api";
 import { clubPaths, useReadyClub } from "@/lib/club";
 import { useDates } from "@/lib/dates";
+import { useDebouncedValue } from "@/lib/debounce";
 import { useT } from "@/lib/intl";
+import { CHARGES_PAGE, orgQueries } from "@/lib/queries";
 import {
   Alert,
   Button,
@@ -147,26 +149,20 @@ function ChargesTab({ canWrite }: { canWrite: boolean }) {
   const [paying, setPaying] = useState<FeeCharge | null>(null);
   const [cancelling, setCancelling] = useState<FeeCharge | null>(null);
 
-  const charges = useQuery({
-    queryKey: ["org", slug, "fees", "charges", status],
-    queryFn: () =>
-      apiFetch(`/api/org/fees/charges${status ? `?status=${status}` : ""}`, {
-        schema: FeeChargesResponseSchema,
-      }),
+  // Por tramos y con la búsqueda en la API (ADR 0060): mientras llega el resultado de una
+  // búsqueda o de otro estado, se sigue viendo la lista anterior.
+  const query = useDebouncedValue(search.trim());
+  const charges = useInfiniteQuery({
+    ...orgQueries.feeCharges(slug, status, query),
+    placeholderData: keepPreviousData,
   });
   const reload = () => client.invalidateQueries({ queryKey: ["org", slug, "fees"] });
 
-  const rows = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    const list = charges.data?.charges ?? [];
-    if (!q) return list;
-    return list.filter((ch) =>
-      [personDisplayName(ch.person), ch.concept, ch.periodLabel ?? "", ch.plan?.name ?? ""]
-        .join(" ")
-        .toLowerCase()
-        .includes(q),
-    );
-  }, [charges.data, search]);
+  const rows = useMemo(
+    () => charges.data?.pages.flatMap((page) => page.charges) ?? [],
+    [charges.data],
+  );
+  const matching = charges.data?.pages[0]?.total ?? 0;
 
   function setStatus(next: string) {
     const sp = new URLSearchParams(params);
@@ -190,7 +186,7 @@ function ChargesTab({ canWrite }: { canWrite: boolean }) {
     }
   }
 
-  const totals = charges.data?.totals;
+  const totals = charges.data?.pages[0]?.totals;
 
   return (
     <div className="flex flex-col gap-5">
@@ -245,6 +241,7 @@ function ChargesTab({ canWrite }: { canWrite: boolean }) {
       </div>
       {charges.isError ? <Alert kind="error">{t("loadError")}</Alert> : null}
       <DataList<FeeCharge>
+        loading={charges.isLoading}
         caption={t("caption")}
         columns={[
           {
@@ -342,11 +339,24 @@ function ChargesTab({ canWrite }: { canWrite: boolean }) {
         empty={
           <EmptyState
             icon={<Icon.Coins weight="duotone" />}
-            title={status || search ? t("emptyFiltered") : t("empty")}
-            description={status || search ? undefined : t("emptyHint")}
+            title={
+              charges.isPending ? c("loading") : status || search ? t("emptyFiltered") : t("empty")
+            }
+            description={charges.isPending || status || search ? undefined : t("emptyHint")}
           />
         }
       />
+      {charges.hasNextPage ? (
+        <div className="flex justify-center">
+          <Button
+            variant="secondary"
+            loading={charges.isFetchingNextPage}
+            onClick={() => void charges.fetchNextPage()}
+          >
+            {t("loadMore", { count: Math.min(CHARGES_PAGE, matching - rows.length) })}
+          </Button>
+        </div>
+      ) : null}
       {canWrite ? (
         <PaymentSheet
           charge={paying}
@@ -380,8 +390,7 @@ function ManualCollectionNotice() {
   const { slug, org } = useReadyClub();
   const [, setParams] = useSearchParams();
   const settings = useQuery({
-    queryKey: ["org", slug, "fees", "settings"],
-    queryFn: () => apiFetch("/api/org/fees/settings", { schema: PaymentsSettingsResponseSchema }),
+    ...orgQueries.feesSettings(slug),
     enabled: org.actor.permissions.includes("org.settings.read"),
     retry: false,
   });
@@ -714,14 +723,8 @@ function PlanSheet({
   const [description, setDescription] = useState(plan?.description ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const memberTypes = useQuery({
-    queryKey: ["org", slug, "member-types"],
-    queryFn: () => apiFetch("/api/org/member-types", { schema: MemberTypesResponseSchema }),
-  });
-  const sections = useQuery({
-    queryKey: ["org", slug, "sections", "all"],
-    queryFn: () => apiFetch("/api/org/sections", { schema: SectionsResponseSchema }),
-  });
+  const memberTypes = useQuery(orgQueries.memberTypes(slug));
+  const sections = useQuery(orgQueries.sections(slug));
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -874,10 +877,7 @@ function MyFees() {
   const [params, setParams] = useSearchParams();
   const checkout = params.get("checkout");
   const [paying, setPaying] = useState<string | null>(null);
-  const mine = useQuery({
-    queryKey: ["org", slug, "fees", "mine"],
-    queryFn: () => apiFetch("/api/org/fees/mine", { schema: MyFeesResponseSchema }),
-  });
+  const mine = useQuery(orgQueries.myFees(slug));
   const charges = mine.data?.charges ?? [];
   const open = charges.filter((ch) => ch.status === "pending" || ch.status === "overdue");
   const owed = open.reduce((sum, ch) => sum + (ch.amountCents - ch.paidCents), 0);
