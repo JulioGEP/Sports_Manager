@@ -16,9 +16,9 @@ A cambio, nadie las miraba. La revisión de interfaz se hace abriendo la aplicac
 Las capturas se generan pero no se guardan en ningún sitio.
 
 - Se borra `docs/capturas/` del repositorio.
-- Se quita el paso `upload-artifact` del job `interfaz`.
+- Se quita el paso `upload-artifact` del job `interfaz` de CI.
 - Las pruebas siguen sacándolas en `apps/web/e2e/screenshots/`, que ya está en `.gitignore`: en local sirven para mirar una pantalla, y en CI se van con el runner.
-- El job `interfaz` sigue siendo obligatorio. Lo que se deja de guardar es la foto, no la prueba.
+- La prueba sigue siendo obligatoria antes de subir. Lo que se deja de guardar es la foto, no la prueba. (El job `interfaz` desaparece entero con la ADR 0062, que quita CI; `pnpm test:ui` se pasa en local.)
 
 ## Consecuencias
 
