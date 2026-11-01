@@ -173,7 +173,11 @@ describe("caja de secretos", () => {
     ).toBeNull();
     expect(await createSecretBox("s".repeat(40), "otro-uso").open(sealed, "club-a")).toBeNull();
     const [v, iv, cipher] = sealed.split(".");
-    const flipped = `${v}.${iv}.${cipher!.slice(0, -2)}${cipher!.endsWith("A") ? "B" : "A"}${cipher!.slice(-1)}`;
+    // Cambia el penúltimo carácter, que en base64url siempre lleva bits del cifrado (el último
+    // puede llevar relleno). La letra nueva sale de ese mismo carácter: mirando otro, una de cada
+    // sesenta y cuatro veces salía la que ya estaba, el cifrado no cambiaba y la prueba fallaba.
+    const target = cipher!.at(-2)!;
+    const flipped = `${v}.${iv}.${cipher!.slice(0, -2)}${target === "A" ? "B" : "A"}${cipher!.slice(-1)}`;
     expect(await box.open(flipped, "club-a")).toBeNull();
     expect(await box.open("basura", "club-a")).toBeNull();
   });

@@ -100,12 +100,17 @@ Reglas de migraciones (ADR 0003):
 6. Cambios que rompen (renombrar o borrar columnas) en tres deploys: expandir, migrar, contraer.
 7. Antes de subir una rama, y cada vez que `main` reciba migraciones nuevas, se mezcla `main` en la rama. Una rama sin alguna migración de `main` no despliega en preview.
 
-Para que ningún cambio de esquema llegue a producción sin pasar por preview, en GitHub (Settings → Branches → `main`) hay que exigir estos checks antes de mezclar:
+Para que ningún cambio de esquema llegue a producción sin pasar por preview, en GitHub (Settings → Branches → `main`) hay que exigir antes de mezclar el check de deploy preview de Netlify (`netlify/hubsports/deploy-preview`).
 
-- `lint, typecheck y tests`
-- `aislamiento`
-- `migraciones al día con main`
-- el check de deploy preview de Netlify (`netlify/hubsports/deploy-preview`)
+Ya no hay CI en GitHub Actions (ADR 0062). **Si la protección de rama todavía exige `lint, typecheck y tests`, `aislamiento` o `migraciones al día con main`, hay que quitarlos de ahí**: esos checks no se ejecutan nunca y cualquier PR se queda esperándolos sin poder mezclarse. Lo que hacían se pasa ahora en local antes de subir:
+
+```bash
+pnpm format:check && pnpm lint && pnpm typecheck && pnpm build && pnpm test && pnpm test:isolation
+```
+
+```bash
+git fetch origin main && pnpm db:check
+```
 
 Aviso: las ramas de preview nacen con una copia de los datos de producción y las URLs de preview son públicas. En la Fase 0 no hay datos reales. Antes de la Fase 1 hay que proteger las previews.
 
@@ -218,6 +223,6 @@ pnpm exec playwright install chromium --with-deps   # una vez, desde apps/web
 pnpm test:ui                                        # o `pnpm test:ui --project=escritorio`
 ```
 
-En CI es el job `interfaz`; las capturas y el informe quedan en el artefacto `capturas-interfaz` de cada ejecución. Si Chromium ya está instalado en otra ruta, `PW_CHROMIUM_PATH` apunta al binario. Las pruebas no tocan ninguna base externa: cada ejecución arranca con una base vacía más las migraciones y el club demo.
+Las capturas y el informe quedan en `apps/web/e2e/screenshots` y `apps/web/playwright-report`, los dos ignorados por git: no se guardan en ningún sitio (ADR 0061). Si Chromium ya está instalado en otra ruta, `PW_CHROMIUM_PATH` apunta al binario. Las pruebas no tocan ninguna base externa: cada ejecución arranca con una base vacía más las migraciones y el club demo.
 
 Clubes por ruta (ADR 0027): `http://localhost:3000/<club>`. Los subdominios (`http://<club>.sportsmanager.localhost:3000`) siguen resolviendo en la API para cuando haya dominio propio (ver `docs/dominio-y-dns.md`).
