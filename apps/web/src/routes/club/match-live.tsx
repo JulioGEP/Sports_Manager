@@ -557,7 +557,9 @@ function Console({
     if (!canWrite) return;
     if (!selection) return setSelection({ id: p.playerId, where: "court" });
     if (selection.id === p.playerId) return setSelection(null);
-    if (selection.where === "court") return swap(selection.id, p.playerId);
+    // Un jugador de la pista siempre abre sus acciones; el intercambio de dos de la pista se hace
+    // arrastrando. Solo un suplente ya elegido entra por quien se toca.
+    if (selection.where === "court") return setSelection({ id: p.playerId, where: "court" });
     substitute(selection.id, p.playerId);
   }
   function tapBench(p: MatchSquadPlayer) {
@@ -661,7 +663,17 @@ function Console({
   const lastPeriodOver = !periodOpen && periodEnded && period === settings.periods;
   const dragging = drag?.item ?? null;
   const dragged = dragging ? byId(dragging.id) : undefined;
-  const minutesOf = (id: string) => Math.round((playerStats.get(id)?.timeMs ?? 0) / 60_000);
+  /** Tiempo seguido en pista desde que entró (o desde que empezó el periodo en que está). */
+  const stintOf = (id: string): number => {
+    let since: { period: number; clockMs: number } | null = null;
+    for (const e of events) {
+      const inside = e.onCourt.includes(id);
+      if (inside && !since) since = { period: e.period, clockMs: e.clockMs };
+      else if (!inside) since = null;
+    }
+    if (!since) return 0;
+    return since.period === period ? Math.max(0, elapsed - since.clockMs) : elapsed;
+  };
 
   const clockLabel = running
     ? t("pause")
@@ -678,11 +690,11 @@ function Console({
           : t("status.scheduled");
 
   return (
-    <div className="fixed inset-0 z-40 flex flex-col bg-page text-ink">
+    <div className="lv fixed inset-0 z-40 flex flex-col">
       {/* Partido: marcador, cronómetro y mandos */}
       <section
         aria-label={t("scoreboard")}
-        className="flex flex-wrap items-center gap-x-3 gap-y-2 bg-club-deep px-3 py-2 text-on-club-deep sm:flex-nowrap sm:px-4 compact:gap-x-2 compact:py-1"
+        className="lv-bar flex flex-wrap items-center gap-x-3 gap-y-2 px-3 py-2 sm:flex-nowrap sm:px-4 compact:gap-x-2 compact:py-1"
       >
         <BarButton
           label={t("back", { team: match.team.name })}
@@ -695,14 +707,16 @@ function Console({
           <Crest name={clubName} logoUrl={logoUrl} size="sm" />
           <div className="flex min-w-0 flex-col leading-tight compact:hidden">
             <span className="truncate text-secondary font-semibold">{clubName}</span>
-            <span className="truncate text-label opacity-80">{match.team.name}</span>
+            <span className="truncate text-label" style={{ color: "var(--lv-muted)" }}>
+              {match.team.name}
+            </span>
           </div>
-          <span className="hidden sm:inline-flex compact:hidden">
-            <StatusChip kind={foulKind(foulsOwn)}>{t("fouls", { count: foulsOwn })}</StatusChip>
-          </span>
-          <span className="ml-auto font-mono text-display tabular compact:text-title1">
-            {match.ownScore}
-          </span>
+          <div className="ml-auto flex flex-col items-center gap-0.5">
+            <span className="lv-score">{match.ownScore}</span>
+            <span className="lv-fouls" data-kind={foulKind(foulsOwn)}>
+              {t("fouls", { count: foulsOwn })}
+            </span>
+          </div>
         </div>
 
         <div className="order-last flex basis-full items-center justify-center gap-2 sm:order-none sm:basis-auto">
@@ -735,7 +749,7 @@ function Console({
                 onClick={toggleClock}
                 aria-pressed={running}
                 aria-label={clockLabel}
-                className="rounded-control bg-surface text-ink shadow-float disabled:opacity-80"
+                className="lv-clock"
               >
                 <ClockFace
                   time={formatClock(clockShown)}
@@ -768,15 +782,15 @@ function Console({
         </div>
 
         <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
-          <span className="mr-auto font-mono text-display tabular compact:text-title1">
-            {match.opponentScore}
-          </span>
-          <span className="hidden sm:inline-flex compact:hidden">
-            <StatusChip kind={foulKind(foulsOpp)}>{t("fouls", { count: foulsOpp })}</StatusChip>
-          </span>
+          <div className="mr-auto flex flex-col items-center gap-0.5">
+            <span className="lv-score">{match.opponentScore}</span>
+            <span className="lv-fouls" data-kind={foulKind(foulsOpp)}>
+              {t("fouls", { count: foulsOpp })}
+            </span>
+          </div>
           <div className="flex min-w-0 flex-col text-right leading-tight compact:hidden">
             <span className="truncate text-secondary font-semibold">{match.opponent}</span>
-            <span className="truncate text-label opacity-80">
+            <span className="truncate text-label" style={{ color: "var(--lv-muted)" }}>
               {match.homeAway === "home" ? t("away") : t("home")}
             </span>
           </div>
@@ -798,7 +812,7 @@ function Console({
           ) : null}
           <Menu
             label={t("menu")}
-            triggerClassName="text-on-club-deep hover:bg-white/10"
+            triggerClassName="text-white hover:bg-white/10"
             trigger={<Icon.DotsThreeVertical size={22} aria-hidden="true" />}
           >
             {access.write ? (
@@ -859,9 +873,9 @@ function Console({
         </div>
       </section>
 
-      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-3 landscape:grid landscape:grid-cols-[minmax(0,1fr)_minmax(15rem,20rem)] landscape:overflow-hidden lg:gap-4 lg:p-4 compact:gap-2 compact:p-2">
+      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-3 landscape:grid landscape:grid-cols-[minmax(0,1fr)_minmax(15rem,21rem)] landscape:overflow-hidden lg:gap-4 lg:p-4 compact:gap-2 compact:p-2">
         {portraitPhone ? (
-          <div className="flex shrink-0 items-center gap-3 rounded-card bg-club-soft px-3 py-2 text-secondary text-club-soft-text">
+          <div className="lv-side flex shrink-0 items-center gap-3 px-3 py-2 text-secondary">
             <Icon.DeviceRotate size={22} aria-hidden="true" />
             <span className="flex-1">{t("rotateHint")}</span>
             {fullscreen.supported ? (
@@ -877,29 +891,48 @@ function Console({
           </div>
         ) : null}
 
-        {/* Nuestro equipo: pista, banquillo y acciones */}
+        {/* Nuestro equipo: pista y bandeja de acciones */}
         <section
           aria-label={t("ours")}
-          className="flex min-h-0 flex-col gap-2 rounded-card bg-surface p-3 shadow-card precisa:border precisa:border-border portrait:shrink-0 landscape:overflow-y-auto compact:gap-1 compact:p-2"
+          className="flex min-h-0 flex-col gap-2 portrait:shrink-0 landscape:overflow-y-auto landscape:touch-pan-y compact:gap-1"
         >
-          <div className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-1">
-            <Eyebrow>{t("ours")}</Eyebrow>
-            <span className="truncate text-secondary font-semibold text-ink compact:hidden">
-              {match.team.name}
-            </span>
-            <span className="inline-flex sm:hidden compact:inline-flex">
-              <StatusChip kind={foulKind(foulsOwn)}>{t("fouls", { count: foulsOwn })}</StatusChip>
-            </span>
-            <span className="font-mono text-label text-muted compact:hidden">
-              {t("onCourt", { count: onCourt.length, total: settings.playersOnCourt })}
-            </span>
-            <div className="ml-auto flex items-center gap-1">
+          <div className="flex shrink-0 flex-wrap items-end gap-x-3 gap-y-2">
+            <div className="flex flex-col leading-tight">
+              <span className="lv-eyebrow">
+                {t("onCourt", { count: onCourt.length, total: settings.playersOnCourt })}
+              </span>
+              <span className="text-title2 font-bold compact:hidden">
+                {t("currentLineup")}
+                <span className="sr-only"> · {t("ours")}</span>
+              </span>
+            </div>
+            <div className="ml-auto flex flex-wrap items-center gap-2">
+              <div className="lv-seg" role="group" aria-label={t("attackDirection")}>
+                <span className="lv-eyebrow px-1 compact:hidden">{t("attackShort")}</span>
+                {(["left", "right"] as const).map((dir) => (
+                  <button
+                    key={dir}
+                    type="button"
+                    className="lv-btn"
+                    aria-pressed={match.attackDirection === dir}
+                    aria-label={`${t("attackShort")} ${dir === "left" ? "←" : "→"}`}
+                    disabled={!canWrite}
+                    onClick={() => {
+                      if (match.attackDirection !== dir)
+                        void patchMatch({ attackDirection: dir }).catch(fail);
+                    }}
+                  >
+                    {dir === "left" ? (
+                      <Icon.ArrowLeft size={18} aria-hidden="true" />
+                    ) : (
+                      <Icon.ArrowRight size={18} aria-hidden="true" />
+                    )}
+                  </button>
+                ))}
+              </div>
               {settings.formations.length > 0 ? (
-                <div
-                  className="flex items-center gap-0.5 rounded-control bg-raised p-0.5"
-                  role="group"
-                  aria-label={t("formation")}
-                >
+                <div className="lv-seg" role="group" aria-label={t("formation")}>
+                  <span className="lv-eyebrow px-1 compact:hidden">{t("formation")}</span>
                   {settings.formations.map((f) => (
                     <button
                       key={f}
@@ -907,172 +940,125 @@ function Console({
                       aria-pressed={match.formation === f}
                       disabled={!canWrite}
                       onClick={() => void patchMatch({ formation: f }).catch(fail)}
-                      className={`h-8 rounded-control px-2.5 font-mono text-label compact:h-7 ${
-                        match.formation === f ? "bg-surface text-ink shadow-row" : "text-muted"
-                      }`}
+                      className="lv-btn font-mono"
                     >
                       {f}
                     </button>
                   ))}
                 </div>
               ) : null}
-              <button
-                type="button"
-                aria-label={t("attackDirection")}
-                disabled={!canWrite}
-                onClick={() =>
-                  void patchMatch({
-                    attackDirection: (flip ? "right" : "left") satisfies AttackDirection,
-                  }).catch(fail)
-                }
-                className="grid size-8 place-items-center rounded-control text-ink hover:bg-raised disabled:opacity-50 compact:size-7"
-              >
-                <Icon.ArrowsLeftRight size={18} aria-hidden="true" />
-              </button>
+              {canWrite ? (
+                <button
+                  type="button"
+                  className="lv-btn"
+                  style={{ color: "var(--lv-accent)" }}
+                  onClick={() => setLineupOpen(true)}
+                >
+                  {t("initialLineup")}
+                </button>
+              ) : null}
             </div>
           </div>
 
-          <div className="flex min-h-36 flex-1 gap-3 portrait:flex-none portrait:flex-col compact:gap-2">
-            <div className="flex min-h-0 flex-1 flex-col items-center justify-center portrait:flex-none">
-              <Court
-                flip={flip}
-                attackLabel={`${clubName} ${t("attacks")} ${flip ? "←" : "→"} ${match.opponent}`}
-                goalLabel={match.opponent}
-              >
-                {slots.map((slot) => {
-                  const p = squad.find((x) => x.slot === slot.slot);
-                  const x = flip ? 100 - slot.x : slot.x;
-                  const key = p ? `player:${p.playerId}` : `slot:${slot.slot}`;
-                  const over = drag?.over === key;
-                  if (!p) {
-                    const open = Boolean(drag) || (selection !== null && canWrite);
-                    return (
-                      <button
-                        key={slot.slot}
-                        type="button"
-                        data-drop={`slot:${slot.slot}`}
-                        disabled={!canWrite || (!selection && !drag)}
-                        aria-label={t("emptySlot")}
-                        onClick={() => tapSlot(slot.slot)}
-                        style={{ left: `${x}%`, top: `${slot.y}%` }}
-                        className={`absolute grid size-12 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border-2 border-dashed text-white transition-all compact:size-10 ${
-                          over
-                            ? "scale-110 border-solid border-white bg-white/30"
-                            : open
-                              ? "border-white/90 bg-white/15"
-                              : "border-white/50 opacity-70"
-                        }`}
-                      >
-                        <Icon.Plus size={18} aria-hidden="true" />
-                      </button>
-                    );
-                  }
+          <div className="flex min-h-36 flex-1 items-center justify-center portrait:flex-none compact:min-h-[17rem]">
+            <Court
+              flip={flip}
+              attackLabel={`${clubName} ${t("attacks")} ${flip ? "←" : "→"} ${match.opponent}`}
+              goalLabel={match.opponent}
+              centre={<Crest name={clubName} logoUrl={logoUrl} size="lg" />}
+            >
+              {slots.map((slot) => {
+                const p = squad.find((x) => x.slot === slot.slot);
+                const x = flip ? 100 - slot.x : slot.x;
+                const key = p ? `player:${p.playerId}` : `slot:${slot.slot}`;
+                const over = drag?.over === key;
+                if (!p) {
+                  const open = Boolean(drag) || (selection !== null && canWrite);
                   return (
-                    <CourtTile
-                      key={p.playerId}
-                      player={p}
-                      x={x}
-                      y={slot.y}
-                      minutes={minutesOf(p.playerId)}
-                      selected={selection?.id === p.playerId}
-                      target={over ? "over" : drag && dragging?.id !== p.playerId ? "open" : "none"}
-                      dimmed={zonePick !== null || dragging?.id === p.playerId}
-                      disabled={!canWrite || zonePick !== null}
-                      keeperLabel={t("keeper")}
-                      onPointerDown={
-                        canWrite ? dragStart({ id: p.playerId, from: "court" }) : undefined
-                      }
-                      onClick={() => {
-                        if (consumeClick()) return;
-                        tapCourt(p);
-                      }}
-                    />
+                    <button
+                      key={slot.slot}
+                      type="button"
+                      data-drop={`slot:${slot.slot}`}
+                      disabled={!canWrite || (!selection && !drag)}
+                      aria-label={t("emptySlot")}
+                      onClick={() => tapSlot(slot.slot)}
+                      style={{ left: `${x}%`, top: `${slot.y}%` }}
+                      className={`lv-slot absolute grid size-12 -translate-x-1/2 -translate-y-1/2 place-items-center transition-all compact:size-10 ${
+                        over ? "scale-110 !border-solid !bg-white/40" : open ? "" : "opacity-60"
+                      }`}
+                    >
+                      <Icon.Plus size={18} aria-hidden="true" />
+                    </button>
                   );
-                })}
-                {zonePick ? (
-                  <ZoneOverlay
-                    flip={flip}
-                    onPick={(zone) => {
-                      const pick = zonePick;
-                      setZonePick(null);
-                      record(pick.type, pick.playerId, zone);
+                }
+                const ps = playerStats.get(p.playerId);
+                return (
+                  <CourtTile
+                    key={p.playerId}
+                    player={p}
+                    x={x}
+                    y={slot.y}
+                    time={formatClock(ps?.timeMs ?? 0)}
+                    score={`${ps?.scoreFor ?? 0}–${ps?.scoreAgainst ?? 0}`}
+                    stint={formatClock(stintOf(p.playerId))}
+                    labels={{
+                      keeper: t("keeper"),
+                      time: t("tagTime"),
+                      timeHint: t("tagTimeHint"),
+                      score: t("tagScore"),
+                      scoreHint: t("tagScoreHint"),
+                      stint: t("tagStint"),
+                      stintHint: t("tagStintHint"),
+                    }}
+                    selected={selection?.id === p.playerId}
+                    target={over ? "over" : drag && dragging?.id !== p.playerId ? "open" : "none"}
+                    dimmed={zonePick !== null || dragging?.id === p.playerId}
+                    disabled={!canWrite || zonePick !== null}
+                    onPointerDown={
+                      canWrite ? dragStart({ id: p.playerId, from: "court" }) : undefined
+                    }
+                    onClick={() => {
+                      if (consumeClick()) return;
+                      tapCourt(p);
                     }}
                   />
-                ) : null}
-              </Court>
-            </div>
-
-            <section
-              aria-label={t("bench")}
-              data-drop="bench"
-              className={`flex shrink-0 flex-col gap-1 rounded-field p-1 transition-colors landscape:w-44 landscape:min-h-0 landscape:overflow-y-auto landscape:touch-pan-y compact:w-36 ${
-                drag?.over === "bench" && dragging?.from === "court" && match.status === "scheduled"
-                  ? "bg-club-soft"
-                  : ""
-              }`}
-            >
-              <div className="flex items-baseline justify-between gap-2 px-1">
-                <span className="text-label uppercase tracking-wide text-muted">{t("bench")}</span>
-                {canWrite && bench.length > 0 ? (
-                  <span className="hidden text-label text-muted landscape:inline compact:hidden">
-                    {t("benchHint")}
-                  </span>
-                ) : null}
-              </div>
-              {bench.length === 0 ? (
-                <p className="px-1 text-secondary text-muted">{t("benchEmpty")}</p>
-              ) : (
-                <ul className="flex flex-wrap gap-1 landscape:flex-col landscape:flex-nowrap">
-                  {bench.map((p) => {
-                    const sentOff = playerStats.get(p.playerId)?.sentOff ?? false;
-                    return (
-                      <li key={p.playerId} className="portrait:basis-[calc(50%-0.125rem)]">
-                        <BenchTile
-                          player={p}
-                          minutes={minutesOf(p.playerId)}
-                          selected={selection?.id === p.playerId}
-                          dimmed={dragging?.id === p.playerId}
-                          sentOffLabel={sentOff ? t("sentOff") : null}
-                          benchLabel={t("bench")}
-                          disabled={!canWrite || sentOff}
-                          onPointerDown={
-                            canWrite && !sentOff
-                              ? dragStart({ id: p.playerId, from: "bench" })
-                              : undefined
-                          }
-                          onClick={() => {
-                            if (consumeClick()) return;
-                            tapBench(p);
-                          }}
-                        />
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-            </section>
+                );
+              })}
+              {zonePick ? (
+                <ZoneOverlay
+                  flip={flip}
+                  onPick={(zone) => {
+                    const pick = zonePick;
+                    setZonePick(null);
+                    record(pick.type, pick.playerId, zone);
+                  }}
+                />
+              ) : null}
+            </Court>
           </div>
 
-          {/* Bandeja: lo que se registra de un toque */}
+          {/* Bandeja: las acciones del jugador tocado, o las del equipo y del partido */}
           <div
             aria-live="polite"
-            className="flex min-h-28 shrink-0 flex-col gap-2 border-t border-line pt-2 compact:min-h-24 compact:gap-1 compact:pt-1"
+            className="lv-tray flex min-h-24 shrink-0 flex-col gap-2 pt-2 compact:min-h-20 compact:gap-1 compact:pt-1"
           >
             {zonePick ? (
               <>
                 <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                  <strong className="text-body text-ink">
+                  <strong className="text-body">
                     {t("zone.prompt", {
                       action: zonePick.type.name,
                       name: byId(zonePick.playerId)?.name ?? "",
                     })}
                   </strong>
-                  <span className="text-secondary text-muted">{t("zone.description")}</span>
+                  <span className="text-secondary" style={{ color: "var(--lv-muted)" }}>
+                    {t("zone.description")}
+                  </span>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <Button
-                    variant="secondary"
-                    size="sm"
+                  <button
+                    type="button"
+                    className="lv-btn"
                     onClick={() => {
                       const pick = zonePick;
                       setZonePick(null);
@@ -1080,43 +1066,40 @@ function Console({
                     }}
                   >
                     {t("zone.skip")}
-                  </Button>
-                  <Button variant="tertiary" size="sm" onClick={() => setZonePick(null)}>
+                  </button>
+                  <button type="button" className="lv-btn" onClick={() => setZonePick(null)}>
                     {c("cancel")}
-                  </Button>
+                  </button>
                 </div>
               </>
             ) : selected && selection?.where === "court" ? (
-              <>
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                  <span className="flex items-center gap-2 text-body font-semibold text-ink">
-                    <PlayerBadge player={selected} size="sm" />
-                    {selected.name}
-                    {selected.isGoalkeeper ? (
-                      <StatusChip kind="club">{t("keeper")}</StatusChip>
-                    ) : null}
-                  </span>
-                  <span className="text-secondary text-muted">{t("trayHint")}</span>
-                </div>
-                <ActionButtons
-                  layout="tray"
-                  types={byScope("player").filter(
+              <PlayerTray
+                player={selected}
+                hint={t("trayHint")}
+                captionLabel={t("actionOrPosition")}
+                keeperLabel={t("keeper")}
+                favorableLabel={t("favorable")}
+                lossesLabel={t("lossesAndSanctions")}
+                moreLabel={t("moreShort")}
+                types={quickFirst(
+                  byScope("player").filter(
                     (a) => a.quick && (!a.keeperOnly || selected.isGoalkeeper),
-                  )}
-                  onPick={(type) => record(type, selected.playerId)}
-                  more={() => setMoreOpen(true)}
-                  moreLabel={t("more")}
-                />
-              </>
+                  ),
+                )}
+                onPick={(type) => record(type, selected.playerId)}
+                onMore={() => setMoreOpen(true)}
+              />
             ) : selected && selection?.where === "bench" ? (
-              <p className="text-body text-ink">{t("benchSelected", { name: selected.name })}</p>
+              <p className="text-body">{t("benchSelected", { name: selected.name })}</p>
             ) : !access.write ? (
-              <p className="text-secondary text-muted">{t("readOnlyHint")}</p>
+              <p className="text-secondary" style={{ color: "var(--lv-muted)" }}>
+                {t("readOnlyHint")}
+              </p>
             ) : (
               <>
                 <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                  <strong className="text-body text-ink">{t("tapPlayer")}</strong>
-                  <span className="text-secondary text-muted">
+                  <strong className="text-body">{t("tapPlayer")}</strong>
+                  <span className="text-secondary" style={{ color: "var(--lv-muted)" }}>
                     {match.status === "scheduled"
                       ? t("lineupHint", {
                           count: onCourt.length,
@@ -1125,20 +1108,22 @@ function Console({
                       : t("tapPlayerHint")}
                   </span>
                 </div>
-                <div className="grid grid-cols-2 gap-3 compact:gap-2">
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2 compact:gap-2">
                   {(["team", "match"] as const).map((scope) => (
                     <div key={scope} className="flex min-w-0 flex-col gap-1">
-                      <span className="text-label uppercase tracking-wide text-muted">
+                      <span className="lv-eyebrow">
                         {scope === "team" ? t("teamActions") : t("matchActions")}
                       </span>
                       {byScope(scope).length === 0 ? (
-                        <p className="text-secondary text-muted">{t("noActions")}</p>
+                        <p className="text-secondary" style={{ color: "var(--lv-muted)" }}>
+                          {t("noActions")}
+                        </p>
                       ) : (
                         <ActionButtons
-                          layout="half"
+                          layout="wide"
+                          grid="grid-cols-2 lg:grid-cols-3 compact:grid-cols-3"
                           types={quickFirst(byScope(scope))}
                           onPick={(type) => record(type, null)}
-                          moreLabel={t("more")}
                           disabled={!canWrite}
                         />
                       )}
@@ -1150,29 +1135,90 @@ function Console({
           </div>
         </section>
 
-        <aside className="flex min-h-0 flex-col gap-3 portrait:shrink-0 lg:gap-4 compact:gap-2">
+        <aside className="flex min-h-0 flex-col gap-3 portrait:shrink-0 landscape:overflow-y-auto landscape:touch-pan-y compact:gap-2">
+          {/* Banquillo: se arrastra a la pista, o dos toques = cambio */}
+          <section
+            aria-label={t("bench")}
+            data-drop="bench"
+            className={`flex shrink-0 flex-col gap-2 rounded-2xl p-1 transition-colors ${
+              drag?.over === "bench" && dragging?.from === "court" && match.status === "scheduled"
+                ? "bg-white/10"
+                : ""
+            }`}
+          >
+            <div className="flex items-baseline justify-between gap-2 px-1">
+              <div className="flex flex-col leading-tight">
+                <span className="lv-eyebrow">{t("bench")}</span>
+                <span className="text-title2 font-bold compact:text-body">{t("available")}</span>
+              </div>
+              {canWrite && bench.length > 0 ? (
+                <span className="lv-eyebrow compact:hidden">{t("swapHint")}</span>
+              ) : null}
+            </div>
+            {bench.length === 0 ? (
+              <p className="px-1 text-secondary" style={{ color: "var(--lv-muted)" }}>
+                {t("benchEmpty")}
+              </p>
+            ) : (
+              <ul className="grid grid-cols-2 gap-2">
+                {bench.map((p) => {
+                  const ps = playerStats.get(p.playerId);
+                  const sentOff = ps?.sentOff ?? false;
+                  return (
+                    <li key={p.playerId}>
+                      <BenchTile
+                        player={p}
+                        time={formatClock(ps?.timeMs ?? 0)}
+                        score={`${ps?.scoreFor ?? 0}–${ps?.scoreAgainst ?? 0}`}
+                        labels={{
+                          time: t("tagTime"),
+                          timeHint: t("tagTimeHint"),
+                          score: t("tagScore"),
+                          scoreHint: t("tagScoreHint"),
+                          keeper: t("keeper"),
+                          substitute: t("substitute"),
+                        }}
+                        selected={selection?.id === p.playerId}
+                        dimmed={dragging?.id === p.playerId}
+                        sentOffLabel={sentOff ? t("sentOff") : null}
+                        benchLabel={t("bench")}
+                        disabled={!canWrite || sentOff}
+                        onPointerDown={
+                          canWrite && !sentOff
+                            ? dragStart({ id: p.playerId, from: "bench" })
+                            : undefined
+                        }
+                        onClick={() => {
+                          if (consumeClick()) return;
+                          tapBench(p);
+                        }}
+                      />
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </section>
+
           {/* Rival: todo su catálogo a la vista */}
           <section
             aria-label={t("opponentActions")}
-            className="flex min-h-0 flex-col gap-2 rounded-card bg-surface p-3 shadow-card precisa:border precisa:border-border portrait:shrink-0 landscape:flex-1 landscape:overflow-y-auto compact:gap-1 compact:p-2"
+            className="lv-side flex shrink-0 flex-col gap-2 p-3 compact:gap-1 compact:p-2"
           >
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-              <Eyebrow>{t("opponent")}</Eyebrow>
-              <span className="truncate text-secondary font-semibold text-ink">
-                {match.opponent}
-              </span>
-              <span className="inline-flex sm:hidden compact:inline-flex">
-                <StatusChip kind={foulKind(foulsOpp)}>{t("fouls", { count: foulsOpp })}</StatusChip>
-              </span>
+              <span className="lv-eyebrow">{t("opponent")}</span>
+              <span className="truncate text-secondary font-semibold">{match.opponent}</span>
             </div>
             {byScope("opponent").length === 0 ? (
-              <p className="text-secondary text-muted">{t("noActions")}</p>
+              <p className="text-secondary" style={{ color: "var(--lv-muted)" }}>
+                {t("noActions")}
+              </p>
             ) : (
               <ActionButtons
-                layout="side"
+                layout="wide"
+                grid="grid-cols-2"
                 types={quickFirst(byScope("opponent"))}
                 onPick={(type) => record(type, null)}
-                moreLabel={t("more")}
                 disabled={!canWrite}
               />
             )}
@@ -1181,31 +1227,33 @@ function Console({
           {/* Partido: últimas acciones, en pequeño */}
           <section
             aria-label={t("feed")}
-            className="flex shrink-0 flex-col gap-1 rounded-card bg-surface p-3 shadow-card precisa:border precisa:border-border compact:p-2"
+            className="lv-side flex shrink-0 flex-col gap-1 p-3 compact:p-2"
           >
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-              <Eyebrow>{t("match")}</Eyebrow>
-              <span className="text-secondary font-semibold text-ink">{t("feed")}</span>
+              <span className="lv-eyebrow">{t("match")}</span>
+              <span className="text-secondary font-semibold">{t("feed")}</span>
             </div>
             {events.length === 0 ? (
-              <p className="text-secondary text-muted">{t("feedEmpty")}</p>
+              <p className="text-secondary" style={{ color: "var(--lv-muted)" }}>
+                {t("feedEmpty")}
+              </p>
             ) : (
-              <ol className="flex max-h-36 flex-col divide-y divide-line overflow-y-auto compact:max-h-24">
+              <ol className="lv-feed flex max-h-36 flex-col overflow-y-auto compact:max-h-24">
                 {[...events]
                   .reverse()
                   .slice(0, 8)
                   .map((e) => (
                     <li key={e.id} className="flex items-center gap-2 py-1">
-                      <span className="font-mono text-label text-muted">
+                      <span className="font-mono text-label" style={{ color: "var(--lv-muted)" }}>
                         {formatClock(e.clockMs)}
                       </span>
-                      <span className="min-w-0 flex-1 truncate text-label font-medium text-ink">
+                      <span className="min-w-0 flex-1 truncate text-label font-medium">
                         {eventText(e)}
                       </span>
                       {e.ownScoreDelta > 0 || e.opponentScoreDelta > 0 ? (
-                        <StatusChip kind={e.ownScoreDelta > 0 ? "club" : "neutral"}>
+                        <span className="lv-tag" data-tone={e.ownScoreDelta > 0 ? "gold" : ""}>
                           {e.ownScoreDelta > 0 ? `+${e.ownScoreDelta}` : `+${e.opponentScoreDelta}`}
-                        </StatusChip>
+                        </span>
                       ) : null}
                     </li>
                   ))}
@@ -1237,13 +1285,13 @@ function Console({
           description={t("moreDescription")}
         >
           <ActionButtons
-            layout="sheet"
+            layout="wide"
+            grid="grid-cols-2 sm:grid-cols-3"
             types={byScope("player").filter((a) => !a.keeperOnly || selected.isGoalkeeper)}
             onPick={(type) => {
               setMoreOpen(false);
               record(type, selected.playerId);
             }}
-            moreLabel={t("more")}
           />
         </Sheet>
       ) : null}
@@ -1307,7 +1355,7 @@ function BarButton({
       aria-label={label}
       disabled={disabled}
       onClick={onClick}
-      className="inline-flex h-(--h-control) min-w-(--h-control) shrink-0 items-center justify-center gap-1.5 rounded-control px-2 text-on-club-deep transition-colors hover:bg-white/10 disabled:opacity-40 compact:h-10 compact:min-w-10"
+      className="lv-btn shrink-0 compact:min-h-10"
     >
       {children}
     </button>
@@ -1326,7 +1374,7 @@ function ClockFace({
 }) {
   return (
     <span className="flex min-h-12 min-w-36 flex-col items-center justify-center px-4 py-1 compact:min-h-10 compact:min-w-0 compact:flex-row compact:gap-2 compact:px-3">
-      <span className="flex items-center gap-2 font-mono text-title1 tabular compact:text-body">
+      <span className="flex items-center gap-2 font-mono text-title1 font-bold tabular compact:text-body">
         {running ? (
           <Icon.Pause size={20} weight="fill" aria-hidden="true" />
         ) : (
@@ -1334,35 +1382,40 @@ function ClockFace({
         )}
         {time}
       </span>
-      <span className="text-label uppercase tracking-wide text-muted">{caption}</span>
+      <span className="lv-clock-caption text-label uppercase tracking-wide">{caption}</span>
     </span>
   );
 }
 
-function Eyebrow({ children }: { children: ReactNode }) {
-  return <span className="text-label uppercase tracking-wide text-muted">{children}</span>;
-}
-
 /**
- * Pista completa dibujada en SVG, estirada al hueco que tenga; los jugadores van encima como
- * botones de verdad. El nombre del rival junto a la portería que se ataca orienta sin texto aparte.
+ * Pista de parqué dibujada en SVG, estirada al hueco que tenga; los jugadores van encima como
+ * botones de verdad. El nombre del rival junto a la portería que se ataca orienta sin texto aparte,
+ * y el escudo del club va en el círculo central.
  */
 function Court({
   flip,
   attackLabel,
   goalLabel,
+  centre,
   children,
 }: {
   flip: boolean;
   attackLabel: string;
   goalLabel: string;
+  centre: ReactNode;
   children: ReactNode;
 }) {
+  const line = {
+    fill: "none",
+    stroke: "white",
+    strokeOpacity: 0.85,
+    strokeWidth: 0.7,
+  } as const;
   return (
     <div
       role="img"
       aria-label={attackLabel}
-      className="relative w-full max-h-full aspect-[16/10] overflow-hidden rounded-card bg-club-deep shadow-card select-none"
+      className="lv-court relative w-full max-h-full aspect-[16/10] overflow-hidden select-none"
     >
       <svg
         viewBox="0 0 160 100"
@@ -1370,60 +1423,30 @@ function Court({
         aria-hidden="true"
         preserveAspectRatio="none"
       >
-        <rect
-          x="4"
-          y="4"
-          width="152"
-          height="92"
-          fill="none"
-          stroke="white"
-          strokeOpacity="0.55"
-          strokeWidth="0.8"
-        />
-        <line
-          x1="80"
-          y1="4"
-          x2="80"
-          y2="96"
-          stroke="white"
-          strokeOpacity="0.55"
-          strokeWidth="0.8"
-        />
-        <circle
-          cx="80"
-          cy="50"
-          r="10"
-          fill="none"
-          stroke="white"
-          strokeOpacity="0.55"
-          strokeWidth="0.8"
-        />
-        <path
-          d="M4 26 A24 24 0 0 1 4 74"
-          fill="none"
-          stroke="white"
-          strokeOpacity="0.55"
-          strokeWidth="0.8"
-        />
-        <path
-          d="M156 26 A24 24 0 0 0 156 74"
-          fill="none"
-          stroke="white"
-          strokeOpacity="0.55"
-          strokeWidth="0.8"
-        />
-        <rect x="1" y="40" width="3" height="20" fill="white" fillOpacity="0.6" />
-        <rect x="156" y="40" width="3" height="20" fill="white" fillOpacity="0.6" />
-        {/* Flecha de la dirección de ataque, sobre la línea de medio campo */}
-        <path
-          d={flip ? "M84 7 L77 10 L84 13 Z" : "M76 7 L83 10 L76 13 Z"}
-          fill="white"
-          fillOpacity="0.7"
-        />
+        <rect x="4" y="4" width="152" height="92" {...line} />
+        <line x1="80" y1="4" x2="80" y2="96" {...line} />
+        <circle cx="80" cy="50" r="12" {...line} />
+        <path d="M4 26 A24 24 0 0 1 4 74" {...line} />
+        <path d="M156 26 A24 24 0 0 0 156 74" {...line} />
+        <rect x="1" y="40" width="3" height="20" fill="#5b3a14" fillOpacity="0.55" />
+        <rect x="156" y="40" width="3" height="20" fill="#5b3a14" fillOpacity="0.55" />
       </svg>
       <span
         aria-hidden="true"
-        className={`absolute top-1.5 max-w-[40%] truncate text-label text-white/70 ${flip ? "left-3" : "right-3"}`}
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-90"
+      >
+        {centre}
+      </span>
+      {/* Dirección de ataque: flecha sobre la línea de medio campo */}
+      <span
+        aria-hidden="true"
+        className="absolute top-1.5 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-3 py-0.5 text-label font-semibold text-white"
+      >
+        {flip ? "←" : "→"}
+      </span>
+      <span
+        aria-hidden="true"
+        className={`absolute top-1.5 max-w-[30%] truncate text-label font-semibold text-black/55 ${flip ? "left-3" : "right-3"}`}
       >
         {goalLabel}
       </span>
@@ -1432,7 +1455,23 @@ function Court({
   );
 }
 
-/** Dorsal en círculo: color del club, o tinta con aro para el portero. */
+/** Camiseta con el dorsal encima: rosa para el equipo, azul oscuro para el portero. */
+function Shirt({
+  player,
+  size = 40,
+}: {
+  player: Pick<MatchSquadPlayer, "shirtNumber" | "isGoalkeeper">;
+  size?: number;
+}) {
+  return (
+    <span className="lv-shirt" data-keeper={player.isGoalkeeper} aria-hidden="true">
+      <Icon.TShirt size={size} weight="fill" />
+      <b style={{ fontSize: size * 0.4 }}>{player.shirtNumber ?? "–"}</b>
+    </span>
+  );
+}
+
+/** Dorsal en círculo, pequeño: para el fantasma del arrastre. */
 function PlayerBadge({
   player,
   size = "md",
@@ -1451,29 +1490,64 @@ function PlayerBadge({
   );
 }
 
+type TileLabels = {
+  keeper: string;
+  time: string;
+  timeHint: string;
+  score: string;
+  scoreHint: string;
+};
+
+function Tags({
+  time,
+  score,
+  labels,
+}: {
+  time: string;
+  score: string;
+  labels: Pick<TileLabels, "time" | "timeHint" | "score" | "scoreHint">;
+}) {
+  return (
+    <span className="flex items-center gap-1" aria-hidden="true">
+      <span className="lv-tag" title={labels.timeHint}>
+        <small>{labels.time}</small>
+        {time}
+      </span>
+      <span className="lv-tag" data-tone="gold" title={labels.scoreHint}>
+        <small>{labels.score}</small>
+        {score}
+      </span>
+    </span>
+  );
+}
+
 function CourtTile({
   player,
   x,
   y,
-  minutes,
+  time,
+  score,
+  stint,
+  labels,
   selected,
   target,
   dimmed,
   disabled,
-  keeperLabel,
   onPointerDown,
   onClick,
 }: {
   player: MatchSquadPlayer;
   x: number;
   y: number;
-  minutes: number;
+  time: string;
+  score: string;
+  stint: string;
+  labels: TileLabels & { stint: string; stintHint: string };
   selected: boolean;
   /** Durante un arrastre: destino posible, destino bajo el dedo, o nada. */
   target: "none" | "open" | "over";
   dimmed: boolean;
   disabled: boolean;
-  keeperLabel: string;
   onPointerDown?: ((e: React.PointerEvent) => void) | undefined;
   onClick: () => void;
 }) {
@@ -1481,15 +1555,14 @@ function CourtTile({
     <button
       type="button"
       data-drop={`player:${player.playerId}`}
+      data-keeper={player.isGoalkeeper}
       disabled={disabled}
       aria-pressed={selected}
-      aria-label={`${player.name}${player.isGoalkeeper ? ` · ${keeperLabel}` : ""}`}
+      aria-label={`${player.name}${player.isGoalkeeper ? ` · ${labels.keeper}` : ""}`}
       onPointerDown={onPointerDown}
       onClick={onClick}
       style={{ left: `${x}%`, top: `${y}%` }}
-      className={`absolute flex min-w-16 -translate-x-1/2 -translate-y-1/2 touch-none flex-col items-center rounded-field px-1.5 py-1 text-center transition-[box-shadow,transform,opacity] compact:min-w-14 compact:py-0.5 ${
-        selected ? "bg-surface text-ink shadow-float ring-2 ring-club" : "bg-black/35 text-white"
-      } ${
+      className={`lv-card absolute flex min-w-[5.75rem] -translate-x-1/2 -translate-y-1/2 touch-none flex-col items-center gap-0.5 px-2 py-1.5 text-center transition-[box-shadow,transform,opacity] compact:min-w-[4.75rem] compact:gap-0 compact:px-1.5 compact:py-1 ${
         target === "over"
           ? "scale-110 ring-4 ring-white"
           : target === "open"
@@ -1497,14 +1570,13 @@ function CourtTile({
             : ""
       } ${dimmed ? "opacity-40" : ""}`}
     >
-      <PlayerBadge player={player} />
-      <span className="max-w-24 truncate text-secondary font-medium compact:text-label">
+      <Tags time={time} score={score} labels={labels} />
+      <Shirt player={player} size={40} />
+      <span className="max-w-24 truncate text-secondary font-bold compact:text-label">
         {player.name.split(" ")[0]}
       </span>
-      <span
-        className={`font-mono text-label compact:hidden ${selected ? "text-muted" : "text-white/80"}`}
-      >
-        {minutes}′
+      <span className="lv-rt compact:hidden" aria-hidden="true" title={labels.stintHint}>
+        {labels.stint} {stint}
       </span>
     </button>
   );
@@ -1512,7 +1584,9 @@ function CourtTile({
 
 function BenchTile({
   player,
-  minutes,
+  time,
+  score,
+  labels,
   selected,
   dimmed,
   sentOffLabel,
@@ -1522,7 +1596,11 @@ function BenchTile({
   onClick,
 }: {
   player: MatchSquadPlayer;
-  minutes: number;
+  time: string;
+  score: string;
+  labels: Pick<TileLabels, "time" | "timeHint" | "score" | "scoreHint" | "keeper"> & {
+    substitute: string;
+  };
   selected: boolean;
   dimmed: boolean;
   sentOffLabel: string | null;
@@ -1534,61 +1612,122 @@ function BenchTile({
   return (
     <button
       type="button"
+      data-keeper={player.isGoalkeeper}
       disabled={disabled}
       aria-pressed={selected}
       aria-label={`${player.name} · ${sentOffLabel ?? benchLabel}`}
       onPointerDown={onPointerDown}
       onClick={onClick}
-      className={`flex min-h-12 w-full touch-none items-center gap-2 rounded-field border px-2 py-1 text-left transition-colors disabled:opacity-60 compact:min-h-10 ${
-        selected ? "border-club bg-club-soft" : "border-border bg-page"
-      } ${dimmed ? "opacity-40" : ""}`}
+      className={`lv-card flex w-full touch-none flex-col items-center gap-0.5 px-1.5 py-1.5 text-center transition-opacity disabled:opacity-60 compact:py-1 ${
+        dimmed ? "opacity-40" : ""
+      }`}
     >
-      <PlayerBadge player={player} size="sm" />
-      <span className="flex min-w-0 flex-col leading-tight">
-        <span className="truncate text-secondary font-medium text-ink">
-          {player.name.split(" ")[0]}
-        </span>
-        <span className="font-mono text-label text-muted">{sentOffLabel ?? `${minutes}′`}</span>
+      <Tags time={time} score={score} labels={labels} />
+      <Shirt player={player} size={34} />
+      <span className="max-w-full truncate text-secondary font-bold">
+        {player.name.split(" ")[0]}
+      </span>
+      <span
+        className="font-mono text-[0.6rem] uppercase tracking-wider"
+        style={{ color: "var(--lv-muted)" }}
+        aria-hidden="true"
+      >
+        {sentOffLabel ?? (player.isGoalkeeper ? labels.keeper : labels.substitute)}
       </span>
     </button>
   );
 }
 
-const categoryClass: Record<MatchActionType["category"], string> = {
-  positive: "border-success/30 bg-success-soft text-success",
-  negative: "border-danger-border bg-danger-soft text-danger",
-  neutral: "border-border bg-raised text-ink",
-};
-
-const layoutClass = {
-  /** Bandeja de nuestro equipo: cuantas más columnas, menos altura. */
-  tray: "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 compact:grid-cols-6",
-  /** Columna del rival. */
-  side: "grid-cols-2",
-  /** Media bandeja: las del equipo a un lado y las del partido al otro. */
-  half: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 compact:grid-cols-3",
-  /** Catálogo completo en el panel. */
-  sheet: "grid-cols-2 sm:grid-cols-3",
-};
+/**
+ * Bandeja del jugador tocado (como la de la pizarra): su nombre a la izquierda y, a la derecha,
+ * las acciones a favor y las pérdidas y sanciones. Un toque registra la acción.
+ */
+function PlayerTray({
+  player,
+  hint,
+  captionLabel,
+  keeperLabel,
+  favorableLabel,
+  lossesLabel,
+  moreLabel,
+  types,
+  onPick,
+  onMore,
+}: {
+  player: MatchSquadPlayer;
+  hint: string;
+  captionLabel: string;
+  keeperLabel: string;
+  favorableLabel: string;
+  lossesLabel: string;
+  moreLabel: string;
+  types: MatchActionType[];
+  onPick: (type: MatchActionType) => void;
+  onMore: () => void;
+}) {
+  const favorable = types.filter((a) => a.category !== "negative");
+  const losses = types.filter((a) => a.category === "negative");
+  return (
+    <div className="flex touch-pan-x items-stretch gap-2 overflow-x-auto pb-1 compact:gap-1.5">
+      <div className="flex w-32 shrink-0 flex-col justify-center gap-0.5 pr-2">
+        <span className="text-title2 font-bold leading-tight compact:text-body">
+          {player.name.split(" ")[0]}
+        </span>
+        <span className="lv-eyebrow" style={{ color: "var(--lv-accent)" }}>
+          {captionLabel}
+        </span>
+        {player.isGoalkeeper ? <span className="lv-eyebrow">{keeperLabel}</span> : null}
+        <span className="text-label compact:hidden" style={{ color: "var(--lv-muted)" }}>
+          {hint}
+        </span>
+        <span className="sr-only">{player.name}</span>
+      </div>
+      <div className="lv-group flex shrink-0 flex-col gap-1" data-kind="pos">
+        <span className="lv-eyebrow" style={{ color: "var(--lv-pos)" }}>
+          {favorableLabel}
+        </span>
+        <ActionButtons
+          layout="tile"
+          types={favorable}
+          onPick={onPick}
+          more={onMore}
+          moreLabel={moreLabel}
+        />
+      </div>
+      {losses.length > 0 ? (
+        <div className="lv-group flex shrink-0 flex-col gap-1" data-kind="neg">
+          <span className="lv-eyebrow" style={{ color: "var(--lv-neg)" }}>
+            {lossesLabel}
+          </span>
+          <ActionButtons layout="tile" types={losses} onPick={onPick} />
+        </div>
+      ) : null}
+    </div>
+  );
+}
 
 /** Botones del catálogo: color por categoría y siempre con texto (DESIGN.md 0.5). */
 function ActionButtons({
   types,
   onPick,
   more,
-  moreLabel,
+  moreLabel = "",
   disabled = false,
   layout,
+  grid = "grid-cols-2 sm:grid-cols-3",
 }: {
   types: MatchActionType[];
   onPick: (type: MatchActionType) => void;
   more?: (() => void) | undefined;
-  moreLabel: string;
+  moreLabel?: string;
   disabled?: boolean;
-  layout: keyof typeof layoutClass;
+  /** `tile`: fichas en fila, para la bandeja del jugador; `wide`: filas en rejilla. */
+  layout: "tile" | "wide";
+  grid?: string;
 }) {
+  const wide = layout === "wide";
   return (
-    <div className={`grid gap-1.5 ${layoutClass[layout]}`}>
+    <div className={wide ? `grid gap-1.5 ${grid}` : "flex flex-nowrap gap-1.5 compact:gap-1"}>
       {types.map((type) => {
         const badge = scoreBadge(type);
         return (
@@ -1597,10 +1736,13 @@ function ActionButtons({
             type="button"
             disabled={disabled}
             onClick={() => onPick(type)}
-            className={`flex min-h-12 items-center justify-between gap-2 rounded-field border px-3 py-1.5 text-left text-secondary leading-tight font-medium transition-colors disabled:opacity-50 compact:min-h-10 ${categoryClass[type.category]}`}
+            data-cat={type.category}
+            data-card={type.card ?? undefined}
+            data-wide={wide}
+            className="lv-act compact:min-h-12"
           >
-            <span className="line-clamp-2 min-w-0">{type.name}</span>
-            {badge ? <span className="font-mono text-label">{badge}</span> : null}
+            <span className={wide ? "line-clamp-2 min-w-0" : "line-clamp-2"}>{type.name}</span>
+            {badge ? <span className="lv-act-badge">{badge}</span> : null}
           </button>
         );
       })}
@@ -1609,10 +1751,12 @@ function ActionButtons({
           type="button"
           disabled={disabled}
           onClick={more}
-          className="flex min-h-12 items-center justify-center gap-1 rounded-field border border-dashed border-control px-3 text-secondary font-medium text-club-text disabled:opacity-50 compact:min-h-10"
+          data-more="true"
+          data-wide={wide}
+          className="lv-act compact:min-h-12"
         >
-          <Icon.Plus size={16} aria-hidden="true" />
-          {moreLabel}
+          <Icon.Plus size={18} aria-hidden="true" />
+          <span>{moreLabel}</span>
         </button>
       ) : null}
     </div>

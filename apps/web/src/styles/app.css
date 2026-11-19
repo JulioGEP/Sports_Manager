@@ -116,3 +116,312 @@ dialog::backdrop {
     transform: scaleX(0.6);
   }
 }
+
+/*
+ * Consola del partido en oscuro (como la pizarra de la banda): colores propios y fijos, no los del
+ * club, para que de noche y a pleno sol se lea igual. Todo cuelga de .lv.
+ */
+.lv {
+  --lv-bg: #0a1226;
+  --lv-panel: #111b33;
+  --lv-card: #2a2d33;
+  --lv-line: rgba(255, 255, 255, 0.14);
+  --lv-text: #f4f6fb;
+  --lv-muted: #8f9bb5;
+  --lv-accent: #f5c518;
+  --lv-accent-ink: #1a1500;
+  --lv-pos: #19c37d;
+  --lv-neg: #ff8a3d;
+  background: radial-gradient(120% 90% at 50% 0%, #14213f 0%, var(--lv-bg) 70%);
+  color: var(--lv-text);
+  color-scheme: dark;
+}
+.lv-bar {
+  background: rgba(8, 14, 30, 0.9);
+  border-bottom: 1px solid var(--lv-line);
+}
+.lv-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  min-height: 2.5rem;
+  min-width: 2.5rem;
+  padding: 0 0.625rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--lv-line);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--lv-text);
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: background 120ms;
+}
+.lv-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.14);
+}
+.lv-btn:disabled {
+  opacity: 0.4;
+}
+.lv-btn[aria-pressed="true"],
+.lv-btn-accent {
+  background: var(--lv-accent);
+  border-color: var(--lv-accent);
+  color: var(--lv-accent-ink);
+}
+.lv-seg {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.375rem;
+  border-radius: 1rem;
+  border: 1px solid var(--lv-line);
+  background: rgba(255, 255, 255, 0.04);
+}
+.lv-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--lv-muted);
+  font-weight: 600;
+}
+.lv-panel {
+  background: transparent;
+}
+.lv-score {
+  display: grid;
+  place-items: center;
+  min-width: 3rem;
+  height: 3rem;
+  padding: 0 0.5rem;
+  border-radius: 0.875rem;
+  border: 1px solid var(--lv-line);
+  background: rgba(255, 255, 255, 0.05);
+  font-family: var(--font-mono);
+  font-size: 1.75rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.lv-fouls {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--lv-line);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--lv-muted);
+}
+.lv-fouls[data-kind="warning"] {
+  color: var(--lv-accent);
+  border-color: var(--lv-accent);
+}
+.lv-fouls[data-kind="danger"] {
+  color: #ff9a9f;
+  border-color: #c9343b;
+  background: rgba(201, 52, 59, 0.2);
+}
+.lv-clock {
+  background: var(--lv-accent);
+  color: var(--lv-accent-ink);
+  border-radius: 1rem;
+  box-shadow: 0 6px 20px rgba(245, 197, 24, 0.25);
+}
+.lv-clock:disabled {
+  opacity: 0.85;
+}
+.lv-clock .lv-clock-caption {
+  color: rgba(26, 21, 0, 0.75);
+  font-weight: 700;
+}
+
+/* Pista de parqué */
+.lv-court {
+  background:
+    repeating-linear-gradient(90deg, rgba(120, 70, 20, 0.07) 0 1px, transparent 1px 10.5%),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.05) 0 8%, rgba(0, 0, 0, 0.04) 8% 16%),
+    linear-gradient(180deg, #e9bf8a, #dcae74);
+  border-radius: 1.5rem;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.12),
+    0 18px 40px rgba(0, 0, 0, 0.45);
+}
+
+/* Fichas: jugador en pista y suplente */
+.lv-card {
+  background: rgba(36, 38, 43, 0.94);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1rem;
+  color: var(--lv-text);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+}
+.lv-card[aria-pressed="true"] {
+  border-color: var(--lv-accent);
+  box-shadow:
+    0 0 0 2px var(--lv-accent),
+    0 8px 22px rgba(0, 0, 0, 0.45);
+}
+.lv-card[data-keeper="true"] {
+  background: rgba(33, 52, 86, 0.95);
+}
+.lv-tag {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.25rem;
+  padding: 0.0625rem 0.375rem;
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.08);
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 600;
+  line-height: 1rem;
+  color: var(--lv-text);
+  white-space: nowrap;
+}
+.lv-tag > small {
+  font-size: 0.5rem;
+  color: var(--lv-muted);
+  letter-spacing: 0.06em;
+}
+.lv-tag[data-tone="gold"] {
+  background: rgba(245, 197, 24, 0.16);
+  color: var(--lv-accent);
+}
+.lv-rt {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #34d399;
+}
+.lv-shirt {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+.lv-shirt > svg {
+  color: #f4a8c8;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4));
+}
+.lv-shirt[data-keeper="true"] > svg {
+  color: #1d3a7a;
+}
+.lv-shirt > b {
+  position: absolute;
+  top: 38%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  line-height: 1;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Banquillo, rival y últimas acciones */
+.lv-side {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--lv-line);
+  border-radius: 1.25rem;
+}
+.lv-slot {
+  border: 2px dashed rgba(60, 35, 10, 0.55);
+  background: rgba(60, 35, 10, 0.12);
+  color: rgba(60, 35, 10, 0.85);
+  border-radius: 999px;
+}
+
+/* Bandeja inferior de acciones */
+.lv-tray {
+  border-top: 1px solid var(--lv-line);
+}
+.lv-group {
+  border: 1px solid var(--lv-line);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 0.5rem;
+}
+.lv-group[data-kind="pos"] {
+  border-color: rgba(25, 195, 125, 0.35);
+}
+.lv-group[data-kind="neg"] {
+  border-color: rgba(255, 138, 61, 0.4);
+}
+.lv-act {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.125rem;
+  min-width: 4.25rem;
+  min-height: 3.75rem;
+  padding: 0.375rem 0.5rem;
+  border-radius: 0.875rem;
+  border: 1px solid transparent;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.1;
+  text-align: center;
+  transition:
+    transform 80ms,
+    filter 120ms;
+}
+.lv-act:active:not(:disabled) {
+  transform: scale(0.96);
+}
+.lv-act:hover:not(:disabled) {
+  filter: brightness(1.2);
+}
+.lv-act:disabled {
+  opacity: 0.45;
+}
+.lv-act[data-cat="positive"] {
+  background: rgba(25, 195, 125, 0.14);
+  border-color: rgba(25, 195, 125, 0.55);
+  color: #5eead4;
+}
+.lv-act[data-cat="neutral"] {
+  background: rgba(143, 155, 181, 0.16);
+  border-color: rgba(143, 155, 181, 0.5);
+  color: #dbe3f5;
+}
+.lv-act[data-cat="negative"] {
+  background: rgba(255, 138, 61, 0.14);
+  border-color: rgba(255, 138, 61, 0.55);
+  color: #ffb27a;
+}
+.lv-act[data-card="yellow"] {
+  background: rgba(245, 197, 24, 0.2);
+  border-color: var(--lv-accent);
+  color: var(--lv-accent);
+}
+.lv-act[data-card="red"] {
+  background: rgba(220, 53, 69, 0.25);
+  border-color: #dc3545;
+  color: #ff9aa2;
+}
+.lv-act[data-more="true"] {
+  background: transparent;
+  border-style: dashed;
+  border-color: rgba(120, 160, 255, 0.6);
+  color: #9db6ff;
+}
+.lv-act .lv-act-badge {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  opacity: 0.85;
+}
+.lv-act[data-wide="true"] {
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-height: 3rem;
+  text-align: left;
+  font-size: 0.8rem;
+}
+.lv-side .lv-act[data-wide="true"] {
+  min-width: 0;
+}
+.lv-feed li + li {
+  border-top: 1px solid var(--lv-line);
+}
